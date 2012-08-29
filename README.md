@@ -1,9 +1,9 @@
 luci
 ====
 
-My toy language, implemented in C (for now)
-Details/Instructions to come!
+My toy language, implemented in C (for now).
 
+Details/Instructions to come!
 
 Tools Needed
 ---------------------
@@ -11,9 +11,8 @@ Tools Needed
 - [bison (yacc)](http://www.gnu.org/software/bison/)
 - a decent C compiler (gcc)
 
-
 References
 ----------
--[Immensely helpful](http://stackoverflow.com/a/2644949)
--[Just as useful](http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/)
+- [Immensely helpful](http://stackoverflow.com/a/2644949)
+- [Just as useful](http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/)
 

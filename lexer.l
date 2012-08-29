@@ -12,7 +12,7 @@ extern int LINE_NUM;
 %x ERROR
 
 NUM	[0-9]+
-WORD	[a-zA-Z_]*
+WORD	[a-zA-Z_][a-zA-Z_0-9]*
 WS	[ \t\f\r]+
 
 %%

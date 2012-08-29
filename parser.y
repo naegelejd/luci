@@ -89,6 +89,6 @@ int main()
     assert(root);
     struct ExecEnviron *env = create_env();
     exec_AST(env, root);
-    free_env(env);
+    destroy_env(env);
     destroy_AST(root);
 }

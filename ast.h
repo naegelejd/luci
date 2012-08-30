@@ -1,6 +1,8 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stddef.h>
+
 typedef struct ASTNode
 {
     enum {ast_num_t, ast_id_t, ast_expression_t, ast_assignment_t,
@@ -39,6 +41,8 @@ typedef struct ASTNode_list
     ASTNode *elem;
     struct ASTNode_list* next;
 } ASTNode_list;
+
+void *alloc(size_t size);
 
 void destroy_AST(ASTNode *);
 ASTNode *make_expr_from_num(int);

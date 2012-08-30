@@ -1,29 +1,38 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
-typedef struct Object
+typedef struct luci_obj_t
 {
-    enum { obj_int_t, obj_string_t } type;
+    enum { obj_none_t, obj_int_t, obj_string_t } type;
     union
     {
 	int integer;
 	char *string;
+	void *none;
     } value;
-} Object;
+} luci_obj_t;
 
-typedef Object (*luci_func_t) (Object);
+/* luci_func_t is a type of function that returns a luci_obj_t * */
+typedef luci_obj_t * (*luci_func_t) (luci_obj_t *);
 
 typedef struct Symbol
 {
-    enum { sym_int_t, sym_string_t, sym_func_t } type;
+    enum { sym_obj_t, sym_func_t } type;
     char *name;
     union
     {
-	int integer;
-	char *string;
-	luci_func_t function;  /* value of a func */
+	luci_obj_t * object;
+	luci_func_t funcptr;  /* function ptr to a luci_func_t */
     } data;
     struct Symbol *next;
 } Symbol;
+
+
+luci_obj_t *luci_sum(luci_obj_t *left, luci_obj_t *right);
+luci_obj_t *luci_diff(luci_obj_t *left, luci_obj_t *right);
+luci_obj_t *luci_prod(luci_obj_t *left, luci_obj_t *right);
+luci_obj_t *luci_div(luci_obj_t *left, luci_obj_t *right);
+luci_obj_t *luci_lt(luci_obj_t *left, luci_obj_t *right);
+luci_obj_t *luci_gt(luci_obj_t *left, luci_obj_t *right);
 
 #endif

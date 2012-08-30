@@ -6,6 +6,7 @@ struct ASTNode;
 
 /* Symbol from symbol.h */
 struct Symbol;
+struct luci_obj_t;
 
 typedef struct ExecEnviron
 {
@@ -14,12 +15,12 @@ typedef struct ExecEnviron
     struct Symbol *symtable;
 } ExecEnviron;
 
-static int dispatch_statement(ExecEnviron *e, struct ASTNode *a);
-static int exec_num_expression(ExecEnviron *e, struct ASTNode *a);
-static int exec_id_expression(ExecEnviron *e, struct ASTNode *a);
-static int exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t * dispatch_statement(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t * exec_num_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t * exec_id_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
 static void exec_assignment(ExecEnviron *e, struct ASTNode *a);
-static int exec_call(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t * exec_call(ExecEnviron *e, struct ASTNode *a);
 static void exec_statement(ExecEnviron *e, struct ASTNode *a);
 
 /* executes an AST */

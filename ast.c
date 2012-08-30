@@ -7,7 +7,7 @@ extern int VERBOSE;
 
 const char *NTYPES[] = {"NUM", "ID", "EXPR", "ASSGNMT", "CALL", "STMT"};
 
-static void *alloc(size_t size)
+void *alloc(size_t size)
 {
     void *result = calloc(size, 1);
     if (!result)

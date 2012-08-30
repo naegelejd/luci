@@ -2,7 +2,6 @@
 
 %{
 #include <string.h>
-#include "ast.h"
 #include "parser.h"
 
 extern int LINE_NUM;

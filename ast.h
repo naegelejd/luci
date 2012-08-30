@@ -3,7 +3,8 @@
 
 typedef struct ASTNode
 {
-    enum {t_num, t_id, t_expression, t_assignment, t_call, t_statements, t_last} type;
+    enum {ast_num_t, ast_id_t, ast_expression_t, ast_assignment_t,
+	    ast_call_t, ast_statements_t, ast_last_t} type;
     char *repr;
     union
     {

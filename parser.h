@@ -72,7 +72,7 @@ typedef union YYSTYPE
 
     int num;
     char *id;
-    ASTNode *node;
+    struct ASTNode *node;
 
 
 /* Line 2055 of yacc.c  */

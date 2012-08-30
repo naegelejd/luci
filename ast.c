@@ -21,7 +21,7 @@ static void *alloc(size_t size)
 ASTNode *make_expr_from_num(int val)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = t_num;
+    result->type = ast_num_t;
     result->data.val = val;
     if (VERBOSE)
 	printf("Made expression node from val %d\n", val);
@@ -33,7 +33,7 @@ ASTNode *make_expr_from_num(int val)
 ASTNode *make_expr_from_id(char *id)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = t_id;
+    result->type = ast_id_t;
     result->data.name = id;
     if (VERBOSE)
 	printf("Made expression node from id %s\n", id);
@@ -46,7 +46,7 @@ ASTNode *make_expr_from_id(char *id)
 ASTNode *make_expression(ASTNode *left, ASTNode *right, char op)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = t_expression;
+    result->type = ast_expression_t;
     result->data.expression.left = left;
     result->data.expression.right = right;
     result->data.expression.op = op;
@@ -60,7 +60,7 @@ ASTNode *make_expression(ASTNode *left, ASTNode *right, char op)
 ASTNode *make_call(char *id, ASTNode *param)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = t_call;
+    result->type = ast_call_t;
     result->data.call.name = id;
     result->data.call.param = param;
     if (VERBOSE)
@@ -74,7 +74,7 @@ ASTNode *make_call(char *id, ASTNode *param)
 ASTNode *make_assignment(char *id, ASTNode *right)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = t_assignment;
+    result->type = ast_assignment_t;
     result->data.assignment.name = id;
     result->data.assignment.right = right;
     if (VERBOSE)
@@ -90,11 +90,11 @@ ASTNode *make_statement(ASTNode *result, ASTNode *to_append)
     if (!result)
     {
 	result = alloc(sizeof(*result));
-	result->type = t_statements;
+	result->type = ast_statements_t;
 	result->data.statements.count = 0;
 	result->data.statements.statements = 0;
     }
-    assert(result->type == t_statements);
+    assert(result->type == ast_statements_t);
     result->data.statements.count++;
     result->data.statements.statements = realloc(result->data.statements.statements,
 	    result->data.statements.count * sizeof(*result->data.statements.statements));
@@ -109,7 +109,7 @@ ASTNode *make_statement(ASTNode *result, ASTNode *to_append)
 
 void destroy_AST(ASTNode *root)
 {
-    if (root->type == t_statements)
+    if (root->type == ast_statements_t)
     {
 	int i;
 	for (i = 0; i < root->data.statements.count; i++)
@@ -118,22 +118,22 @@ void destroy_AST(ASTNode *root)
 	}
 	free(root->data.statements.statements);
     }
-    else if (root->type == t_assignment)
+    else if (root->type == ast_assignment_t)
     {
 	destroy_AST(root->data.assignment.right);
 	free(root->data.assignment.name);
     }
-    else if (root->type == t_call)
+    else if (root->type == ast_call_t)
     {
 	destroy_AST(root->data.call.param);
 	free(root->data.call.name);
     }
-    else if (root->type == t_expression)
+    else if (root->type == ast_expression_t)
     {
 	destroy_AST(root->data.expression.left);
 	destroy_AST(root->data.expression.right);
     }
-    else if (root->type == t_id)
+    else if (root->type == ast_id_t)
     {
 	free(root->data.name);
     }

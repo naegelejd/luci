@@ -2,11 +2,14 @@ CC=gcc -g
 
 all: luci
 
-luci: ast.o astexec.o parser.o lexer.o
+luci: ast.o env.o symbol.o parser.o lexer.o
 	$(CC) -o luci *.o
 
-astexec.o: astexec.c
-	$(CC) -c astexec.c
+env.o: env.c
+	$(CC) -c env.c
+
+symbol.o: symbol.c
+	$(CC) -c symbol.c
 
 ast.o: ast.c
 	$(CC) -c ast.c

@@ -1,40 +1,18 @@
-#include "astexec.h"
+#include "env.h"
 #include "ast.h"
+#include "symbol.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
 
-/* Function type.  */
-typedef double (*unary_func)(double);
-typedef double (*func_t) (double);
 
-typedef struct Symbol
+int print_int(int in)
 {
-    enum { t_int, t_func } type;
-    char *name;
-    union
-    {
-	int i_val;      /* value of a VAR */
-	func_t funcptr;  /* value of a FNCT */
-    } value;
-    struct Symbol *next;
-} Symbol;
-
-typedef struct ExecEnviron
-{
-    //int variable;  /* This is where the symbol table will live */
-    //unary_func func;
-    Symbol *symtable;
-} ExecEnviron;
-
-static int exec_num_expression(ExecEnviron *e, ASTNode *a);
-static int exec_id_expression(ExecEnviron *e, ASTNode *a);
-static int exec_bin_expression(ExecEnviron *e, ASTNode *a);
-static void exec_assignment(ExecEnviron *e, ASTNode *a);
-static int exec_call(ExecEnviron *e, ASTNode *a);
-static void exec_statement(ExecEnviron *e, ASTNode *a);
+    printf("%d\n", in);
+    return 1;
+}
 
 /* Lookup Array for AST nodes which yield values */
 static int (*val_execs[])(ExecEnviron *e, ASTNode *a) =
@@ -86,23 +64,23 @@ static int exec_num_expression(ExecEnviron *e, ASTNode *a)
 	functions for executing a NUMBER expression or an ID expression (symtable lookup)
     */
     assert(a);
-    assert(a->type == t_num);
+    assert(a->type == ast_num_t);
     return a->data.val;
 }
 
 static int exec_id_expression(ExecEnviron *e, ASTNode *a)
 {
     assert(a);
-    assert(a->type == t_id);
+    assert(a->type == ast_id_t);
     assert(e);
     Symbol *s;
     if (!(s = get_symbol(e, a->data.name))) {
 	fprintf(stderr, "Can't find symbol %s\n", a->data.name);
 	exit(1);
     }
-    if (s->type == t_int)
+    if (s->type == sym_obj_t)
     {
-	return s->value.i_val;
+	return s->data.object.value.integer;
     }
     else
     {
@@ -112,7 +90,7 @@ static int exec_id_expression(ExecEnviron *e, ASTNode *a)
 
 static int exec_bin_expression(ExecEnviron *e, ASTNode *a)
 {
-    assert(a->type == t_expression);
+    assert(a->type == ast_expression_t);
     const int left = dispatch_statement(e, a->data.expression.left);
     const int right = dispatch_statement(e, a->data.expression.right);
     switch (a->data.expression.op)
@@ -138,7 +116,7 @@ static int exec_bin_expression(ExecEnviron *e, ASTNode *a)
 static void exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
-    assert(a->type == t_assignment);
+    assert(a->type == ast_assignment_t);
     assert(e);
 
     ASTNode *right = a->data.assignment.right;
@@ -147,38 +125,41 @@ static void exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     Symbol *s;
     if (!(s = get_symbol(e, a->data.assignment.name)))
     {
-	s = put_symbol(e, a->data.assignment.name, t_int);
+	s = add_symbol(e, a->data.assignment.name, sym_obj_t);
     }
     /* set the integer symbol's value */
-    s->value.i_val = r;
+    s->data.object.type = obj_int_t;
+    s->data.object.value.integer = r;
 }
 
 static int exec_call(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
-    assert(a->type == t_call);
+    assert(a->type == ast_call_t);
     //printf("Calling %s\n", a->data.call.name);
     Symbol *s;
     if (!(s = get_symbol(e, a->data.call.name))) {
 	fprintf(stderr, "Invalid function\n");
 	exit(1);
     }
-    if (s->type != t_func)
+    if (s->type != sym_func_t)
     {
 	fprintf(stderr, "%s is not a function\n", s->name);
 	exit(1);
     }
     else
     {
-	//printf("%d\n", dispatch_statement(e, a->data.call.param));
-	return (int)((*(s->value.funcptr))(dispatch_statement(e, a->data.call.param)));
+	int p = dispatch_statement(e, a->data.call.param);
+	int r = (int)((*(s->data.funcptr))(dispatch_statement(e, a->data.call.param)));
+	//printf("call ret: %d\n", r);
+	return r;
     }
 }
 
 static void exec_statement(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
-    assert(a->type == t_statements);
+    assert(a->type == ast_statements_t);
     int i;
     for (i=0; i < a->data.statements.count; i++)
     {
@@ -192,35 +173,13 @@ void exec_AST(struct ExecEnviron *e, struct ASTNode *a)
 }
 
 
-Symbol *put_symbol (ExecEnviron *e, char const *name, int type)
-{
-    Symbol *ptr = (Symbol *) malloc (sizeof (Symbol));
-    ptr->name = (char *) malloc (strlen (name) + 1);
-    strcpy (ptr->name, name);
-    ptr->type = type;
-    /* set values for different types */
-    ptr->value.i_val = 0; /* Set value to 0 even if fctn.  */
-    ptr->next = (Symbol *)(e->symtable);
-    e->symtable = ptr;
-    return ptr;
-}
-
-Symbol *get_symbol (ExecEnviron *e, const char *name)
-{
-    Symbol *ptr;
-    for (ptr = e->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next)
-	if (strcmp (ptr->name, name) == 0)
-	    return ptr;
-    return 0;
-}
-
 struct func_init
 {
-    char const *name;
+    const char *name;
     double (*func) (double);
 };
 
-struct func_init const arith_funcs[] =
+const struct func_init arith_funcs[] =
 {
     "sin",  sin,
     "cos",  cos,
@@ -231,6 +190,28 @@ struct func_init const arith_funcs[] =
     0, 0
 };
 
+Symbol *add_symbol (struct ExecEnviron *e, char const *name, int type)
+{
+    Symbol *ptr = (Symbol *) malloc (sizeof (Symbol));
+    ptr->name = (char *) malloc (strlen (name) + 1);
+    strcpy (ptr->name, name);
+    ptr->type = type;
+    /* set values for different types */
+    ptr->data = 0; /* Set value to 0 even if fctn.  */
+    ptr->next = e->symtable;
+    e->symtable = ptr;
+    return ptr;
+}
+
+Symbol *get_symbol (struct ExecEnviron *e, const char *name)
+{
+    Symbol *ptr;
+    for (ptr = e->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next)
+	if (strcmp (ptr->name, name) == 0)
+	    return ptr;
+    return 0;
+}
+
 ExecEnviron *create_env(void)
 {
     /* Check that we have dispatchers for all types of statements */
@@ -239,15 +220,17 @@ ExecEnviron *create_env(void)
 
     ExecEnviron *e = calloc(1, sizeof(struct ExecEnviron));
 
+    /*
     int i;
     for (i = 0; arith_funcs[i].name != 0; i++)
     {
-	Symbol *sym = put_symbol(e, arith_funcs[i].name, t_func);
+	Symbol *sym = add_symbol(e, arith_funcs[i].name, t_func);
 	sym->value.funcptr = arith_funcs[i].func;
     }
+    */
     /* add print function */
-    Symbol *sym = put_symbol(e, "print", t_func);
-    sym->value.funcptr = (void *)puts;
+    Symbol *sym = add_symbol(e, "print", t_func);
+    sym->value.funcptr = &print_int;
 
     return e;
 }

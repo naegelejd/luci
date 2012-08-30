@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "ast.h"
-#include "astexec.h"
+#include "env.h"
 
 #define YYDEBUG 1
 
@@ -21,7 +21,7 @@ void yyerror(const char *msg);
 %union {
     int num;
     char *id;
-    ASTNode *node;
+    struct ASTNode *node;
 }
 
 %start program
@@ -41,7 +41,7 @@ void yyerror(const char *msg);
 %%
 
 program:    /* nothing */		{ $$ = 0; }
-	|   statements			{ (*(ASTNode **)root) = $1; }
+	|   statements			{ (*(struct ASTNode **)root) = $1; }
 	;
 
 statements:
@@ -84,7 +84,7 @@ int main()
 {
     VERBOSE = 0;
     //yydebug(1);
-    ASTNode *root = 0;
+    struct ASTNode *root = 0;
     yyparse(&root);
     assert(root);
     struct ExecEnviron *env = create_env();

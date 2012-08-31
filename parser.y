@@ -19,7 +19,8 @@ void yyerror(const char *msg);
 %error-verbose
 
 %union {
-    int num;
+    int i_val;
+    double d_val;
     char *id;
     struct ASTNode *node;
 }
@@ -28,15 +29,24 @@ void yyerror(const char *msg);
 
 %type <node> expr call assignment statement statements program
 
-%token <num> NUM
+%token <i_val> INT
+%token <d_val> DOUBLE
 %token <id> ID
 %token NEWLINE
-%token EQUALS PRINT
+%token PRINT
+
+%left LGOR LGAND
+%left BWOR BWXOR BWAND
+%left EQUAL NOTEQ 
+%left LTHAN LTHEQ GTHAN GTHEQ
 %left PLUS MINUS
-%left TIMES DIVIDE
+%left TIMES DIVIDE MOD
+%left POW
 %left LPAREN RPAREN
-%left GRTHAN LETHAN
-%nonassoc UMINUS
+
+%right ASSIGN
+%right LGNOT BWNOT
+%right UPLUS UMINUS
 
 %%
 
@@ -55,7 +65,7 @@ statement:
 	;
 
 assignment:
-	    ID EQUALS expr		{ $$ = make_assignment($1, $3); }
+	    ID ASSIGN expr		{ $$ = make_assignment($1, $3); }
 	;
 
 call:
@@ -63,7 +73,7 @@ call:
 	;
 
 expr:
-	    NUM				{ $$ = make_expr_from_num($1); }
+	    INT				{ $$ = make_expr_from_num($1); }
 	|   ID				{ $$ = make_expr_from_id($1); }
 	|   MINUS expr %prec UMINUS	{ $$ = make_expression(make_expr_from_num(0), $2, '-'); }
 	|   expr PLUS expr		{ $$ = make_expression($1, $3, '+'); }

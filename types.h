@@ -1,5 +1,18 @@
-#ifndef SYMBOL_H
-#define SYMBOL_H
+#ifndef TYPES_H
+#define TYPES_H
+
+typedef enum {	op_add_t,
+		op_sub_t,
+		op_mul_t,
+		op_div_t,
+		op_mod_t,
+		op_pow_t,
+		op_equ_t,
+		op_lt_t,
+		op_gt_t,
+		op_lte_t,
+		op_gte_t
+} op_type;
 
 typedef struct luci_obj_t
 {
@@ -25,13 +38,5 @@ typedef struct Symbol
     } data;
     struct Symbol *next;
 } Symbol;
-
-
-luci_obj_t *luci_sum(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_diff(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_prod(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_div(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_lt(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_gt(luci_obj_t *left, luci_obj_t *right);
 
 #endif

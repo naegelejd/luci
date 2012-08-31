@@ -22,3 +22,16 @@ References
 
 .. _Immensely helpful: (http://stackoverflow.com/a/2644949)
 .. _Just as useful: (http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/)
+
+
+TODO List
+---------
+
+# Implement error recovery (free all allocated memory before exit)
+# Typedef all existing struct type enums and put in a types header?
+# Change all instances of 'char op' to an 'enum op_type', in order to implement two-char ops(like ==, <=, >=, etc.)
+# Add a double ASTNode type and LuciObject
+# Implement a while loop
+# Add a string ASTNode type and LuciObject
+# Implement multi-parameter functions
+# ?

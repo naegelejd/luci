@@ -10,16 +10,16 @@ extern int LINE_NUM;
 
 %x ERROR
 
-NUM	[0-9]+
-WORD	[a-zA-Z_][a-zA-Z_0-9]*
-WS	[ \t\f\r]+
+INTEGER	    [0-9]+
+WORD	    [a-zA-Z_][a-zA-Z_0-9]*
+WS	    [ \t\f\r]+
 
 %%
 
     /*print	{ return PRINT; } */
 
-{NUM}	{ yylval.num = atoi(yytext); return NUM; }
-{WORD}	{ yylval.id = strdup(yytext); return ID; }
+{INTEGER}	{ yylval.i_val = atoi(yytext); return INT; }
+{WORD}		{ yylval.id = strdup(yytext); return ID; }
 {WS}	; /* ignore */
 
 #.*	; /* ignore one-line comments */
@@ -27,15 +27,34 @@ WS	[ \t\f\r]+
 ^\n	{ LINE_NUM++; /* ignore empty lines */ }
 \n	{ LINE_NUM++; return NEWLINE; }
 
+
 "-"	{ return MINUS; }
 "+"	{ return PLUS; }
+"**"	{ return POW; }
 "*"	{ return TIMES; }
 "/"	{ return DIVIDE; }
-"<"	{ return LETHAN; }
-">"	{ return GRTHAN; }
+"%"	{ return MOD; }
+
+"<="	{ return LTHEQ; }
+">="	{ return GTHEQ; }
+"=="	{ return EQUAL; }
+"!="	{ return NOTEQ; }
+"<"	{ return LTHAN; }
+">"	{ return GTHAN; }
+
+"!"	{ return LGNOT; }
+"||"	{ return LGOR; }
+"&&"	{ return LGAND; }
+
 "("	{ return LPAREN; }
 ")"	{ return RPAREN; }
-"="	{ return EQUALS; }
+"="	{ return ASSIGN; }
+
+"^"	{ return BWXOR; }
+"|"	{ return BWOR; }
+"&"	{ return BWAND; }
+"~"	{ return BWNOT; }
+
 
 %%
 /*

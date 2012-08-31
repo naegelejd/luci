@@ -1,4 +1,5 @@
-#include "symbol.h"
+#include "types.h"
+#include "functions.h"
 #include "ast.h"
 #include <string.h>
 #include <stdlib.h>

@@ -46,20 +46,35 @@ extern int yydebug;
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
-     NUM = 258,
-     ID = 259,
-     NEWLINE = 260,
-     EQUALS = 261,
+     INT = 258,
+     DOUBLE = 259,
+     ID = 260,
+     NEWLINE = 261,
      PRINT = 262,
-     MINUS = 263,
-     PLUS = 264,
-     DIVIDE = 265,
-     TIMES = 266,
-     RPAREN = 267,
-     LPAREN = 268,
-     LETHAN = 269,
-     GRTHAN = 270,
-     UMINUS = 271
+     LGAND = 263,
+     LGOR = 264,
+     BWAND = 265,
+     BWXOR = 266,
+     BWOR = 267,
+     NOTEQ = 268,
+     EQUAL = 269,
+     GTHEQ = 270,
+     GTHAN = 271,
+     LTHEQ = 272,
+     LTHAN = 273,
+     MINUS = 274,
+     PLUS = 275,
+     MOD = 276,
+     DIVIDE = 277,
+     TIMES = 278,
+     POW = 279,
+     RPAREN = 280,
+     LPAREN = 281,
+     ASSIGN = 282,
+     BWNOT = 283,
+     LGNOT = 284,
+     UMINUS = 285,
+     UPLUS = 286
    };
 #endif
 
@@ -70,13 +85,14 @@ typedef union YYSTYPE
 /* Line 2055 of yacc.c  */
 #line 21 "parser.y"
 
-    int num;
+    int i_val;
+    double d_val;
     char *id;
     struct ASTNode *node;
 
 
 /* Line 2055 of yacc.c  */
-#line 80 "parser.h"
+#line 96 "parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

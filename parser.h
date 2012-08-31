@@ -73,8 +73,10 @@ extern int yydebug;
      ASSIGN = 282,
      BWNOT = 283,
      LGNOT = 284,
-     UMINUS = 285,
-     UPLUS = 286
+     UBWNOT = 285,
+     ULGNOT = 286,
+     UMINUS = 287,
+     UPLUS = 288
    };
 #endif
 
@@ -83,7 +85,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2055 of yacc.c  */
-#line 21 "parser.y"
+#line 22 "parser.y"
 
     int i_val;
     double d_val;
@@ -92,7 +94,7 @@ typedef union YYSTYPE
 
 
 /* Line 2055 of yacc.c  */
-#line 96 "parser.h"
+#line 98 "parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

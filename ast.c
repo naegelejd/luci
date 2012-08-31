@@ -19,32 +19,37 @@ void *alloc(size_t size)
     return result;
 }
 
-ASTNode *make_expr_from_num(int val)
+ASTNode *make_expr_from_int(int val)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = ast_num_t;
-    result->data.val = val;
+    result->type = ast_int_t;
+    result->data.i_val = val;
     if (VERBOSE)
 	printf("Made expression node from val %d\n", val);
-    //free(result);
-    //return 0;
     return result;
 }
 
-ASTNode *make_expr_from_id(char *id)
+ASTNode *make_expr_from_double(double val)
+{
+    ASTNode *result = alloc(sizeof(*result));
+    result->type = ast_double_t;
+    result->data.d_val = val;
+    if (VERBOSE)
+	printf("Made expression node from val %f\n", val);
+    return result;
+}
+
+ASTNode *make_expr_from_id(char *name)
 {
     ASTNode *result = alloc(sizeof(*result));
     result->type = ast_id_t;
-    result->data.name = id;
+    result->data.name = name;
     if (VERBOSE)
-	printf("Made expression node from id %s\n", id);
-    //free(id);
-    //free(result);
-    //return 0;
+	printf("Made expression node from id %s\n", name);
     return result;
 }
 
-ASTNode *make_expression(ASTNode *left, ASTNode *right, char op)
+ASTNode *make_binary_expr(ASTNode *left, ASTNode *right, int op)
 {
     ASTNode *result = alloc(sizeof(*result));
     result->type = ast_expression_t;
@@ -53,8 +58,6 @@ ASTNode *make_expression(ASTNode *left, ASTNode *right, char op)
     result->data.expression.op = op;
     if (VERBOSE)
 	printf("Made binary expression node with op %c\n", op);
-    //free(result);
-    //return 0;
     return result;
 }
 
@@ -66,9 +69,6 @@ ASTNode *make_call(char *id, ASTNode *param)
     result->data.call.param = param;
     if (VERBOSE)
 	printf("Made call node with name: %s\n", id);
-    //free(id);
-    //free(result);
-    //return 0;
     return result;
 }
 
@@ -80,9 +80,6 @@ ASTNode *make_assignment(char *id, ASTNode *right)
     result->data.assignment.right = right;
     if (VERBOSE)
 	printf("Made assignment node to id: %s\n", id);
-    //free(id);
-    //free(result);
-    //return 0;
     return result;
 }
 
@@ -102,9 +99,6 @@ ASTNode *make_statement(ASTNode *result, ASTNode *to_append)
     result->data.statements.statements[result->data.statements.count - 1] = to_append;
     if (VERBOSE)
 	printf("Added a new statement\n");
-    //free(result->data.statements.statements);
-    //free(result);
-    //return 0;
     return result;
 }
 

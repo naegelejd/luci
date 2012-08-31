@@ -11,14 +11,15 @@
 luci_obj_t *print_int(luci_obj_t *in)
 {
     assert(in->type == obj_int_t);
-    printf("%d\n", in->value.integer);
+    printf("%d\n", in->value.i_val);
     return NULL;
 }
 
 /* Lookup Array for AST nodes which yield values */
 static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 {
-    exec_num_expression,
+    exec_int_expression,
+    exec_double_expression,
     exec_id_expression,
     exec_bin_expression,
     exec_assignment,
@@ -40,15 +41,28 @@ static luci_obj_t *dispatch_statement(ExecEnviron *e, ASTNode *a)
     }
 }
 
-static luci_obj_t *exec_num_expression(ExecEnviron *e, ASTNode *a)
+static luci_obj_t *exec_int_expression(ExecEnviron *e, ASTNode *a)
 {
     assert(a);
-    assert(a->type == ast_num_t);
+    assert(a->type == ast_int_t);
 
-    printf("Allocating a new object of type obj_int_t, with value %d\n", a->data.val);
+    printf("Allocating a new object of type obj_int_t, with value %d\n", a->data.i_val);
     luci_obj_t *ret = alloc(sizeof(*ret));
     ret->type = obj_int_t;
-    ret->value.integer = a->data.val;
+    ret->value.i_val = a->data.i_val;
+
+    return ret;
+}
+
+static luci_obj_t *exec_double_expression(ExecEnviron *e, ASTNode *a)
+{
+    assert(a);
+    assert(a->type == ast_double_t);
+
+    printf("Allocating a new object of type obj_double_t, with value %f\n", a->data.d_val);
+    luci_obj_t *ret = alloc(sizeof(*ret));
+    ret->type = obj_double_t;
+    ret->value.d_val = a->data.d_val;
 
     return ret;
 }
@@ -76,7 +90,10 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
 	    switch(copy->type)
 	    {
 		case obj_int_t:
-		    copy->value.integer = s->data.object->value.integer;
+		    copy->value.i_val = s->data.object->value.i_val;
+		    break;
+		case obj_double_t:
+		    copy->value.d_val = s->data.object->value.d_val;
 		    break;
 		case obj_str_t:
 		    copy->value.string = s->data.object->value.string;
@@ -103,31 +120,7 @@ static luci_obj_t *exec_bin_expression(ExecEnviron *e, ASTNode *a)
     assert(a->type == ast_expression_t);
     luci_obj_t *left = dispatch_statement(e, a->data.expression.left);
     luci_obj_t *right = dispatch_statement(e, a->data.expression.right);
-    luci_obj_t *result;
-    switch (a->data.expression.op)
-    {
-	case '+':
-	    result = luci_sum(left, right);
-	    break;
-	case '-':
-	    result = luci_diff(left, right);
-	    break;
-	case '*':
-	    result = luci_prod(left, right);
-	    break;
-	case '/':
-	    result = luci_div(left, right);
-	    break;
-	case '<':
-	    result = luci_lt(left, right);
-	    break;
-	case '>':
-	    result = luci_gt(left, right);
-	    break;
-	default:
-	    fprintf(stderr, "OOPS: Unknown operator: %c\n", a->data.expression.op);
-	    exit(1);
-    }
+    luci_obj_t *result = solve_bin_expr(left, right, a->data.expression.op);
     free(left);
     free(right);
     return result;
@@ -158,7 +151,7 @@ static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     /* return an empty luci_obj_t * */
     return NULL;
     //s->data.object.type = obj_int_t;
-    //s->data.object.value.integer = r->value.integer;
+    //s->data.object.value.i_val = r->value.i_val;
 }
 
 static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)

@@ -1,11 +1,9 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-luci_obj_t *luci_sum(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_diff(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_prod(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_div(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_lt(luci_obj_t *left, luci_obj_t *right);
-luci_obj_t *luci_gt(luci_obj_t *left, luci_obj_t *right);
+struct luci_obj_t;
+
+struct luci_obj_t *solve_bin_expr(struct luci_obj_t *left,
+	struct luci_obj_t *right, int op);
 
 #endif

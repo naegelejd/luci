@@ -16,7 +16,8 @@ typedef struct ExecEnviron
 } ExecEnviron;
 
 static struct luci_obj_t *dispatch_statement(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_num_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_int_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_double_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_assignment(ExecEnviron *e, struct ASTNode *a);

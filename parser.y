@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include "types.h"
 #include "ast.h"
 #include "env.h"
 
@@ -46,7 +47,7 @@ void yyerror(const char *msg);
 
 %right ASSIGN
 %right LGNOT BWNOT
-%right UPLUS UMINUS
+%right UPLUS UMINUS ULGNOT UBWNOT
 
 %%
 
@@ -73,14 +74,32 @@ call:
 	;
 
 expr:
-	    INT				{ $$ = make_expr_from_num($1); }
+	    INT				{ $$ = make_expr_from_int($1); }
 	|   ID				{ $$ = make_expr_from_id($1); }
-	|   MINUS expr %prec UMINUS	{ $$ = make_expression(make_expr_from_num(0), $2, '-'); }
-	|   expr PLUS expr		{ $$ = make_expression($1, $3, '+'); }
-	|   expr MINUS expr		{ $$ = make_expression($1, $3, '-'); }
-	|   expr TIMES expr		{ $$ = make_expression($1, $3, '*'); }
-	|   expr DIVIDE	expr		{ $$ = make_expression($1, $3, '/'); }
-	|   LPAREN expr RPAREN		{ $$ = make_expression(make_expr_from_num(0), $2, '+'); }
+	|   MINUS expr %prec UMINUS	{ $$ = make_binary_expr(
+						make_expr_from_int(0), $2, op_sub_t); }
+	|   expr PLUS expr		{ $$ = make_binary_expr($1, $3, op_add_t); }
+	|   expr MINUS expr		{ $$ = make_binary_expr($1, $3, op_sub_t); }
+	|   expr TIMES expr		{ $$ = make_binary_expr($1, $3, op_mul_t); }
+	|   expr DIVIDE	expr		{ $$ = make_binary_expr($1, $3, op_div_t); }
+	|   expr POW expr		{ $$ = make_binary_expr($1, $3, op_pow_t); }
+	|   expr MOD expr		{ $$ = make_binary_expr($1, $3, op_mod_t); }
+	|   expr LTHAN expr		{ $$ = make_binary_expr($1, $3, op_lt_t); }
+	|   expr GTHAN expr		{ $$ = make_binary_expr($1, $3, op_gt_t); }
+	|   expr EQUAL expr		{ $$ = make_binary_expr($1, $3, op_eq_t); }
+	|   expr LTHEQ expr		{ $$ = make_binary_expr($1, $3, op_lte_t); }
+	|   expr GTHEQ expr		{ $$ = make_binary_expr($1, $3, op_gte_t); }
+	|   LGNOT expr %prec ULGNOT 	{ $$ = make_binary_expr(
+						make_expr_from_int(0), $2, op_lnot_t); }
+	|   expr LGOR expr		{ $$ = make_binary_expr($1, $3, op_lor_t); }
+	|   expr LGAND expr		{ $$ = make_binary_expr($1, $3, op_land_t); }
+	|   expr BWXOR expr		{ $$ = make_binary_expr($1, $3, op_bxor_t); }
+	|   expr BWOR expr		{ $$ = make_binary_expr($1, $3, op_bor_t); }
+	|   expr BWAND expr		{ $$ = make_binary_expr($1, $3, op_band_t); }
+	|   BWNOT expr %prec UBWNOT	{ $$ = make_binary_expr(
+						make_expr_from_int(0), $2, op_bnot_t); }
+	|   LPAREN expr RPAREN		{ $$ = make_binary_expr(
+						make_expr_from_int(0), $2, op_add_t); }
 	;
 %%
 

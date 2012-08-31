@@ -20,8 +20,12 @@ parser.o: parser.c
 lexer.o: lexer.c
 	$(CC) -c lexer.c
 
+#graph: parser.dot
+#	dot -Tpng parser.dot > graph.png
+#parser.dot: parser.c
+
 parser.c: parser.y
-	bison -d -o parser.c parser.y
+	bison -g -d -o parser.c parser.y
 
 lexer.c: lexer.l
 	flex -o lexer.c lexer.l

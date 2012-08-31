@@ -7,19 +7,27 @@ typedef enum {	op_add_t,
 		op_div_t,
 		op_mod_t,
 		op_pow_t,
-		op_equ_t,
+		op_eq_t,
 		op_lt_t,
 		op_gt_t,
 		op_lte_t,
-		op_gte_t
+		op_gte_t,
+		op_lnot_t,
+		op_lor_t,
+		op_land_t,
+		op_bxor_t,
+		op_bor_t,
+		op_band_t,
+		op_bnot_t
 } op_type;
 
 typedef struct luci_obj_t
 {
-    enum { obj_none_t, obj_int_t, obj_str_t } type;
+    enum { obj_none_t, obj_int_t, obj_double_t, obj_str_t } type;
     union
     {
-	int integer;
+	int i_val;
+	double d_val;
 	char *string;
     } value;
 } luci_obj_t;

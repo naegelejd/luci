@@ -1,0 +1,8 @@
+my_var = 512
+
+an0th3r = 32
+
+__bits__ = my_var / an0th3r
+
+print (     __bits__)
+

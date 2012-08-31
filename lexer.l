@@ -24,6 +24,7 @@ WS	[ \t\f\r]+
 
 #.*	; /* ignore one-line comments */
 
+^\n	{ LINE_NUM++; /* ignore empty lines */ }
 \n	{ LINE_NUM++; return NEWLINE; }
 
 "-"	{ return MINUS; }

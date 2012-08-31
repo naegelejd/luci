@@ -7,64 +7,40 @@
 #include <math.h>
 #include <assert.h>
 
-extern luci_obj_t *NONE_OBJ;
-
 luci_obj_t *print_int(luci_obj_t *in)
 {
     assert(in->type == obj_int_t);
     printf("%d\n", in->value.integer);
-    return NONE_OBJ;
+    return NULL;
 }
 
 /* Lookup Array for AST nodes which yield values */
-static luci_obj_t * (*val_execs[])(ExecEnviron *e, ASTNode *a) =
+static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 {
     exec_num_expression,
     exec_id_expression,
     exec_bin_expression,
-    NULL,
-    exec_call,
-    NULL
-};
-
-/* Lookup Array for AST nodes which do not yield values */
-static void (*run_execs[])(ExecEnviron *e, ASTNode *a) =
-{
-    NULL,	/* Numbers are canonical, not executed */
-    NULL,	/* IDs are canonical, not executed */
-    NULL,	/* binary expressions not executed */
     exec_assignment,
-    NULL,
+    exec_call,
     exec_statement,
 };
 
 static luci_obj_t *dispatch_statement(ExecEnviron *e, ASTNode *a)
 {
     assert(a);
-    if (!(run_execs[a->type]))
+    if (!(exec_lookup[a->type]))
     {
-	if (!(val_execs[a->type]))
-	{
-	    fprintf(stderr, "IDK what to do\n");
-	    exit(1);
-	}
-	else
-	{
-	    return val_execs[a->type](e, a);
-	}
+	fprintf(stderr, "IDK what to do\n");
+	exit(1);
     }
     else
     {
-	run_execs[a->type](e, a);
-	return 0;
+	return exec_lookup[a->type](e, a);
     }
 }
 
 static luci_obj_t *exec_num_expression(ExecEnviron *e, ASTNode *a)
 {
-    /* This entire function could/should be split into separate
-	functions for executing a NUMBER expression or an ID expression (symtable lookup)
-    */
     assert(a);
     assert(a->type == ast_num_t);
 
@@ -88,14 +64,36 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
     }
     if (s->type == sym_obj_t)
     {
+	int t = s->data.object->type;
 	printf("Found symbol %s with type %d. Returning its object, with type:%d\n",
-		a->data.name, s->type, s->data.object->type);
-	return s->data.object;
+		a->data.name, s->type, t);
+	if (t != obj_none_t)
+	{
+	    luci_obj_t *copy = alloc(sizeof(*copy));
+	    /* copy the symbol's data and return it */
+	    copy->type = t;
+	    switch(copy->type)
+	    {
+		case obj_int_t:
+		    copy->value.integer = s->data.object->value.integer;
+		    break;
+		case obj_str_t:
+		    copy->value.string = s->data.object->value.string;
+		    break;
+		default:
+		    break;
+	    }
+	    return copy;
+	}
+	else
+	{
+	    return NULL;
+	}
     }
     else
     {
-	printf("Found symbol %s, but with a non-object type\n", a->data.name);
-	return NONE_OBJ;	 /* look up a->name in symbol table */
+	printf("Found symbol %s, but it's not an object\n", a->data.name);
+	return NULL;	 /* look up a->name in symbol table */
     }
 }
 
@@ -104,27 +102,37 @@ static luci_obj_t *exec_bin_expression(ExecEnviron *e, ASTNode *a)
     assert(a->type == ast_expression_t);
     luci_obj_t *left = dispatch_statement(e, a->data.expression.left);
     luci_obj_t *right = dispatch_statement(e, a->data.expression.right);
+    luci_obj_t *result;
     switch (a->data.expression.op)
     {
 	case '+':
-	    return luci_sum(left, right);
+	    result = luci_sum(left, right);
+	    break;
 	case '-':
-	    return luci_diff(left, right);
+	    result = luci_diff(left, right);
+	    break;
 	case '*':
-	    return luci_prod(left, right);
+	    result = luci_prod(left, right);
+	    break;
 	case '/':
-	    return luci_div(left, right);
+	    result = luci_div(left, right);
+	    break;
 	case '<':
-	    return luci_lt(left, right);
+	    result = luci_lt(left, right);
+	    break;
 	case '>':
-	    return luci_gt(left, right);
+	    result = luci_gt(left, right);
+	    break;
 	default:
 	    fprintf(stderr, "OOPS: Unknown operator: %c\n", a->data.expression.op);
 	    exit(1);
     }
+    free(left);
+    free(right);
+    return result;
 }
 
-static void exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
+static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_assignment_t);
@@ -138,8 +146,16 @@ static void exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     {
 	s = add_symbol(e, a->data.assignment.name, sym_obj_t);
     }
-    /* set the integer symbol's value */
+    else
+    {
+	/* if the symbol already exists, free its existing Object */
+	free(s->data.object);
+    }
+    /* set the symbol's new payload */
     s->data.object = r;
+
+    /* return an empty luci_obj_t * */
+    return NULL;
     //s->data.object.type = obj_int_t;
     //s->data.object.value.integer = r->value.integer;
 }
@@ -162,21 +178,27 @@ static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     else
     {
 	luci_obj_t *p = dispatch_statement(e, a->data.call.param);
-	luci_obj_t *ret = /*(luci_obj_t *)*/((*(s->data.funcptr))(dispatch_statement(e, a->data.call.param)));
+	luci_obj_t *ret = /*(luci_obj_t *)*/((*(s->data.funcptr))(p));
+	free(p);
 	//printf("call ret: %d\n", r);
 	return ret;
     }
 }
 
-static void exec_statement(struct ExecEnviron *e, struct ASTNode *a)
+static luci_obj_t *exec_statement(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_statements_t);
     int i;
     for (i=0; i < a->data.statements.count; i++)
     {
-	dispatch_statement(e, a->data.statements.statements[i]);
+	luci_obj_t *ret = dispatch_statement(e, a->data.statements.statements[i]);
+	if (!(ret == NULL))
+	{
+	    free(ret);
+	}
     }
+    return NULL;
 }
 
 void exec_AST(struct ExecEnviron *e, struct ASTNode *a)
@@ -228,14 +250,10 @@ Symbol *get_symbol (struct ExecEnviron *e, const char *name)
 ExecEnviron *create_env(void)
 {
     /* Check that we have dispatchers for all types of statements */
-    assert(ast_last_t == (sizeof(val_execs) / sizeof(*val_execs)));
-    assert(ast_last_t == (sizeof(run_execs) / sizeof(*run_execs)));
+    assert(ast_last_t == (sizeof(exec_lookup) / sizeof(*exec_lookup)));
 
     ExecEnviron *e = calloc(1, sizeof(struct ExecEnviron));
 
-    NONE_OBJ = alloc(sizeof(struct luci_obj_t));
-    NONE_OBJ->type = obj_none_t;
-    NONE_OBJ->value.none = NULL;
     /*
     int i;
     for (i = 0; arith_funcs[i].name != 0; i++)
@@ -262,6 +280,7 @@ void destroy_env(ExecEnviron *e)
 	free(ptr->name);
 	if (ptr->type == sym_obj_t)
 	{
+	    /* free the Object payload if symbol is an object */
 	    free(ptr->data.object);
 	}
 	/* free the Symbol struct itself */

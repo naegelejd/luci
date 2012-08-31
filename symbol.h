@@ -3,12 +3,11 @@
 
 typedef struct luci_obj_t
 {
-    enum { obj_none_t, obj_int_t, obj_string_t } type;
+    enum { obj_none_t, obj_int_t, obj_str_t } type;
     union
     {
 	int integer;
 	char *string;
-	void *none;
     } value;
 } luci_obj_t;
 

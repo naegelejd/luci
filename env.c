@@ -8,11 +8,62 @@
 #include <math.h>
 #include <assert.h>
 
-luci_obj_t *print_int(luci_obj_t *in)
+extern int VERBOSE;
+
+luci_obj_t *luci_print(luci_obj_t *in)
 {
-    assert(in->type == obj_int_t);
-    printf("%d\n", in->value.i_val);
+    if (!in || in->type == obj_none_t)
+    {
+	printf("None\n");
+    }
+    else
+    {
+	switch(in->type)
+	{
+	    case obj_int_t:
+		printf("%d\n", in->value.i_val);
+		break;
+	    case obj_double_t:
+		printf("%f\n", in->value.d_val);
+		break;
+	    case obj_str_t:
+		printf("%s\n", in->value.s_val);
+		break;
+	    default:
+		printf("None\n");
+	}
+    }
+
     return NULL;
+}
+
+luci_obj_t *luci_type_str(luci_obj_t *in)
+{
+    luci_obj_t *ret = alloc(sizeof(*ret));
+    ret->type = obj_str_t;
+    char *which;
+    switch(in->type)
+    {
+	case obj_none_t:
+	    which = "None";
+	    break;
+	case obj_int_t:
+	    which = "int";
+	    break;
+	case obj_double_t:
+	    which = "double";
+	    break;
+	case obj_str_t:
+	    which = "string";
+	    break;
+	default:
+	    which = "None";
+    }
+    ret->value.s_val = alloc(strlen(which) + 1);
+    strcpy(ret->value.s_val, which);
+    ret->value.s_val[strlen(which)] = '\0';
+
+    return ret;
 }
 
 /* Lookup Array for AST nodes which yield values */
@@ -20,6 +71,7 @@ static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 {
     exec_int_expression,
     exec_double_expression,
+    exec_string_expression,
     exec_id_expression,
     exec_bin_expression,
     exec_assignment,
@@ -46,7 +98,10 @@ static luci_obj_t *exec_int_expression(ExecEnviron *e, ASTNode *a)
     assert(a);
     assert(a->type == ast_int_t);
 
-    printf("Allocating a new object of type obj_int_t, with value %d\n", a->data.i_val);
+    if (VERBOSE) {
+	printf("Allocating a new object of type obj_int_t, with value %d\n",
+		a->data.i_val);
+    }
     luci_obj_t *ret = alloc(sizeof(*ret));
     ret->type = obj_int_t;
     ret->value.i_val = a->data.i_val;
@@ -59,10 +114,33 @@ static luci_obj_t *exec_double_expression(ExecEnviron *e, ASTNode *a)
     assert(a);
     assert(a->type == ast_double_t);
 
-    printf("Allocating a new object of type obj_double_t, with value %f\n", a->data.d_val);
+    if (VERBOSE) {
+	printf("Allocating a new object of type obj_double_t, with value %f\n",
+		a->data.d_val);
+    }
+
     luci_obj_t *ret = alloc(sizeof(*ret));
     ret->type = obj_double_t;
     ret->value.d_val = a->data.d_val;
+
+    return ret;
+}
+
+static luci_obj_t *exec_string_expression(ExecEnviron *e, ASTNode *a)
+{
+    assert(a);
+    assert(a->type == ast_str_t);
+
+    if (VERBOSE) {
+	printf("Allocating a new object of type obj_str_t, with value %s\n",
+		a->data.s_val);
+    }
+    luci_obj_t *ret = alloc(sizeof(*ret));
+    ret->type = obj_str_t;
+    /* copy the 'string' from the ASTNode to the luci_obj_t */
+    ret->value.s_val = (char *) alloc(strlen(a->data.s_val) + 1);
+    strcpy (ret->value.s_val, a->data.s_val);
+    ret->value.s_val[strlen(a->data.s_val)] = '\0';
 
     return ret;
 }
@@ -80,8 +158,10 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
     if (s->type == sym_obj_t)
     {
 	int t = s->data.object->type;
-	printf("Found symbol %s with type %d. Returning its object, with type:%d\n",
-		a->data.name, s->type, t);
+	if (VERBOSE) {
+	    printf("Found symbol %s with type %d. Returning its object, with type:%d\n",
+		    a->data.name, s->type, t);
+	}
 	if (t != obj_none_t)
 	{
 	    luci_obj_t *copy = alloc(sizeof(*copy));
@@ -96,7 +176,9 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
 		    copy->value.d_val = s->data.object->value.d_val;
 		    break;
 		case obj_str_t:
-		    copy->value.string = s->data.object->value.string;
+		    copy->value.s_val = alloc(strlen(s->data.object->value.s_val) + 1);
+		    strcpy(copy->value.s_val, s->data.object->value.s_val);
+		    copy->value.s_val[strlen(s->data.object->value.s_val)] = '\0';
 		    break;
 		default:
 		    break;
@@ -110,7 +192,9 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
     }
     else
     {
-	printf("Found symbol %s, but it's not an object\n", a->data.name);
+	if (VERBOSE) {
+	    printf("Found symbol %s, but it's not an object\n", a->data.name);
+	}
 	return NULL;	 /* look up a->name in symbol table */
     }
 }
@@ -121,8 +205,8 @@ static luci_obj_t *exec_bin_expression(ExecEnviron *e, ASTNode *a)
     luci_obj_t *left = dispatch_statement(e, a->data.expression.left);
     luci_obj_t *right = dispatch_statement(e, a->data.expression.right);
     luci_obj_t *result = solve_bin_expr(left, right, a->data.expression.op);
-    free(left);
-    free(right);
+    destroy_object(left);
+    destroy_object(right);
     return result;
 }
 
@@ -143,7 +227,7 @@ static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     else
     {
 	/* if the symbol already exists, free its existing Object */
-	free(s->data.object);
+	destroy_object(s->data.object);
     }
     /* set the symbol's new payload */
     s->data.object = r;
@@ -158,7 +242,10 @@ static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_call_t);
-    //printf("Calling %s\n", a->data.call.name);
+
+    if (VERBOSE) {
+	printf("Calling %s\n", a->data.call.name);
+    }
     Symbol *s;
     if (!(s = get_symbol(e, a->data.call.name))) {
 	fprintf(stderr, "Invalid function\n");
@@ -173,8 +260,7 @@ static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     {
 	luci_obj_t *p = dispatch_statement(e, a->data.call.param);
 	luci_obj_t *ret = /*(luci_obj_t *)*/((*(s->data.funcptr))(p));
-	free(p);
-	//printf("call ret: %d\n", r);
+	destroy_object(p);
 	return ret;
     }
 }
@@ -187,10 +273,7 @@ static luci_obj_t *exec_statement(struct ExecEnviron *e, struct ASTNode *a)
     for (i=0; i < a->data.statements.count; i++)
     {
 	luci_obj_t *ret = dispatch_statement(e, a->data.statements.statements[i]);
-	if (!(ret == NULL))
-	{
-	    free(ret);
-	}
+	destroy_object(ret);
     }
     return NULL;
 }
@@ -221,12 +304,12 @@ const struct func_init arith_funcs[] =
 
 Symbol *add_symbol (struct ExecEnviron *e, char const *name, int type)
 {
-    Symbol *ptr = (Symbol *) malloc (sizeof (Symbol));
-    ptr->name = (char *) malloc (strlen (name) + 1);
+    Symbol *ptr = (Symbol *) alloc (sizeof (Symbol));
+    ptr->name = (char *) alloc (strlen (name) + 1);
     strcpy (ptr->name, name);
+    ptr->name[strlen(name)] = '\0';
     ptr->type = type;
-    /* set values for different types */
-    //ptr->data = NONE_OBJ; /* Set value to NONE even if fctn.  */
+    /* caller must set the data (payload) */
     ptr->next = e->symtable;
     e->symtable = ptr;
     return ptr;
@@ -258,9 +341,26 @@ ExecEnviron *create_env(void)
     */
     /* add print function */
     Symbol *sym = add_symbol(e, "print", sym_func_t);
-    sym->data.funcptr = &print_int;
+    sym->data.funcptr = &luci_print;
 
     return e;
+}
+
+void destroy_object(luci_obj_t *trash)
+{
+    if (!(trash == NULL))
+    {
+	if (trash->type == obj_str_t) {
+	    if (VERBOSE)
+		printf("Freeing str object with val %s\n", trash->value.s_val);
+	    free(trash->value.s_val);
+	    trash->value.s_val = NULL;
+	}
+	if (VERBOSE)
+	    printf("Freeing obj with type %d\n", trash->type);
+	free(trash);
+	trash = NULL;
+    }
 }
 
 void destroy_env(ExecEnviron *e)

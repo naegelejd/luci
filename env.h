@@ -18,6 +18,7 @@ typedef struct ExecEnviron
 static struct luci_obj_t *dispatch_statement(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_int_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_double_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_string_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_assignment(ExecEnviron *e, struct ASTNode *a);
@@ -29,6 +30,9 @@ void exec_AST(struct ExecEnviron* e, struct ASTNode *root);
 
 struct Symbol *add_symbol (ExecEnviron *e, char const *name, int type);
 struct Symbol *get_symbol (ExecEnviron *e, const char *name);
+
+/* destroys a luci_obj_t * */
+void destroy_object(struct luci_obj_t *trash);
 
 /* creates the execution engine */
 struct ExecEnviron* create_env();

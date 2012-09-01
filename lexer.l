@@ -11,13 +11,18 @@ extern int LINE_NUM;
 %x ERROR
 
 INTEGER	    [0-9]+
+DOUBLE	    [0-9]+\.[0-9]*|\.[0-9]+
 WORD	    [a-zA-Z_][a-zA-Z_0-9]*
+STRING	    \"[^\"]+\"
 WS	    [ \t\f\r]+
 
 %%
 
-    /*print	{ return PRINT; } */
-
+while		{ return WHILE; }
+do		{ return DO; }
+done		{ return DONE; }
+{STRING}	{ yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2); return STRING; }
+{DOUBLE}	{ yylval.d_val = atof(yytext); return DOUBLE; }
 {INTEGER}	{ yylval.i_val = atoi(yytext); return INT; }
 {WORD}		{ yylval.id = strdup(yytext); return ID; }
 {WS}	; /* ignore */

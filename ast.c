@@ -39,6 +39,16 @@ ASTNode *make_expr_from_double(double val)
     return result;
 }
 
+ASTNode *make_expr_from_string(char *val)
+{
+    ASTNode *result = alloc(sizeof(*result));
+    result->type = ast_str_t;
+    result->data.s_val = val;
+    if (VERBOSE)
+	printf("Made expression node from string %s\n", val);
+    return result;
+}
+
 ASTNode *make_expr_from_id(char *name)
 {
     ASTNode *result = alloc(sizeof(*result));
@@ -81,6 +91,11 @@ ASTNode *make_assignment(char *id, ASTNode *right)
     if (VERBOSE)
 	printf("Made assignment node to id: %s\n", id);
     return result;
+}
+
+ASTNode *make_while(ASTNode *cond, ASTNode *statements)
+{
+
 }
 
 ASTNode *make_statement(ASTNode *result, ASTNode *to_append)

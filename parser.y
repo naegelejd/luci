@@ -22,19 +22,21 @@ void yyerror(const char *msg);
 %union {
     int i_val;
     double d_val;
+    char *s_val;
     char *id;
     struct ASTNode *node;
 }
 
 %start program
 
-%type <node> expr call assignment statement statements program
+%type <node> expr call assignment while statement statements program
 
 %token <i_val> INT
 %token <d_val> DOUBLE
+%token <s_val> STRING
 %token <id> ID
 %token NEWLINE
-%token PRINT
+%token WHILE DO DONE
 
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
@@ -63,6 +65,7 @@ statements:
 statement:
 	    assignment			{ $$ = $1; }
 	|   call			{ $$ = $1; }
+	|   while			{ $$ = $1; }
 	;
 
 assignment:
@@ -73,8 +76,14 @@ call:
 	    ID LPAREN expr RPAREN	{ $$ = make_call($1, $3); }
 	;
 
+while:
+	    WHILE expr DO statements DONE   { $$ = make_while($2, $4); }
+	;
+
 expr:
 	    INT				{ $$ = make_expr_from_int($1); }
+	|   DOUBLE			{ $$ = make_expr_from_double($1); }
+	|   STRING			{ $$ = make_expr_from_string($1); }
 	|   ID				{ $$ = make_expr_from_id($1); }
 	|   MINUS expr %prec UMINUS	{ $$ = make_binary_expr(
 						make_expr_from_int(0), $2, op_sub_t); }
@@ -109,9 +118,14 @@ void yyerror(const char *msg)
     exit(-1);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    VERBOSE = 0;
+    --argc, ++argv;
+
+    if (argc > 0)
+	VERBOSE = 1;
+    else
+	VERBOSE = 0;
     //yydebug(1);
     struct ASTNode *root = 0;
     yyparse(&root);

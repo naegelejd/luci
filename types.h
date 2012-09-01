@@ -28,7 +28,7 @@ typedef struct luci_obj_t
     {
 	int i_val;
 	double d_val;
-	char *string;
+	char *s_val;
     } value;
 } luci_obj_t;
 

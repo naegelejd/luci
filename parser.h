@@ -48,35 +48,38 @@ extern int yydebug;
    enum yytokentype {
      INT = 258,
      DOUBLE = 259,
-     ID = 260,
-     NEWLINE = 261,
-     PRINT = 262,
-     LGAND = 263,
-     LGOR = 264,
-     BWAND = 265,
-     BWXOR = 266,
-     BWOR = 267,
-     NOTEQ = 268,
-     EQUAL = 269,
-     GTHEQ = 270,
-     GTHAN = 271,
-     LTHEQ = 272,
-     LTHAN = 273,
-     MINUS = 274,
-     PLUS = 275,
-     MOD = 276,
-     DIVIDE = 277,
-     TIMES = 278,
-     POW = 279,
-     RPAREN = 280,
-     LPAREN = 281,
-     ASSIGN = 282,
-     BWNOT = 283,
-     LGNOT = 284,
-     UBWNOT = 285,
-     ULGNOT = 286,
-     UMINUS = 287,
-     UPLUS = 288
+     STRING = 260,
+     ID = 261,
+     NEWLINE = 262,
+     WHILE = 263,
+     DO = 264,
+     DONE = 265,
+     LGAND = 266,
+     LGOR = 267,
+     BWAND = 268,
+     BWXOR = 269,
+     BWOR = 270,
+     NOTEQ = 271,
+     EQUAL = 272,
+     GTHEQ = 273,
+     GTHAN = 274,
+     LTHEQ = 275,
+     LTHAN = 276,
+     MINUS = 277,
+     PLUS = 278,
+     MOD = 279,
+     DIVIDE = 280,
+     TIMES = 281,
+     POW = 282,
+     RPAREN = 283,
+     LPAREN = 284,
+     ASSIGN = 285,
+     BWNOT = 286,
+     LGNOT = 287,
+     UBWNOT = 288,
+     ULGNOT = 289,
+     UMINUS = 290,
+     UPLUS = 291
    };
 #endif
 
@@ -89,12 +92,13 @@ typedef union YYSTYPE
 
     int i_val;
     double d_val;
+    char *s_val;
     char *id;
     struct ASTNode *node;
 
 
 /* Line 2055 of yacc.c  */
-#line 98 "parser.h"
+#line 102 "parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

@@ -18,16 +18,17 @@ WS	    [ \t\f\r]+
 
 %%
 
-while		{ return WHILE; }
-do		{ return DO; }
-done		{ return DONE; }
+while|WHILE		{ return WHILE; }
+do|DO			{ return DO; }
+done|DONE		{ return DONE; }
+
 {STRING}	{ yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2); return STRING; }
 {DOUBLE}	{ yylval.d_val = atof(yytext); return DOUBLE; }
 {INTEGER}	{ yylval.i_val = atoi(yytext); return INT; }
 {WORD}		{ yylval.id = strdup(yytext); return ID; }
 {WS}	; /* ignore */
 
-#.*	; /* ignore one-line comments */
+#.*\n	{ LINE_NUM++; } /* ignore one-line comments */
 
 ^\n	{ LINE_NUM++; /* ignore empty lines */ }
 \n	{ LINE_NUM++; return NEWLINE; }

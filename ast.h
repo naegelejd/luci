@@ -11,6 +11,7 @@ typedef struct ASTNode
 	    ast_id_t,
 	    ast_expression_t,
 	    ast_assignment_t,
+	    ast_while_t,
 	    ast_call_t,
 	    ast_statements_t,
 	    ast_last_t
@@ -31,6 +32,11 @@ typedef struct ASTNode
 	    struct ASTNode *right;
 	    char *name;
 	} assignment;
+	struct
+	{
+	    struct ASTNode *cond;
+	    struct ASTNode *statements;
+	} while_block;
 	struct
 	{
 	    struct ASTNode *param;

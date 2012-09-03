@@ -77,7 +77,8 @@ call:
 	;
 
 while:
-	    WHILE expr DO statements DONE   { $$ = make_while($2, $4); }
+	    WHILE expr DO NEWLINE statements DONE	    { $$ = make_while($2, $5); }
+	|   WHILE expr NEWLINE DO NEWLINE statements DONE   { $$ = make_while($2, $6); }
 	;
 
 expr:
@@ -95,6 +96,7 @@ expr:
 	|   expr MOD expr		{ $$ = make_binary_expr($1, $3, op_mod_t); }
 	|   expr LTHAN expr		{ $$ = make_binary_expr($1, $3, op_lt_t); }
 	|   expr GTHAN expr		{ $$ = make_binary_expr($1, $3, op_gt_t); }
+	|   expr NOTEQ expr		{ $$ = make_binary_expr($1, $3, op_neq_t); }
 	|   expr EQUAL expr		{ $$ = make_binary_expr($1, $3, op_eq_t); }
 	|   expr LTHEQ expr		{ $$ = make_binary_expr($1, $3, op_lte_t); }
 	|   expr GTHEQ expr		{ $$ = make_binary_expr($1, $3, op_gte_t); }
@@ -107,8 +109,8 @@ expr:
 	|   expr BWAND expr		{ $$ = make_binary_expr($1, $3, op_band_t); }
 	|   BWNOT expr %prec UBWNOT	{ $$ = make_binary_expr(
 						make_expr_from_int(0), $2, op_bnot_t); }
-	|   LPAREN expr RPAREN		{ $$ = make_binary_expr(
-						make_expr_from_int(0), $2, op_add_t); }
+	|   LPAREN expr RPAREN		{ $$ = $2; /*make_binary_expr(
+						make_expr_from_int(0), $2, op_add_t);*/ }
 	;
 %%
 

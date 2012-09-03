@@ -22,6 +22,7 @@ static struct luci_obj_t *exec_string_expression(ExecEnviron *e, struct ASTNode 
 static struct luci_obj_t *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_assignment(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_while(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_call(ExecEnviron *e, struct ASTNode *a);
 static struct luci_obj_t *exec_statement(ExecEnviron *e, struct ASTNode *a);
 

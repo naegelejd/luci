@@ -1,4 +1,21 @@
+print("first loop")
+x = 5
+while x > 0 do
+    print ( x * 2 + (x / 2))
+    x = x - 1
+done
 
-x = 2
+print("second loop")
+x = 4
+while x > 0
+do
+    print (x)
+    x = x % 2
+done
 
-print ( x * 2 + (x / 2))
+print("third loop")
+x = 3
+while(x != 1)do
+    print (x)
+    x = x - 1
+done

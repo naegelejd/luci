@@ -61,7 +61,6 @@ luci_obj_t *luci_type_str(luci_obj_t *in)
     }
     ret->value.s_val = alloc(strlen(which) + 1);
     strcpy(ret->value.s_val, which);
-    ret->value.s_val[strlen(which)] = '\0';
 
     return ret;
 }
@@ -75,6 +74,7 @@ static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
     exec_id_expression,
     exec_bin_expression,
     exec_assignment,
+    exec_while,
     exec_call,
     exec_statement,
 };
@@ -140,7 +140,6 @@ static luci_obj_t *exec_string_expression(ExecEnviron *e, ASTNode *a)
     /* copy the 'string' from the ASTNode to the luci_obj_t */
     ret->value.s_val = (char *) alloc(strlen(a->data.s_val) + 1);
     strcpy (ret->value.s_val, a->data.s_val);
-    ret->value.s_val[strlen(a->data.s_val)] = '\0';
 
     return ret;
 }
@@ -178,7 +177,6 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
 		case obj_str_t:
 		    copy->value.s_val = alloc(strlen(s->data.object->value.s_val) + 1);
 		    strcpy(copy->value.s_val, s->data.object->value.s_val);
-		    copy->value.s_val[strlen(s->data.object->value.s_val)] = '\0';
 		    break;
 		default:
 		    break;
@@ -238,6 +236,48 @@ static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     //s->data.object.value.i_val = r->value.i_val;
 }
 
+int evaluate_cond(struct ExecEnviron *e, struct ASTNode *a)
+{
+    int huh = 0;
+    luci_obj_t *cond = dispatch_statement(e, a->data.while_block.cond);
+    if (cond == NULL) {
+	return 0;
+    }
+    switch (cond->type)
+    {
+	case obj_int_t:
+	    huh = cond->value.i_val;
+	    break;
+	case obj_double_t:
+	    huh = (int)cond->value.d_val;
+	    break;
+	case obj_str_t:
+	    huh = 1;
+	    break;
+	default:
+	    huh = 0;
+    }
+    destroy_object(cond);
+    return huh;
+}
+
+static luci_obj_t *exec_while(struct ExecEnviron *e, struct ASTNode *a)
+{
+    assert(a);
+    assert(a->type == ast_while_t);
+
+    if (VERBOSE) {
+	printf("Begin while loop\n");
+    }
+
+    int huh = evaluate_cond(e, a->data.while_block.cond);
+    while (huh)
+    {
+	dispatch_statement(e, a->data.while_block.statements);
+	huh = evaluate_cond(e, a->data.while_block.cond);
+    }
+}
+
 static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
@@ -258,9 +298,9 @@ static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     }
     else
     {
-	luci_obj_t *p = dispatch_statement(e, a->data.call.param);
-	luci_obj_t *ret = /*(luci_obj_t *)*/((*(s->data.funcptr))(p));
-	destroy_object(p);
+	luci_obj_t *param = dispatch_statement(e, a->data.call.param);
+	luci_obj_t *ret = /*(luci_obj_t *)*/((*(s->data.funcptr))(param));
+	destroy_object(param);
 	return ret;
     }
 }
@@ -307,7 +347,6 @@ Symbol *add_symbol (struct ExecEnviron *e, char const *name, int type)
     Symbol *ptr = (Symbol *) alloc (sizeof (Symbol));
     ptr->name = (char *) alloc (strlen (name) + 1);
     strcpy (ptr->name, name);
-    ptr->name[strlen(name)] = '\0';
     ptr->type = type;
     /* caller must set the data (payload) */
     ptr->next = e->symtable;
@@ -375,7 +414,7 @@ void destroy_env(ExecEnviron *e)
 	if (ptr->type == sym_obj_t)
 	{
 	    /* free the Object payload if symbol is an object */
-	    free(ptr->data.object);
+	    destroy_object(ptr->data.object);
 	}
 	/* free the Symbol struct itself */
 	free(ptr);

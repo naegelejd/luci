@@ -14,6 +14,7 @@ static luci_obj_t *divide(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *mod(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *power(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *eq(luci_obj_t *left, luci_obj_t *right);
+static luci_obj_t *neq(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *lt(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *gt(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *lte(luci_obj_t *left, luci_obj_t *right);
@@ -39,6 +40,7 @@ luci_obj_t * (*solvers[])(luci_obj_t *left, luci_obj_t *right) = {
     mod,
     power,
     eq,
+    neq,
     lt,
     gt,
     lte,
@@ -62,12 +64,7 @@ luci_obj_t *solve_bin_expr(luci_obj_t *left, luci_obj_t *right, int op)
     }
     luci_obj_t *result = NULL;
     result = solvers[op](left, right);
-    if (!result) {
-	return NULL;
-    }
-    else {
-	return result;
-    }
+    return result;
 }
 
 static luci_obj_t *add(luci_obj_t *left, luci_obj_t *right)
@@ -123,6 +120,14 @@ static luci_obj_t *eq(luci_obj_t *left, luci_obj_t *right)
     luci_obj_t *ret = alloc(sizeof(*ret));
     ret->type = obj_int_t;
     ret->value.i_val = (left->value.i_val == right->value.i_val);
+    return ret;
+}
+
+static luci_obj_t *neq(luci_obj_t *left, luci_obj_t *right)
+{
+    luci_obj_t *ret = alloc(sizeof(*ret));
+    ret->type = obj_int_t;
+    ret->value.i_val = (left->value.i_val != right->value.i_val);
     return ret;
 }
 

@@ -6,7 +6,8 @@
 
 extern int VERBOSE;
 
-const char *NTYPES[] = {"NUM", "ID", "EXPR", "ASSGNMT", "CALL", "STMT"};
+const char *NTYPES[] = {"INT", "DOUBLE", "STRING", "ID", "EXPR", "ASSGNMT",
+	"WHILE", "CALL", "STMT"};
 
 void *alloc(size_t size)
 {
@@ -95,7 +96,15 @@ ASTNode *make_assignment(char *id, ASTNode *right)
 
 ASTNode *make_while(ASTNode *cond, ASTNode *statements)
 {
-
+    ASTNode *result = alloc(sizeof(*result));
+    result->type = ast_while_t;
+    result->data.while_block.cond = cond;
+    result->data.while_block.statements = statements;
+    if (VERBOSE) {
+	printf("Made while node containing %d stmts\n",
+		statements->data.statements.count);
+    }
+    return result;
 }
 
 ASTNode *make_statement(ASTNode *result, ASTNode *to_append)
@@ -128,6 +137,11 @@ void destroy_AST(ASTNode *root)
 	}
 	free(root->data.statements.statements);
     }
+    else if (root->type == ast_while_t)
+    {
+	destroy_AST(root->data.while_block.cond);
+	destroy_AST(root->data.while_block.statements);
+    }
     else if (root->type == ast_assignment_t)
     {
 	destroy_AST(root->data.assignment.right);
@@ -146,6 +160,10 @@ void destroy_AST(ASTNode *root)
     else if (root->type == ast_id_t)
     {
 	free(root->data.name);
+    }
+    else if (root->type == ast_str_t)
+    {
+	free(root->data.s_val);
     }
     /* for all nodes */
     if (VERBOSE)

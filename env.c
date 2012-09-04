@@ -10,61 +10,6 @@
 
 extern int VERBOSE;
 
-luci_obj_t *luci_print(luci_obj_t *in)
-{
-    if (!in || in->type == obj_none_t)
-    {
-	printf("None\n");
-    }
-    else
-    {
-	switch(in->type)
-	{
-	    case obj_int_t:
-		printf("%d\n", in->value.i_val);
-		break;
-	    case obj_double_t:
-		printf("%f\n", in->value.d_val);
-		break;
-	    case obj_str_t:
-		printf("%s\n", in->value.s_val);
-		break;
-	    default:
-		printf("None\n");
-	}
-    }
-
-    return NULL;
-}
-
-luci_obj_t *luci_type_str(luci_obj_t *in)
-{
-    luci_obj_t *ret = alloc(sizeof(*ret));
-    ret->type = obj_str_t;
-    char *which;
-    switch(in->type)
-    {
-	case obj_none_t:
-	    which = "None";
-	    break;
-	case obj_int_t:
-	    which = "int";
-	    break;
-	case obj_double_t:
-	    which = "double";
-	    break;
-	case obj_str_t:
-	    which = "string";
-	    break;
-	default:
-	    which = "None";
-    }
-    ret->value.s_val = alloc(strlen(which) + 1);
-    strcpy(ret->value.s_val, which);
-
-    return ret;
-}
-
 /* Lookup Array for AST nodes which yield values */
 static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 {
@@ -81,7 +26,10 @@ static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 
 static luci_obj_t *dispatch_statement(ExecEnviron *e, ASTNode *a)
 {
-    assert(a);
+    if (!a)
+    {
+	return NULL;
+    }
     if (!(exec_lookup[a->type]))
     {
 	fprintf(stderr, "IDK what to do\n");
@@ -323,25 +271,6 @@ void exec_AST(struct ExecEnviron *e, struct ASTNode *a)
     dispatch_statement(e, a);
 }
 
-/*
-struct func_init
-{
-    const char *name;
-    double (*func) (double);
-};
-
-const struct func_init arith_funcs[] =
-{
-    "sin",  sin,
-    "cos",  cos,
-    "atan", atan,
-    "ln",   log,
-    "exp",  exp,
-    "sqrt", sqrt,
-    0, 0
-};
-*/
-
 Symbol *add_symbol (struct ExecEnviron *e, char const *name, int type)
 {
     Symbol *ptr = (Symbol *) alloc (sizeof (Symbol));
@@ -370,17 +299,16 @@ ExecEnviron *create_env(void)
 
     ExecEnviron *e = calloc(1, sizeof(struct ExecEnviron));
 
-    /*
+    extern struct func_init builtins[];
     int i;
-    for (i = 0; arith_funcs[i].name != 0; i++)
+    for (i = 0; builtins[i].name != 0; i++)
     {
-	Symbol *sym = add_symbol(e, arith_funcs[i].name, t_func);
-	sym->value.funcptr = arith_funcs[i].func;
+	Symbol *sym = add_symbol(e, builtins[i].name, sym_func_t);
+	sym->data.funcptr = builtins[i].func;
     }
-    */
     /* add print function */
-    Symbol *sym = add_symbol(e, "print", sym_func_t);
-    sym->data.funcptr = &luci_print;
+    //Symbol *sym = add_symbol(e, "print", sym_func_t);
+    //sym->data.funcptr = &luci_print;
 
     return e;
 }

@@ -1,3 +1,5 @@
+# some simple code demonstrating while loops
+
 print("first loop")
 x = 5
 while x > 0 do

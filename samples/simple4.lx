@@ -1,8 +1,0 @@
-d = 3.141592
-print(d)
-
-s = "Hello World!"
-
-print(s)
-
-print(d + s)

@@ -1,12 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
+#include <assert.h>
 #include "functions.h"
 #include "types.h"
 #include "ast.h"
 
 extern int VERBOSE;
 
+/* Forward declarations */
 static luci_obj_t *add(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *sub(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *mul(luci_obj_t *left, luci_obj_t *right);
@@ -27,10 +30,104 @@ static luci_obj_t *bwxor(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *bwor(luci_obj_t *left, luci_obj_t *right);
 static luci_obj_t *bwand(luci_obj_t *left, luci_obj_t *right);
 
-static int types_match(luci_obj_t *left, luci_obj_t *right)
+
+const struct func_init builtins[] =
 {
-    return (left->type == right->type);
+    "help", luci_help,
+    "print",  luci_print,
+    "type",  luci_typeof,
+    "assert", luci_assert,
+    0, 0
+};
+
+luci_obj_t *luci_help(luci_obj_t *in)
+{
+    printf("_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_\n");
+    printf("              HELP               \n");
+    printf("_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_\n");
+    return NULL;
 }
+
+luci_obj_t *luci_print(luci_obj_t *in)
+{
+    if (!in || in->type == obj_none_t)
+    {
+	printf("None\n");
+    }
+    else
+    {
+	switch(in->type)
+	{
+	    case obj_int_t:
+		printf("%d\n", in->value.i_val);
+		break;
+	    case obj_double_t:
+		printf("%f\n", in->value.d_val);
+		break;
+	    case obj_str_t:
+		printf("%s\n", in->value.s_val);
+		break;
+	    default:
+		printf("None\n");
+	}
+    }
+
+    return NULL;
+}
+
+luci_obj_t *luci_typeof(luci_obj_t *in)
+{
+    luci_obj_t *ret = alloc(sizeof(*ret));
+    ret->type = obj_str_t;
+    char *which;
+    switch(in->type)
+    {
+	case obj_none_t:
+	    which = "None";
+	    break;
+	case obj_int_t:
+	    which = "int";
+	    break;
+	case obj_double_t:
+	    which = "double";
+	    break;
+	case obj_str_t:
+	    which = "string";
+	    break;
+	default:
+	    which = "None";
+    }
+    ret->value.s_val = alloc(strlen(which) + 1);
+    strcpy(ret->value.s_val, which);
+
+    return ret;
+}
+
+luci_obj_t *luci_assert(luci_obj_t *in)
+{
+    assert(in);
+    switch(in->type)
+    {
+	case obj_none_t:
+	    /* raise AssertionError */
+	    assert(0);
+	    break;
+	case obj_int_t:
+	    assert(in->value.i_val);
+	    break;
+	case obj_double_t:
+	    assert((int)in->value.d_val);
+	    break;
+	case obj_str_t:
+	    assert(strcmp("", in->value.s_val) != 0);
+	    break;
+	default:
+	    ;
+    }
+    return NULL;
+}
+
+
 
 luci_obj_t * (*solvers[])(luci_obj_t *left, luci_obj_t *right) = {
     add,
@@ -53,6 +150,11 @@ luci_obj_t * (*solvers[])(luci_obj_t *left, luci_obj_t *right) = {
     bwand,
     bwnot
 };
+
+int types_match(luci_obj_t *left, luci_obj_t *right)
+{
+    return (left->type == right->type);
+}
 
 luci_obj_t *solve_bin_expr(luci_obj_t *left, luci_obj_t *right, int op)
 {

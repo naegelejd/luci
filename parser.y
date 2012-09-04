@@ -74,6 +74,7 @@ assignment:
 
 call:
 	    ID LPAREN expr RPAREN	{ $$ = make_call($1, $3); }
+	|   ID LPAREN RPAREN		{ $$ = make_call($1, NULL); }
 	;
 
 while:
@@ -131,9 +132,11 @@ int main(int argc, char *argv[])
     //yydebug(1);
     struct ASTNode *root = 0;
     yyparse(&root);
-    assert(root);
-    struct ExecEnviron *env = create_env();
-    exec_AST(env, root);
-    destroy_env(env);
-    destroy_AST(root);
+    if (root)
+    {
+	struct ExecEnviron *env = create_env();
+	exec_AST(env, root);
+	destroy_env(env);
+	destroy_AST(root);
+    }
 }

@@ -11,8 +11,8 @@ Tools Needed
 - `bison (yacc)`_
 - a decent C compiler (gcc)
 
-.. _flex (lex): (http://flex.sourceforge.net/)
-.. _bison (yacc): (http://www.gnu.org/software/bison/)
+.. _flex (lex): http://flex.sourceforge.net/
+.. _bison (yacc): http://www.gnu.org/software/bison/
 
 
 References
@@ -20,24 +20,27 @@ References
 - `Immensely helpful`_
 - `Just as useful`_
 
-.. _Immensely helpful: (http://stackoverflow.com/a/2644949)
-.. _Just as useful: (http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/)
+.. _Immensely helpful: http://stackoverflow.com/a/2644949
+.. _Just as useful: http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/
 
 Additional
 ----------
 
 - I use `graphviz`_ to view the bison graph output of my parser.
 
-.. _graphviz: (http://www.graphviz.org)
+.. _graphviz: http://www.graphviz.org
 
 TODO List
 ---------
 
 #. Implement error recovery (free all allocated memory before exit)
-#. Typedef all existing struct type enums and put in a types header?
-#. Change all instances of 'char op' to an 'enum op_type', in order to implement two-char ops(like ==, <=, >=, etc.)
-#. Add a double ASTNode type and LuciObject
-#. Implement a while loop
-#. Add a string ASTNode type and LuciObject
+#. Implement If/Elseif/Else and For constructs
 #. Implement multi-parameter functions
 #. ?
+
+Completed
+---------
+
+#. Implement all unary/binary operations offered by the C++ standard (with proper operator precedence for each)
+#. Implement Integer, Double, and String types
+#. Implement a While loop construct

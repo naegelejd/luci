@@ -128,6 +128,9 @@ ASTNode *make_statement(ASTNode *result, ASTNode *to_append)
 
 void destroy_AST(ASTNode *root)
 {
+    /* don't free a NULL statement */
+    if (!root)
+	return;
     if (root->type == ast_statements_t)
     {
 	int i;

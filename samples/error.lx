@@ -1,0 +1,17 @@
+v = 0
+x = 2
+y = 3
+
+while (v < 10)
+do
+    x = x ** 2
+    y = 11 + y
+    v = v+ 1
+done
+
+print(v)
+print(str("hello"))
+#print(str(v))
+
+# this will throw a Fatal Error, but no memory should leak
+print(wtf)

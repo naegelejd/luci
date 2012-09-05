@@ -54,32 +54,37 @@ extern int yydebug;
      WHILE = 263,
      DO = 264,
      DONE = 265,
-     LGAND = 266,
-     LGOR = 267,
-     BWAND = 268,
-     BWXOR = 269,
-     BWOR = 270,
-     NOTEQ = 271,
-     EQUAL = 272,
-     GTHEQ = 273,
-     GTHAN = 274,
-     LTHEQ = 275,
-     LTHAN = 276,
-     MINUS = 277,
-     PLUS = 278,
-     MOD = 279,
-     DIVIDE = 280,
-     TIMES = 281,
-     POW = 282,
-     RPAREN = 283,
-     LPAREN = 284,
-     ASSIGN = 285,
-     BWNOT = 286,
-     LGNOT = 287,
-     UBWNOT = 288,
-     ULGNOT = 289,
-     UMINUS = 290,
-     UPLUS = 291
+     IF = 266,
+     THEN = 267,
+     ELIF = 268,
+     ELSE = 269,
+     END = 270,
+     LGAND = 271,
+     LGOR = 272,
+     BWAND = 273,
+     BWXOR = 274,
+     BWOR = 275,
+     NOTEQ = 276,
+     EQUAL = 277,
+     GTHEQ = 278,
+     GTHAN = 279,
+     LTHEQ = 280,
+     LTHAN = 281,
+     MINUS = 282,
+     PLUS = 283,
+     MOD = 284,
+     DIVIDE = 285,
+     TIMES = 286,
+     POW = 287,
+     RPAREN = 288,
+     LPAREN = 289,
+     ASSIGN = 290,
+     BWNOT = 291,
+     LGNOT = 292,
+     UBWNOT = 293,
+     ULGNOT = 294,
+     UMINUS = 295,
+     UPLUS = 296
    };
 #endif
 
@@ -88,7 +93,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2055 of yacc.c  */
-#line 22 "parser.y"
+#line 21 "parser.y"
 
     int i_val;
     double d_val;
@@ -98,7 +103,7 @@ typedef union YYSTYPE
 
 
 /* Line 2055 of yacc.c  */
-#line 102 "parser.h"
+#line 107 "parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

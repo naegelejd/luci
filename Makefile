@@ -2,8 +2,11 @@ CC=gcc -g
 
 all: luci
 
-luci: ast.o env.o functions.o parser.o lexer.o
+luci: driver.o ast.o env.o functions.o parser.o lexer.o
 	$(CC) -o luci *.o
+
+driver.o: driver.c
+	$(CC) -c driver.c
 
 env.o: env.c
 	$(CC) -c env.c

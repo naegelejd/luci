@@ -33,10 +33,9 @@ Additional
 TODO List
 ---------
 
-#. Implement error recovery (free all allocated memory before exit)
 #. Implement If/Elseif/Else and For constructs
 #. Implement multi-parameter functions
-#. ?
+#. Handle mixed-type binary operations (string * int)
 
 Completed
 ---------
@@ -44,3 +43,5 @@ Completed
 #. Implement all unary/binary operations offered by the C++ standard (with proper operator precedence for each)
 #. Implement Integer, Double, and String types
 #. Implement a While loop construct
+#. Implement error recover (made a single exit point `die()`), which has global
+   access to the root ASTNode and root ExecEnviron

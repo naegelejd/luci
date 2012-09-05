@@ -12,6 +12,7 @@ typedef struct ASTNode
 	    ast_expression_t,
 	    ast_assignment_t,
 	    ast_while_t,
+	    ast_if_t,
 	    ast_call_t,
 	    ast_statements_t,
 	    ast_last_t
@@ -37,6 +38,16 @@ typedef struct ASTNode
 	    struct ASTNode *cond;
 	    struct ASTNode *statements;
 	} while_block;
+	struct
+	{
+	    /* a list of 'statements' nodes, each its own block
+	    int count;
+	    struct ASTNode **conds;
+	    struct ASTNode **blocks;
+	     */
+	    struct ASTNode *cond;
+	    struct ASTNode *blocks;
+	} if_block;
 	struct
 	{
 	    struct ASTNode *param;
@@ -68,6 +79,7 @@ ASTNode *make_binary_expr(ASTNode *, ASTNode *, int op);
 ASTNode *make_call(char *, ASTNode *);
 ASTNode *make_assignment(char *, ASTNode *);
 ASTNode *make_while(ASTNode *, ASTNode *);
+ASTNode *make_if(ASTNode *, ASTNode *);
 ASTNode *make_statement(ASTNode *, ASTNode *);
 
 #endif

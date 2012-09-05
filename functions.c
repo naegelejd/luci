@@ -37,6 +37,7 @@ const struct func_init builtins[] =
     "print",  luci_print,
     "type",  luci_typeof,
     "assert", luci_assert,
+    "str", luci_str,
     0, 0
 };
 
@@ -127,6 +128,43 @@ luci_obj_t *luci_assert(luci_obj_t *in)
     return NULL;
 }
 
+luci_obj_t *luci_str(luci_obj_t *in)
+{
+    luci_obj_t *ret = alloc(sizeof(*ret));
+    ret->type = obj_str_t;
+
+    if (!in)
+    {
+	ret = NULL;
+    }
+    else
+    {
+	switch (in->type)
+	{
+	    case obj_none_t:
+		ret = NULL;
+		break;
+	    case obj_int_t:
+		ret->value.s_val = alloc(17);
+		sscanf(ret->value.s_val, "%d", &(in->value.i_val));
+		ret->value.s_val[16] = '\0';
+		break;
+	    case obj_double_t:
+		ret->value.s_val = alloc(17);
+		sscanf(ret->value.s_val, "%f", (float *)&(in->value.d_val));
+		ret->value.s_val[16] = '\0';
+		break;
+	    case obj_str_t:
+		ret->value.s_val = alloc(strlen(in->value.s_val) + 1);
+		strcpy(ret->value.s_val, in->value.s_val);
+		break;
+	    default:
+		ret = NULL;
+	}
+    }
+
+    return ret;
+}
 
 
 luci_obj_t * (*solvers[])(luci_obj_t *left, luci_obj_t *right) = {

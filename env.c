@@ -10,6 +10,18 @@
 
 extern int VERBOSE;
 
+static struct luci_obj_t *dispatch_statement(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_int_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_double_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_string_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_assignment(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_while(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_if(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_call(ExecEnviron *e, struct ASTNode *a);
+static struct luci_obj_t *exec_statement(ExecEnviron *e, struct ASTNode *a);
+
 /* Lookup Array for AST nodes which yield values */
 static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 {
@@ -20,6 +32,7 @@ static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
     exec_bin_expression,
     exec_assignment,
     exec_while,
+    exec_if,
     exec_call,
     exec_statement,
 };
@@ -32,8 +45,7 @@ static luci_obj_t *dispatch_statement(ExecEnviron *e, ASTNode *a)
     }
     if (!(exec_lookup[a->type]))
     {
-	fprintf(stderr, "IDK what to do\n");
-	exit(1);
+	die("IDK what to do");
     }
     else
     {
@@ -99,8 +111,7 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
     assert(e);
     Symbol *s;
     if (!(s = get_symbol(e, a->data.name))) {
-	fprintf(stderr, "Can't find symbol %s\n", a->data.name);
-	exit(1);
+	die("Can't find symbol %s");
     }
     if (s->type == sym_obj_t)
     {
@@ -226,6 +237,23 @@ static luci_obj_t *exec_while(struct ExecEnviron *e, struct ASTNode *a)
     }
 }
 
+static luci_obj_t *exec_if(struct ExecEnviron *e, struct ASTNode *a)
+{
+    assert(a);
+    assert(a->type == ast_if_t);
+
+    if (VERBOSE) {
+	printf("Begin if block\n");
+    }
+
+    int huh = evaluate_cond(e, a->data.if_block.cond);
+    while (huh)
+    {
+	dispatch_statement(e, a->data.if_block.blocks);
+	huh = evaluate_cond(e, a->data.if_block.cond);
+    }
+}
+
 static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
@@ -236,13 +264,15 @@ static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     }
     Symbol *s;
     if (!(s = get_symbol(e, a->data.call.name))) {
-	fprintf(stderr, "Invalid function\n");
-	exit(1);
+	die("Invalid function");
     }
     if (s->type != sym_func_t)
     {
-	fprintf(stderr, "%s is not a function\n", s->name);
-	exit(1);
+	char *msg = " is not a function";
+	char comb[strlen(s->name) + strlen(msg) + 1];
+	strncpy(comb, s->name, strlen(s->name) + 1);
+	strncat(comb, msg, strlen(msg) );
+	die(comb);
     }
     else
     {
@@ -306,9 +336,6 @@ ExecEnviron *create_env(void)
 	Symbol *sym = add_symbol(e, builtins[i].name, sym_func_t);
 	sym->data.funcptr = builtins[i].func;
     }
-    /* add print function */
-    //Symbol *sym = add_symbol(e, "print", sym_func_t);
-    //sym->data.funcptr = &luci_print;
 
     return e;
 }

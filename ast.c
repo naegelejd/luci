@@ -1,4 +1,5 @@
 #include "types.h"
+#include "driver.h"
 #include "ast.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -14,8 +15,7 @@ void *alloc(size_t size)
     void *result = calloc(size, 1);
     if (!result)
     {
-	fprintf(stderr, "alloc failed\n");
-	exit(1);
+	die("alloc failed");
     }
     return result;
 }

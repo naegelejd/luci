@@ -10,7 +10,6 @@
 
 #define YYPARSE_PARAM root
 
-int VERBOSE;
 int LINE_NUM = 1;
 
 void yyerror(const char *msg);
@@ -29,7 +28,7 @@ void yyerror(const char *msg);
 
 %start program
 
-%type <node> expr call assignment while statement statements program
+%type <node> expr cond call assignment while statement statements program
 
 %token <i_val> INT
 %token <d_val> DOUBLE
@@ -37,6 +36,7 @@ void yyerror(const char *msg);
 %token <id> ID
 %token NEWLINE
 %token WHILE DO DONE
+%token IF THEN ELIF ELSE END
 
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
@@ -66,6 +66,7 @@ statement:
 	    assignment			{ $$ = $1; }
 	|   call			{ $$ = $1; }
 	|   while			{ $$ = $1; }
+	|   if				{ $$ = NULL; }
 	;
 
 assignment:
@@ -73,13 +74,30 @@ assignment:
 	;
 
 call:
-	    ID LPAREN expr RPAREN	{ $$ = make_call($1, $3); }
-	|   ID LPAREN RPAREN		{ $$ = make_call($1, NULL); }
+	    ID LPAREN RPAREN		{ $$ = make_call($1, NULL); }
+	|   ID LPAREN expr RPAREN	{ $$ = make_call($1, $3); }
+	|   ID LPAREN call RPAREN	{ $$ = make_call($1, $3); }
 	;
 
 while:
-	    WHILE expr DO NEWLINE statements DONE	    { $$ = make_while($2, $5); }
-	|   WHILE expr NEWLINE DO NEWLINE statements DONE   { $$ = make_while($2, $6); }
+	    WHILE cond DO NEWLINE statements DONE	{ $$ = make_while($2, $5); }
+	;
+
+if:
+	    IF cond THEN NEWLINE statements END
+	|   IF cond THEN NEWLINE statements ELSE NEWLINE statements END
+	|   IF cond THEN NEWLINE statements elifs END
+	|   IF cond THEN NEWLINE statements elifs ELSE NEWLINE statements END
+	;
+
+elifs:
+	    ELIF cond THEN NEWLINE statements	    /*{ $$ = make_elif(NULL, $2, $5); } */
+	|   elifs ELIF cond THEN NEWLINE statements	/*{ $$ = make_elif($1, $3, $6); } */
+	;
+
+cond:
+	    expr		{ $$ = $1; }
+	|   expr NEWLINE	{ $$ = $1; }
 	;
 
 expr:
@@ -117,26 +135,7 @@ expr:
 
 void yyerror(const char *msg)
 {
-    fprintf(stderr, "ERROR: %s @ line #%d\n", msg, LINE_NUM);
+    fprintf(stderr, "Syntax Error: %s @ line #%d\n", msg, LINE_NUM);
     exit(-1);
 }
 
-int main(int argc, char *argv[])
-{
-    --argc, ++argv;
-
-    if (argc > 0)
-	VERBOSE = 1;
-    else
-	VERBOSE = 0;
-    //yydebug(1);
-    struct ASTNode *root = 0;
-    yyparse(&root);
-    if (root)
-    {
-	struct ExecEnviron *env = create_env();
-	exec_AST(env, root);
-	destroy_env(env);
-	destroy_AST(root);
-    }
-}

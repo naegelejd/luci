@@ -18,9 +18,16 @@ WS	    [ \t\f\r]+
 
 %%
 
+
 while|WHILE		{ return WHILE; }
 do|DO			{ return DO; }
 done|DONE		{ return DONE; }
+
+if|IF			{ return IF; }
+then|THEN		{ return THEN; }
+elif|ELIF		{ return ELIF; }
+else|ELSE		{ return ELSE; }
+end|END			{ return END; }
 
 {STRING}	{ yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2); return STRING; }
 {DOUBLE}	{ yylval.d_val = atof(yytext); return DOUBLE; }
@@ -61,17 +68,4 @@ done|DONE		{ return DONE; }
 "&"	{ return BWAND; }
 "~"	{ return BWNOT; }
 
-
 %%
-/*
-.	{
-	    BEGIN(ERROR);
-	    yymore();
-	}
-<ERROR>[^{NUM}{WORD}+\-/*()= \t\n\f\r] { yymore(); }
-<ERROR>(.|\n)	    { 
-			yyless(yyleng-1);
-			fprintf(stderr, "error token: %s on line %d\n", yytext, LINE_NUM);
-			BEGIN(INITIAL);
-		    }
-*/

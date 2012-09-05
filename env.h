@@ -15,17 +15,6 @@ typedef struct ExecEnviron
     struct Symbol *symtable;
 } ExecEnviron;
 
-static struct luci_obj_t *dispatch_statement(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_int_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_double_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_string_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_assignment(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_while(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_call(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_statement(ExecEnviron *e, struct ASTNode *a);
-
 /* executes an AST */
 void exec_AST(struct ExecEnviron* e, struct ASTNode *root);
 

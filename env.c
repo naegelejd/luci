@@ -168,6 +168,9 @@ static LuciObject *exec_parameters(struct ExecEnviron *e, struct ASTNode *a)
     for (i = a->data.parameters.count - 1; i >= 0; i--)
     {
 	LuciObject *item = dispatch_statement(e, a->data.parameters.parameters[i]);
+	if (!item) {
+	    die("Parameter has no value");
+	}
 	item->next = next;
 	next = item;
     }

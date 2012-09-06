@@ -72,6 +72,10 @@ const struct func_init builtins[] =
     "type",  luci_typeof,
     "assert", luci_assert,
     "str", luci_str,
+    "open", luci_fopen,
+    "close", luci_fclose,
+    "read", luci_fread,
+    "write", luci_fwrite,
     0, 0
 };
 
@@ -164,36 +168,55 @@ LuciObject *luci_assert(LuciObject *in)
 
 LuciObject *luci_str(LuciObject *in)
 {
-    LuciObject *ret = create_object(obj_str_t);
-
+    LuciObject *ret = NULL;
     if (!in)
     {
-	ret = NULL;
+	return ret;
     }
     else
     {
+	ret = create_object(obj_str_t);
 	switch (in->type)
 	{
 	    case obj_int_t:
 		ret->value.s_val = alloc(16);
 		sprintf(ret->value.s_val, "%d", in->value.i_val);
-		ret->value.s_val[16] = '\0';
+		//ret->value.s_val[16] = '\0';
 		break;
 	    case obj_double_t:
 		ret->value.s_val = alloc(16);
 		sprintf(ret->value.s_val, "%f", (float)in->value.d_val);
-		ret->value.s_val[16] = '\0';
+		//ret->value.s_val[16] = '\0';
 		break;
 	    case obj_str_t:
 		ret->value.s_val = alloc(strlen(in->value.s_val) + 1);
 		strcpy(ret->value.s_val, in->value.s_val);
 		break;
 	    default:
-		ret = NULL;
+		break;
 	}
+	if (VERBOSE)
+	    printf("str() returning %s\n", ret->value.s_val);
     }
 
     return ret;
+}
+
+LuciObject *luci_fopen(LuciObject *in)
+{
+    return NULL;
+}
+LuciObject *luci_fclose(LuciObject *in)
+{
+    return NULL;
+}
+LuciObject *luci_fread(LuciObject *in)
+{
+    return NULL;
+}
+LuciObject *luci_fwrite(LuciObject *in)
+{
+    return NULL;
 }
 
 
@@ -221,7 +244,10 @@ LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {
 
 int types_match(LuciObject *left, LuciObject *right)
 {
-    return (left->type == right->type);
+    if (left && right)
+	return (left->type == right->type);
+    else
+	return 0;
 }
 
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
@@ -239,9 +265,24 @@ LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 
 static LuciObject *add(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val + right->value.i_val;
+    LuciObject *ret = create_object(left->type);
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret->value.i_val = left->value.i_val + right->value.i_val;
+	    break;
+	case obj_double_t:
+	    ret->value.d_val = left->value.d_val + right->value.d_val;
+	    break;
+	case obj_str_t:
+	    ret->value.s_val = alloc(strlen(left->value.s_val) +
+		    strlen(right->value.s_val) + 1);
+	    strcpy(ret->value.s_val, left->value.s_val);
+	    strcat(ret->value.s_val, right->value.s_val);
+	    break;
+	default:
+	    break;
+    }
     return ret;
 }
 

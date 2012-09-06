@@ -35,7 +35,9 @@ LuciObject *create_object(int type)
 {
     LuciObject *ret = alloc(sizeof(*ret));
     ret->type = type;
-    ret->next = NULL;
+    if (type == obj_list_t) {
+	ret->value.list.next = NULL;
+    }
     return ret;
 }
 
@@ -44,9 +46,10 @@ void destroy_object(LuciObject *trash)
     if (trash)
     {
 	/* if this object is part of a linked list, destroy the next node */
-	if (trash->next)
+	if (trash->type == obj_list_t)
 	{
-	    destroy_object(trash->next);
+	    destroy_object(trash->value.list.item);
+	    destroy_object(trash->value.list.next);
 	}
 
 	/* if this object contains a string, it WAS malloc'd */
@@ -89,26 +92,37 @@ LuciObject *luci_help(LuciObject *in)
 
 LuciObject *luci_print(LuciObject *in)
 {
+    assert(in->type == obj_list_t);
+
     if (!in )
     {
 	printf("None\n");
     }
     else
     {
-	switch(in->type)
+	LuciObject *ptr = in->value.list.next;
+	LuciObject *item = NULL;
+	while (ptr)
 	{
-	    case obj_int_t:
-		printf("%d\n", in->value.i_val);
-		break;
-	    case obj_double_t:
-		printf("%f\n", in->value.d_val);
-		break;
-	    case obj_str_t:
-		printf("%s\n", in->value.s_val);
-		break;
-	    default:
-		printf("None\n");
+	    item = ptr->value.list.item;
+	    switch(item->type)
+	    {
+		case obj_int_t:
+		    printf("%d", item->value.i_val);
+		    break;
+		case obj_double_t:
+		    printf("%f", item->value.d_val);
+		    break;
+		case obj_str_t:
+		    printf("%s", item->value.s_val);
+		    break;
+		default:
+		    printf("None");
+	    }
+	    printf(" ");
+	    ptr = ptr->value.list.next;
 	}
+	printf("\n");
     }
 
     return NULL;

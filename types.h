@@ -23,7 +23,7 @@ typedef enum {	op_add_t,
 } op_type;
 
 
-typedef enum { obj_int_t, obj_double_t, obj_str_t } LuciObject_t;
+typedef enum { obj_int_t, obj_double_t, obj_str_t, obj_list_t } LuciObject_t;
 
 typedef struct LuciObject
 {
@@ -33,8 +33,12 @@ typedef struct LuciObject
 	int i_val;
 	double d_val;
 	char *s_val;
+	struct
+	{
+	    struct LuciObject *item;
+	    struct LuciObject *next;
+	} list;
     } value;
-    struct LuciObject *next;
 } LuciObject;
 
 /* LuciFunction is a type of function that returns a LuciObject * */

@@ -167,12 +167,16 @@ static LuciObject *exec_parameters(struct ExecEnviron *e, struct ASTNode *a)
     int i;
     for (i = a->data.parameters.count - 1; i >= 0; i--)
     {
+	/* create the Object */
 	LuciObject *item = dispatch_statement(e, a->data.parameters.parameters[i]);
-	if (!item) {
-	    die("Parameter has no value");
-	}
-	item->next = next;
-	next = item;
+	/* create the list item container */
+	LuciObject *tail = create_object(obj_list_t);
+	/* link this container to 'next' container */
+	tail->value.list.next = next;
+	/* store ptr to actual object in container */
+	tail->value.list.item = item;
+	/* point 'next' to this container */
+	next = tail;
     }
     return next;
 }

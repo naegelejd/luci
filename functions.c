@@ -164,8 +164,7 @@ LuciObject *luci_assert(LuciObject *in)
 
 LuciObject *luci_str(LuciObject *in)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_str_t;
+    LuciObject *ret = create_object(obj_str_t);
 
     if (!in)
     {
@@ -176,13 +175,13 @@ LuciObject *luci_str(LuciObject *in)
 	switch (in->type)
 	{
 	    case obj_int_t:
-		ret->value.s_val = alloc(17);
-		sscanf(ret->value.s_val, "%d", &(in->value.i_val));
+		ret->value.s_val = alloc(16);
+		sprintf(ret->value.s_val, "%d", in->value.i_val);
 		ret->value.s_val[16] = '\0';
 		break;
 	    case obj_double_t:
-		ret->value.s_val = alloc(17);
-		sscanf(ret->value.s_val, "%f", (float *)&(in->value.d_val));
+		ret->value.s_val = alloc(16);
+		sprintf(ret->value.s_val, "%f", (float)in->value.d_val);
 		ret->value.s_val[16] = '\0';
 		break;
 	    case obj_str_t:
@@ -288,9 +287,23 @@ static LuciObject *power(LuciObject *left, LuciObject *right)
 
 static LuciObject *eq(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = (left->value.i_val == right->value.i_val);
+    LuciObject *ret = create_object(obj_int_t);
+    int r;
+    switch (left->type)
+    {
+	case obj_int_t:
+	    r = (left->value.i_val == right->value.i_val);
+	    break;
+	case obj_double_t:
+	    r = (left->value.d_val == right->value.d_val);
+	    break;
+	case obj_str_t:
+	    r = !(strcmp(left->value.s_val, right->value.s_val));
+	    break;
+	default:
+	    r = 0;
+    }
+    ret->value.i_val = r;
     return ret;
 }
 

@@ -1,0 +1,1 @@
+print(assert(str(42) == str(42)) + 2)

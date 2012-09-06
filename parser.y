@@ -28,7 +28,7 @@ void yyerror(const char *msg);
 
 %start program
 
-%type <node> expr cond param params call assignment statement statements
+%type <node> expr cond params call assignment statement statements
 %type <node> while_loop if_else
 %type <node> program
 
@@ -81,13 +81,8 @@ call:
 	;
 
 params:
-	    param		    { $$ = make_params(NULL, $1); }
-	|   params COMMA param	    { $$ = make_params($1, $3); }
-	;
-
-param:
-	    expr		    { $$ = $1; }
-	|   call		    { $$ = $1; }
+	    expr		    { $$ = make_params(NULL, $1); }
+	|   expr COMMA expr	    { $$ = make_params($1, $3); }
 	;
 
 while_loop:
@@ -136,6 +131,7 @@ expr:
 						make_expr_from_int(0), $2, op_bnot_t); }
 	|   LPAREN expr RPAREN		{ $$ = $2; /*make_binary_expr(
 						make_expr_from_int(0), $2, op_add_t);*/ }
+	|   call			{ $$ = $1; }
 	;
 %%
 

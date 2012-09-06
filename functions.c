@@ -100,13 +100,14 @@ LuciObject *luci_print(LuciObject *in)
     }
     else
     {
-	LuciObject *ptr = in->value.list.next;
+	LuciObject *ptr = in;
 	LuciObject *item = NULL;
 	while (ptr)
 	{
 	    item = ptr->value.list.item;
 	    switch(item->type)
 	    {
+		printf("%d\n", item->type);
 		case obj_int_t:
 		    printf("%d", item->value.i_val);
 		    break;
@@ -130,28 +131,39 @@ LuciObject *luci_print(LuciObject *in)
 
 LuciObject *luci_typeof(LuciObject *in)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_str_t;
+    LuciObject *ret = create_object(obj_str_t);
     char *which;
+
     if (!in)
     {
 	which = "None";
     }
     else
     {
-	switch(in->type)
-	{
-	    case obj_int_t:
-		which = "int";
-		break;
-	    case obj_double_t:
-		which = "double";
-		break;
-	    case obj_str_t:
-		which = "string";
-		break;
-	    default:
-		which = "None";
+	/* grab the first parameter from the param list */
+	assert(in->type == obj_list_t);
+	LuciObject *param = in->value.list.item;
+	if (!param) {
+	    which = "None";
+	}
+	else {
+	    switch(param->type)
+	    {
+		case obj_int_t:
+		    which = "int";
+		    break;
+		case obj_double_t:
+		    which = "double";
+		    break;
+		case obj_str_t:
+		    which = "string";
+		    break;
+		case obj_list_t:
+		    which = "list";
+		    break;
+		default:
+		    which = "None";
+	    }
 	}
     }
     ret->value.s_val = alloc(strlen(which) + 1);
@@ -163,7 +175,10 @@ LuciObject *luci_typeof(LuciObject *in)
 LuciObject *luci_assert(LuciObject *in)
 {
     assert(in);
-    switch(in->type)
+    assert(in->type == obj_list_t);
+    LuciObject *param = in->value.list.item;
+
+    switch(param->type)
     {
 	case obj_int_t:
 	    assert(in->value.i_val);
@@ -173,6 +188,9 @@ LuciObject *luci_assert(LuciObject *in)
 	    break;
 	case obj_str_t:
 	    assert(strcmp("", in->value.s_val) != 0);
+	    break;
+	case obj_list_t:
+	    assert(param->value.list.item); /* assert that its HEAD item exists?? */
 	    break;
 	default:
 	    ;
@@ -189,22 +207,27 @@ LuciObject *luci_str(LuciObject *in)
     }
     else
     {
+	/* grab the first parameter from the param list */
+	assert(in->type == obj_list_t);
+	LuciObject *param = in->value.list.item;
+
+	/* allocate our return string object */
 	ret = create_object(obj_str_t);
-	switch (in->type)
+	switch (param->type)
 	{
 	    case obj_int_t:
 		ret->value.s_val = alloc(16);
-		sprintf(ret->value.s_val, "%d", in->value.i_val);
+		sprintf(ret->value.s_val, "%d", param->value.i_val);
 		//ret->value.s_val[16] = '\0';
 		break;
 	    case obj_double_t:
 		ret->value.s_val = alloc(16);
-		sprintf(ret->value.s_val, "%f", (float)in->value.d_val);
+		sprintf(ret->value.s_val, "%f", (float)param->value.d_val);
 		//ret->value.s_val[16] = '\0';
 		break;
 	    case obj_str_t:
-		ret->value.s_val = alloc(strlen(in->value.s_val) + 1);
-		strcpy(ret->value.s_val, in->value.s_val);
+		ret->value.s_val = alloc(strlen(param->value.s_val) + 1);
+		strcpy(ret->value.s_val, param->value.s_val);
 		break;
 	    default:
 		break;

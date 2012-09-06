@@ -177,6 +177,9 @@ static LuciObject *exec_parameters(struct ExecEnviron *e, struct ASTNode *a)
 	tail->value.list.item = item;
 	/* point 'next' to this container */
 	next = tail;
+
+	if (VERBOSE)
+	    printf("Adding new param to paramlist\n");
     }
     return next;
 }

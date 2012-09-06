@@ -163,17 +163,15 @@ static LuciObject *exec_parameters(struct ExecEnviron *e, struct ASTNode *a)
     assert(a);
     assert(a->type == ast_parameters_t);
 
-    /* create our initial LuciObject list */
-    LuciObject *ret = create_object(obj_list_t);
-
+    LuciObject *next = NULL;
     int i;
     for (i = a->data.parameters.count - 1; i >= 0; i--)
     {
 	LuciObject *item = dispatch_statement(e, a->data.parameters.parameters[i]);
-
-	destroy_object(ret);
+	item->next = next;
+	next = item;
     }
-    return NULL;
+    return next;
 }
 
 static LuciObject *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
@@ -291,9 +289,9 @@ static LuciObject *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     }
     else
     {
-	LuciObject *param = dispatch_statement(e, a->data.call.parameters);
-	LuciObject *ret = /*(LuciObject *)*/((*(s->data.funcptr))(param));
-	destroy_object(param);
+	LuciObject *param_list = dispatch_statement(e, a->data.call.parameters);
+	LuciObject *ret = /*(LuciObject *)*/((*(s->data.funcptr))(param_list));
+	destroy_object(param_list);
 	return ret;
     }
 }

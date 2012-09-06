@@ -81,8 +81,8 @@ call:
 	;
 
 params:
-	    param		    { $$ = $1; }
-	|   params COMMA param	    { $$ = $3; } /* only use last param for now */
+	    param		    { $$ = make_params(NULL, $1); }
+	|   params COMMA param	    { $$ = make_params($1, $3); }
 	;
 
 param:

@@ -22,3 +22,8 @@ else
 	print("this is true!")
     end
 end
+
+# demonstrating a few more builtin functions
+print("Concatenating this string with the int " + str(42))
+
+assert(42 < 100)

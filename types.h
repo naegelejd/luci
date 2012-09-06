@@ -23,7 +23,7 @@ typedef enum {	op_add_t,
 } op_type;
 
 
-typedef enum { obj_int_t, obj_double_t, obj_str_t, obj_list_t } LuciObject_t;
+typedef enum { obj_int_t, obj_double_t, obj_str_t } LuciObject_t;
 
 typedef struct LuciObject
 {

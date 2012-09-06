@@ -18,7 +18,6 @@ WS	    [ \t\f\r]+
 
 %%
 
-
 [wW][hH][iI][lL][eE]	{ return WHILE; }
 [dD][oO]		{ return DO; }
 [dD][oO][nN][eE]	{ return DONE; }

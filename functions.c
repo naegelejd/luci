@@ -41,8 +41,15 @@ LuciObject *create_object(int type)
 
 void destroy_object(LuciObject *trash)
 {
-    if (!(trash == NULL))
+    if (trash)
     {
+	/* if this object is part of a linked list, destroy the next node */
+	if (trash->next)
+	{
+	    destroy_object(trash->next);
+	}
+
+	/* if this object contains a string, it WAS malloc'd */
 	if (trash->type == obj_str_t) {
 	    if (VERBOSE)
 		printf("Freeing str object with val %s\n", trash->value.s_val);
@@ -51,6 +58,8 @@ void destroy_object(LuciObject *trash)
 	}
 	if (VERBOSE)
 	    printf("Freeing obj with type %d\n", trash->type);
+
+	/* destroy the LuciObject itself */
 	free(trash);
 	trash = NULL;
     }

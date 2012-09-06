@@ -28,15 +28,17 @@ void yyerror(const char *msg);
 
 %start program
 
-%type <node> expr cond call assignment while statement statements program
+%type <node> expr cond param params call assignment statement statements
+%type <node> while_loop if_else
+%type <node> program
 
 %token <i_val> INT
 %token <d_val> DOUBLE
 %token <s_val> STRING
 %token <id> ID
-%token NEWLINE
+%token NEWLINE COMMA
 %token WHILE DO DONE
-%token IF THEN ELIF ELSE END
+%token IF THEN ELSE END
 
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
@@ -65,8 +67,8 @@ statements:
 statement:
 	    assignment			{ $$ = $1; }
 	|   call			{ $$ = $1; }
-	|   while			{ $$ = $1; }
-	|   if				{ $$ = NULL; }
+	|   while_loop			{ $$ = $1; }
+	|   if_else			{ $$ = $1; }
 	;
 
 assignment:
@@ -75,24 +77,28 @@ assignment:
 
 call:
 	    ID LPAREN RPAREN		{ $$ = make_call($1, NULL); }
-	|   ID LPAREN expr RPAREN	{ $$ = make_call($1, $3); }
-	|   ID LPAREN call RPAREN	{ $$ = make_call($1, $3); }
+	|   ID LPAREN params RPAREN	{ $$ = make_call($1, $3); }
 	;
 
-while:
+params:
+	    param		    { $$ = $1; }
+	|   params COMMA param	    { $$ = $3; } /* only use last param for now */
+	;
+
+param:
+	    expr		    { $$ = $1; }
+	|   call		    { $$ = $1; }
+	;
+
+while_loop:
 	    WHILE cond DO NEWLINE statements DONE	{ $$ = make_while($2, $5); }
 	;
 
-if:
+if_else:
 	    IF cond THEN NEWLINE statements END
+		    { $$ =  make_if_else($2, $5, NULL); }
 	|   IF cond THEN NEWLINE statements ELSE NEWLINE statements END
-	|   IF cond THEN NEWLINE statements elifs END
-	|   IF cond THEN NEWLINE statements elifs ELSE NEWLINE statements END
-	;
-
-elifs:
-	    ELIF cond THEN NEWLINE statements	    /*{ $$ = make_elif(NULL, $2, $5); } */
-	|   elifs ELIF cond THEN NEWLINE statements	/*{ $$ = make_elif($1, $3, $6); } */
+		    { $$ = make_if_else($2, $5, $8); }
 	;
 
 cond:

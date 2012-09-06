@@ -1,0 +1,4 @@
+# simple code demonstrating multi-parameter functions
+#   as well as reading/writing files
+
+print("hello", "world", "goodbye all")

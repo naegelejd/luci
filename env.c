@@ -39,7 +39,7 @@ static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 
 static luci_obj_t *dispatch_statement(ExecEnviron *e, ASTNode *a)
 {
-    if (!a)
+    if (!a || a == NULL)
     {
 	return NULL;
     }
@@ -195,20 +195,20 @@ static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     //s->data.object.value.i_val = r->value.i_val;
 }
 
-int evaluate_cond(struct ExecEnviron *e, struct ASTNode *a)
+int evaluate_cond(struct ExecEnviron *e, struct ASTNode *cond)
 {
     int huh = 0;
-    luci_obj_t *cond = dispatch_statement(e, a->data.while_block.cond);
-    if (cond == NULL) {
+    luci_obj_t *val = dispatch_statement(e, cond);
+    if (val == NULL) {
 	return 0;
     }
-    switch (cond->type)
+    switch (val->type)
     {
 	case obj_int_t:
-	    huh = cond->value.i_val;
+	    huh = val->value.i_val;
 	    break;
 	case obj_double_t:
-	    huh = (int)cond->value.d_val;
+	    huh = (int)val->value.d_val;
 	    break;
 	case obj_str_t:
 	    huh = 1;
@@ -216,7 +216,7 @@ int evaluate_cond(struct ExecEnviron *e, struct ASTNode *a)
 	default:
 	    huh = 0;
     }
-    destroy_object(cond);
+    destroy_object(val);
     return huh;
 }
 
@@ -229,12 +229,13 @@ static luci_obj_t *exec_while(struct ExecEnviron *e, struct ASTNode *a)
 	printf("Begin while loop\n");
     }
 
-    int huh = evaluate_cond(e, a->data.while_block.cond);
+    int huh = evaluate_cond(e, a->data.while_loop.cond);
     while (huh)
     {
-	dispatch_statement(e, a->data.while_block.statements);
-	huh = evaluate_cond(e, a->data.while_block.cond);
+	dispatch_statement(e, a->data.while_loop.statements);
+	huh = evaluate_cond(e, a->data.while_loop.cond);
     }
+    return NULL;
 }
 
 static luci_obj_t *exec_if(struct ExecEnviron *e, struct ASTNode *a)
@@ -246,12 +247,17 @@ static luci_obj_t *exec_if(struct ExecEnviron *e, struct ASTNode *a)
 	printf("Begin if block\n");
     }
 
-    int huh = evaluate_cond(e, a->data.if_block.cond);
-    while (huh)
+    int huh = evaluate_cond(e, a->data.if_else.cond);
+    printf("%d\n", huh);
+    if (huh)
     {
-	dispatch_statement(e, a->data.if_block.blocks);
-	huh = evaluate_cond(e, a->data.if_block.cond);
+	dispatch_statement(e, a->data.if_else.ifstatements);
     }
+    else
+    {
+	dispatch_statement(e, a->data.if_else.elstatements);
+    }
+    return NULL;
 }
 
 static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
@@ -276,7 +282,7 @@ static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     }
     else
     {
-	luci_obj_t *param = dispatch_statement(e, a->data.call.param);
+	luci_obj_t *param = dispatch_statement(e, a->data.call.parameters);
 	luci_obj_t *ret = /*(luci_obj_t *)*/((*(s->data.funcptr))(param));
 	destroy_object(param);
 	return ret;

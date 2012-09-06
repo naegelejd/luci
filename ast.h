@@ -10,6 +10,7 @@ typedef struct ASTNode
 	    ast_str_t,
 	    ast_id_t,
 	    ast_expression_t,
+	    ast_parameters_t,
 	    ast_assignment_t,
 	    ast_while_t,
 	    ast_if_t,
@@ -30,6 +31,11 @@ typedef struct ASTNode
 	} expression;
 	struct
 	{
+	    int count;
+	    struct ASTNode **parameters;
+	} parameters;
+	struct
+	{
 	    struct ASTNode *right;
 	    char *name;
 	} assignment;
@@ -37,20 +43,16 @@ typedef struct ASTNode
 	{
 	    struct ASTNode *cond;
 	    struct ASTNode *statements;
-	} while_block;
+	} while_loop;
 	struct
 	{
-	    /* a list of 'statements' nodes, each its own block
-	    int count;
-	    struct ASTNode **conds;
-	    struct ASTNode **blocks;
-	     */
 	    struct ASTNode *cond;
-	    struct ASTNode *blocks;
-	} if_block;
+	    struct ASTNode *ifstatements;
+	    struct ASTNode *elstatements;
+	} if_else;
 	struct
 	{
-	    struct ASTNode *param;
+	    struct ASTNode *parameters;
 	    char *name;
 	} call;
 	struct
@@ -76,10 +78,11 @@ ASTNode *make_expr_from_double(double);
 ASTNode *make_expr_from_string(char *);
 ASTNode *make_expr_from_id(char *);
 ASTNode *make_binary_expr(ASTNode *, ASTNode *, int op);
+ASTNode *make_params(ASTNode *, ASTNode *);
 ASTNode *make_call(char *, ASTNode *);
 ASTNode *make_assignment(char *, ASTNode *);
 ASTNode *make_while(ASTNode *, ASTNode *);
-ASTNode *make_if(ASTNode *, ASTNode *);
+ASTNode *make_if_else(ASTNode *, ASTNode *, ASTNode *);
 ASTNode *make_statement(ASTNode *, ASTNode *);
 
 #endif

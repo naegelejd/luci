@@ -33,9 +33,10 @@ Additional
 TODO List
 ---------
 
-#. Implement If/Elseif/Else and For constructs
-#. Implement multi-parameter functions
 #. Handle mixed-type binary operations (string * int)
+#. Implement multi-parameter functions
+#. Implement a FILE * luci type, with open(), close(), read(), write() functions
+#. Implement For loops
 
 Completed
 ---------
@@ -45,3 +46,5 @@ Completed
 #. Implement a While loop construct
 #. Implement error recover (made a single exit point `die()`), which has global
    access to the root ASTNode and root ExecEnviron
+#. Implement if/else conditional blocks. Decided against 'else if', which simplifies parser.
+

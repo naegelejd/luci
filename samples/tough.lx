@@ -17,7 +17,7 @@ done
 
 print("third loop")
 x = 3
-while(x != 1)do
+while(x != 0)do
     print (x)
     x = x - 1
 done

@@ -19,15 +19,14 @@ WS	    [ \t\f\r]+
 %%
 
 
-while|WHILE		{ return WHILE; }
-do|DO			{ return DO; }
-done|DONE		{ return DONE; }
+[wW][hH][iI][lL][eE]	{ return WHILE; }
+[dD][oO]		{ return DO; }
+[dD][oO][nN][eE]	{ return DONE; }
 
-if|IF			{ return IF; }
-then|THEN		{ return THEN; }
-elif|ELIF		{ return ELIF; }
-else|ELSE		{ return ELSE; }
-end|END			{ return END; }
+[iI][fF]		{ return IF; }
+[tT][hH][eE][nN]	{ return THEN; }
+[eE][lL][sS][eE]	{ return ELSE; }
+[eE][nN][dD]		{ return END; }
 
 {STRING}	{ yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2); return STRING; }
 {DOUBLE}	{ yylval.d_val = atof(yytext); return DOUBLE; }
@@ -35,6 +34,7 @@ end|END			{ return END; }
 {WORD}		{ yylval.id = strdup(yytext); return ID; }
 {WS}	; /* ignore */
 
+,	{ return COMMA; }
 #.*\n	{ LINE_NUM++; } /* ignore one-line comments */
 
 ^\n	{ LINE_NUM++; /* ignore empty lines */ }

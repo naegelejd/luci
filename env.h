@@ -6,7 +6,7 @@ struct ASTNode;
 
 /* Symbol from symbol.h */
 struct Symbol;
-struct luci_obj_t;
+struct LuciObject;
 
 typedef struct ExecEnviron
 {
@@ -20,9 +20,6 @@ void exec_AST(struct ExecEnviron* e, struct ASTNode *root);
 
 struct Symbol *add_symbol (ExecEnviron *e, char const *name, int type);
 struct Symbol *get_symbol (ExecEnviron *e, const char *name);
-
-/* destroys a luci_obj_t * */
-void destroy_object(struct luci_obj_t *trash);
 
 /* creates the execution engine */
 struct ExecEnviron* create_env();

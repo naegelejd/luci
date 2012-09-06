@@ -22,19 +22,23 @@ typedef enum {	op_add_t,
 		op_bnot_t
 } op_type;
 
-typedef struct luci_obj_t
+
+typedef enum { obj_int_t, obj_double_t, obj_str_t, obj_list_t } LuciObject_t;
+
+typedef struct LuciObject
 {
-    enum { obj_none_t, obj_int_t, obj_double_t, obj_str_t } type;
+    LuciObject_t type;
     union
     {
 	int i_val;
 	double d_val;
 	char *s_val;
     } value;
-} luci_obj_t;
+    struct LuciObject *next;
+} LuciObject;
 
-/* luci_func_t is a type of function that returns a luci_obj_t * */
-typedef luci_obj_t * (*luci_func_t) (luci_obj_t *);
+/* LuciFunction is a type of function that returns a LuciObject * */
+typedef LuciObject * (*LuciFunction) (LuciObject *);
 
 typedef struct Symbol
 {
@@ -42,8 +46,8 @@ typedef struct Symbol
     char *name;
     union
     {
-	luci_obj_t * object;
-	luci_func_t funcptr;  /* function ptr to a luci_func_t */
+	LuciObject * object;
+	LuciFunction funcptr;  /* function ptr to a LuciFunction */
     } data;
     struct Symbol *next;
 } Symbol;

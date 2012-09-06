@@ -10,26 +10,28 @@
 
 extern int VERBOSE;
 
-static struct luci_obj_t *dispatch_statement(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_int_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_double_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_string_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_assignment(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_while(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_if(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_call(ExecEnviron *e, struct ASTNode *a);
-static struct luci_obj_t *exec_statement(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *dispatch_statement(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_int_expression(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_double_expression(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_string_expression(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_parameters(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_assignment(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_while(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_if(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_call(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *exec_statement(ExecEnviron *e, struct ASTNode *a);
 
 /* Lookup Array for AST nodes which yield values */
-static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
+static LuciObject * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
 {
     exec_int_expression,
     exec_double_expression,
     exec_string_expression,
     exec_id_expression,
     exec_bin_expression,
+    exec_parameters,
     exec_assignment,
     exec_while,
     exec_if,
@@ -37,7 +39,7 @@ static luci_obj_t * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
     exec_statement,
 };
 
-static luci_obj_t *dispatch_statement(ExecEnviron *e, ASTNode *a)
+static LuciObject *dispatch_statement(ExecEnviron *e, ASTNode *a)
 {
     if (!a || a == NULL)
     {
@@ -53,7 +55,7 @@ static luci_obj_t *dispatch_statement(ExecEnviron *e, ASTNode *a)
     }
 }
 
-static luci_obj_t *exec_int_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_int_expression(ExecEnviron *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_int_t);
@@ -62,14 +64,13 @@ static luci_obj_t *exec_int_expression(ExecEnviron *e, ASTNode *a)
 	printf("Allocating a new object of type obj_int_t, with value %d\n",
 		a->data.i_val);
     }
-    luci_obj_t *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
+    LuciObject *ret = create_object(obj_int_t);
     ret->value.i_val = a->data.i_val;
 
     return ret;
 }
 
-static luci_obj_t *exec_double_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_double_expression(ExecEnviron *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_double_t);
@@ -79,14 +80,13 @@ static luci_obj_t *exec_double_expression(ExecEnviron *e, ASTNode *a)
 		a->data.d_val);
     }
 
-    luci_obj_t *ret = alloc(sizeof(*ret));
-    ret->type = obj_double_t;
+    LuciObject *ret = create_object(obj_double_t);
     ret->value.d_val = a->data.d_val;
 
     return ret;
 }
 
-static luci_obj_t *exec_string_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_string_expression(ExecEnviron *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_str_t);
@@ -95,16 +95,15 @@ static luci_obj_t *exec_string_expression(ExecEnviron *e, ASTNode *a)
 	printf("Allocating a new object of type obj_str_t, with value %s\n",
 		a->data.s_val);
     }
-    luci_obj_t *ret = alloc(sizeof(*ret));
-    ret->type = obj_str_t;
-    /* copy the 'string' from the ASTNode to the luci_obj_t */
+    LuciObject *ret = create_object(obj_str_t);
+    /* copy the 'string' from the ASTNode to the LuciObject */
     ret->value.s_val = (char *) alloc(strlen(a->data.s_val) + 1);
     strcpy (ret->value.s_val, a->data.s_val);
 
     return ret;
 }
 
-static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_id_expression(ExecEnviron *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_id_t);
@@ -120,32 +119,24 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
 	    printf("Found symbol %s with type %d. Returning its object, with type:%d\n",
 		    a->data.name, s->type, t);
 	}
-	if (t != obj_none_t)
+	LuciObject *copy = create_object(t);
+	/* copy the symbol's data and return it */
+	switch(copy->type)
 	{
-	    luci_obj_t *copy = alloc(sizeof(*copy));
-	    /* copy the symbol's data and return it */
-	    copy->type = t;
-	    switch(copy->type)
-	    {
-		case obj_int_t:
-		    copy->value.i_val = s->data.object->value.i_val;
-		    break;
-		case obj_double_t:
-		    copy->value.d_val = s->data.object->value.d_val;
-		    break;
-		case obj_str_t:
-		    copy->value.s_val = alloc(strlen(s->data.object->value.s_val) + 1);
-		    strcpy(copy->value.s_val, s->data.object->value.s_val);
-		    break;
-		default:
-		    break;
-	    }
-	    return copy;
+	    case obj_int_t:
+		copy->value.i_val = s->data.object->value.i_val;
+		break;
+	    case obj_double_t:
+		copy->value.d_val = s->data.object->value.d_val;
+		break;
+	    case obj_str_t:
+		copy->value.s_val = alloc(strlen(s->data.object->value.s_val) + 1);
+		strcpy(copy->value.s_val, s->data.object->value.s_val);
+		break;
+	    default:
+		break;
 	}
-	else
-	{
-	    return NULL;
-	}
+	return copy;
     }
     else
     {
@@ -156,25 +147,43 @@ static luci_obj_t *exec_id_expression(ExecEnviron *e, ASTNode *a)
     }
 }
 
-static luci_obj_t *exec_bin_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_bin_expression(ExecEnviron *e, ASTNode *a)
 {
     assert(a->type == ast_expression_t);
-    luci_obj_t *left = dispatch_statement(e, a->data.expression.left);
-    luci_obj_t *right = dispatch_statement(e, a->data.expression.right);
-    luci_obj_t *result = solve_bin_expr(left, right, a->data.expression.op);
+    LuciObject *left = dispatch_statement(e, a->data.expression.left);
+    LuciObject *right = dispatch_statement(e, a->data.expression.right);
+    LuciObject *result = solve_bin_expr(left, right, a->data.expression.op);
     destroy_object(left);
     destroy_object(right);
     return result;
 }
 
-static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
+static LuciObject *exec_parameters(struct ExecEnviron *e, struct ASTNode *a)
+{
+    assert(a);
+    assert(a->type == ast_parameters_t);
+
+    /* create our initial LuciObject list */
+    LuciObject *ret = create_object(obj_list_t);
+
+    int i;
+    for (i = a->data.parameters.count - 1; i >= 0; i--)
+    {
+	LuciObject *item = dispatch_statement(e, a->data.parameters.parameters[i]);
+
+	destroy_object(ret);
+    }
+    return NULL;
+}
+
+static LuciObject *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_assignment_t);
     assert(e);
 
     ASTNode *right = a->data.assignment.right;
-    luci_obj_t *r = dispatch_statement(e, right);
+    LuciObject *r = dispatch_statement(e, right);
 
     Symbol *s;
     if (!(s = get_symbol(e, a->data.assignment.name)))
@@ -189,7 +198,7 @@ static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     /* set the symbol's new payload */
     s->data.object = r;
 
-    /* return an empty luci_obj_t * */
+    /* return an empty LuciObject * */
     return NULL;
     //s->data.object.type = obj_int_t;
     //s->data.object.value.i_val = r->value.i_val;
@@ -198,7 +207,7 @@ static luci_obj_t *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
 int evaluate_cond(struct ExecEnviron *e, struct ASTNode *cond)
 {
     int huh = 0;
-    luci_obj_t *val = dispatch_statement(e, cond);
+    LuciObject *val = dispatch_statement(e, cond);
     if (val == NULL) {
 	return 0;
     }
@@ -220,7 +229,7 @@ int evaluate_cond(struct ExecEnviron *e, struct ASTNode *cond)
     return huh;
 }
 
-static luci_obj_t *exec_while(struct ExecEnviron *e, struct ASTNode *a)
+static LuciObject *exec_while(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_while_t);
@@ -238,7 +247,7 @@ static luci_obj_t *exec_while(struct ExecEnviron *e, struct ASTNode *a)
     return NULL;
 }
 
-static luci_obj_t *exec_if(struct ExecEnviron *e, struct ASTNode *a)
+static LuciObject *exec_if(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_if_t);
@@ -260,7 +269,7 @@ static luci_obj_t *exec_if(struct ExecEnviron *e, struct ASTNode *a)
     return NULL;
 }
 
-static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
+static LuciObject *exec_call(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_call_t);
@@ -282,21 +291,21 @@ static luci_obj_t *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     }
     else
     {
-	luci_obj_t *param = dispatch_statement(e, a->data.call.parameters);
-	luci_obj_t *ret = /*(luci_obj_t *)*/((*(s->data.funcptr))(param));
+	LuciObject *param = dispatch_statement(e, a->data.call.parameters);
+	LuciObject *ret = /*(LuciObject *)*/((*(s->data.funcptr))(param));
 	destroy_object(param);
 	return ret;
     }
 }
 
-static luci_obj_t *exec_statement(struct ExecEnviron *e, struct ASTNode *a)
+static LuciObject *exec_statement(struct ExecEnviron *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_statements_t);
     int i;
     for (i=0; i < a->data.statements.count; i++)
     {
-	luci_obj_t *ret = dispatch_statement(e, a->data.statements.statements[i]);
+	LuciObject *ret = dispatch_statement(e, a->data.statements.statements[i]);
 	destroy_object(ret);
     }
     return NULL;
@@ -344,23 +353,6 @@ ExecEnviron *create_env(void)
     }
 
     return e;
-}
-
-void destroy_object(luci_obj_t *trash)
-{
-    if (!(trash == NULL))
-    {
-	if (trash->type == obj_str_t) {
-	    if (VERBOSE)
-		printf("Freeing str object with val %s\n", trash->value.s_val);
-	    free(trash->value.s_val);
-	    trash->value.s_val = NULL;
-	}
-	if (VERBOSE)
-	    printf("Freeing obj with type %d\n", trash->type);
-	free(trash);
-	trash = NULL;
-    }
 }
 
 void destroy_env(ExecEnviron *e)

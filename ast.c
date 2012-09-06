@@ -177,6 +177,15 @@ void destroy_AST(ASTNode *root)
 	}
 	free(root->data.statements.statements);
     }
+    else if (root->type == ast_parameters_t)
+    {
+	int i;
+	for (i = 0; i < root->data.parameters.count; i++)
+	{
+	    destroy_AST(root->data.parameters.parameters[i]);
+	}
+	free(root->data.parameters.parameters);
+    }
     else if (root->type == ast_while_t)
     {
 	destroy_AST(root->data.while_loop.cond);

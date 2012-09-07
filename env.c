@@ -120,34 +120,13 @@ static LuciObject *exec_id_expression(ExecEnviron *e, ASTNode *a)
 	    printf("Found symbol %s with type %d. Returning its object, with type:%d\n",
 		    a->data.name, s->type, t);
 	}
-	LuciObject *copy = create_object(t);
-	/* copy the symbol's data and return it */
-	/* This allows the user to do whatever they want with
+	/* copy the symbol's data and return it
+	   This allows the user to do whatever they want with
 	   the VALUE of the symbol(variable), but the symbol itself
 	   will retain this original value until a NEW ASSIGNMENT
 	   overwrites it.
 	*/
-	switch(copy->type)
-	{
-	    case obj_int_t:
-		copy->value.i_val = orig->value.i_val;
-		break;
-	    case obj_double_t:
-		copy->value.d_val = orig->value.d_val;
-		break;
-	    case obj_str_t:
-		copy->value.s_val = alloc(strlen(orig->value.s_val) + 1);
-		strcpy(copy->value.s_val, orig->value.s_val);
-		break;
-	    case obj_file_t:
-		copy->value.file.f_ptr = orig->value.file.f_ptr;
-		copy->value.file.size = orig->value.file.size;
-		copy->value.file.mode = orig->value.file.mode;
-		break;
-	    default:
-		break;
-	}
-	return copy;
+	return copy_object(orig);
     }
     else
     {

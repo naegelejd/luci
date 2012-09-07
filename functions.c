@@ -43,10 +43,48 @@ LuciObject *create_object(int type)
 {
     LuciObject *ret = alloc(sizeof(*ret));
     ret->type = type;
-    if (type == obj_list_t) {
-	ret->value.list.next = NULL;
+    switch(type)
+    {
+	case obj_str_t:
+	    ret->value.s_val = NULL;
+	    break;
+	case obj_file_t:
+	    ret->value.file.f_ptr = NULL;
+	    break;
+	case obj_list_t:
+	    ret->value.list.next = NULL;
+	    break;
+	default:
+	    break;
     }
+
     return ret;
+}
+
+LuciObject *copy_object(LuciObject *orig)
+{
+    LuciObject *copy = create_object(orig->type);
+    switch(orig->type)
+    {
+	case obj_int_t:
+	    copy->value.i_val = orig->value.i_val;
+	    break;
+	case obj_double_t:
+	    copy->value.d_val = orig->value.d_val;
+	    break;
+	case obj_str_t:
+	    copy->value.s_val = alloc(strlen(orig->value.s_val) + 1);
+	    strcpy(copy->value.s_val, orig->value.s_val);
+	    break;
+	case obj_file_t:
+	    copy->value.file.f_ptr = orig->value.file.f_ptr;
+	    copy->value.file.size = orig->value.file.size;
+	    copy->value.file.mode = orig->value.file.mode;
+	    break;
+	default:
+	    break;
+    }
+    return copy;
 }
 
 void destroy_object(LuciObject *trash)
@@ -126,7 +164,6 @@ LuciObject *luci_print(LuciObject *in)
 	    item = ptr->value.list.item;
 	    switch(item->type)
 	    {
-		printf("%d\n", item->type);
 		case obj_int_t:
 		    printf("%d", item->value.i_val);
 		    break;
@@ -292,7 +329,7 @@ LuciObject *luci_fopen(LuciObject *in)
 
     /* TODO: proper error checking */
     /* check that there are two proper parameters to fopen */
-    assert(in->type = obj_list_t);
+    assert(in->type == obj_list_t);
     assert(in->value.list.next);
     assert(in->value.list.next->type == obj_list_t);
 
@@ -411,21 +448,31 @@ LuciObject *luci_fwrite(LuciObject *in)
     }
 
     assert(in->type == obj_list_t);
-    LuciObject *fobj = in->value.list.item;
-    LuciObject *text_obj = in->value.list.next;
+    assert(in->value.list.next);
+    assert(in->value.list.next->type == obj_list_t);
 
+    /* grab the FILE parameter */
+    LuciObject *fobj = in->value.list.item;
     if (!(fobj->type == obj_file_t)) {
 	die("Not a file object");
     }
+
+    /* grab string parameter */
+    LuciObject *param2 = in->value.list.next;
+    if (!param2) {
+	die("Missing string parameter");
+    }
+    LuciObject *text_obj = param2->value.list.item;
+    if (!text_obj || (text_obj->type != obj_str_t) ) {
+	die("Not a string");
+    }
+    char *text = text_obj->value.s_val;
 
     if (fobj->value.file.mode == f_read_m) {
 	die("Can't write to file. It is opened for reading.");
     }
 
-    if (text_obj && (text_obj->type != obj_str_t)) {
-	fwrite(text_obj->value.s_val, sizeof(char),
-		strlen(text_obj->value.s_val), fobj->value.file.f_ptr);
-    }
+    fwrite(text, sizeof(char), strlen(text), fobj->value.file.f_ptr);
     return NULL;
 }
 

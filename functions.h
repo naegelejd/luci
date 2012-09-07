@@ -6,6 +6,9 @@ struct LuciObject;
 /* creates and initializes a new LuciObject */
 struct LuciObject *create_object(int type);
 
+/* duplicates a LuciObject, creating a new one */
+struct LuciObject *copy_object(struct LuciObject* orig);
+
 /* destroys a LuciObject * */
 void destroy_object(struct LuciObject *trash);
 

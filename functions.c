@@ -31,6 +31,14 @@ static LuciObject *bwor(LuciObject *left, LuciObject *right);
 static LuciObject *bwand(LuciObject *left, LuciObject *right);
 
 
+static int close_file(FILE *fp)
+{
+    int ret;
+    ret = fclose(fp);
+    fp = NULL;
+    return ret;
+}
+
 LuciObject *create_object(int type)
 {
     LuciObject *ret = alloc(sizeof(*ret));
@@ -50,6 +58,17 @@ void destroy_object(LuciObject *trash)
 	{
 	    destroy_object(trash->value.list.item);
 	    destroy_object(trash->value.list.next);
+	}
+
+	/* close any open files */
+	if (trash->type == obj_file_t)
+	{
+	    if (trash->value.file.f_ptr) {
+		/*if (VERBOSE)
+		    printf("Closing file object\n");
+		close_file(trash->value.file.f_ptr);
+		*/
+	    }
 	}
 
 	/* if this object contains a string, it WAS malloc'd */
@@ -158,6 +177,9 @@ LuciObject *luci_typeof(LuciObject *in)
 		case obj_str_t:
 		    which = "string";
 		    break;
+		case obj_file_t:
+		    which = "file";
+		    break;
 		case obj_list_t:
 		    which = "list";
 		    break;
@@ -239,20 +261,171 @@ LuciObject *luci_str(LuciObject *in)
     return ret;
 }
 
+static int get_file_mode(const char *req_mode)
+{
+    if (strcmp(req_mode, "r") == 0) {
+	return f_read_m;
+    }
+    else if (strcmp(req_mode, "w") == 0) {
+	return f_write_m;
+    }
+    else if (strcmp(req_mode, "a") == 0) {
+	return f_append_m;
+    }
+    else {
+	return -1;
+    }
+}
+
 LuciObject *luci_fopen(LuciObject *in)
 {
-    return NULL;
+    char *filename;
+    char *req_mode;
+    int mode;
+    FILE *file = NULL;
+
+    if (!in)
+    {
+	/* TODO: throw error here ?? */
+	return NULL;
+    }
+
+    /* TODO: proper error checking */
+    /* check that there are two proper parameters to fopen */
+    assert(in->type = obj_list_t);
+    assert(in->value.list.next);
+    assert(in->value.list.next->type == obj_list_t);
+
+    LuciObject *fname_obj = in->value.list.item;
+    LuciObject *mode_obj = in->value.list.next->value.list.item;
+
+    /* both parameters should be strings */
+    assert(fname_obj->type = obj_str_t);
+    assert(mode_obj->type = obj_str_t);
+
+    filename = fname_obj->value.s_val;
+    req_mode = mode_obj->value.s_val;
+
+    mode = get_file_mode(req_mode);
+    if (mode < 0)
+    {
+	die("Invalid file open mode.");
+    }
+
+    /*
+       Open in read-binary mode and fseek to SEEK_END to
+       calculate the file's size in bytes.
+       Then close it and reopen it the way the user requests
+    */
+    long file_length;
+    /* store the FILE's byte length */
+    if (!(file = fopen(filename, "rb"))) {
+	file_length = 0;
+    }
+    else {
+	fseek(file, 0, SEEK_END);
+	file_length = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	close_file(file);
+    }
+
+    if (!(file = fopen(filename, req_mode)))
+    {
+	die("Could not open file.");
+    }
+
+    LuciObject *ret = create_object(obj_file_t);
+    ret->value.file.f_ptr = file;
+    ret->value.file.mode = mode;
+    ret->value.file.size = file_length;
+
+    if (VERBOSE) {
+	printf("Opened file %s of size %ld bytes with mode %s.\n",
+		filename, file_length, req_mode);
+    }
+
+    return ret;
 }
 LuciObject *luci_fclose(LuciObject *in)
 {
+    if (!in)
+    {
+	return NULL;
+    }
+
+    assert(in->type == obj_list_t);
+    LuciObject *fobj = in->value.list.item;
+
+    if (!(fobj->type == obj_file_t)) {
+	die("Not a file object");
+    }
+
+    if (fobj->value.file.f_ptr) {
+	close_file(fobj->value.file.f_ptr);
+    }
+    /* else, probably already closed (it's NULL) */
+
+    if (VERBOSE)
+	printf("Closed file object.\n");
+
     return NULL;
 }
+
 LuciObject *luci_fread(LuciObject *in)
 {
-    return NULL;
+    if (!in) {
+	return NULL;
+    }
+
+    assert(in->type == obj_list_t);
+    LuciObject *fobj = in->value.list.item;
+
+    if (!(fobj->type == obj_file_t)) {
+	die("Not a file object");
+    }
+
+    if (fobj->value.file.mode != f_read_m) {
+	die("Can't open file. It is opened for writing.");
+    }
+
+    /* seek to file start, we're gonna read the whole thing */
+    /* fseek(fobj->value.file.f_ptr, 0, SEEK_SET); */
+
+    long len = fobj->value.file.size;
+    char *read = alloc(len + 1);
+    fread(read, sizeof(char), len, fobj->value.file.f_ptr);
+    read[len] = '\0';
+
+    /* fseek(fobj->value.file.f_ptr, 0, SEEK_SET); */
+
+    LuciObject *ret = create_object(obj_str_t);
+    ret->value.s_val = read;
+
+    return ret;
 }
+
 LuciObject *luci_fwrite(LuciObject *in)
 {
+    if (!in) {
+	return NULL;
+    }
+
+    assert(in->type == obj_list_t);
+    LuciObject *fobj = in->value.list.item;
+    LuciObject *text_obj = in->value.list.next;
+
+    if (!(fobj->type == obj_file_t)) {
+	die("Not a file object");
+    }
+
+    if (fobj->value.file.mode == f_read_m) {
+	die("Can't write to file. It is opened for reading.");
+    }
+
+    if (text_obj && (text_obj->type != obj_str_t)) {
+	fwrite(text_obj->value.s_val, sizeof(char),
+		strlen(text_obj->value.s_val), fobj->value.file.f_ptr);
+    }
     return NULL;
 }
 

@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <stdio.h>
+
 typedef enum {	op_add_t,
 		op_sub_t,
 		op_mul_t,
@@ -22,17 +24,36 @@ typedef enum {	op_add_t,
 		op_bnot_t
 } op_type;
 
+/* Types of LuciObjects */
+typedef enum {
+    obj_int_t,
+    obj_double_t,
+    obj_str_t,
+    obj_file_t,
+    obj_list_t
+} LuciObjectType;
 
-typedef enum { obj_int_t, obj_double_t, obj_str_t, obj_list_t } LuciObject_t;
+typedef enum {
+    f_read_m,
+    f_write_m,
+    f_append_m
+} LuciFileMode;
 
+/* Generic Object which allows for dynamic typing */
 typedef struct LuciObject
 {
-    LuciObject_t type;
+    LuciObjectType type;
     union
     {
 	int i_val;
 	double d_val;
 	char *s_val;
+	struct
+	{
+	    FILE *f_ptr;
+	    long size;	/* in bytes */
+	    LuciFileMode mode;
+	} file;
 	struct
 	{
 	    struct LuciObject *item;

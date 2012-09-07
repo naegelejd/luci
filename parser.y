@@ -82,7 +82,7 @@ call:
 
 params:
 	    expr		    { $$ = make_params(NULL, $1); }
-	|   expr COMMA expr	    { $$ = make_params($1, $3); }
+	|   params COMMA expr	    { $$ = make_params($1, $3); }
 	;
 
 while_loop:

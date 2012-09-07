@@ -3,3 +3,12 @@
 
 print("hello", "world", "goodbye all")
 
+f = open("samples/test1.txt", "r")
+contents1 = read(f)
+contents2 = read(f)
+
+print(contents1, contents2, type(f), type(read(f)))
+
+f = open("samples/test2.txt", "a")
+write(f, contents1)
+close(f)

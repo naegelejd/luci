@@ -191,6 +191,11 @@ static LuciObject *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     else
     {
 	/* if the symbol already exists, free its existing Object */
+	/* TODO: this should close any open file pointers...
+	   if a symbol points to a FILE object and the user
+	   wants to point the symbol to something else, it would
+	   be nice for the file pointer to be closed
+	*/
 	destroy_object(s->data.object);
     }
     /* set the symbol's new payload */

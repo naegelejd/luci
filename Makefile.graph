@@ -1,0 +1,4 @@
+all: graph
+
+graph: %.y
+	bison -g $<

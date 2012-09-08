@@ -545,41 +545,101 @@ static LuciObject *add(LuciObject *left, LuciObject *right)
 
 static LuciObject *sub(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val - right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = left->value.i_val - right->value.i_val;
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = left->value.d_val - right->value.d_val;
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *mul(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val * right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = left->value.i_val * right->value.i_val;
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = left->value.d_val * right->value.d_val;
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *divide(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val / right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = left->value.i_val / right->value.i_val;
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = left->value.d_val / right->value.d_val;
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *mod(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val % right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = left->value.i_val % right->value.i_val;
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = (double)((int)left->value.d_val % (int)right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *power(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = pow(left->value.i_val, right->value.i_val);
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = pow(left->value.i_val, right->value.i_val);
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = pow(left->value.d_val, right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
@@ -598,6 +658,8 @@ static LuciObject *eq(LuciObject *left, LuciObject *right)
 	case obj_str_t:
 	    r = !(strcmp(left->value.s_val, right->value.s_val));
 	    break;
+	case obj_file_t:
+	    r = (left->value.file.f_ptr == right->value.file.f_ptr);
 	default:
 	    r = 0;
     }
@@ -607,73 +669,145 @@ static LuciObject *eq(LuciObject *left, LuciObject *right)
 
 static LuciObject *neq(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = (left->value.i_val != right->value.i_val);
+    LuciObject *ret = eq(left, right);
+    if (ret)
+	ret->value.i_val = !ret->value.i_val;
     return ret;
 }
 
 static LuciObject *lt(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val < right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = (left->value.i_val < right->value.i_val);
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = (left->value.d_val < right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *gt(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val > right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = (left->value.i_val > right->value.i_val);
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = (left->value.d_val > right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *lte(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val <= right->value.i_val;
+    LuciObject *ret = gt(left, right);
+    if (ret)
+	ret->value.i_val = !ret->value.i_val;
     return ret;
 }
 
 static LuciObject *gte(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val >= right->value.i_val;
+    LuciObject *ret = lt(left, right);
+    if (ret)
+	ret->value.i_val = !ret->value.i_val;
     return ret;
 }
 
 static LuciObject *lgnot(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = !(right->value.i_val);
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = !right->value.i_val;
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = !left->value.d_val;
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *lgor(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val || right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = (left->value.i_val || right->value.i_val);
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = (left->value.d_val || right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *lgand(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val && right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = (left->value.i_val && right->value.i_val);
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = (left->value.d_val && right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *bwnot(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = ~(right->value.i_val);
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = ~right->value.i_val;
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = ~(int)right->value.d_val;
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
@@ -687,16 +821,40 @@ static LuciObject *bwxor(LuciObject *left, LuciObject *right)
 
 static LuciObject *bwor(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val | right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = (left->value.i_val | right->value.i_val);
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = ((int)left->value.d_val | (int)right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }
 
 static LuciObject *bwand(LuciObject *left, LuciObject *right)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val & right->value.i_val;
+    LuciObject *ret;
+
+    switch (left->type)
+    {
+	case obj_int_t:
+	    ret = create_object(obj_int_t);
+	    ret->value.i_val = (left->value.i_val & right->value.i_val);
+	    break;
+	case obj_double_t:
+	    ret = create_object(obj_double_t);
+	    ret->value.d_val = ((int)left->value.d_val & (int)right->value.d_val);
+	    break;
+	default:
+	    ret = NULL;
+    }
     return ret;
 }

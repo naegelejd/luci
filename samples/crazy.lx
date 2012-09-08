@@ -9,6 +9,8 @@ contents2 = read(f)
 
 print(contents1, contents2, type(f), type(read(f)))
 
-f = open("samples/data/test2.txt", "a")
-write(f, contents1)
 close(f)
+
+#f = open("samples/data/test2.txt", "a")
+#write(f, contents1)
+#close(f)

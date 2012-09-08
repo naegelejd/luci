@@ -1,37 +1,35 @@
-CC=gcc -g
+CC = gcc
+CFLAGS =
 
-all: luci
+EXECUTABLE = luci
+OBJECTS = driver.o ast.o env.o functions.o parser.tab.o lexer.yy.o
+LIBRARIES = 
 
-luci: driver.o ast.o env.o functions.o parser.o lexer.o
-	$(CC) -o luci *.o
+INSTALL_DIR = /usr/local/bin/
 
-driver.o: driver.c
-	$(CC) -c driver.c
+all: $(EXECUTABLE)
 
-env.o: env.c
-	$(CC) -c env.c
+debug: CFLAGS += -DDEBUG -g
+debug: $(EXECUTABLE)
 
-functions.o: functions.c
-	$(CC) -c functions.c
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBRARIES)
 
-ast.o: ast.c
-	$(CC) -c ast.c
+%.yy.o: %.l
+	flex -o $*.yy.c $<
+	$(CC) $(CFLAGS) -c $*.yy.c
 
-parser.o: parser.c
-	$(CC) -c parser.c
+%.tab.o: %.y
+	bison -d $<
+	$(CC) $(CFLAGS) -c $*.tab.c
 
-lexer.o: lexer.c
-	$(CC) -c lexer.c
-
-#graph: parser.dot
-#	dot -Tpng parser.dot > graph.png
-#parser.dot: parser.c
-
-parser.c: parser.y
-	bison -g -d -o parser.c parser.y
-
-lexer.c: lexer.l
-	flex -o lexer.c lexer.l
+%.o: %.c
+	$(CC) $(CFLAGS) -c $<
 
 clean:
-	rm -rf *.o luci
+	rm -rf $(EXECUTABLE) $(OBJECTS) *.yy.c *.tab.c
+
+install:
+	mkdir -p $(INSTALL_DIR)
+	cp $(EXECUTABLE) $(INSTALL_DIR)
+

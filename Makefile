@@ -1,35 +1,52 @@
 CC = gcc
 CFLAGS =
 
-EXECUTABLE = luci
-OBJECTS = driver.o ast.o env.o functions.o parser.tab.o lexer.yy.o
-LIBRARIES = 
+TARGET = luci
+#OBJECTS = driver.o ast.o env.o functions.o parser.tab.o lexer.yy.o
+LIBS = 
 
-INSTALL_DIR = /usr/local/bin/
+SRCDIR = src
+OBJDIR = obj
+BINDIR = bin
+INSTALLDIR = /usr/local/bin/
 
-all: $(EXECUTABLE)
+EXECUTABLE = $(BINDIR)/$(TARGET)
+
+SOURCES := $(wildcard $(SRCDIR)/*.c)
+INCLUDES := $(wildcard $(SRCDIR)/*.h)
+OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
+OBJECTS += $(OBJDIR)/parser.tab.o $(OBJDIR)/lexer.yy.o
+
+all: $(TARGET)
 
 debug: CFLAGS += -DDEBUG -g
-debug: $(EXECUTABLE)
+debug: $(TARGET)
 
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBRARIES)
+$(TARGET): $(OBJECTS)
+	mkdir -p obj/
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
-%.yy.o: %.l
-	flex -o $*.yy.c $<
-	$(CC) $(CFLAGS) -c $*.yy.c
+$(SRCDIR)/%.yy.c: $(SRCDIR)/%.l
+	flex -o $@ $<
 
-%.tab.o: %.y
-	bison -d $<
-	$(CC) $(CFLAGS) -c $*.tab.c
+$(SRCDIR)/%.tab.c: $(SRCDIR)/%.y
+	bison -d -o $@ $<
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
+$(OBJDIR)/%.yy.o: $(SRCDIR)/%.yy.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-clean:
-	rm -rf $(EXECUTABLE) $(OBJECTS) *.yy.c *.tab.c
+$(OBJDIR)/%.tab.o: $(SRCDIR)/%.tab.y
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 install:
-	mkdir -p $(INSTALL_DIR)
-	cp $(EXECUTABLE) $(INSTALL_DIR)
+	mkdir -p $(INSTALLDIR)
+	cp $(TARGET) $(INSTALLDIR)
 
+doc: Doxyfile *.c
+	doxygen Doxyfile >> /dev/null
+
+clean:
+	rm -f $(TARGET) $(OBJDIR)/* doc/*

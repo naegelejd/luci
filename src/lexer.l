@@ -1,8 +1,9 @@
 %option noyywrap
 
 %{
+
 #include <string.h>
-#include "parser.h"
+#include "parser.tab.h"
 
 extern int LINE_NUM;
 

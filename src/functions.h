@@ -13,7 +13,7 @@ struct LuciObject *copy_object(struct LuciObject* orig);
 void destroy_object(struct LuciObject *trash);
 
 
-struct func_init
+struct func_def
 {
     const char *name;
     struct LuciObject * (*func) (struct LuciObject *);
@@ -21,6 +21,7 @@ struct func_init
 
 struct LuciObject *luci_help(struct LuciObject *);
 struct LuciObject *luci_print(struct LuciObject *);
+struct LuciObject *luci_input(struct LuciObject *in);
 struct LuciObject *luci_typeof(struct LuciObject *);
 struct LuciObject *luci_assert(struct LuciObject *);
 struct LuciObject *luci_str(struct LuciObject *);

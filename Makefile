@@ -17,7 +17,8 @@ INCLUDES := $(wildcard $(SRCDIR)/*.h)
 OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 OBJECTS += $(OBJDIR)/parser.tab.o $(OBJDIR)/lexer.yy.o
 
-all: $(TARGET)
+#all: $(TARGET)
+all: debug
 
 debug: CFLAGS += -DDEBUG -g
 debug: $(TARGET)
@@ -26,17 +27,17 @@ $(TARGET): $(OBJECTS)
 	mkdir -p obj/
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
-$(SRCDIR)/%.yy.c: $(SRCDIR)/%.l
-	flex -o $@ $<
+#$(SRCDIR)/%.yy.c: $(SRCDIR)/%.l
 
-$(SRCDIR)/%.tab.c: $(SRCDIR)/%.y
-	bison -d -o $@ $<
+#$(SRCDIR)/%.tab.c: $(SRCDIR)/%.y
 
-$(OBJDIR)/%.yy.o: $(SRCDIR)/%.yy.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(OBJDIR)/%.yy.o: $(SRCDIR)/%.l
+	flex -o $(SRCDIR)/$*.yy.c $<
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/$*.yy.c
 
-$(OBJDIR)/%.tab.o: $(SRCDIR)/%.tab.y
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(OBJDIR)/%.tab.o: $(SRCDIR)/%.y
+	bison -d -o $(SRCDIR)/$*.tab.c $<
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/$*.tab.c
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -45,8 +46,9 @@ install:
 	mkdir -p $(INSTALLDIR)
 	cp $(TARGET) $(INSTALLDIR)
 
-doc: Doxyfile *.c
+doc: Doxyfile $(SRCDIR)/*.c
 	doxygen Doxyfile >> /dev/null
 
 clean:
-	rm -f $(TARGET) $(OBJDIR)/* doc/*
+	rm -f $(TARGET) $(OBJDIR)/*
+	rm -rf doc/*

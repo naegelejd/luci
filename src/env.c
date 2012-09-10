@@ -8,23 +8,22 @@
 #include <math.h>
 #include <assert.h>
 
-extern int VERBOSE;
 
-static struct LuciObject *dispatch_statement(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_int_expression(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_double_expression(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_string_expression(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_id_expression(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_bin_expression(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_parameters(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_assignment(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_while(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_if(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_call(ExecEnviron *e, struct ASTNode *a);
-static struct LuciObject *exec_statement(ExecEnviron *e, struct ASTNode *a);
+static struct LuciObject *dispatch_statement(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_int_expression(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_double_expression(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_string_expression(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_id_expression(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_bin_expression(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_parameters(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_assignment(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_while(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_if(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_call(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_statement(ExecContext *e, struct ASTNode *a);
 
 /* Lookup Array for AST nodes which yield values */
-static LuciObject * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
+static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
 {
     exec_int_expression,
     exec_double_expression,
@@ -39,7 +38,7 @@ static LuciObject * (*exec_lookup[])(ExecEnviron *e, ASTNode *a) =
     exec_statement,
 };
 
-static LuciObject *dispatch_statement(ExecEnviron *e, ASTNode *a)
+static LuciObject *dispatch_statement(ExecContext *e, ASTNode *a)
 {
     if (!a || a == NULL)
     {
@@ -47,7 +46,7 @@ static LuciObject *dispatch_statement(ExecEnviron *e, ASTNode *a)
     }
     if (!(exec_lookup[a->type]))
     {
-	die("IDK what to do");
+	die("IDK what to do\n");
     }
     else
     {
@@ -55,30 +54,27 @@ static LuciObject *dispatch_statement(ExecEnviron *e, ASTNode *a)
     }
 }
 
-static LuciObject *exec_int_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_int_expression(ExecContext *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_int_t);
 
-    if (VERBOSE) {
-	printf("Allocating a new object of type obj_int_t, with value %d\n",
-		a->data.i_val);
-    }
+    yak("Allocating a new object of type obj_int_t, with value %d\n",
+	    a->data.i_val);
+
     LuciObject *ret = create_object(obj_int_t);
     ret->value.i_val = a->data.i_val;
 
     return ret;
 }
 
-static LuciObject *exec_double_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_double_expression(ExecContext *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_double_t);
 
-    if (VERBOSE) {
-	printf("Allocating a new object of type obj_double_t, with value %f\n",
-		a->data.d_val);
-    }
+    yak("Allocating a new object of type obj_double_t, with value %f\n",
+	    a->data.d_val);
 
     LuciObject *ret = create_object(obj_double_t);
     ret->value.d_val = a->data.d_val;
@@ -86,15 +82,14 @@ static LuciObject *exec_double_expression(ExecEnviron *e, ASTNode *a)
     return ret;
 }
 
-static LuciObject *exec_string_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_string_expression(ExecContext *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_str_t);
 
-    if (VERBOSE) {
-	printf("Allocating a new object of type obj_str_t, with value %s\n",
-		a->data.s_val);
-    }
+    yak("Allocating a new object of type obj_str_t, with value %s\n",
+	    a->data.s_val);
+
     LuciObject *ret = create_object(obj_str_t);
     /* copy the 'string' from the ASTNode to the LuciObject */
     ret->value.s_val = (char *) alloc(strlen(a->data.s_val) + 1);
@@ -103,23 +98,29 @@ static LuciObject *exec_string_expression(ExecEnviron *e, ASTNode *a)
     return ret;
 }
 
-static LuciObject *exec_id_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_id_t);
     assert(e);
     Symbol *s;
     if (!(s = get_symbol(e, a->data.name))) {
-	die("Can't find symbol %s");
+	die("Can't find symbol %s\n", s->name);
     }
     if (s->type == sym_obj_t)
     {
 	LuciObject *orig = s->data.object;
-	int t = orig->type;
-	if (VERBOSE) {
-	    printf("Found symbol %s with type %d. Returning its object, with type:%d\n",
-		    a->data.name, s->type, t);
+
+	/* check if symbol's value is NULL */
+	if (!orig) {
+	    yak("Found symbol with NULL value.\n");
+	    return NULL;
 	}
+
+	/* else, return a copy of symbol's object */
+	int t = orig->type;
+	yak("Found symbol %s with type %d. Returning its object, with type:%d\n",
+		a->data.name, s->type, t);
 	/* copy the symbol's data and return it
 	   This allows the user to do whatever they want with
 	   the VALUE of the symbol(variable), but the symbol itself
@@ -130,14 +131,12 @@ static LuciObject *exec_id_expression(ExecEnviron *e, ASTNode *a)
     }
     else
     {
-	if (VERBOSE) {
-	    printf("Found symbol %s, but it's not an object\n", a->data.name);
-	}
+	yak("Found symbol %s, but it's not an object\n", a->data.name);
 	return NULL;	 /* look up a->name in symbol table */
     }
 }
 
-static LuciObject *exec_bin_expression(ExecEnviron *e, ASTNode *a)
+static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
 {
     assert(a->type == ast_expression_t);
     LuciObject *left = dispatch_statement(e, a->data.expression.left);
@@ -148,7 +147,10 @@ static LuciObject *exec_bin_expression(ExecEnviron *e, ASTNode *a)
     return result;
 }
 
-static LuciObject *exec_parameters(struct ExecEnviron *e, struct ASTNode *a)
+/*
+   Executes a 'function parameters' node in the abstract syntax tree.
+*/
+static LuciObject *exec_parameters(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_parameters_t);
@@ -168,13 +170,16 @@ static LuciObject *exec_parameters(struct ExecEnviron *e, struct ASTNode *a)
 	/* point 'next' to this container */
 	next = tail;
 
-	if (VERBOSE)
-	    printf("Adding new param to paramlist\n");
+	yak("Adding new param to paramlist\n");
     }
     return next;
 }
 
-static LuciObject *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
+/*
+   Executes a variable assignment node in the abstract
+   syntax tree.
+*/
+static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_assignment_t);
@@ -207,7 +212,11 @@ static LuciObject *exec_assignment(struct ExecEnviron *e, struct ASTNode *a)
     //s->data.object.value.i_val = r->value.i_val;
 }
 
-int evaluate_cond(struct ExecEnviron *e, struct ASTNode *cond)
+/*
+   Evaluates a conditional statement, returning an integer
+   value of 0 if False, and non-zero if True.
+*/
+int evaluate_cond(struct ExecContext *e, struct ASTNode *cond)
 {
     int huh = 0;
     LuciObject *val = dispatch_statement(e, cond);
@@ -232,14 +241,15 @@ int evaluate_cond(struct ExecEnviron *e, struct ASTNode *cond)
     return huh;
 }
 
-static LuciObject *exec_while(struct ExecEnviron *e, struct ASTNode *a)
+/*
+   Executes a while loop in the abstract syntax tree.
+*/
+static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_while_t);
 
-    if (VERBOSE) {
-	printf("Begin while loop\n");
-    }
+    yak("Begin while loop\n");
 
     int huh = evaluate_cond(e, a->data.while_loop.cond);
     while (huh)
@@ -250,14 +260,15 @@ static LuciObject *exec_while(struct ExecEnviron *e, struct ASTNode *a)
     return NULL;
 }
 
-static LuciObject *exec_if(struct ExecEnviron *e, struct ASTNode *a)
+/*
+   Executes an if/else statement in the abstract syntax tree.
+*/
+static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_if_t);
 
-    if (VERBOSE) {
-	printf("Begin if block\n");
-    }
+    yak("Begin if block\n");
 
     int huh = evaluate_cond(e, a->data.if_else.cond);
     printf("%d\n", huh);
@@ -272,25 +283,28 @@ static LuciObject *exec_if(struct ExecEnviron *e, struct ASTNode *a)
     return NULL;
 }
 
-static LuciObject *exec_call(struct ExecEnviron *e, struct ASTNode *a)
+/*
+   Executes a function call statement in the abstract
+   syntax tree.
+   First it searches for the function corresponding to the user
+   specified ID in the Execution Context's symbol table.
+   If found, the function's parameters node is executed and the results
+   are passed to the function's definition.
+*/
+static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_call_t);
 
-    if (VERBOSE) {
-	printf("Calling %s\n", a->data.call.name);
-    }
+    yak("Calling %s\n", a->data.call.name);
+
     Symbol *s;
     if (!(s = get_symbol(e, a->data.call.name))) {
-	die("Invalid function");
+	die("Invalid function name: %s\n", a->data.call.name);
     }
     if (s->type != sym_func_t)
     {
-	char *msg = " is not a function";
-	char comb[strlen(s->name) + strlen(msg) + 1];
-	strncpy(comb, s->name, strlen(s->name) + 1);
-	strncat(comb, msg, strlen(msg) );
-	die(comb);
+	die("%s is not a function\n", s->name);
     }
     else
     {
@@ -301,7 +315,10 @@ static LuciObject *exec_call(struct ExecEnviron *e, struct ASTNode *a)
     }
 }
 
-static LuciObject *exec_statement(struct ExecEnviron *e, struct ASTNode *a)
+/*
+   Executes a statement node in the abstract syntax tree.
+*/
+static LuciObject *exec_statement(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_statements_t);
@@ -314,12 +331,22 @@ static LuciObject *exec_statement(struct ExecEnviron *e, struct ASTNode *a)
     return NULL;
 }
 
-void exec_AST(struct ExecEnviron *e, struct ASTNode *a)
+/*
+   Entry point for executing the abstract syntax tree.
+*/
+void exec_AST(struct ExecContext *e, struct ASTNode *a)
 {
     dispatch_statement(e, a);
 }
 
-Symbol *add_symbol (struct ExecEnviron *e, char const *name, int type)
+/*
+   Adds a new symbol to the symbol table of the specified
+   Execution Context, returning a pointer to the new symbol.
+
+   Only the symbol's name and type must be given. The caller
+   is responsible for setting the symbol's data.
+*/
+Symbol *add_symbol (struct ExecContext *e, char const *name, int type)
 {
     Symbol *ptr = (Symbol *) alloc (sizeof (Symbol));
     ptr->name = (char *) alloc (strlen (name) + 1);
@@ -331,7 +358,11 @@ Symbol *add_symbol (struct ExecEnviron *e, char const *name, int type)
     return ptr;
 }
 
-Symbol *get_symbol (struct ExecEnviron *e, const char *name)
+/*
+   Searches for a symbol with a matching name in the
+   symbol table of the specified Execution Context
+*/
+Symbol *get_symbol (struct ExecContext *e, const char *name)
 {
     Symbol *ptr;
     for (ptr = e->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next)
@@ -340,14 +371,23 @@ Symbol *get_symbol (struct ExecEnviron *e, const char *name)
     return 0;
 }
 
-ExecEnviron *create_env(void)
+/*
+   Creates an Execution Context, which consists
+   of various members, most importantly its symbol table.
+*/
+ExecContext *create_env(void)
 {
     /* Check that we have dispatchers for all types of statements */
     assert(ast_last_t == (sizeof(exec_lookup) / sizeof(*exec_lookup)));
 
-    ExecEnviron *e = calloc(1, sizeof(struct ExecEnviron));
+    ExecContext *e = calloc(1, sizeof(struct ExecContext));
 
-    extern struct func_init builtins[];
+    /* give the global context a name */
+    char *name = "global";
+    e->name = alloc(strlen(name) + 1);
+    strcpy(e->name, name);
+
+    extern struct func_def builtins[];
     int i;
     for (i = 0; builtins[i].name != 0; i++)
     {
@@ -358,8 +398,15 @@ ExecEnviron *create_env(void)
     return e;
 }
 
-void destroy_env(ExecEnviron *e)
+/*
+   Destroys the Execution Context by freeing its members.
+*/
+void destroy_env(ExecContext *e)
 {
+    /* destroy the Context's name */
+    free(e->name);
+
+    /* destroy the Context's symbol table */
     Symbol *ptr = e->symtable;
     Symbol *next = ptr;
     while (ptr != (Symbol *) 0)

@@ -8,23 +8,22 @@ struct ASTNode;
 struct Symbol;
 struct LuciObject;
 
-typedef struct ExecEnviron
+typedef struct ExecContext
 {
-    //int variable;  /* This is where the symbol table will live */
-    //unary_func func;
+    char* name;
     struct Symbol *symtable;
-} ExecEnviron;
+} ExecContext;
 
 /* executes an AST */
-void exec_AST(struct ExecEnviron* e, struct ASTNode *root);
+void exec_AST(struct ExecContext* e, struct ASTNode *root);
 
-struct Symbol *add_symbol (ExecEnviron *e, char const *name, int type);
-struct Symbol *get_symbol (ExecEnviron *e, const char *name);
+struct Symbol *add_symbol (ExecContext *e, char const *name, int type);
+struct Symbol *get_symbol (ExecContext *e, const char *name);
 
 /* creates the execution engine */
-struct ExecEnviron* create_env();
+struct ExecContext* create_env();
 
-/* removes the ExecEnviron */
-void destroy_env(struct ExecEnviron *e);
+/* removes the ExecContext */
+void destroy_env(struct ExecContext *e);
 
 #endif

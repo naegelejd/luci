@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include "driver.h"
 #include "ast.h"
 #include "env.h"
@@ -11,7 +12,7 @@ extern yydebug();
 int VERBOSE;
 
 struct ASTNode *root_node;
-struct ExecEnviron *root_env;
+struct ExecContext *root_env;
 
 const char *options[] =
 {
@@ -30,6 +31,8 @@ int is_option(const char *arg)
     }
     return 0;
 }
+
+
 
 int main(int argc, char *argv[])
 {
@@ -75,17 +78,31 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-void dbgprint(const char *msg)
+/* AKA babble */
+void yak(const char *format, ... )
 {
     if (VERBOSE)
     {
-	printf("%s\n", msg);
+	va_list arglist;
+
+	printf("INFO: ");
+
+	va_start(arglist, format);
+	vprintf(format, arglist);
+	va_end(arglist);
     }
 }
 
-void die(const char *msg)
+void die(const char* format, ... )
 {
-    fprintf(stderr, "Fatal Error: %s\n", msg);
+    va_list arglist;
+
+    fprintf(stderr, "Fatal Error: ");
+
+    va_start(arglist, format);
+    vfprintf(stderr, format, arglist);
+    va_end (arglist);
+
     cleanup();
     exit(1);
 }

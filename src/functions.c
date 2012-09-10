@@ -7,8 +7,6 @@
 #include "types.h"
 #include "ast.h"
 
-extern int VERBOSE;
-
 /* Forward declarations */
 static LuciObject *add(LuciObject *left, LuciObject *right);
 static LuciObject *sub(LuciObject *left, LuciObject *right);
@@ -63,6 +61,10 @@ LuciObject *create_object(int type)
 
 LuciObject *copy_object(LuciObject *orig)
 {
+    if (!orig) {
+	return NULL;
+    }
+
     LuciObject *copy = create_object(orig->type);
     switch(orig->type)
     {
@@ -102,8 +104,8 @@ void destroy_object(LuciObject *trash)
 	if (trash->type == obj_file_t)
 	{
 	    if (trash->value.file.f_ptr) {
-		/*if (VERBOSE)
-		    printf("Closing file object\n");
+		/*
+		yak("Closing file object\n");
 		close_file(trash->value.file.f_ptr);
 		*/
 	    }
@@ -111,13 +113,11 @@ void destroy_object(LuciObject *trash)
 
 	/* if this object contains a string, it WAS malloc'd */
 	if (trash->type == obj_str_t) {
-	    if (VERBOSE)
-		printf("Freeing str object with val %s\n", trash->value.s_val);
+	    yak("Freeing str object with val %s\n", trash->value.s_val);
 	    free(trash->value.s_val);
 	    trash->value.s_val = NULL;
 	}
-	if (VERBOSE)
-	    printf("Freeing obj with type %d\n", trash->type);
+	yak("Freeing obj with type %d\n", trash->type);
 
 	/* destroy the LuciObject itself */
 	free(trash);
@@ -125,10 +125,11 @@ void destroy_object(LuciObject *trash)
     }
 }
 
-const struct func_init builtins[] =
+const struct func_def builtins[] =
 {
     "help", luci_help,
     "print",  luci_print,
+    "input", luci_input,
     "type",  luci_typeof,
     "assert", luci_assert,
     "str", luci_str,
@@ -141,9 +142,29 @@ const struct func_init builtins[] =
 
 LuciObject *luci_help(LuciObject *in)
 {
-    printf("_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_\n");
+    int width = 32;
+
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
     printf("              HELP               \n");
-    printf("_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_=_\n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+    printf("        BUILTIN FUNCTIONS        \n");
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+
+    int i, len, f, l, j;
+    for (i = 0; builtins[i].name != 0; i++)
+    {
+	len = strlen(builtins[i].name);
+	f = (width - len) / 2;
+	l = width - f;
+	for (j = 0; j < f; j++)
+	    printf(" ");
+	printf("%s", builtins[i].name);
+	for (j = 0; j < l; j++)
+	    printf(" ");
+	printf("\n");
+    }
+    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+
     return NULL;
 }
 
@@ -151,18 +172,17 @@ LuciObject *luci_print(LuciObject *in)
 {
     assert(in->type == obj_list_t);
 
-    if (!in )
+    LuciObject *ptr = in;
+    LuciObject *item = NULL;
+    while (ptr)
     {
-	printf("None\n");
-    }
-    else
-    {
-	LuciObject *ptr = in;
-	LuciObject *item = NULL;
-	while (ptr)
+	item = ptr->value.list.item;
+	if (!item)
 	{
-	    item = ptr->value.list.item;
-	    switch(item->type)
+	    printf("None");
+	}
+	else {
+	    switch (item->type)
 	    {
 		case obj_int_t:
 		    printf("%d", item->value.i_val);
@@ -176,13 +196,51 @@ LuciObject *luci_print(LuciObject *in)
 		default:
 		    printf("None");
 	    }
-	    printf(" ");
-	    ptr = ptr->value.list.next;
 	}
-	printf("\n");
+	printf(" ");
+	ptr = ptr->value.list.next;
     }
+    printf("\n");
 
     return NULL;
+}
+
+LuciObject *luci_input(LuciObject *in)
+{
+    size_t lenmax = 64, len = 0;
+    char *input = alloc(lenmax * sizeof(char));
+    int c;
+
+    if (input == NULL) {
+	die("Failed to allocate buffer for reading stdin\n");
+    }
+    do {
+	c = fgetc(stdin);
+
+	if (++len >= lenmax) {
+	    lenmax = lenmax << 1;
+	    if ((input = realloc(input, lenmax * sizeof(char))) == NULL) {
+		free (input);
+		die("Failed to allocate buffer for reading stdin\n");
+	    }
+	    input[len] = c;
+	}
+    } while (c != EOF && c != '\n');
+    input[++len] = '\0';
+
+    /* this might be bad practice? */
+    /* I'm malloc'ing and copying the input char[] in case
+       the size of the input buffer is far larger than it needs to be?
+    */
+    LuciObject *ret = create_object(obj_str_t);
+    ret->value.s_val = alloc(len * sizeof(char));
+    strcpy(ret->value.s_val, input);
+
+    free(input);
+
+    yak("Read line from stdin\n", ret->value.s_val);
+
+    return ret;
 }
 
 LuciObject *luci_typeof(LuciObject *in)
@@ -291,8 +349,7 @@ LuciObject *luci_str(LuciObject *in)
 	    default:
 		break;
 	}
-	if (VERBOSE)
-	    printf("str() returning %s\n", ret->value.s_val);
+	yak("str() returning %s\n", ret->value.s_val);
     }
 
     return ret;
@@ -346,7 +403,7 @@ LuciObject *luci_fopen(LuciObject *in)
     mode = get_file_mode(req_mode);
     if (mode < 0)
     {
-	die("Invalid file open mode.");
+	die("Invalid file open mode: %d\n", mode);
     }
 
     /*
@@ -368,7 +425,7 @@ LuciObject *luci_fopen(LuciObject *in)
 
     if (!(file = fopen(filename, req_mode)))
     {
-	die("Could not open file.");
+	die("Could not open file %s\n", filename);
     }
 
     LuciObject *ret = create_object(obj_file_t);
@@ -376,10 +433,8 @@ LuciObject *luci_fopen(LuciObject *in)
     ret->value.file.mode = mode;
     ret->value.file.size = file_length;
 
-    if (VERBOSE) {
-	printf("Opened file %s of size %ld bytes with mode %s.\n",
-		filename, file_length, req_mode);
-    }
+    yak("Opened file %s of size %ld bytes with mode %s.\n",
+	    filename, file_length, req_mode);
 
     return ret;
 }
@@ -394,7 +449,7 @@ LuciObject *luci_fclose(LuciObject *in)
     LuciObject *fobj = in->value.list.item;
 
     if (!(fobj->type == obj_file_t)) {
-	die("Not a file object");
+	die("Not a file object\n");
     }
 
     if (fobj->value.file.f_ptr) {
@@ -402,8 +457,7 @@ LuciObject *luci_fclose(LuciObject *in)
     }
     /* else, probably already closed (it's NULL) */
 
-    if (VERBOSE)
-	printf("Closed file object.\n");
+    yak("Closed file object.\n");
 
     return NULL;
 }
@@ -411,18 +465,18 @@ LuciObject *luci_fclose(LuciObject *in)
 LuciObject *luci_fread(LuciObject *in)
 {
     if (!in) {
-	return NULL;
+	die("Missing file object\n");
     }
 
     assert(in->type == obj_list_t);
     LuciObject *fobj = in->value.list.item;
 
     if (!(fobj->type == obj_file_t)) {
-	die("Not a file object");
+	die("Not a file object\n");
     }
 
     if (fobj->value.file.mode != f_read_m) {
-	die("Can't open file. It is opened for writing.");
+	die("Can't open file. It is opened for writing.\n");
     }
 
     /* seek to file start, we're gonna read the whole thing */
@@ -454,22 +508,22 @@ LuciObject *luci_fwrite(LuciObject *in)
     /* grab the FILE parameter */
     LuciObject *fobj = in->value.list.item;
     if (!(fobj->type == obj_file_t)) {
-	die("Not a file object");
+	die("Not a file object\n");
     }
 
     /* grab string parameter */
     LuciObject *param2 = in->value.list.next;
     if (!param2) {
-	die("Missing string parameter");
+	die("Missing string parameter\n");
     }
     LuciObject *text_obj = param2->value.list.item;
     if (!text_obj || (text_obj->type != obj_str_t) ) {
-	die("Not a string");
+	die("Not a string\n");
     }
     char *text = text_obj->value.s_val;
 
     if (fobj->value.file.mode == f_read_m) {
-	die("Can't write to file. It is opened for reading.");
+	die("Can't write to file. It is opened for reading.\n");
     }
 
     fwrite(text, sizeof(char), strlen(text), fobj->value.file.f_ptr);
@@ -511,8 +565,7 @@ LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 {
     if (!types_match(left, right))
     {
-	if (VERBOSE)
-	    printf("Types don't match\n");
+	yak("Types don't match\n");
 	return NULL;
     }
     LuciObject *result = NULL;

@@ -65,7 +65,12 @@ LuciObject *copy_object(LuciObject *orig)
 	return NULL;
     }
 
+    /* create the initial copy with only its type specified */
     LuciObject *copy = create_object(orig->type);
+
+    /* thes next object pointers are for copying list objects */
+    LuciObject * orig_ptr, * copy_ptr;
+
     switch(orig->type)
     {
 	case obj_int_t:
@@ -83,6 +88,17 @@ LuciObject *copy_object(LuciObject *orig)
 	    copy->value.file.size = orig->value.file.size;
 	    copy->value.file.mode = orig->value.file.mode;
 	    break;
+	case obj_list_t:
+	    orig_ptr = orig;
+	    copy_ptr = copy;
+	    copy_ptr->value.list.item = copy_object(orig_ptr->value.list.item);
+	    orig_ptr = orig_ptr->value.list.next;
+	    while (orig_ptr) {
+		copy_ptr->value.list.next = create_object(obj_list_t);
+		copy_ptr->value.list.next->value.list.item = copy_object(orig_ptr->value.list.item);
+		orig_ptr = orig_ptr->value.list.next;
+		copy_ptr = copy_ptr->value.list.next;
+	    }
 	default:
 	    break;
     }
@@ -137,6 +153,7 @@ const struct func_def builtins[] =
     "close", luci_fclose,
     "read", luci_fread,
     "write", luci_fwrite,
+    "sum", luci_sum,
     0, 0
 };
 
@@ -170,8 +187,6 @@ LuciObject *luci_help(LuciObject *in)
 
 LuciObject *luci_print(LuciObject *in)
 {
-    assert(in->type == obj_list_t);
-
     LuciObject *ptr = in;
     LuciObject *item = NULL;
     while (ptr)
@@ -217,25 +232,29 @@ LuciObject *luci_input(LuciObject *in)
     do {
 	c = fgetc(stdin);
 
-	if (++len >= lenmax) {
+	if (len >= lenmax) {
 	    lenmax = lenmax << 1;
 	    if ((input = realloc(input, lenmax * sizeof(char))) == NULL) {
 		free (input);
 		die("Failed to allocate buffer for reading stdin\n");
 	    }
-	    input[len] = c;
 	}
+	input[len++] = (char)c;
     } while (c != EOF && c != '\n');
-    input[++len] = '\0';
+
+    /* overwrite the newline or EOF char with a NUL terminator */
+    input[--len] = '\0';
 
     /* this might be bad practice? */
     /* I'm malloc'ing and copying the input char[] in case
        the size of the input buffer is far larger than it needs to be?
     */
     LuciObject *ret = create_object(obj_str_t);
-    ret->value.s_val = alloc(len * sizeof(char));
-    strcpy(ret->value.s_val, input);
+    ret->value.s_val = alloc((len + 1)* sizeof(char));
+    strncpy(ret->value.s_val, input, len);
+    ret->value.s_val[len] = '\0';
 
+    /* destroy the input buffer */
     free(input);
 
     yak("Read line from stdin\n", ret->value.s_val);
@@ -255,7 +274,6 @@ LuciObject *luci_typeof(LuciObject *in)
     else
     {
 	/* grab the first parameter from the param list */
-	assert(in->type == obj_list_t);
 	LuciObject *param = in->value.list.item;
 	if (!param) {
 	    which = "None";
@@ -292,7 +310,6 @@ LuciObject *luci_typeof(LuciObject *in)
 LuciObject *luci_assert(LuciObject *in)
 {
     assert(in);
-    assert(in->type == obj_list_t);
     LuciObject *param = in->value.list.item;
 
     switch(param->type)
@@ -325,7 +342,6 @@ LuciObject *luci_str(LuciObject *in)
     else
     {
 	/* grab the first parameter from the param list */
-	assert(in->type == obj_list_t);
 	LuciObject *param = in->value.list.item;
 
 	/* allocate our return string object */
@@ -386,7 +402,6 @@ LuciObject *luci_fopen(LuciObject *in)
 
     /* TODO: proper error checking */
     /* check that there are two proper parameters to fopen */
-    assert(in->type == obj_list_t);
     assert(in->value.list.next);
     assert(in->value.list.next->type == obj_list_t);
 
@@ -445,7 +460,6 @@ LuciObject *luci_fclose(LuciObject *in)
 	return NULL;
     }
 
-    assert(in->type == obj_list_t);
     LuciObject *fobj = in->value.list.item;
 
     if (!(fobj->type == obj_file_t)) {
@@ -468,7 +482,6 @@ LuciObject *luci_fread(LuciObject *in)
 	die("Missing file object\n");
     }
 
-    assert(in->type == obj_list_t);
     LuciObject *fobj = in->value.list.item;
 
     if (!(fobj->type == obj_file_t)) {
@@ -498,10 +511,9 @@ LuciObject *luci_fread(LuciObject *in)
 LuciObject *luci_fwrite(LuciObject *in)
 {
     if (!in) {
-	return NULL;
+	die("Need file to write to\n");
     }
 
-    assert(in->type == obj_list_t);
     assert(in->value.list.next);
     assert(in->value.list.next->type == obj_list_t);
 
@@ -528,6 +540,45 @@ LuciObject *luci_fwrite(LuciObject *in)
 
     fwrite(text, sizeof(char), strlen(text), fobj->value.file.f_ptr);
     return NULL;
+}
+
+LuciObject * luci_sum(LuciObject *param_list)
+{
+    if (!param_list) {
+	die("Need list to calculate sum\n");
+    }
+
+    LuciObject *list = param_list->value.list.item;
+
+    if (!list || (list->type != obj_list_t)) {
+	die("Must specify a list to calculate sum\n");
+    }
+
+    LuciObject *ptr = list;
+    long sum = 0;
+    while (ptr) {
+	if (!ptr->value.list.item) {
+	    die("Can't calulate sum of list containing NULL value\n");
+	}
+	switch (ptr->value.list.item->type)
+	{
+	    case obj_int_t:
+		sum += ptr->value.list.item->value.i_val;
+		break;
+	    case obj_double_t:
+		sum += (long)(ptr->value.list.item->value.d_val);
+		break;
+	    default:
+		die("Can't calculate sum of list containing non-numeric value\n");
+	}
+	ptr = ptr->value.list.next;
+    }
+
+    LuciObject *ret = create_object(obj_int_t);
+    ret->value.i_val = sum;
+
+    return ret;
+
 }
 
 

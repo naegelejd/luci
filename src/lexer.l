@@ -34,7 +34,9 @@ WS	    [ \t\f\r]+
 {WORD}		{ yylval.id = strdup(yytext); return ID; }
 {WS}	; /* ignore */
 
-,	{ return COMMA; }
+","	{ return COMMA; }
+"["	{ return LSQUARE; }
+"]"	{ return RSQUARE; }
 #.*\n	{ LINE_NUM++; } /* ignore one-line comments */
 
 ^\n	{ LINE_NUM++; /* ignore empty lines */ }

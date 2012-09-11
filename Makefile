@@ -14,8 +14,7 @@ EXECUTABLE = $(BINDIR)/$(TARGET)
 
 SOURCES := $(wildcard $(SRCDIR)/*.c)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)
-OBJECTS := $(SOURCES:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
-OBJECTS += $(OBJDIR)/parser.tab.o $(OBJDIR)/lexer.yy.o
+OBJECTS := $(OBJDIR)/ast.o $(OBJDIR)/env.o $(OBJDIR)/driver.o $(OBJDIR)/functions.o $(OBJDIR)/parser.tab.o $(OBJDIR)/lexer.yy.o
 
 #all: $(TARGET)
 all: debug
@@ -31,13 +30,13 @@ $(TARGET): $(OBJECTS)
 
 #$(SRCDIR)/%.tab.c: $(SRCDIR)/%.y
 
-$(OBJDIR)/%.yy.o: $(SRCDIR)/%.l
-	flex -o $(SRCDIR)/$*.yy.c $<
-	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/$*.yy.c
-
 $(OBJDIR)/%.tab.o: $(SRCDIR)/%.y
 	bison -d -o $(SRCDIR)/$*.tab.c $<
 	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/$*.tab.c
+
+$(OBJDIR)/%.yy.o: $(SRCDIR)/%.l
+	flex -o $(SRCDIR)/$*.yy.c $<
+	$(CC) $(CFLAGS) -c -o $@ $(SRCDIR)/$*.yy.c
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<

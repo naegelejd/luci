@@ -29,7 +29,7 @@ void yyerror(const char *msg);
 
 %start program
 
-%type <node> expr cond params call assignment statement statements
+%type <node> expr cond list_items list call assignment statement statements
 %type <node> while_loop if_else
 %type <node> program
 
@@ -49,6 +49,7 @@ void yyerror(const char *msg);
 %left TIMES DIVIDE MOD
 %left POW
 %left LPAREN RPAREN
+%left LSQUARE RSQUARE
 
 %right ASSIGN
 %right LGNOT BWNOT
@@ -78,12 +79,16 @@ assignment:
 
 call:
 	    ID LPAREN RPAREN		{ $$ = make_call($1, NULL); }
-	|   ID LPAREN params RPAREN	{ $$ = make_call($1, $3); }
+	|   ID LPAREN list_items RPAREN	{ $$ = make_call($1, $3); }
 	;
 
-params:
-	    expr		    { $$ = make_params(NULL, $1); }
-	|   params COMMA expr	    { $$ = make_params($1, $3); }
+list:
+	    LSQUARE list_items RSQUARE	{ $$ = $2; }
+	;
+
+list_items:
+	    expr			    { $$ = make_list(NULL, $1); }
+	|   list_items COMMA expr	    { $$ = make_list($1, $3); }
 	;
 
 while_loop:
@@ -132,6 +137,8 @@ expr:
 						make_expr_from_int(0), $2, op_bnot_t); }
 	|   LPAREN expr RPAREN		{ $$ = $2; /*make_binary_expr(
 						make_expr_from_int(0), $2, op_add_t);*/ }
+	|   expr LSQUARE expr RSQUARE	{ $$ = make_listref($1, $3); }
+	|   list			{ $$ = $1; }
 	|   call			{ $$ = $1; }
 	;
 %%

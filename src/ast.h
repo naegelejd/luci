@@ -10,7 +10,8 @@ typedef struct ASTNode
 	    ast_str_t,
 	    ast_id_t,
 	    ast_expression_t,
-	    ast_parameters_t,
+	    ast_listref_t,
+	    ast_list_t,
 	    ast_assignment_t,
 	    ast_while_t,
 	    ast_if_t,
@@ -31,9 +32,14 @@ typedef struct ASTNode
 	} expression;
 	struct
 	{
+	    struct ASTNode *list;
+	    struct ASTNode *index;
+	} listref;
+	struct
+	{
 	    int count;
-	    struct ASTNode **parameters;
-	} parameters;
+	    struct ASTNode **items;
+	} list;
 	struct
 	{
 	    struct ASTNode *right;
@@ -52,7 +58,7 @@ typedef struct ASTNode
 	} if_else;
 	struct
 	{
-	    struct ASTNode *parameters;
+	    struct ASTNode *param_list;
 	    char *name;
 	} call;
 	struct
@@ -78,7 +84,8 @@ ASTNode *make_expr_from_double(double);
 ASTNode *make_expr_from_string(char *);
 ASTNode *make_expr_from_id(char *);
 ASTNode *make_binary_expr(ASTNode *, ASTNode *, int op);
-ASTNode *make_params(ASTNode *, ASTNode *);
+ASTNode *make_listref(ASTNode *, ASTNode *);
+ASTNode *make_list(ASTNode *, ASTNode *);
 ASTNode *make_call(char *, ASTNode *);
 ASTNode *make_assignment(char *, ASTNode *);
 ASTNode *make_while(ASTNode *, ASTNode *);

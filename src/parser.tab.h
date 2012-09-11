@@ -78,13 +78,15 @@ extern int yydebug;
      POW = 287,
      RPAREN = 288,
      LPAREN = 289,
-     ASSIGN = 290,
-     BWNOT = 291,
-     LGNOT = 292,
-     UBWNOT = 293,
-     ULGNOT = 294,
-     UMINUS = 295,
-     UPLUS = 296
+     RSQUARE = 290,
+     LSQUARE = 291,
+     ASSIGN = 292,
+     BWNOT = 293,
+     LGNOT = 294,
+     UBWNOT = 295,
+     ULGNOT = 296,
+     UMINUS = 297,
+     UPLUS = 298
    };
 #endif
 
@@ -103,7 +105,7 @@ typedef union YYSTYPE
 
 
 /* Line 2055 of yacc.c  */
-#line 107 "src/parser.tab.h"
+#line 109 "src/parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

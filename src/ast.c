@@ -7,8 +7,9 @@
 
 extern int VERBOSE;
 
-const char *NTYPES[] = {"INT", "DOUBLE", "STRING", "ID", "EXPR", "ASSGNMT",
-	"WHILE", "CALL", "STMT"};
+const char *NTYPES[] = {"INT", "DOUBLE", "STRING", "ID", "EXPR",
+	"LISTREF", "LIST", "ASSGNMT",
+	"WHILE", "IF", "CALL", "STMT"};
 
 void *alloc(size_t size)
 {
@@ -67,30 +68,40 @@ ASTNode *make_binary_expr(ASTNode *left, ASTNode *right, int op)
     return result;
 }
 
-ASTNode *make_params(ASTNode *result, ASTNode *to_append)
+ASTNode *make_listref(ASTNode *list, ASTNode *index)
+{
+    ASTNode *result = alloc(sizeof(*result));
+    result->type = ast_listref_t;
+    result->data.listref.list = list;
+    result->data.listref.index = index;
+    yak("Made list index reference\n");
+    return result;
+}
+
+ASTNode *make_list(ASTNode *result, ASTNode *to_append)
 {
     if (!result)
     {
 	result = alloc(sizeof(*result));
-	result->type = ast_parameters_t;
-	result->data.parameters.count = 0;
-	result->data.parameters.parameters = 0;
+	result->type = ast_list_t;
+	result->data.list.count = 0;
+	result->data.list.items = 0;
     }
-    assert(result->type == ast_parameters_t);
-    result->data.parameters.count++;
-    result->data.parameters.parameters = realloc(result->data.parameters.parameters,
-	    result->data.parameters.count * sizeof(*result->data.parameters.parameters));
-    result->data.parameters.parameters[result->data.parameters.count - 1] = to_append;
+    assert(result->type == ast_list_t);
+    result->data.list.count++;
+    result->data.list.items = realloc(result->data.list.items,
+	    result->data.list.count * sizeof(*result->data.list.items));
+    result->data.list.items[result->data.list.count - 1] = to_append;
     yak("Added a new parameter\n");
     return result;
 }
 
-ASTNode *make_call(char *id, ASTNode *parameters)
+ASTNode *make_call(char *id, ASTNode *param_list)
 {
     ASTNode *result = alloc(sizeof(*result));
     result->type = ast_call_t;
     result->data.call.name = id;
-    result->data.call.parameters = parameters;
+    result->data.call.param_list = param_list;
     yak("Made call node with name: %s\n", id);
     return result;
 }
@@ -156,57 +167,57 @@ void destroy_AST(ASTNode *root)
     /* don't free a NULL statement */
     if (!root)
 	return;
-    if (root->type == ast_statements_t)
+
+    int i;
+    switch (root->type)
     {
-	int i;
-	for (i = 0; i < root->data.statements.count; i++)
-	{
-	    destroy_AST(root->data.statements.statements[i]);
-	}
-	free(root->data.statements.statements);
-    }
-    else if (root->type == ast_parameters_t)
-    {
-	int i;
-	for (i = 0; i < root->data.parameters.count; i++)
-	{
-	    destroy_AST(root->data.parameters.parameters[i]);
-	}
-	free(root->data.parameters.parameters);
-    }
-    else if (root->type == ast_while_t)
-    {
-	destroy_AST(root->data.while_loop.cond);
-	destroy_AST(root->data.while_loop.statements);
-    }
-    else if (root->type == ast_if_t)
-    {
-	destroy_AST(root->data.if_else.cond);
-	destroy_AST(root->data.if_else.ifstatements);
-	destroy_AST(root->data.if_else.elstatements);
-    }
-    else if (root->type == ast_assignment_t)
-    {
-	destroy_AST(root->data.assignment.right);
-	free(root->data.assignment.name);
-    }
-    else if (root->type == ast_call_t)
-    {
-	destroy_AST(root->data.call.parameters);
-	free(root->data.call.name);
-    }
-    else if (root->type == ast_expression_t)
-    {
-	destroy_AST(root->data.expression.left);
-	destroy_AST(root->data.expression.right);
-    }
-    else if (root->type == ast_id_t)
-    {
-	free(root->data.name);
-    }
-    else if (root->type == ast_str_t)
-    {
-	free(root->data.s_val);
+	case ast_statements_t:
+	    for (i = 0; i < root->data.statements.count; i++)
+	    {
+		destroy_AST(root->data.statements.statements[i]);
+	    }
+	    free(root->data.statements.statements);
+	    break;
+	case ast_list_t:
+	    for (i = 0; i < root->data.list.count; i++)
+	    {
+		destroy_AST(root->data.list.items[i]);
+	    }
+	    free(root->data.list.items);
+	    break;
+	case ast_while_t:
+	    destroy_AST(root->data.while_loop.cond);
+	    destroy_AST(root->data.while_loop.statements);
+	    break;
+	case ast_if_t:
+	    destroy_AST(root->data.if_else.cond);
+	    destroy_AST(root->data.if_else.ifstatements);
+	    destroy_AST(root->data.if_else.elstatements);
+	    break;
+	case ast_assignment_t:
+	    destroy_AST(root->data.assignment.right);
+	    free(root->data.assignment.name);
+	    break;
+	case ast_call_t:
+	    destroy_AST(root->data.call.param_list);
+	    free(root->data.call.name);
+	    break;
+	case ast_listref_t:
+	    destroy_AST(root->data.listref.list);
+	    destroy_AST(root->data.listref.index);
+	    break;
+	case ast_expression_t:
+	    destroy_AST(root->data.expression.left);
+	    destroy_AST(root->data.expression.right);
+	    break;
+	case ast_id_t:
+	    free(root->data.name);
+	    break;
+	case ast_str_t:
+	    free(root->data.s_val);
+	    break;
+	default:
+	    break;
     }
     /* for all nodes */
     yak("Deleting %s\n", NTYPES[root->type]);

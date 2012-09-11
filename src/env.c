@@ -15,7 +15,8 @@ static struct LuciObject *exec_double_expression(ExecContext *e, struct ASTNode 
 static struct LuciObject *exec_string_expression(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_id_expression(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_bin_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_parameters(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_listref(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_list(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_assignment(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_while(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_if(ExecContext *e, struct ASTNode *a);
@@ -30,7 +31,8 @@ static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
     exec_string_expression,
     exec_id_expression,
     exec_bin_expression,
-    exec_parameters,
+    exec_listref,
+    exec_list,
     exec_assignment,
     exec_while,
     exec_if,
@@ -105,7 +107,7 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
     assert(e);
     Symbol *s;
     if (!(s = get_symbol(e, a->data.name))) {
-	die("Can't find symbol %s\n", s->name);
+	die("Can't find symbol %s\n", a->data.name);
     }
     if (s->type == sym_obj_t)
     {
@@ -147,20 +149,68 @@ static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
     return result;
 }
 
+static LuciObject *exec_listref(struct ExecContext *e, struct ASTNode *a)
+{
+    assert(a->type = ast_listref_t);
+    LuciObject *list = dispatch_statement(e, a->data.listref.list);
+    LuciObject *index = dispatch_statement(e, a->data.listref.index);
+
+    if (!list) {
+	die("Can't index a NULL object\n");
+    }
+    if (list->type != obj_list_t) {
+	die("Can't index a non-list object\n");
+    }
+    if (!index) {
+	die("Can't index list with NULL index\n");
+    }
+    /* Only allow integer indexes */
+    if (index->type != obj_int_t) {
+	die("List index must be integer type\n");
+    }
+
+    LuciObject *one = list->value.list.item;
+    LuciObject *two = list->value.list.next->value.list.item;
+    LuciObject *three = list->value.list.next->value.list.next->value.list.item;
+
+    int i = 0, idx = index->value.i_val;
+    LuciObject *cur = list;
+    LuciObject *ret = NULL;
+    /*for (cur = list, i = 0; cur != NULL, i == idx; cur = cur->next, i++); */
+    while (cur) {
+	if (i == idx) {
+	    ret = copy_object(cur->value.list.item);
+	    goto FOUND; /* lol just wanted to use a goto somewhere */
+	}
+	cur = cur->value.list.next;
+	i++;
+    }
+
+    die("List index exceeds length of list\n");
+
+FOUND:
+
+    destroy_object(list);
+    destroy_object(index);
+
+    return ret;
+}
+
+
 /*
-   Executes a 'function parameters' node in the abstract syntax tree.
+   Executes a list node in the abstract syntax tree.
 */
-static LuciObject *exec_parameters(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_list(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
-    assert(a->type == ast_parameters_t);
+    assert(a->type == ast_list_t);
 
     LuciObject *next = NULL;
     int i;
-    for (i = a->data.parameters.count - 1; i >= 0; i--)
+    for (i = a->data.list.count - 1; i >= 0; i--)
     {
 	/* create the Object */
-	LuciObject *item = dispatch_statement(e, a->data.parameters.parameters[i]);
+	LuciObject *item = dispatch_statement(e, a->data.list.items[i]);
 	/* create the list item container */
 	LuciObject *tail = create_object(obj_list_t);
 	/* link this container to 'next' container */
@@ -170,7 +220,7 @@ static LuciObject *exec_parameters(struct ExecContext *e, struct ASTNode *a)
 	/* point 'next' to this container */
 	next = tail;
 
-	yak("Adding new param to paramlist\n");
+	yak("Adding new list item to list\n");
     }
     return next;
 }
@@ -308,7 +358,12 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
     }
     else
     {
-	LuciObject *param_list = dispatch_statement(e, a->data.call.parameters);
+	LuciObject *param_list = dispatch_statement(e, a->data.call.param_list);
+	if (param_list) {
+	    if (param_list->type != obj_list_t) {
+		die("Malformed function parameters\n");
+	    }
+	}
 	LuciObject *ret = /*(LuciObject *)*/((*(s->data.funcptr))(param_list));
 	destroy_object(param_list);
 	return ret;

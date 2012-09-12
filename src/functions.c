@@ -208,6 +208,11 @@ LuciObject *luci_print(LuciObject *in)
 		case obj_str_t:
 		    printf("%s", item->value.s_val);
 		    break;
+		case obj_list_t:
+		    printf("[");
+		    luci_print(item);
+		    printf("]");
+		    break;
 		default:
 		    printf("None");
 	    }
@@ -555,7 +560,8 @@ LuciObject * luci_sum(LuciObject *param_list)
     }
 
     LuciObject *ptr = list;
-    long sum = 0;
+    double sum = 0;
+    int found_double = 0;
     while (ptr) {
 	if (!ptr->value.list.item) {
 	    die("Can't calulate sum of list containing NULL value\n");
@@ -563,10 +569,11 @@ LuciObject * luci_sum(LuciObject *param_list)
 	switch (ptr->value.list.item->type)
 	{
 	    case obj_int_t:
-		sum += ptr->value.list.item->value.i_val;
+		sum += (double)ptr->value.list.item->value.i_val;
 		break;
 	    case obj_double_t:
-		sum += (long)(ptr->value.list.item->value.d_val);
+		found_double = 1;
+		sum += (ptr->value.list.item->value.d_val);
 		break;
 	    default:
 		die("Can't calculate sum of list containing non-numeric value\n");
@@ -574,11 +581,17 @@ LuciObject * luci_sum(LuciObject *param_list)
 	ptr = ptr->value.list.next;
     }
 
-    LuciObject *ret = create_object(obj_int_t);
-    ret->value.i_val = sum;
+    LuciObject *ret;
+    if (!found_double) {
+	ret = create_object(obj_int_t);
+	ret->value.i_val = (long)sum;
+    }
+    else {
+	ret = create_object(obj_double_t);
+	ret->value.d_val = sum;
+    }
 
     return ret;
-
 }
 
 

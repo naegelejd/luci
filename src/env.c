@@ -15,7 +15,8 @@ static struct LuciObject *exec_double_expression(ExecContext *e, struct ASTNode 
 static struct LuciObject *exec_string_expression(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_id_expression(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_bin_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_listref(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_list_index(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_list_assignment(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_list(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_assignment(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_while(ExecContext *e, struct ASTNode *a);
@@ -31,7 +32,8 @@ static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
     exec_string_expression,
     exec_id_expression,
     exec_bin_expression,
-    exec_listref,
+    exec_list_index,
+    exec_list_assignment,
     exec_list,
     exec_assignment,
     exec_while,
@@ -149,11 +151,11 @@ static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
     return result;
 }
 
-static LuciObject *exec_listref(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a->type = ast_listref_t);
-    LuciObject *list = dispatch_statement(e, a->data.listref.list);
-    LuciObject *index = dispatch_statement(e, a->data.listref.index);
+    assert(a->type = ast_listindex_t);
+    LuciObject *list = dispatch_statement(e, a->data.listindex.list);
+    LuciObject *index = dispatch_statement(e, a->data.listindex.index);
 
     if (!list) {
 	die("Can't index a NULL object\n");
@@ -168,34 +170,94 @@ static LuciObject *exec_listref(struct ExecContext *e, struct ASTNode *a)
     if (index->type != obj_int_t) {
 	die("List index must be integer type\n");
     }
+    int idx = index->value.i_val;
+    destroy_object(index);
 
     LuciObject *one = list->value.list.item;
     LuciObject *two = list->value.list.next->value.list.item;
     LuciObject *three = list->value.list.next->value.list.next->value.list.item;
 
-    int i = 0, idx = index->value.i_val;
+    int i = 0, found = 0;
     LuciObject *cur = list;
     LuciObject *ret = NULL;
     /*for (cur = list, i = 0; cur != NULL, i == idx; cur = cur->next, i++); */
     while (cur) {
 	if (i == idx) {
 	    ret = copy_object(cur->value.list.item);
-	    goto FOUND; /* lol just wanted to use a goto somewhere */
+	    found = 1;
+	    break;
 	}
 	cur = cur->value.list.next;
 	i++;
     }
 
-    die("List index exceeds length of list\n");
-
-FOUND:
-
     destroy_object(list);
-    destroy_object(index);
+    if (!found) {
+	die("List index exceeds length of list\n");
+    }
 
     return ret;
 }
 
+/*
+   The execution of a list index assignment must traverse
+   the list, and find the correct index first.
+   Ideally, the exec_list_index function could return this object,
+   but for now, since I'm creating copies of all referenced symbols,
+   this wouldn't work because exec_list_index returns a COPY of the value
+   at the list's index.
+*/
+static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a)
+{
+    assert(a->type = ast_listassign_t);
+
+    LuciObject *index = dispatch_statement(e, a->data.listassign.index);
+    if (!index || (index->type != obj_int_t)) {
+	die("Index is not an integer\n");
+    }
+    int idx = index->value.i_val;
+    /* we got the list index so destroy the object */
+    destroy_object(index);
+
+    LuciObject *right = dispatch_statement(e, a->data.listassign.right);
+
+    Symbol *s;
+    if (!(s = get_symbol(e, a->data.listassign.name)))
+    {
+	destroy_object(right);
+	die("List %s does not exist\n", a->data.listassign.name);
+    }
+    else
+    {
+	LuciObject *list = s->data.object;
+	if (!list || (list->type != obj_list_t)) {
+	    destroy_object(right);
+	    die("Can't index a non-list object in assignment\n");
+	}
+
+	int i = 0, found = 0;
+	LuciObject *cur = list;
+	while (cur) {
+	    if (i == idx) {
+		/* destroy the existing list index's contents */
+		destroy_object(cur->value.list.item);
+		/* set the list's contents at the index */
+		cur->value.list.item = right;
+		found = 1;
+		break;
+	    }
+	    cur = cur->value.list.next;
+	    i++;
+	}
+	if (!found) {
+	    destroy_object(right);
+	    die("List index exceeds length of list\n");
+	}
+    }
+
+    /* return an empty LuciObject * */
+    return NULL;
+}
 
 /*
    Executes a list node in the abstract syntax tree.
@@ -235,8 +297,7 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
     assert(a->type == ast_assignment_t);
     assert(e);
 
-    ASTNode *right = a->data.assignment.right;
-    LuciObject *r = dispatch_statement(e, right);
+    LuciObject *right = dispatch_statement(e, a->data.assignment.right);
 
     Symbol *s;
     if (!(s = get_symbol(e, a->data.assignment.name)))
@@ -254,12 +315,10 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 	destroy_object(s->data.object);
     }
     /* set the symbol's new payload */
-    s->data.object = r;
+    s->data.object = right;
 
     /* return an empty LuciObject * */
     return NULL;
-    //s->data.object.type = obj_int_t;
-    //s->data.object.value.i_val = r->value.i_val;
 }
 
 /*

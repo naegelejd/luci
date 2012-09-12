@@ -68,13 +68,24 @@ ASTNode *make_binary_expr(ASTNode *left, ASTNode *right, int op)
     return result;
 }
 
-ASTNode *make_listref(ASTNode *list, ASTNode *index)
+ASTNode *make_list_index(ASTNode *list, ASTNode *index)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = ast_listref_t;
-    result->data.listref.list = list;
-    result->data.listref.index = index;
+    result->type = ast_listindex_t;
+    result->data.listindex.list = list;
+    result->data.listindex.index = index;
     yak("Made list index reference\n");
+    return result;
+}
+
+ASTNode *make_list_assignment(char *id, ASTNode *index, ASTNode *right)
+{
+    ASTNode *result = alloc(sizeof(*result));
+    result->type = ast_listassign_t;
+    result->data.listassign.name = id;
+    result->data.listassign.index = index;
+    result->data.listassign.right = right;
+    yak("Made list assignment node to id: %s\n", id);
     return result;
 }
 
@@ -202,9 +213,14 @@ void destroy_AST(ASTNode *root)
 	    destroy_AST(root->data.call.param_list);
 	    free(root->data.call.name);
 	    break;
-	case ast_listref_t:
-	    destroy_AST(root->data.listref.list);
-	    destroy_AST(root->data.listref.index);
+	case ast_listindex_t:
+	    destroy_AST(root->data.listindex.list);
+	    destroy_AST(root->data.listindex.index);
+	    break;
+	case ast_listassign_t:
+	    destroy_AST(root->data.listassign.index);
+	    destroy_AST(root->data.listassign.right);
+	    free(root->data.listassign.name);
 	    break;
 	case ast_expression_t:
 	    destroy_AST(root->data.expression.left);

@@ -173,10 +173,6 @@ static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
     int idx = index->value.i_val;
     destroy_object(index);
 
-    LuciObject *one = list->value.list.item;
-    LuciObject *two = list->value.list.next->value.list.item;
-    LuciObject *three = list->value.list.next->value.list.next->value.list.item;
-
     int i = 0, found = 0;
     LuciObject *cur = list;
     LuciObject *ret = NULL;

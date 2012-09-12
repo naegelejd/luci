@@ -14,21 +14,21 @@ EXECUTABLE = $(BINDIR)/$(TARGET)
 
 SOURCES := $(wildcard $(SRCDIR)/*.c)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)
-OBJECTS := $(OBJDIR)/ast.o $(OBJDIR)/env.o $(OBJDIR)/driver.o $(OBJDIR)/functions.o $(OBJDIR)/parser.tab.o $(OBJDIR)/lexer.yy.o
+OBJECTS := $(addprefix $(OBJDIR)/,ast.o env.o driver.o functions.o parser.tab.o lexer.yy.o)
 
-#all: $(TARGET)
+#all: $(EXECUTABLE)
 all: debug
 
 debug: CFLAGS += -DDEBUG -g
-debug: $(TARGET)
+debug: $(EXECUTABLE)
 
-$(TARGET): $(OBJECTS)
-	mkdir -p obj/
+$(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
-#$(SRCDIR)/%.yy.c: $(SRCDIR)/%.l
+$(EXECUTABLE): | $(BINDIR)
 
-#$(SRCDIR)/%.tab.c: $(SRCDIR)/%.y
+$(BINDIR):
+	test -d $(BINDIR) || mkdir $(BINDIR)
 
 $(OBJDIR)/%.tab.o: $(SRCDIR)/%.y
 	bison -d -o $(SRCDIR)/$*.tab.c $<
@@ -41,13 +41,17 @@ $(OBJDIR)/%.yy.o: $(SRCDIR)/%.l
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+$(OBJECTS): | $(OBJDIR)
+
+$(OBJDIR):
+	test -d $(OBJDIR) || mkdir $(OBJDIR)
+
 install:
-	mkdir -p $(INSTALLDIR)
-	cp $(TARGET) $(INSTALLDIR)
+	test -d $(INSTALLDIR) || mkdir $(INSTALLDIR)
+	cp $(EXECUTABLE) $(INSTALLDIR)
 
 doc: Doxyfile $(SRCDIR)/*.c
 	doxygen Doxyfile >> /dev/null
 
 clean:
-	rm -f $(TARGET) $(OBJDIR)/*
-	rm -rf doc/*
+	rm -rf $(BINDIR) $(OBJDIR)

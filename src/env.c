@@ -148,6 +148,28 @@ static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
     return result;
 }
 
+/* returns the list NODE at the given index
+    or NULL if not found (index exceeds list bounds)
+*/
+static LuciObject *get_list_node(LuciObject *list, int index)
+{
+    if (!list || (list->type != obj_list_t)) {
+	return NULL;
+    }
+    int i = 0, found = 0;
+    LuciObject *cur = list;
+    LuciObject *ret = NULL;
+    while (cur) {
+	if (i == index) {
+	    ret = cur;
+	    break;
+	}
+	cur = cur->value.list.next;
+	i++;
+    }
+    return ret;
+}
+
 static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a->type = ast_listindex_t);
@@ -173,25 +195,18 @@ static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
     int idx = index->value.i_val;
     destroy_object(index);
 
-    int i = 0, found = 0;
-    LuciObject *cur = list;
-    LuciObject *ret = NULL;
-    /*for (cur = list, i = 0; cur != NULL, i == idx; cur = cur->next, i++); */
-    while (cur) {
-	if (i == idx) {
-	    ret = copy_object(cur->value.list.item);
-	    found = 1;
-	    break;
-	}
-	cur = cur->value.list.next;
-	i++;
-    }
-
+    LuciObject *list_node = get_list_node(list, idx);
     destroy_object(list);
-    if (!found) {
+    if (!list_node) {
 	die("List index exceeds length of list\n");
     }
 
+    /* COPY the list item.
+       Think about it. When operating on an item
+       in a list, you request a copy of the contents
+       of this list at a given index.
+    */
+    LuciObject *ret = copy_object(list_node->value.list.item);
     return ret;
 }
 
@@ -231,24 +246,15 @@ static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a
 	    die("Can't index a non-list object in assignment\n");
 	}
 
-	int i = 0, found = 0;
-	LuciObject *cur = list;
-	while (cur) {
-	    if (i == idx) {
-		/* destroy the existing list index's contents */
-		destroy_object(cur->value.list.item);
-		/* set the list's contents at the index */
-		cur->value.list.item = right;
-		found = 1;
-		break;
-	    }
-	    cur = cur->value.list.next;
-	    i++;
-	}
-	if (!found) {
+	LuciObject *list_node = get_list_node(list, idx);
+	if (!list_node) {
 	    destroy_object(right);
 	    die("List index exceeds length of list\n");
 	}
+	/* destroy existing data object in list node */
+	destroy_object(list_node->value.list.item);
+	/* assign new object to list node */
+	list_node->value.list.item = right;
     }
 
     /* return an empty LuciObject * */

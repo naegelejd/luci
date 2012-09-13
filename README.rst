@@ -52,9 +52,11 @@ Additional
 TODO List
 ---------
 
-#. Create list types (syntax/parse), rename 'parameter' AST nodes since they're lists
+#. Re-work allocation/deallocation of LuciObjects to incorporate
+   reference counts.
+#. Figure out how the hell to implement break/continue statements.
 #. Handle mixed-type binary operations (string * int)
-#. Implement For loops
+#. Invent more builtin functions just for fun
 
 Completed
 ---------
@@ -67,4 +69,6 @@ Completed
 #. Implement if/else conditional blocks. Decided against 'else if', which simplifies parser.
 #. Implement multi-parameter functions
 #. Implement a FILE * luci type, with open(), close(), read(), write() functions
+#. Create list types (syntax/parse), rename 'parameter' AST nodes since they're lists
+#. Implement For loops
 

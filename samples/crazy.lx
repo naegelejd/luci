@@ -1,4 +1,4 @@
-# simple code demonstrating multi-parameter functions
+# simple code demonstrating variable-parameter functions
 #   as well as reading/writing files
 
 print("hello", "world", "goodbye all")
@@ -11,6 +11,6 @@ print(contents1, contents2, type(f), type(read(f)))
 
 close(f)
 
-#f = open("samples/data/test2.txt", "a")
-#write(f, contents1)
-#close(f)
+f = open("samples/data/test2.txt", "a")
+write(f, contents1)
+close(f)

@@ -15,3 +15,9 @@ l[4] = "hello"
 l[8] = "world"
 
 print(l)
+
+print(range(0))
+print(range(4))
+print(range(3, 7))
+print(range(11, 19, 2))
+

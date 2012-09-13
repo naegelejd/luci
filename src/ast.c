@@ -127,13 +127,25 @@ ASTNode *make_assignment(char *id, ASTNode *right)
     return result;
 }
 
-ASTNode *make_while(ASTNode *cond, ASTNode *statements)
+ASTNode *make_while_loop(ASTNode *cond, ASTNode *statements)
 {
     ASTNode *result = alloc(sizeof(*result));
     result->type = ast_while_t;
     result->data.while_loop.cond = cond;
     result->data.while_loop.statements = statements;
     yak("Made while node containing %d stmts\n",
+	    statements->data.statements.count);
+    return result;
+}
+
+ASTNode *make_for_loop(char *id, ASTNode *list, ASTNode *statements)
+{
+    ASTNode *result = alloc(sizeof(*result));
+    result->type = ast_for_t;
+    result->data.for_loop.name = id;
+    result->data.for_loop.list = list;
+    result->data.for_loop.statements = statements;
+    yak("Made for node containing %d stmts\n",
 	    statements->data.statements.count);
     return result;
 }
@@ -199,6 +211,11 @@ void destroy_AST(ASTNode *root)
 	case ast_while_t:
 	    destroy_AST(root->data.while_loop.cond);
 	    destroy_AST(root->data.while_loop.statements);
+	    break;
+	case ast_for_t:
+	    destroy_AST(root->data.for_loop.list);
+	    destroy_AST(root->data.for_loop.statements);
+	    free(root->data.for_loop.name);
 	    break;
 	case ast_if_t:
 	    destroy_AST(root->data.if_else.cond);

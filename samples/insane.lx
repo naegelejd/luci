@@ -1,0 +1,14 @@
+print("for-loop 1:")
+for i in range(10) do
+ print (i)
+done
+
+print("for-loop 2:")
+for i in range(0, 7) do
+    print (i - 1)
+done
+
+print("for-loop 3:")
+for j in range(7, -6, -1) do
+    print (j)
+done

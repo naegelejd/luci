@@ -20,9 +20,10 @@ WS	    [ \t\f\r]+
 %%
 
 [wW][hH][iI][lL][eE]	{ return WHILE; }
+[fF][oO][rR]		{ return FOR; }
+[iI][nN]		{ return IN; }
 [dD][oO]		{ return DO; }
 [dD][oO][nN][eE]	{ return DONE; }
-
 [iI][fF]		{ return IF; }
 [tT][hH][eE][nN]	{ return THEN; }
 [eE][lL][sS][eE]	{ return ELSE; }

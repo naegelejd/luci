@@ -153,6 +153,7 @@ const struct func_def builtins[] =
     "close", luci_fclose,
     "read", luci_fread,
     "write", luci_fwrite,
+    "range", luci_range,
     "sum", luci_sum,
     0, 0
 };
@@ -545,6 +546,87 @@ LuciObject *luci_fwrite(LuciObject *in)
 
     fwrite(text, sizeof(char), strlen(text), fobj->value.file.f_ptr);
     return NULL;
+}
+
+LuciObject * luci_range(LuciObject *param_list)
+{
+    LuciObject *first = param_list;
+    LuciObject *second = NULL;
+    LuciObject *third = NULL;
+
+    int start, end, incr;
+
+    if (!first) {
+	die("Specify at least an integer endpoint for range\n");
+    }
+    if (first->value.list.item->type != obj_int_t) {
+	die("First parameter to range must be integer\n");
+    }
+
+    second = first->value.list.next;
+    if (second) {
+	if (second->value.list.item->type != obj_int_t) {
+	    die("Second parameter to range must be integer\n");
+	}
+	start = first->value.list.item->value.i_val;
+	end = second->value.list.item->value.i_val;
+	third = second->value.list.next;
+	if (third) {
+	    if (third->value.list.item->type != obj_int_t) {
+		die("Third parameter to range must be integer\n");
+	    }
+	    incr = third->value.list.item->value.i_val;
+	}
+	else {
+	    incr = 1;
+	}
+    }
+    else {
+	start = 0;
+	end = first->value.list.item->value.i_val;
+	incr = 1;
+    }
+
+    if (((end < start) && (incr > 0)) || ((end > start) && (incr < 0))){
+	die("Invalid incrementor for requested range\n");
+    }
+
+    int decreasing = 0;
+    /* reverse our range and incr if we're generating a range including negatives */
+    if (end < start) {
+	end = -end;
+	start = -start;
+
+	incr = -incr;
+    }
+
+    /* Build a list of integers from start to end, incrementing by incr */
+
+    LuciObject *tail, *item, *next = NULL;
+    int i;
+    for (i = end - incr; i >= start; i -= incr)
+    {
+	/* create the Object */
+	item = create_object(obj_int_t);
+	if (decreasing) {
+	    item->value.i_val = -i;
+	}
+	else {
+	    item->value.i_val = i;
+	}
+	/* create the list item container */
+	tail = create_object(obj_list_t);
+	/* link this container to 'next' container */
+	tail->value.list.next = next;
+	/* store ptr to actual object in container */
+	tail->value.list.item = item;
+	/* point 'next' to this container */
+	next = tail;
+
+	/*yak("Adding new list item to list\n");*/
+    }
+
+    return next;
 }
 
 LuciObject * luci_sum(LuciObject *param_list)

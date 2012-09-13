@@ -20,6 +20,7 @@ static struct LuciObject *exec_list_assignment(ExecContext *e, struct ASTNode *a
 static struct LuciObject *exec_list(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_assignment(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_while(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_for(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_if(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_call(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_statement(ExecContext *e, struct ASTNode *a);
@@ -37,6 +38,7 @@ static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
     exec_list,
     exec_assignment,
     exec_while,
+    exec_for,
     exec_if,
     exec_call,
     exec_statement,
@@ -366,6 +368,54 @@ static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
 }
 
 /*
+   Executes a for loop in the abstract syntax tree
+*/
+static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
+{
+    assert(a);
+    assert(a->type == ast_for_t);
+
+    yak("Begin for loop\n");
+
+    LuciObject *list = dispatch_statement(e, a->data.for_loop.list);
+    if (list->type != obj_list_t) {
+	destroy_object(list);
+	die("For loop can only iterate over list types\n");
+    }
+
+    /* create the symbol ahead of time if it doesn't exist */
+    const char *name = a->data.for_loop.name;
+    Symbol *s;
+    if (!(s = get_symbol(e, name))) {
+	s = add_symbol(e, name, sym_obj_t);
+    }
+    else {
+	if (s->type = sym_obj_t) {
+	    destroy_object(s->data.object);
+	}
+    }
+
+    /* iterate through list, assigning value to symbol, then executing all statements */
+    LuciObject *item, *ptr = list;
+    while (ptr) {
+	/* copy the item in the list */
+	item = copy_object(ptr->value.list.item);
+	/* destroy the existing value of the symbol */
+	destroy_object(s->data.object);
+	/* assign item copy to symbol */
+	s->data.object = item;
+	/* execute all statements inside the for loop */
+	dispatch_statement(e, a->data.for_loop.statements);
+	/* move to next index in the list */
+	ptr = ptr->value.list.next;
+    }
+
+    destroy_object(list);
+
+    return NULL;
+}
+
+/*
    Executes an if/else statement in the abstract syntax tree.
 */
 static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
@@ -462,6 +512,16 @@ Symbol *add_symbol (struct ExecContext *e, char const *name, int type)
     ptr->name = (char *) alloc (strlen (name) + 1);
     strcpy (ptr->name, name);
     ptr->type = type;
+    switch (type) {
+	case sym_obj_t:
+	    ptr->data.object = NULL;
+	    break;
+	case sym_func_t:
+	    ptr->data.funcptr = NULL;
+	    break;
+	default:
+	    break;
+    }
     /* caller must set the data (payload) */
     ptr->next = e->symtable;
     e->symtable = ptr;

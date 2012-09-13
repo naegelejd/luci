@@ -15,6 +15,7 @@ typedef struct ASTNode
 	    ast_list_t,
 	    ast_assignment_t,
 	    ast_while_t,
+	    ast_for_t,
 	    ast_if_t,
 	    ast_call_t,
 	    ast_statements_t,
@@ -59,6 +60,12 @@ typedef struct ASTNode
 	} while_loop;
 	struct
 	{
+	    struct ASTNode *list;
+	    struct ASTNode *statements;
+	    char *name;
+	} for_loop;
+	struct
+	{
 	    struct ASTNode *cond;
 	    struct ASTNode *ifstatements;
 	    struct ASTNode *elstatements;
@@ -96,7 +103,8 @@ ASTNode *make_list_assignment(char *, ASTNode *, ASTNode *);
 ASTNode *make_list(ASTNode *, ASTNode *);
 ASTNode *make_call(char *, ASTNode *);
 ASTNode *make_assignment(char *, ASTNode *);
-ASTNode *make_while(ASTNode *, ASTNode *);
+ASTNode *make_while_loop(ASTNode *, ASTNode *);
+ASTNode *make_for_loop(char *, ASTNode *, ASTNode *);
 ASTNode *make_if_else(ASTNode *, ASTNode *, ASTNode *);
 ASTNode *make_statement(ASTNode *, ASTNode *);
 

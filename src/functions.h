@@ -31,6 +31,7 @@ struct LuciObject *luci_fclose(struct LuciObject *);
 struct LuciObject *luci_fread(struct LuciObject *);
 struct LuciObject *luci_fwrite(struct LuciObject *);
 
+struct LuciObject *luci_range(struct LuciObject *);
 struct LuciObject *luci_sum(struct LuciObject *);
 
 struct LuciObject *solve_bin_expr(struct LuciObject *left,

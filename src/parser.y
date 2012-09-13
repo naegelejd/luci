@@ -30,7 +30,7 @@ void yyerror(const char *msg);
 %start program
 
 %type <node> expr cond call assignment statement statements
-%type <node> while_loop if_else
+%type <node> while_loop for_loop if_else
 %type <node> list_items list_index list 
 %type <node> program
 
@@ -39,7 +39,7 @@ void yyerror(const char *msg);
 %token <s_val> STRING
 %token <id> ID
 %token NEWLINE COMMA
-%token WHILE DO DONE
+%token WHILE FOR IN DO DONE
 %token IF THEN ELSE END
 
 %left LGOR LGAND
@@ -71,6 +71,7 @@ statement:
 	    assignment			{ $$ = $1; }
 	|   call			{ $$ = $1; }
 	|   while_loop			{ $$ = $1; }
+	|   for_loop			{ $$ = $1; }
 	|   if_else			{ $$ = $1; }
 	;
 
@@ -99,7 +100,11 @@ list_index:
 	;
 
 while_loop:
-	    WHILE cond DO NEWLINE statements DONE	{ $$ = make_while($2, $5); }
+	    WHILE cond DO NEWLINE statements DONE	{ $$ = make_while_loop($2, $5); }
+	;
+
+for_loop:
+	    FOR ID IN expr DO NEWLINE statements DONE	{ $$ = make_for_loop($2, $4, $7); }
 	;
 
 if_else:

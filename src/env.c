@@ -127,13 +127,8 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
 	int t = orig->type;
 	yak("Found symbol %s with type %d. Returning its object, with type:%d\n",
 		a->data.name, s->type, t);
-	/* copy the symbol's data and return it
-	   This allows the user to do whatever they want with
-	   the VALUE of the symbol(variable), but the symbol itself
-	   will retain this original value until a NEW ASSIGNMENT
-	   overwrites it.
-	*/
-	return copy_object(orig);
+	/* return a reference to this symbol's value */
+	return reference_object(orig);
     }
     else
     {
@@ -156,20 +151,23 @@ static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
 static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a->type = ast_listindex_t);
-    LuciObject *list = dispatch_statement(e, a->data.listindex.list);
-    LuciObject *index = dispatch_statement(e, a->data.listindex.index);
 
+    LuciObject *list = dispatch_statement(e, a->data.listindex.list);
     if (!list) {
 	die("Can't index a NULL object\n");
     }
     if (list->type != obj_list_t) {
+	destroy_object(list);
 	die("Can't index a non-list object\n");
     }
+
+    LuciObject *index = dispatch_statement(e, a->data.listindex.index);
     if (!index) {
 	die("Can't index list with NULL index\n");
     }
     /* Only allow integer indexes */
     if (index->type != obj_int_t) {
+	destroy_object(index);
 	die("List index must be integer type\n");
     }
     int idx = index->value.i_val;
@@ -295,6 +293,10 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
     assert(a->type == ast_assignment_t);
     assert(e);
 
+    /* right could be an object with refcount=1 (expression result,
+       function return)
+       or an object with refcount>=2 (the value of a symbol)
+    */
     LuciObject *right = dispatch_statement(e, a->data.assignment.right);
 
     Symbol *s;
@@ -313,7 +315,8 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 	destroy_object(s->data.object);
     }
     /* set the symbol's new payload */
-    s->data.object = copy_object(right);
+    /*s->data.object = reference_object(right);*/
+    s->data.object = right;
 
     /* return an empty LuciObject * */
     return NULL;

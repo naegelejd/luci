@@ -41,7 +41,7 @@ LuciObject *create_object(int type)
 {
     LuciObject *ret = alloc(sizeof(*ret));
     ret->type = type;
-    ret->refcount = 0;
+    ret->refcount = 1;
     switch(type)
     {
 	case obj_str_t:
@@ -60,7 +60,7 @@ LuciObject *create_object(int type)
     return ret;
 }
 
-LuciObject *copy_object(LuciObject *orig)
+LuciObject *reference_object(LuciObject *orig)
 {
     if (!orig) {
 	return NULL;
@@ -71,7 +71,7 @@ LuciObject *copy_object(LuciObject *orig)
     return orig;
 }
 
-LuciObject *old_copy(LuciObject *orig)
+LuciObject *copy_object(LuciObject *orig)
 {
     if (!orig) {
 	return NULL;

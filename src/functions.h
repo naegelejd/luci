@@ -6,6 +6,9 @@ struct LuciObject;
 /* creates and initializes a new LuciObject */
 struct LuciObject *create_object(int type);
 
+/* incrementes the object's refcount and returns it */
+struct LuciObject *reference_object(struct LuciObject* orig);
+
 /* duplicates a LuciObject, creating a new one */
 struct LuciObject *copy_object(struct LuciObject* orig);
 

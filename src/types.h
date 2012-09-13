@@ -43,6 +43,7 @@ typedef enum {
 typedef struct LuciObject
 {
     LuciObjectType type;
+    int refcount;
     union
     {
 	int i_val;

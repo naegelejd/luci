@@ -313,7 +313,7 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 	destroy_object(s->data.object);
     }
     /* set the symbol's new payload */
-    s->data.object = right;
+    s->data.object = copy_object(right);
 
     /* return an empty LuciObject * */
     return NULL;
@@ -359,9 +359,14 @@ static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
     yak("Begin while loop\n");
 
     int huh = evaluate_cond(e, a->data.while_loop.cond);
+    LuciObject *none;
     while (huh)
     {
-	dispatch_statement(e, a->data.while_loop.statements);
+	/* all statements will return NULL, but I still catch them
+	   and 'destroy' them, like in the other node executions
+	*/
+	none = dispatch_statement(e, a->data.while_loop.statements);
+	destroy_object(none);
 	huh = evaluate_cond(e, a->data.while_loop.cond);
     }
     return NULL;
@@ -396,7 +401,7 @@ static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
     }
 
     /* iterate through list, assigning value to symbol, then executing all statements */
-    LuciObject *item, *ptr = list;
+    LuciObject *item, *none, *ptr = list;
     while (ptr) {
 	/* copy the item in the list */
 	item = copy_object(ptr->value.list.item);
@@ -405,7 +410,8 @@ static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
 	/* assign item copy to symbol */
 	s->data.object = item;
 	/* execute all statements inside the for loop */
-	dispatch_statement(e, a->data.for_loop.statements);
+	none = dispatch_statement(e, a->data.for_loop.statements);
+	destroy_object(none);
 	/* move to next index in the list */
 	ptr = ptr->value.list.next;
     }
@@ -426,14 +432,16 @@ static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
     yak("Begin if block\n");
 
     int huh = evaluate_cond(e, a->data.if_else.cond);
-    printf("%d\n", huh);
+    LuciObject *none;
     if (huh)
     {
-	dispatch_statement(e, a->data.if_else.ifstatements);
+	none = dispatch_statement(e, a->data.if_else.ifstatements);
+	destroy_object(none);
     }
     else
     {
-	dispatch_statement(e, a->data.if_else.elstatements);
+	none = dispatch_statement(e, a->data.if_else.elstatements);
+	destroy_object(none);
     }
     return NULL;
 }
@@ -482,11 +490,12 @@ static LuciObject *exec_statement(struct ExecContext *e, struct ASTNode *a)
 {
     assert(a);
     assert(a->type == ast_statements_t);
+    LuciObject *none;
     int i;
     for (i=0; i < a->data.statements.count; i++)
     {
-	LuciObject *ret = dispatch_statement(e, a->data.statements.statements[i]);
-	destroy_object(ret);
+	none = dispatch_statement(e, a->data.statements.statements[i]);
+	destroy_object(none);
     }
     return NULL;
 }
@@ -496,7 +505,8 @@ static LuciObject *exec_statement(struct ExecContext *e, struct ASTNode *a)
 */
 void exec_AST(struct ExecContext *e, struct ASTNode *a)
 {
-    dispatch_statement(e, a);
+    LuciObject *none = dispatch_statement(e, a);
+    destroy_object(none);
 }
 
 /*

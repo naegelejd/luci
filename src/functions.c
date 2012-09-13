@@ -41,6 +41,7 @@ LuciObject *create_object(int type)
 {
     LuciObject *ret = alloc(sizeof(*ret));
     ret->type = type;
+    ret->refcount = 0;
     switch(type)
     {
 	case obj_str_t:
@@ -60,6 +61,17 @@ LuciObject *create_object(int type)
 }
 
 LuciObject *copy_object(LuciObject *orig)
+{
+    if (!orig) {
+	return NULL;
+    }
+
+    orig->refcount ++;
+
+    return orig;
+}
+
+LuciObject *old_copy(LuciObject *orig)
 {
     if (!orig) {
 	return NULL;
@@ -107,7 +119,7 @@ LuciObject *copy_object(LuciObject *orig)
 
 void destroy_object(LuciObject *trash)
 {
-    if (trash)
+    if (trash && (--(trash->refcount) <= 0))
     {
 	/* if this object is part of a linked list, destroy the next node */
 	if (trash->type == obj_list_t)

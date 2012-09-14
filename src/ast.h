@@ -90,8 +90,6 @@ typedef struct ASTNode_list
     struct ASTNode_list* next;
 } ASTNode_list;
 
-void *alloc(size_t size);
-
 void destroy_AST(ASTNode *);
 ASTNode *make_expr_from_int(int);
 ASTNode *make_expr_from_double(double);

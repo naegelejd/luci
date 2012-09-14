@@ -11,16 +11,6 @@ const char *NTYPES[] = {"INT", "DOUBLE", "STRING", "ID", "EXPR",
 	"LISTREF", "LIST", "ASSGNMT",
 	"WHILE", "IF", "CALL", "STMT"};
 
-void *alloc(size_t size)
-{
-    void *result = calloc(size, 1);
-    if (!result)
-    {
-	die("alloc failed\n");
-    }
-    return result;
-}
-
 ASTNode *make_expr_from_int(int val)
 {
     ASTNode *result = alloc(sizeof(*result));

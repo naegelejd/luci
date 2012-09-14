@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "functions.h"
 #include "types.h"
-#include "ast.h"
+#include "driver.h"
 
 /* Forward declarations */
 static LuciObject *add(LuciObject *left, LuciObject *right);
@@ -718,6 +718,62 @@ int types_match(LuciObject *left, LuciObject *right)
     else
 	return 0;
 }
+
+/*
+   Evaluates a conditional statement, returning an integer
+   value of 0 if False, and non-zero if True.
+*/
+int evaluate_condition(LuciObject *cond)
+{
+    int huh = 0;
+    if (cond == NULL) {
+	return 0;
+    }
+    switch (cond->type)
+    {
+	case obj_int_t:
+	    huh = cond->value.i_val;
+	    break;
+	case obj_double_t:
+	    huh = (int)cond->value.d_val;
+	    break;
+	case obj_str_t:
+	    huh = strlen(cond->value.s_val);
+	    break;
+	case obj_list_t:
+	    huh = 1;
+	    break;
+	case obj_file_t:
+	    huh = 1;
+	    break;
+	default:
+	    huh = 0;
+    }
+    return huh;
+}
+
+/* returns the list NODE at the given index
+    or NULL if not found (index exceeds list bounds)
+*/
+LuciObject *get_list_node(LuciObject *list, int index)
+{
+    if (!list || (list->type != obj_list_t)) {
+	return NULL;
+    }
+    int i = 0, found = 0;
+    LuciObject *cur = list;
+    LuciObject *ret = NULL;
+    while (cur) {
+	if (i == index) {
+	    ret = cur;
+	    break;
+	}
+	cur = cur->value.list.next;
+	i++;
+    }
+    return ret;
+}
+
 
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 {

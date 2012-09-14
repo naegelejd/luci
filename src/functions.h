@@ -40,6 +40,8 @@ struct LuciObject *luci_sum(struct LuciObject *);
 struct LuciObject *solve_bin_expr(struct LuciObject *left,
 	struct LuciObject *right, int op);
 
+struct LuciObject *get_list_node(struct LuciObject *list, int index);
+int evaluate_condition(struct LuciObject *);
 int types_match(struct LuciObject *left, struct LuciObject *right);
 
 #endif

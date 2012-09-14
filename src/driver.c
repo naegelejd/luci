@@ -78,6 +78,17 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
+/*  Safely allocate memory, and quit on failure */
+void *alloc(size_t size)
+{
+    void *result = calloc(size, 1);
+    if (!result)
+    {
+	die("alloc failed\n");
+    }
+    return result;
+}
+
 /* AKA babble */
 void yak(const char *format, ... )
 {

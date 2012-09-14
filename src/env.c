@@ -1,6 +1,7 @@
 #include "types.h"
 #include "env.h"
 #include "ast.h"
+#include "driver.h"
 #include "functions.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -44,27 +45,30 @@ static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
     exec_statement,
 };
 
+/* Calls the corresponding handler function for the type
+   of the given ASTNode *
+*/
 static LuciObject *dispatch_statement(ExecContext *e, ASTNode *a)
 {
-    if (!a || a == NULL)
-    {
+    if (!e) {
+	die("NULL Execution Context\n");
+    }
+
+    if (!a) {
+	yak("NULL node in the abstract syntax tree\n");
 	return NULL;
     }
-    if (!(exec_lookup[a->type]))
-    {
+
+    if (!(exec_lookup[a->type])) {
 	die("IDK what to do\n");
     }
-    else
-    {
+    else {
 	return exec_lookup[a->type](e, a);
     }
 }
 
 static LuciObject *exec_int_expression(ExecContext *e, ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_int_t);
-
     yak("Allocating a new object of type obj_int_t, with value %d\n",
 	    a->data.i_val);
 
@@ -76,9 +80,6 @@ static LuciObject *exec_int_expression(ExecContext *e, ASTNode *a)
 
 static LuciObject *exec_double_expression(ExecContext *e, ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_double_t);
-
     yak("Allocating a new object of type obj_double_t, with value %f\n",
 	    a->data.d_val);
 
@@ -90,25 +91,21 @@ static LuciObject *exec_double_expression(ExecContext *e, ASTNode *a)
 
 static LuciObject *exec_string_expression(ExecContext *e, ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_str_t);
-
     yak("Allocating a new object of type obj_str_t, with value %s\n",
 	    a->data.s_val);
 
     LuciObject *ret = create_object(obj_str_t);
     /* copy the 'string' from the ASTNode to the LuciObject */
-    ret->value.s_val = (char *) alloc(strlen(a->data.s_val) + 1);
-    strcpy (ret->value.s_val, a->data.s_val);
+    size_t len = strlen(a->data.s_val);
+    ret->value.s_val = (char *) alloc(len + 1);
+    strncpy (ret->value.s_val, a->data.s_val, len);
+    ret->value.s_val[len] = '\0';
 
     return ret;
 }
 
 static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_id_t);
-    assert(e);
     Symbol *s;
     if (!(s = get_symbol(e, a->data.name))) {
 	die("Can't find symbol %s\n", a->data.name);
@@ -125,21 +122,20 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
 
 	/* else, return a copy of symbol's object */
 	int t = orig->type;
-	yak("Found symbol %s with type %d. Returning its object, with type:%d\n",
+	yak("Found object symbol %s. Returning its data, with type:%d\n",
 		a->data.name, s->type, t);
 	/* return a reference to this symbol's value */
 	return reference_object(orig);
     }
     else
     {
-	yak("Found symbol %s, but it's not an object\n", a->data.name);
+	yak("Found function symbol %s\n", a->data.name);
 	return NULL;	 /* look up a->name in symbol table */
     }
 }
 
 static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
 {
-    assert(a->type == ast_expression_t);
     LuciObject *left = dispatch_statement(e, a->data.expression.left);
     LuciObject *right = dispatch_statement(e, a->data.expression.right);
     LuciObject *result = solve_bin_expr(left, right, a->data.expression.op);
@@ -148,32 +144,8 @@ static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
     return result;
 }
 
-/* returns the list NODE at the given index
-    or NULL if not found (index exceeds list bounds)
-*/
-static LuciObject *get_list_node(LuciObject *list, int index)
-{
-    if (!list || (list->type != obj_list_t)) {
-	return NULL;
-    }
-    int i = 0, found = 0;
-    LuciObject *cur = list;
-    LuciObject *ret = NULL;
-    while (cur) {
-	if (i == index) {
-	    ret = cur;
-	    break;
-	}
-	cur = cur->value.list.next;
-	i++;
-    }
-    return ret;
-}
-
 static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a->type = ast_listindex_t);
-
     LuciObject *list = dispatch_statement(e, a->data.listindex.list);
     if (!list) {
 	die("Can't index a NULL object\n");
@@ -220,8 +192,6 @@ static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
 */
 static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a->type = ast_listassign_t);
-
     LuciObject *index = dispatch_statement(e, a->data.listassign.index);
     if (!index || (index->type != obj_int_t)) {
 	die("Index is not an integer\n");
@@ -266,21 +236,22 @@ static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a
 */
 static LuciObject *exec_list(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_list_t);
-
     LuciObject *next = NULL;
     int i;
     for (i = a->data.list.count - 1; i >= 0; i--)
     {
 	/* create the Object */
 	LuciObject *item = dispatch_statement(e, a->data.list.items[i]);
+
 	/* create the list item container */
 	LuciObject *tail = create_object(obj_list_t);
+
 	/* link this container to 'next' container */
 	tail->value.list.next = next;
+
 	/* store ptr to actual object in container */
 	tail->value.list.item = item;
+
 	/* point 'next' to this container */
 	next = tail;
 
@@ -295,10 +266,6 @@ static LuciObject *exec_list(struct ExecContext *e, struct ASTNode *a)
 */
 static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_assignment_t);
-    assert(e);
-
     /* right could be an object with refcount=1 (expression result,
        function return)
        or an object with refcount>=2 (the value of a symbol)
@@ -320,8 +287,8 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 	*/
 	destroy_object(s->data.object);
     }
+
     /* set the symbol's new payload */
-    /*s->data.object = reference_object(right);*/
     s->data.object = right;
 
     /* return an empty LuciObject * */
@@ -329,46 +296,15 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 }
 
 /*
-   Evaluates a conditional statement, returning an integer
-   value of 0 if False, and non-zero if True.
-*/
-int evaluate_cond(struct ExecContext *e, struct ASTNode *cond)
-{
-    int huh = 0;
-    LuciObject *val = dispatch_statement(e, cond);
-    if (val == NULL) {
-	return 0;
-    }
-    switch (val->type)
-    {
-	case obj_int_t:
-	    huh = val->value.i_val;
-	    break;
-	case obj_double_t:
-	    huh = (int)val->value.d_val;
-	    break;
-	case obj_str_t:
-	    huh = 1;
-	    break;
-	default:
-	    huh = 0;
-    }
-    destroy_object(val);
-    return huh;
-}
-
-/*
    Executes a while loop in the abstract syntax tree.
 */
 static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_while_t);
-
     yak("Begin while loop\n");
 
-    int huh = evaluate_cond(e, a->data.while_loop.cond);
-    LuciObject *none;
+    LuciObject *none, *condition = dispatch_statement(e, a->data.while_loop.cond);
+    int huh = evaluate_condition(condition);
+    destroy_object(condition);
     while (huh)
     {
 	/* all statements will return NULL, but I still catch them
@@ -376,7 +312,9 @@ static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
 	*/
 	none = dispatch_statement(e, a->data.while_loop.statements);
 	destroy_object(none);
-	huh = evaluate_cond(e, a->data.while_loop.cond);
+	condition = dispatch_statement(e, a->data.while_loop.cond);
+	huh = evaluate_condition(condition);
+	destroy_object(condition);
     }
     return NULL;
 }
@@ -386,9 +324,6 @@ static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
 */
 static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_for_t);
-
     yak("Begin for loop\n");
 
     LuciObject *list = dispatch_statement(e, a->data.for_loop.list);
@@ -435,13 +370,11 @@ static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
 */
 static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_if_t);
-
     yak("Begin if block\n");
 
-    int huh = evaluate_cond(e, a->data.if_else.cond);
-    LuciObject *none;
+    LuciObject *none, *condition = dispatch_statement(e, a->data.if_else.cond);
+    int huh = evaluate_condition(condition);
+    destroy_object(condition);
     if (huh)
     {
 	none = dispatch_statement(e, a->data.if_else.ifstatements);
@@ -465,9 +398,6 @@ static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
 */
 static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_call_t);
-
     yak("Calling %s\n", a->data.call.name);
 
     Symbol *s;
@@ -486,7 +416,7 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 		die("Malformed function parameters\n");
 	    }
 	}
-	LuciObject *ret = /*(LuciObject *)*/((*(s->data.funcptr))(param_list));
+	LuciObject *ret = (*(s->data.funcptr))(param_list);
 	destroy_object(param_list);
 	return ret;
     }
@@ -497,8 +427,6 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 */
 static LuciObject *exec_statement(struct ExecContext *e, struct ASTNode *a)
 {
-    assert(a);
-    assert(a->type == ast_statements_t);
     LuciObject *none;
     int i;
     for (i=0; i < a->data.statements.count; i++)
@@ -567,9 +495,12 @@ Symbol *get_symbol (struct ExecContext *e, const char *name)
 ExecContext *create_env(void)
 {
     /* Check that we have dispatchers for all types of statements */
-    assert(ast_last_t == (sizeof(exec_lookup) / sizeof(*exec_lookup)));
+    if (ast_last_t != (sizeof(exec_lookup) / sizeof(*exec_lookup))) {
+	fprintf(stderr, "Mismatch in # of ASTNode types and AST execution functions.\n");
+	return NULL;
+    }
 
-    ExecContext *e = calloc(1, sizeof(struct ExecContext));
+    ExecContext *e = alloc(sizeof(struct ExecContext));
 
     /* give the global context a name */
     char *name = "global";

@@ -198,38 +198,53 @@ LuciObject *luci_help(LuciObject *in)
     return NULL;
 }
 
+void print_object(LuciObject *in)
+{
+    int i;
+    LuciObject *node;
+    if (!in)
+    {
+	printf("None");
+	return;
+    }
+    switch (in->type)
+    {
+	case obj_int_t:
+	    printf("%d", in->value.i_val);
+	    break;
+	case obj_double_t:
+	    printf("%f", in->value.d_val);
+	    break;
+	case obj_str_t:
+	    printf("%s", in->value.s_val);
+	    break;
+	case obj_list_t:
+	    printf("[");
+	    i = 0;
+	    while (1) {
+		node = get_list_node(in, i++);
+		if (!node) {
+		    break;
+		}
+		print_object(node->value.list.item);
+		printf(", ");
+	    }
+	    printf("]");
+	    break;
+	default:
+	    printf("None");
+    }
+}
+
 LuciObject *luci_print(LuciObject *in)
 {
+    int i = 0;
     LuciObject *ptr = in;
     LuciObject *item = NULL;
     while (ptr)
     {
 	item = ptr->value.list.item;
-	if (!item)
-	{
-	    printf("None");
-	}
-	else {
-	    switch (item->type)
-	    {
-		case obj_int_t:
-		    printf("%d", item->value.i_val);
-		    break;
-		case obj_double_t:
-		    printf("%f", item->value.d_val);
-		    break;
-		case obj_str_t:
-		    printf("%s", item->value.s_val);
-		    break;
-		case obj_list_t:
-		    printf("[");
-		    luci_print(item);
-		    printf("]");
-		    break;
-		default:
-		    printf("None");
-	    }
-	}
+	print_object(item);
 	printf(" ");
 	ptr = ptr->value.list.next;
     }

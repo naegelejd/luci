@@ -6,7 +6,7 @@
 typedef struct ASTNode
 {
     enum {  ast_int_t,
-	    ast_double_t,
+	    ast_float_t,
 	    ast_str_t,
 	    ast_id_t,
 	    ast_expression_t,
@@ -24,7 +24,7 @@ typedef struct ASTNode
     union
     {
 	int i_val;
-	double d_val;
+	double f_val;
 	char *s_val;
 	char *name;
 	struct
@@ -92,7 +92,7 @@ typedef struct ASTNode_list
 
 void destroy_AST(ASTNode *);
 ASTNode *make_expr_from_int(int);
-ASTNode *make_expr_from_double(double);
+ASTNode *make_expr_from_float(double);
 ASTNode *make_expr_from_string(char *);
 ASTNode *make_expr_from_id(char *);
 ASTNode *make_binary_expr(ASTNode *, ASTNode *, int op);

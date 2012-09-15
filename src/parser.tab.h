@@ -47,7 +47,7 @@ extern int yydebug;
       know about them.  */
    enum yytokentype {
      INT = 258,
-     DOUBLE = 259,
+     FLOAT = 259,
      STRING = 260,
      ID = 261,
      NEWLINE = 262,

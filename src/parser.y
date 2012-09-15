@@ -35,7 +35,7 @@ void yyerror(const char *msg);
 %type <node> program
 
 %token <i_val> INT
-%token <d_val> DOUBLE
+%token <d_val> FLOAT
 %token <s_val> STRING
 %token <id> ID
 %token NEWLINE COMMA
@@ -121,7 +121,7 @@ cond:
 
 expr:
 	    INT				{ $$ = make_expr_from_int($1); }
-	|   DOUBLE			{ $$ = make_expr_from_double($1); }
+	|   FLOAT			{ $$ = make_expr_from_float($1); }
 	|   STRING			{ $$ = make_expr_from_string($1); }
 	|   ID				{ $$ = make_expr_from_id($1); }
 	|   MINUS expr %prec UMINUS	{ $$ = make_binary_expr(

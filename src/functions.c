@@ -88,8 +88,8 @@ LuciObject *copy_object(LuciObject *orig)
 	case obj_int_t:
 	    copy->value.i_val = orig->value.i_val;
 	    break;
-	case obj_double_t:
-	    copy->value.d_val = orig->value.d_val;
+	case obj_float_t:
+	    copy->value.f_val = orig->value.f_val;
 	    break;
 	case obj_str_t:
 	    copy->value.s_val = alloc(strlen(orig->value.s_val) + 1);
@@ -157,14 +157,18 @@ const struct func_def builtins[] =
 {
     "help", luci_help,
     "print",  luci_print,
-    "input", luci_input,
+    "input", luci_readline,
+    "readline", luci_readline,
     "type",  luci_typeof,
     "assert", luci_assert,
-    "str", luci_str,
+    "str", luci_cast_str,
+    "int", luci_cast_int,
+    "float", luci_cast_float,
     "open", luci_fopen,
     "close", luci_fclose,
     "read", luci_fread,
     "write", luci_fwrite,
+    "readlines", luci_flines,
     "range", luci_range,
     "sum", luci_sum,
     0, 0
@@ -212,8 +216,8 @@ void print_object(LuciObject *in)
 	case obj_int_t:
 	    printf("%d", in->value.i_val);
 	    break;
-	case obj_double_t:
-	    printf("%f", in->value.d_val);
+	case obj_float_t:
+	    printf("%f", in->value.f_val);
 	    break;
 	case obj_str_t:
 	    printf("%s", in->value.s_val);
@@ -253,27 +257,49 @@ LuciObject *luci_print(LuciObject *in)
     return NULL;
 }
 
-LuciObject *luci_input(LuciObject *in)
+LuciObject *luci_readline(LuciObject *param)
 {
     size_t lenmax = 64, len = 0;
-    char *input = alloc(lenmax * sizeof(char));
     int c;
+    FILE *read_from = NULL;
 
+    if (!param) {
+	yak("readline from stdin\n");
+	read_from = stdin;
+    }
+    else {
+	LuciObject *item = param->value.list.item;
+	if (item && (item->type == obj_file_t)) {
+	    yak("readline from file\n");
+	    read_from = item->value.file.f_ptr;
+	}
+	else {
+	    die("Can't readline from non-file object\n");
+	}
+    }
+
+    char *input = alloc(lenmax * sizeof(char));
     if (input == NULL) {
 	die("Failed to allocate buffer for reading stdin\n");
     }
     do {
-	c = fgetc(stdin);
+	c = fgetc(read_from);
 
 	if (len >= lenmax) {
 	    lenmax = lenmax << 1;
 	    if ((input = realloc(input, lenmax * sizeof(char))) == NULL) {
 		free (input);
-		die("Failed to allocate buffer for reading stdin\n");
+		die("Failed to allocate buffer for reading\n");
 	    }
 	}
 	input[len++] = (char)c;
     } while (c != EOF && c != '\n');
+
+    if (c == EOF) {
+	free(input);
+	yak("readline at EOF, returning NULL\n");
+	return NULL;
+    }
 
     /* overwrite the newline or EOF char with a NUL terminator */
     input[--len] = '\0';
@@ -290,7 +316,7 @@ LuciObject *luci_input(LuciObject *in)
     /* destroy the input buffer */
     free(input);
 
-    yak("Read line from stdin\n", ret->value.s_val);
+    yak("Read line\n", ret->value.s_val);
 
     return ret;
 }
@@ -317,8 +343,8 @@ LuciObject *luci_typeof(LuciObject *in)
 		case obj_int_t:
 		    which = "int";
 		    break;
-		case obj_double_t:
-		    which = "double";
+		case obj_float_t:
+		    which = "float";
 		    break;
 		case obj_str_t:
 		    which = "string";
@@ -350,8 +376,8 @@ LuciObject *luci_assert(LuciObject *in)
 	case obj_int_t:
 	    assert(in->value.i_val);
 	    break;
-	case obj_double_t:
-	    assert((int)in->value.d_val);
+	case obj_float_t:
+	    assert((int)in->value.f_val);
 	    break;
 	case obj_str_t:
 	    assert(strcmp("", in->value.s_val) != 0);
@@ -365,7 +391,70 @@ LuciObject *luci_assert(LuciObject *in)
     return NULL;
 }
 
-LuciObject *luci_str(LuciObject *in)
+LuciObject *luci_cast_int(LuciObject *param)
+{
+    LuciObject *ret = NULL;
+    if (param) {
+	LuciObject *item = param->value.list.item;
+
+	if (!item) {
+	    die("Can't cast NULL to int\n");
+	}
+	ret = create_object(obj_int_t);
+	int scanned = 0;
+	switch (item->type) {
+	    case obj_int_t:
+		ret->value.i_val = item->value.i_val;
+		break;
+	    case obj_float_t:
+		ret->value.i_val = (int)item->value.f_val;
+		break;
+	    case obj_str_t:
+		scanned = sscanf(item->value.s_val, "%d", &(ret->value.i_val));
+		if (scanned <= 0 || scanned == EOF) {
+		    die("Could not cast to int\n");
+		}
+		break;
+	    default:
+		die("Could not cast to int\n");
+	}
+    }
+    return ret;
+}
+
+LuciObject *luci_cast_float(LuciObject *param)
+{
+    LuciObject *ret = NULL;
+    if (param) {
+	LuciObject *item = param->value.list.item;
+
+	if (!item) {
+	    die("Can't cast NULL to int\n");
+	}
+	ret = create_object(obj_float_t);
+	int scanned = 0;
+	switch (item->type) {
+	    case obj_int_t:
+		ret->value.f_val = (double)item->value.i_val;
+		break;
+	    case obj_float_t:
+		ret->value.f_val = item->value.f_val;
+		break;
+	    case obj_str_t:
+		scanned = sscanf(item->value.s_val, "%f", (float *)&(ret->value.f_val));
+		if (scanned <= 0 || scanned == EOF) {
+		    die("Could not cast to float\n");
+		}
+		break;
+	    default:
+		die("Could not cast to float\n");
+	}
+    }
+    return ret;
+}
+
+
+LuciObject *luci_cast_str(LuciObject *in)
 {
     LuciObject *ret = NULL;
     if (!in)
@@ -382,13 +471,13 @@ LuciObject *luci_str(LuciObject *in)
 	switch (param->type)
 	{
 	    case obj_int_t:
-		ret->value.s_val = alloc(16);
+		ret->value.s_val = alloc(32);
 		sprintf(ret->value.s_val, "%d", param->value.i_val);
 		//ret->value.s_val[16] = '\0';
 		break;
-	    case obj_double_t:
-		ret->value.s_val = alloc(16);
-		sprintf(ret->value.s_val, "%f", (float)param->value.d_val);
+	    case obj_float_t:
+		ret->value.s_val = alloc(32);
+		sprintf(ret->value.s_val, "%f", (float)param->value.f_val);
 		//ret->value.s_val[16] = '\0';
 		break;
 	    case obj_str_t:
@@ -575,6 +664,28 @@ LuciObject *luci_fwrite(LuciObject *in)
     return NULL;
 }
 
+LuciObject *luci_flines(LuciObject *param)
+{
+    LuciObject *list = NULL;
+    LuciObject *prev = list;
+    LuciObject *cur = list;
+    LuciObject *line = luci_readline(param);
+    while (line) {
+	cur = create_object(obj_list_t);
+	if (!list) {
+	    list = cur;
+	}
+	cur->value.list.item = line;
+	if (prev) {
+	    prev->value.list.next = cur;
+	}
+	prev = cur;
+	line = luci_readline(param);
+    }
+
+    return list;
+}
+
 LuciObject * luci_range(LuciObject *param_list)
 {
     LuciObject *first = param_list;
@@ -670,7 +781,7 @@ LuciObject * luci_sum(LuciObject *param_list)
 
     LuciObject *ptr = list;
     double sum = 0;
-    int found_double = 0;
+    int found_float = 0;
     while (ptr) {
 	if (!ptr->value.list.item) {
 	    die("Can't calulate sum of list containing NULL value\n");
@@ -680,9 +791,9 @@ LuciObject * luci_sum(LuciObject *param_list)
 	    case obj_int_t:
 		sum += (double)ptr->value.list.item->value.i_val;
 		break;
-	    case obj_double_t:
-		found_double = 1;
-		sum += (ptr->value.list.item->value.d_val);
+	    case obj_float_t:
+		found_float = 1;
+		sum += (ptr->value.list.item->value.f_val);
 		break;
 	    default:
 		die("Can't calculate sum of list containing non-numeric value\n");
@@ -691,13 +802,13 @@ LuciObject * luci_sum(LuciObject *param_list)
     }
 
     LuciObject *ret;
-    if (!found_double) {
+    if (!found_float) {
 	ret = create_object(obj_int_t);
 	ret->value.i_val = (long)sum;
     }
     else {
-	ret = create_object(obj_double_t);
-	ret->value.d_val = sum;
+	ret = create_object(obj_float_t);
+	ret->value.f_val = sum;
     }
 
     return ret;
@@ -749,8 +860,8 @@ int evaluate_condition(LuciObject *cond)
 	case obj_int_t:
 	    huh = cond->value.i_val;
 	    break;
-	case obj_double_t:
-	    huh = (int)cond->value.d_val;
+	case obj_float_t:
+	    huh = (int)cond->value.f_val;
 	    break;
 	case obj_str_t:
 	    huh = strlen(cond->value.s_val);
@@ -810,8 +921,8 @@ static LuciObject *add(LuciObject *left, LuciObject *right)
 	case obj_int_t:
 	    ret->value.i_val = left->value.i_val + right->value.i_val;
 	    break;
-	case obj_double_t:
-	    ret->value.d_val = left->value.d_val + right->value.d_val;
+	case obj_float_t:
+	    ret->value.f_val = left->value.f_val + right->value.f_val;
 	    break;
 	case obj_str_t:
 	    ret->value.s_val = alloc(strlen(left->value.s_val) +
@@ -835,9 +946,9 @@ static LuciObject *sub(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = left->value.i_val - right->value.i_val;
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = left->value.d_val - right->value.d_val;
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = left->value.f_val - right->value.f_val;
 	    break;
 	default:
 	    ret = NULL;
@@ -855,9 +966,9 @@ static LuciObject *mul(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = left->value.i_val * right->value.i_val;
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = left->value.d_val * right->value.d_val;
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = left->value.f_val * right->value.f_val;
 	    break;
 	default:
 	    ret = NULL;
@@ -875,9 +986,9 @@ static LuciObject *divide(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = left->value.i_val / right->value.i_val;
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = left->value.d_val / right->value.d_val;
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = left->value.f_val / right->value.f_val;
 	    break;
 	default:
 	    ret = NULL;
@@ -895,9 +1006,9 @@ static LuciObject *mod(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = left->value.i_val % right->value.i_val;
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = (double)((int)left->value.d_val % (int)right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = (double)((int)left->value.f_val % (int)right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;
@@ -915,9 +1026,9 @@ static LuciObject *power(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = pow(left->value.i_val, right->value.i_val);
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = pow(left->value.d_val, right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = pow(left->value.f_val, right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;
@@ -934,8 +1045,8 @@ static LuciObject *eq(LuciObject *left, LuciObject *right)
 	case obj_int_t:
 	    r = (left->value.i_val == right->value.i_val);
 	    break;
-	case obj_double_t:
-	    r = (left->value.d_val == right->value.d_val);
+	case obj_float_t:
+	    r = (left->value.f_val == right->value.f_val);
 	    break;
 	case obj_str_t:
 	    r = !(strcmp(left->value.s_val, right->value.s_val));
@@ -967,9 +1078,9 @@ static LuciObject *lt(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = (left->value.i_val < right->value.i_val);
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = (left->value.d_val < right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = (left->value.f_val < right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;
@@ -987,9 +1098,9 @@ static LuciObject *gt(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = (left->value.i_val > right->value.i_val);
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = (left->value.d_val > right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = (left->value.f_val > right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;
@@ -1023,9 +1134,9 @@ static LuciObject *lgnot(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = !right->value.i_val;
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = !left->value.d_val;
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = !left->value.f_val;
 	    break;
 	default:
 	    ret = NULL;
@@ -1043,9 +1154,9 @@ static LuciObject *lgor(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = (left->value.i_val || right->value.i_val);
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = (left->value.d_val || right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = (left->value.f_val || right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;
@@ -1063,9 +1174,9 @@ static LuciObject *lgand(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = (left->value.i_val && right->value.i_val);
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = (left->value.d_val && right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = (left->value.f_val && right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;
@@ -1083,9 +1194,9 @@ static LuciObject *bwnot(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = ~right->value.i_val;
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = ~(int)right->value.d_val;
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = ~(int)right->value.f_val;
 	    break;
 	default:
 	    ret = NULL;
@@ -1111,9 +1222,9 @@ static LuciObject *bwor(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = (left->value.i_val | right->value.i_val);
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = ((int)left->value.d_val | (int)right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = ((int)left->value.f_val | (int)right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;
@@ -1131,9 +1242,9 @@ static LuciObject *bwand(LuciObject *left, LuciObject *right)
 	    ret = create_object(obj_int_t);
 	    ret->value.i_val = (left->value.i_val & right->value.i_val);
 	    break;
-	case obj_double_t:
-	    ret = create_object(obj_double_t);
-	    ret->value.d_val = ((int)left->value.d_val & (int)right->value.d_val);
+	case obj_float_t:
+	    ret = create_object(obj_float_t);
+	    ret->value.f_val = ((int)left->value.f_val & (int)right->value.f_val);
 	    break;
 	default:
 	    ret = NULL;

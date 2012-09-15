@@ -12,7 +12,7 @@
 
 static struct LuciObject *dispatch_statement(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_int_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_double_expression(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_float_expression(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_string_expression(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_id_expression(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_bin_expression(ExecContext *e, struct ASTNode *a);
@@ -30,7 +30,7 @@ static struct LuciObject *exec_statement(ExecContext *e, struct ASTNode *a);
 static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
 {
     exec_int_expression,
-    exec_double_expression,
+    exec_float_expression,
     exec_string_expression,
     exec_id_expression,
     exec_bin_expression,
@@ -78,13 +78,13 @@ static LuciObject *exec_int_expression(ExecContext *e, ASTNode *a)
     return ret;
 }
 
-static LuciObject *exec_double_expression(ExecContext *e, ASTNode *a)
+static LuciObject *exec_float_expression(ExecContext *e, ASTNode *a)
 {
-    yak("Allocating a new object of type obj_double_t, with value %f\n",
-	    a->data.d_val);
+    yak("Allocating a new object of type obj_float_t, with value %f\n",
+	    a->data.f_val);
 
-    LuciObject *ret = create_object(obj_double_t);
-    ret->value.d_val = a->data.d_val;
+    LuciObject *ret = create_object(obj_float_t);
+    ret->value.f_val = a->data.f_val;
 
     return ret;
 }

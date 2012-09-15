@@ -12,3 +12,25 @@ print("for-loop 3:")
 for j in range(7, -6, -1) do
     print (j)
 done
+l = range(3)
+
+print("type stuff and press enter")
+
+for i in l do
+   l[i] = input()
+done
+
+print(l)
+
+f = open("samples/insane.lx", "r")
+line = readline(f)
+print(line)
+close(f)
+
+f = open("samples/insane.lx", "r")
+lines = readlines(f)
+
+for l in lines do
+  print(l)
+done
+close(f)

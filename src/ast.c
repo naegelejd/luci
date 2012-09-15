@@ -20,11 +20,11 @@ ASTNode *make_expr_from_int(int val)
     return result;
 }
 
-ASTNode *make_expr_from_double(double val)
+ASTNode *make_expr_from_float(double val)
 {
     ASTNode *result = alloc(sizeof(*result));
-    result->type = ast_double_t;
-    result->data.d_val = val;
+    result->type = ast_float_t;
+    result->data.f_val = val;
     yak("Made expression node from val %f\n", val);
     return result;
 }

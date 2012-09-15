@@ -120,7 +120,7 @@ extern int yydebug;
       know about them.  */
    enum yytokentype {
      INT = 258,
-     DOUBLE = 259,
+     FLOAT = 259,
      STRING = 260,
      ID = 261,
      NEWLINE = 262,
@@ -537,7 +537,7 @@ static const yytype_uint8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "INT", "DOUBLE", "STRING", "ID",
+  "$end", "error", "$undefined", "INT", "FLOAT", "STRING", "ID",
   "NEWLINE", "COMMA", "WHILE", "FOR", "IN", "DO", "DONE", "IF", "THEN",
   "ELSE", "END", "LGAND", "LGOR", "BWAND", "BWXOR", "BWOR", "NOTEQ",
   "EQUAL", "GTHEQ", "GTHAN", "LTHEQ", "LTHAN", "MINUS", "PLUS", "MOD",
@@ -1702,7 +1702,7 @@ yyreduce:
   case 26:
 /* Line 1802 of yacc.c  */
 #line 124 "src/parser.y"
-    { (yyval.node) = make_expr_from_double((yyvsp[(1) - (1)].d_val)); }
+    { (yyval.node) = make_expr_from_float((yyvsp[(1) - (1)].d_val)); }
     break;
 
   case 27:

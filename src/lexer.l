@@ -12,7 +12,7 @@ extern int LINE_NUM;
 %x ERROR
 
 INTEGER	    [0-9]+
-DOUBLE	    [0-9]+\.[0-9]*|\.[0-9]+
+FLOAT	    [0-9]+\.[0-9]*|\.[0-9]+
 WORD	    [a-zA-Z_][a-zA-Z_0-9]*
 STRING	    \"[^\"]+\"
 WS	    [ \t\f\r]+
@@ -29,20 +29,19 @@ WS	    [ \t\f\r]+
 [eE][lL][sS][eE]	{ return ELSE; }
 [eE][nN][dD]		{ return END; }
 
+^\n|{WS}\n	{ LINE_NUM++; /* ignore empty lines */ }
+\n	{ LINE_NUM++; return NEWLINE; }
+#.*\n	{ LINE_NUM++; } /* ignore one-line comments */
+{WS}	; /* ignore */
+
 {STRING}	{ yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2); return STRING; }
-{DOUBLE}	{ yylval.d_val = atof(yytext); return DOUBLE; }
+{FLOAT}		{ yylval.d_val = atof(yytext); return FLOAT; }
 {INTEGER}	{ yylval.i_val = atoi(yytext); return INT; }
 {WORD}		{ yylval.id = strdup(yytext); return ID; }
-{WS}	; /* ignore */
 
 ","	{ return COMMA; }
 "["	{ return LSQUARE; }
 "]"	{ return RSQUARE; }
-#.*\n	{ LINE_NUM++; } /* ignore one-line comments */
-
-^\n	{ LINE_NUM++; /* ignore empty lines */ }
-\n	{ LINE_NUM++; return NEWLINE; }
-
 
 "-"	{ return MINUS; }
 "+"	{ return PLUS; }

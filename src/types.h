@@ -3,6 +3,8 @@
 
 #include <stdio.h>
 
+#define INIT_LIST_SIZE 32
+
 typedef enum {	op_add_t,
 		op_sub_t,
 		op_mul_t,
@@ -58,7 +60,8 @@ typedef struct LuciObject
 	struct
 	{
 	    struct LuciObject **items;
-	    int count;
+	    int count;	/* current number of items in list */
+	    int size;	/* current count of allocated item pointers */
 	} list;
     } value;
 } LuciObject;

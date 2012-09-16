@@ -31,9 +31,11 @@ static LuciObject *bwand(LuciObject *left, LuciObject *right);
 
 static int close_file(FILE *fp)
 {
-    int ret;
-    ret = fclose(fp);
-    fp = NULL;
+    int ret = 1;
+    if (fp) {
+	ret = fclose(fp);
+	fp = NULL;
+    }
     return ret;
 }
 
@@ -55,7 +57,6 @@ LuciObject *create_object(int type)
 	    ret->value.list.size = INIT_LIST_SIZE;
 	    ret->value.list.items = alloc(ret->value.list.size *
 		    sizeof(*ret->value.list.items));
-	    ret->value.list.items = NULL;
 	    break;
 	default:
 	    break;
@@ -83,10 +84,7 @@ LuciObject *copy_object(LuciObject *orig)
 
     /* create the initial copy with only its type specified */
     LuciObject *copy = create_object(orig->type);
-
-    /* thes next object pointers are for copying list objects */
-    LuciObject * orig_ptr, * copy_ptr;
-
+    int i;
     switch(orig->type)
     {
 	case obj_int_t:
@@ -105,16 +103,10 @@ LuciObject *copy_object(LuciObject *orig)
 	    copy->value.file.mode = orig->value.file.mode;
 	    break;
 	case obj_list_t:
-	    orig_ptr = orig;
-	    copy_ptr = copy;
-	    copy_ptr->value.list.item = copy_object(orig_ptr->value.list.item);
-	    orig_ptr = orig_ptr->value.list.next;
-	    while (orig_ptr) {
-		copy_ptr->value.list.next = create_object(obj_list_t);
-		copy_ptr->value.list.next->value.list.item = copy_object(orig_ptr->value.list.item);
-		orig_ptr = orig_ptr->value.list.next;
-		copy_ptr = copy_ptr->value.list.next;
+	    for (i = 0; i < orig->value.list.count; i++) {
+		list_append_object(copy, list_get_object(orig, i));
 	    }
+	    break;
 	default:
 	    break;
     }
@@ -125,29 +117,27 @@ void destroy_object(LuciObject *trash)
 {
     if (trash && (--(trash->refcount) <= 0))
     {
-	/* if this object is part of a linked list, destroy the next node */
-	if (trash->type == obj_list_t)
-	{
-	    destroy_object(trash->value.list.item);
-	    destroy_object(trash->value.list.next);
-	}
-
-	/* close any open files */
-	if (trash->type == obj_file_t)
-	{
-	    if (trash->value.file.f_ptr) {
-		/*
-		yak("Closing file object\n");
-		close_file(trash->value.file.f_ptr);
-		*/
-	    }
-	}
-
-	/* if this object contains a string, it WAS malloc'd */
-	if (trash->type == obj_str_t) {
-	    yak("Freeing str object with val %s\n", trash->value.s_val);
-	    free(trash->value.s_val);
-	    trash->value.s_val = NULL;
+	int i;
+	switch(trash->type) {
+	    case obj_list_t:
+		for (i = 0; i < trash->value.list.count; i++) {
+		    destroy_object(trash->value.list.items[i]);
+		}
+		free(trash->value.list.items);
+		break;
+	    case obj_file_t:
+		if (trash->value.file.f_ptr) {
+		    yak("Closing file object\n");
+		    close_file(trash->value.file.f_ptr);
+		}
+		break;
+	    case obj_str_t:
+		yak("Freeing str object with val %s\n", trash->value.s_val);
+		free(trash->value.s_val);
+		trash->value.s_val = NULL;
+		break;
+	    default:
+		break;
 	}
 	yak("Freeing obj with type %d\n", trash->type);
 
@@ -168,8 +158,36 @@ int list_append_object(LuciObject *list, LuciObject *item)
 	list->value.list.items = realloc(list->value.list.items,
 		list->value.list.size * sizeof(*list->value.list.items));
     }
-    list->value.liste.items[list->value.list.count - 1] = item;
+    list->value.list.items[list->value.list.count - 1] = item;
     return 1;
+}
+
+LuciObject *list_get_object(LuciObject *list, int index)
+{
+    if (!list || (list->type != obj_list_t)) {
+	die("Can't iterate over non-list object\n");
+    }
+    while (index < 0) {
+	index = list->value.list.count - abs(index);
+    }
+    if (index >= list->value.list.count) {
+	die("List index out of bounds\n");
+	/* return NULL; */
+    }
+    return list->value.list.items[index];
+}
+
+LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
+{
+    if (!item) {
+	die("Can't set list item to NULL\n");
+    }
+    while (index < 0) {
+	index = list->value.list.count = abs(index);
+    }
+    /* list_get_object will take care of any more error handling */
+    destroy_object(list_get_object(list, index));
+    list->value.list.items[index] = item;
 }
 
 const struct func_def builtins[] =
@@ -193,7 +211,7 @@ const struct func_def builtins[] =
     0, 0
 };
 
-LuciObject *luci_help(LuciObject *in)
+LuciObject *luci_help(LuciObject *paramlist)
 {
     int width = 32;
 
@@ -224,7 +242,7 @@ LuciObject *luci_help(LuciObject *in)
 void print_object(LuciObject *in)
 {
     int i;
-    LuciObject *node;
+    LuciObject *item;
     if (!in)
     {
 	printf("None");
@@ -243,13 +261,9 @@ void print_object(LuciObject *in)
 	    break;
 	case obj_list_t:
 	    printf("[");
-	    i = 0;
-	    while (1) {
-		node = get_list_node(in, i++);
-		if (!node) {
-		    break;
-		}
-		print_object(node->value.list.item);
+	    for (i = 0; i < in->value.list.count; i++) {
+		item = list_get_object(in, i);
+		print_object(item);
 		printf(", ");
 	    }
 	    printf("]");
@@ -259,35 +273,32 @@ void print_object(LuciObject *in)
     }
 }
 
-LuciObject *luci_print(LuciObject *in)
+LuciObject *luci_print(LuciObject *paramlist)
 {
-    int i = 0;
-    LuciObject *ptr = in;
+    int i;
     LuciObject *item = NULL;
-    while (ptr)
-    {
-	item = ptr->value.list.item;
+    for (i = 0; i < paramlist->value.list.count; i++) {
+	item = list_get_object(paramlist, i);
 	print_object(item);
 	printf(" ");
-	ptr = ptr->value.list.next;
     }
     printf("\n");
 
     return NULL;
 }
 
-LuciObject *luci_readline(LuciObject *param)
+LuciObject *luci_readline(LuciObject *paramlist)
 {
     size_t lenmax = 64, len = 0;
     int c;
     FILE *read_from = NULL;
 
-    if (!param) {
+    if (! paramlist->value.list.count) {
 	yak("readline from stdin\n");
 	read_from = stdin;
     }
     else {
-	LuciObject *item = param->value.list.item;
+	LuciObject *item = list_get_object(paramlist, 0);
 	if (item && (item->type == obj_file_t)) {
 	    yak("readline from file\n");
 	    read_from = item->value.file.f_ptr;
@@ -340,43 +351,41 @@ LuciObject *luci_readline(LuciObject *param)
     return ret;
 }
 
-LuciObject *luci_typeof(LuciObject *in)
+LuciObject *luci_typeof(LuciObject *paramlist)
 {
-    LuciObject *ret = create_object(obj_str_t);
-    char *which;
-
-    if (!in)
+    if (! paramlist->value.list.count)
     {
+	die("Missing parameter to type()\n");
+    }
+
+    char *which;
+    LuciObject *ret = create_object(obj_str_t);
+
+    /* grab the first parameter from the param list */
+    LuciObject *item = list_get_object(paramlist, 0);
+    if (!item) {
 	which = "None";
     }
-    else
-    {
-	/* grab the first parameter from the param list */
-	LuciObject *param = in->value.list.item;
-	if (!param) {
-	    which = "None";
-	}
-	else {
-	    switch(param->type)
-	    {
-		case obj_int_t:
-		    which = "int";
-		    break;
-		case obj_float_t:
-		    which = "float";
-		    break;
-		case obj_str_t:
-		    which = "string";
-		    break;
-		case obj_file_t:
-		    which = "file";
-		    break;
-		case obj_list_t:
-		    which = "list";
-		    break;
-		default:
-		    which = "None";
-	    }
+    else {
+	switch(item->type)
+	{
+	    case obj_int_t:
+		which = "int";
+		break;
+	    case obj_float_t:
+		which = "float";
+		break;
+	    case obj_str_t:
+		which = "string";
+		break;
+	    case obj_file_t:
+		which = "file";
+		break;
+	    case obj_list_t:
+		which = "list";
+		break;
+	    default:
+		which = "None";
 	}
     }
     ret->value.s_val = alloc(strlen(which) + 1);
@@ -385,24 +394,27 @@ LuciObject *luci_typeof(LuciObject *in)
     return ret;
 }
 
-LuciObject *luci_assert(LuciObject *in)
+LuciObject *luci_assert(LuciObject *paramlist)
 {
-    assert(in);
-    LuciObject *param = in->value.list.item;
+    if (! paramlist->value.list.count) {
+	die("Missing condition parameter to assert()\n");
+    }
 
-    switch(param->type)
+    LuciObject *item = list_get_object(paramlist, 0);
+
+    switch(item->type)
     {
 	case obj_int_t:
-	    assert(in->value.i_val);
+	    assert(item->value.i_val);
 	    break;
 	case obj_float_t:
-	    assert((int)in->value.f_val);
+	    assert((int)item->value.f_val);
 	    break;
 	case obj_str_t:
-	    assert(strcmp("", in->value.s_val) != 0);
+	    assert(strcmp("", item->value.s_val) != 0);
 	    break;
 	case obj_list_t:
-	    assert(param->value.list.item); /* assert that its HEAD item exists?? */
+	    assert(item->value.list.count); /* assert that it isn't empty? */
 	    break;
 	default:
 	    ;
@@ -410,104 +422,103 @@ LuciObject *luci_assert(LuciObject *in)
     return NULL;
 }
 
-LuciObject *luci_cast_int(LuciObject *param)
+LuciObject *luci_cast_int(LuciObject *paramlist)
 {
     LuciObject *ret = NULL;
-    if (param) {
-	LuciObject *item = param->value.list.item;
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to int()\n");
+    }
+    LuciObject *item = list_get_object(paramlist, 0);
 
-	if (!item) {
-	    die("Can't cast NULL to int\n");
-	}
-	ret = create_object(obj_int_t);
-	int scanned = 0;
-	switch (item->type) {
-	    case obj_int_t:
-		ret->value.i_val = item->value.i_val;
-		break;
-	    case obj_float_t:
-		ret->value.i_val = (int)item->value.f_val;
-		break;
-	    case obj_str_t:
-		scanned = sscanf(item->value.s_val, "%d", &(ret->value.i_val));
-		if (scanned <= 0 || scanned == EOF) {
-		    die("Could not cast to int\n");
-		}
-		break;
-	    default:
+    if (!item) {
+	die("Can't cast NULL to int\n");
+    }
+    ret = create_object(obj_int_t);
+    int scanned = 0;
+    switch (item->type) {
+	case obj_int_t:
+	    ret->value.i_val = item->value.i_val;
+	    break;
+	case obj_float_t:
+	    ret->value.i_val = (int)item->value.f_val;
+	    break;
+	case obj_str_t:
+	    scanned = sscanf(item->value.s_val, "%d", &(ret->value.i_val));
+	    if (scanned <= 0 || scanned == EOF) {
 		die("Could not cast to int\n");
-	}
+	    }
+	    break;
+	default:
+	    die("Could not cast to int\n");
     }
     return ret;
 }
 
-LuciObject *luci_cast_float(LuciObject *param)
+LuciObject *luci_cast_float(LuciObject *paramlist)
 {
     LuciObject *ret = NULL;
-    if (param) {
-	LuciObject *item = param->value.list.item;
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to int()\n");
+    }
+    LuciObject *item = list_get_object(paramlist, 0);
 
-	if (!item) {
-	    die("Can't cast NULL to int\n");
-	}
-	ret = create_object(obj_float_t);
-	int scanned = 0;
-	switch (item->type) {
-	    case obj_int_t:
-		ret->value.f_val = (double)item->value.i_val;
-		break;
-	    case obj_float_t:
-		ret->value.f_val = item->value.f_val;
-		break;
-	    case obj_str_t:
-		scanned = sscanf(item->value.s_val, "%f", (float *)&(ret->value.f_val));
-		if (scanned <= 0 || scanned == EOF) {
-		    die("Could not cast to float\n");
-		}
-		break;
-	    default:
+    if (!item) {
+	die("Can't cast NULL to int\n");
+    }
+    ret = create_object(obj_float_t);
+    int scanned = 0;
+    switch (item->type) {
+	case obj_int_t:
+	    ret->value.f_val = (double)item->value.i_val;
+	    break;
+	case obj_float_t:
+	    ret->value.f_val = item->value.f_val;
+	    break;
+	case obj_str_t:
+	    scanned = sscanf(item->value.s_val, "%f", (float *)&(ret->value.f_val));
+	    if (scanned <= 0 || scanned == EOF) {
 		die("Could not cast to float\n");
-	}
+	    }
+	    break;
+	default:
+	    die("Could not cast to float\n");
     }
+
     return ret;
 }
 
-
-LuciObject *luci_cast_str(LuciObject *in)
+LuciObject *luci_cast_str(LuciObject *paramlist)
 {
     LuciObject *ret = NULL;
-    if (!in)
+    if (! paramlist->value.list.count)
     {
-	return ret;
+	die("Missing parameter to str()\n");
     }
-    else
-    {
-	/* grab the first parameter from the param list */
-	LuciObject *param = in->value.list.item;
+    /* grab the first parameter from the param list */
+    LuciObject *item = list_get_object(paramlist, 0);
 
-	/* allocate our return string object */
-	ret = create_object(obj_str_t);
-	switch (param->type)
-	{
-	    case obj_int_t:
-		ret->value.s_val = alloc(32);
-		sprintf(ret->value.s_val, "%d", param->value.i_val);
-		//ret->value.s_val[16] = '\0';
-		break;
-	    case obj_float_t:
-		ret->value.s_val = alloc(32);
-		sprintf(ret->value.s_val, "%f", (float)param->value.f_val);
-		//ret->value.s_val[16] = '\0';
-		break;
-	    case obj_str_t:
-		ret->value.s_val = alloc(strlen(param->value.s_val) + 1);
-		strcpy(ret->value.s_val, param->value.s_val);
-		break;
-	    default:
-		break;
-	}
-	yak("str() returning %s\n", ret->value.s_val);
+    /* allocate our return string object */
+    ret = create_object(obj_str_t);
+    switch (item->type)
+    {
+	case obj_int_t:
+	    ret->value.s_val = alloc(32);
+	    sprintf(ret->value.s_val, "%d", item->value.i_val);
+	    //ret->value.s_val[16] = '\0';
+	    break;
+	case obj_float_t:
+	    ret->value.s_val = alloc(32);
+	    sprintf(ret->value.s_val, "%f", (float)item->value.f_val);
+	    //ret->value.s_val[16] = '\0';
+	    break;
+	case obj_str_t:
+	    ret->value.s_val = alloc(strlen(item->value.s_val) + 1);
+	    strcpy(ret->value.s_val, item->value.s_val);
+	    break;
+	default:
+	    break;
     }
+    yak("str() returning %s\n", ret->value.s_val);
 
     return ret;
 }
@@ -528,30 +539,26 @@ static int get_file_mode(const char *req_mode)
     }
 }
 
-LuciObject *luci_fopen(LuciObject *in)
+LuciObject *luci_fopen(LuciObject *paramlist)
 {
     char *filename;
     char *req_mode;
     int mode;
     FILE *file = NULL;
 
-    if (!in)
+    if (paramlist->value.list.count < 2)
     {
-	/* TODO: throw error here ?? */
-	return NULL;
+	die("Missing parameter to open()\n");
     }
 
-    /* TODO: proper error checking */
-    /* check that there are two proper parameters to fopen */
-    assert(in->value.list.next);
-    assert(in->value.list.next->type == obj_list_t);
-
-    LuciObject *fname_obj = in->value.list.item;
-    LuciObject *mode_obj = in->value.list.next->value.list.item;
-
-    /* both parameters should be strings */
-    assert(fname_obj->type = obj_str_t);
-    assert(mode_obj->type = obj_str_t);
+    LuciObject *fname_obj = list_get_object(paramlist, 0);
+    if (fname_obj->type != obj_str_t) {
+	die("Parameter 1 to open must be a string\n");
+    }
+    LuciObject *mode_obj = list_get_object(paramlist, 1);
+    if (mode_obj->type != obj_str_t) {
+	die("Parameter 2 to open must be a string\n");
+    }
 
     filename = fname_obj->value.s_val;
     req_mode = mode_obj->value.s_val;
@@ -594,14 +601,15 @@ LuciObject *luci_fopen(LuciObject *in)
 
     return ret;
 }
-LuciObject *luci_fclose(LuciObject *in)
+
+LuciObject *luci_fclose(LuciObject *paramlist)
 {
-    if (!in)
+    if (! paramlist->value.list.count)
     {
-	return NULL;
+	die("Missing parameter to close()\n");
     }
 
-    LuciObject *fobj = in->value.list.item;
+    LuciObject *fobj = list_get_object(paramlist, 0);
 
     if (!(fobj->type == obj_file_t)) {
 	die("Not a file object\n");
@@ -617,13 +625,13 @@ LuciObject *luci_fclose(LuciObject *in)
     return NULL;
 }
 
-LuciObject *luci_fread(LuciObject *in)
+LuciObject *luci_fread(LuciObject *paramlist)
 {
-    if (!in) {
-	die("Missing file object\n");
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to read()\n");
     }
 
-    LuciObject *fobj = in->value.list.item;
+    LuciObject *fobj = list_get_object(paramlist, 0);
 
     if (!(fobj->type == obj_file_t)) {
 	die("Not a file object\n");
@@ -649,27 +657,20 @@ LuciObject *luci_fread(LuciObject *in)
     return ret;
 }
 
-LuciObject *luci_fwrite(LuciObject *in)
+LuciObject *luci_fwrite(LuciObject *paramlist)
 {
-    if (!in) {
-	die("Need file to write to\n");
+    if (paramlist->value.list.count < 2) {
+	die("Missing parameter to write()\n");
     }
 
-    assert(in->value.list.next);
-    assert(in->value.list.next->type == obj_list_t);
-
     /* grab the FILE parameter */
-    LuciObject *fobj = in->value.list.item;
-    if (!(fobj->type == obj_file_t)) {
+    LuciObject *fobj = list_get_object(paramlist, 0);
+    if (!fobj || (fobj->type != obj_file_t)) {
 	die("Not a file object\n");
     }
 
     /* grab string parameter */
-    LuciObject *param2 = in->value.list.next;
-    if (!param2) {
-	die("Missing string parameter\n");
-    }
-    LuciObject *text_obj = param2->value.list.item;
+    LuciObject *text_obj = list_get_object(paramlist, 1);
     if (!text_obj || (text_obj->type != obj_str_t) ) {
 	die("Not a string\n");
     }
@@ -683,56 +684,48 @@ LuciObject *luci_fwrite(LuciObject *in)
     return NULL;
 }
 
-LuciObject *luci_flines(LuciObject *param)
+LuciObject *luci_flines(LuciObject *paramlist)
 {
-    LuciObject *list = NULL;
-    LuciObject *prev = list;
-    LuciObject *cur = list;
-    LuciObject *line = luci_readline(param);
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to readlines()\n");
+    }
+    LuciObject *list = create_object(obj_list_t);
+    LuciObject *line = luci_readline(paramlist);
     while (line) {
-	cur = create_object(obj_list_t);
-	if (!list) {
-	    list = cur;
-	}
-	cur->value.list.item = line;
-	if (prev) {
-	    prev->value.list.next = cur;
-	}
-	prev = cur;
-	line = luci_readline(param);
+	list_append_object(list, line);
+	line = luci_readline(paramlist);
     }
 
     return list;
 }
 
-LuciObject * luci_range(LuciObject *param_list)
+LuciObject * luci_range(LuciObject *paramlist)
 {
-    LuciObject *first = param_list;
-    LuciObject *second = NULL;
-    LuciObject *third = NULL;
-
     int start, end, incr;
+    LuciObject *first, *second, *third;
 
-    if (!first) {
-	die("Specify at least an integer endpoint for range\n");
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to range()\n");
     }
-    if (first->value.list.item->type != obj_int_t) {
+
+    first = list_get_object(paramlist, 0);
+    if (first->type != obj_int_t) {
 	die("First parameter to range must be integer\n");
     }
 
-    second = first->value.list.next;
-    if (second) {
-	if (second->value.list.item->type != obj_int_t) {
+    if (paramlist->value.list.count > 1) {
+	second = list_get_object(paramlist, 1);
+	if (second->type != obj_int_t) {
 	    die("Second parameter to range must be integer\n");
 	}
-	start = first->value.list.item->value.i_val;
-	end = second->value.list.item->value.i_val;
-	third = second->value.list.next;
-	if (third) {
-	    if (third->value.list.item->type != obj_int_t) {
+	start = first->value.i_val;
+	end = second->value.i_val;
+	if (paramlist->value.list.count > 2) {
+	    third = list_get_object(paramlist, 2);
+	    if (third->type != obj_int_t) {
 		die("Third parameter to range must be integer\n");
 	    }
-	    incr = third->value.list.item->value.i_val;
+	    incr = third->value.i_val;
 	}
 	else {
 	    incr = 1;
@@ -740,7 +733,7 @@ LuciObject * luci_range(LuciObject *param_list)
     }
     else {
 	start = 0;
-	end = first->value.list.item->value.i_val;
+	end = first->value.i_val;
 	incr = 1;
     }
 
@@ -758,10 +751,9 @@ LuciObject * luci_range(LuciObject *param_list)
     }
 
     /* Build a list of integers from start to end, incrementing by incr */
-
-    LuciObject *tail, *item, *next = NULL;
+    LuciObject *item, *list = create_object(obj_list_t);
     int i;
-    for (i = end - incr; i >= start; i -= incr)
+    for (i = start; i <= end - incr; i += incr)
     {
 	/* create the Object */
 	item = create_object(obj_int_t);
@@ -771,53 +763,44 @@ LuciObject * luci_range(LuciObject *param_list)
 	else {
 	    item->value.i_val = i;
 	}
-	/* create the list item container */
-	tail = create_object(obj_list_t);
-	/* link this container to 'next' container */
-	tail->value.list.next = next;
-	/* store ptr to actual object in container */
-	tail->value.list.item = item;
-	/* point 'next' to this container */
-	next = tail;
-
+	list_append_object(list, item);
 	/*yak("Adding new list item to list\n");*/
     }
 
-    return next;
+    return list;
 }
 
-LuciObject * luci_sum(LuciObject *param_list)
+LuciObject * luci_sum(LuciObject *paramlist)
 {
-    if (!param_list) {
-	die("Need list to calculate sum\n");
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to sum()\n");
     }
 
-    LuciObject *list = param_list->value.list.item;
+    LuciObject *list = list_get_object(paramlist, 0);
 
     if (!list || (list->type != obj_list_t)) {
 	die("Must specify a list to calculate sum\n");
     }
 
-    LuciObject *ptr = list;
+    LuciObject *item;
     double sum = 0;
-    int found_float = 0;
-    while (ptr) {
-	if (!ptr->value.list.item) {
+    int i, found_float = 0;
+    for (i = 0; i < list->value.list.count; i ++) {
+	item = list_get_object(list, i);
+	if (!item) {
 	    die("Can't calulate sum of list containing NULL value\n");
 	}
-	switch (ptr->value.list.item->type)
-	{
+	switch (item->type) {
 	    case obj_int_t:
-		sum += (double)ptr->value.list.item->value.i_val;
+		sum += (double)item->value.i_val;
 		break;
 	    case obj_float_t:
 		found_float = 1;
-		sum += (ptr->value.list.item->value.f_val);
+		sum += (item->value.f_val);
 		break;
 	    default:
 		die("Can't calculate sum of list containing non-numeric value\n");
 	}
-	ptr = ptr->value.list.next;
     }
 
     LuciObject *ret;
@@ -886,7 +869,7 @@ int evaluate_condition(LuciObject *cond)
 	    huh = strlen(cond->value.s_val);
 	    break;
 	case obj_list_t:
-	    huh = 1;
+	    huh = cond->value.list.count;
 	    break;
 	case obj_file_t:
 	    huh = 1;
@@ -896,29 +879,6 @@ int evaluate_condition(LuciObject *cond)
     }
     return huh;
 }
-
-/* returns the list NODE at the given index
-    or NULL if not found (index exceeds list bounds)
-*/
-LuciObject *get_list_node(LuciObject *list, int index)
-{
-    if (!list || (list->type != obj_list_t)) {
-	return NULL;
-    }
-    int i = 0, found = 0;
-    LuciObject *cur = list;
-    LuciObject *ret = NULL;
-    while (cur) {
-	if (i == index) {
-	    ret = cur;
-	    break;
-	}
-	cur = cur->value.list.next;
-	i++;
-    }
-    return ret;
-}
-
 
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 {

@@ -214,16 +214,8 @@ static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a
 	    destroy_object(right);
 	    die("Can't index a non-list object in assignment\n");
 	}
-
-	/* get the item currently at the index */
-	LuciObject *item = list_get_object(list, idx);
-	if (!item) {
-	    destroy_object(right);
-	    die("Index %d out of bounds\n", idx);
-	}
-	/* destroy the existing list item*/
-	destroy_object(item);
 	/* put the new item in the list at the index */
+	/* this will also de-reference the item currently at the index */
 	list_set_object(list, right, idx);
     }
 
@@ -242,7 +234,7 @@ static LuciObject *exec_list(struct ExecContext *e, struct ASTNode *a)
     {
 	/* create the Object */
 	LuciObject *item = dispatch_statement(e, a->data.list.items[i]);
-	list_append_object(item);
+	list_append_object(list, item);
 	yak("Adding new list item to list\n");
     }
     return list;
@@ -333,10 +325,11 @@ static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
     }
 
     /* iterate through list, assigning value to symbol, then executing all statements */
-    LuciObject *item, *none, *ptr = list;
-    while (ptr) {
+    LuciObject *item, *none;
+    int i;
+    for (i = 0; i < list->value.list.count; i++) {
 	/* copy the item in the list */
-	item = copy_object(ptr->value.list.item);
+	item = copy_object(list_get_object(list, i));
 	/* destroy the existing value of the symbol */
 	destroy_object(s->data.object);
 	/* assign item copy to symbol */
@@ -344,8 +337,6 @@ static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
 	/* execute all statements inside the for loop */
 	none = dispatch_statement(e, a->data.for_loop.statements);
 	destroy_object(none);
-	/* move to next index in the list */
-	ptr = ptr->value.list.next;
     }
 
     destroy_object(list);
@@ -399,10 +390,8 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
     else
     {
 	LuciObject *param_list = dispatch_statement(e, a->data.call.param_list);
-	if (param_list) {
-	    if (param_list->type != obj_list_t) {
-		die("Malformed function parameters\n");
-	    }
+	if (param_list->type != obj_list_t) {
+	    die("Malformed function parameters\n");
 	}
 	LuciObject *ret = (*(s->data.funcptr))(param_list);
 	destroy_object(param_list);

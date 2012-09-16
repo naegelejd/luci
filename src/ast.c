@@ -85,15 +85,22 @@ ASTNode *make_list(ASTNode *result, ASTNode *to_append)
     {
 	result = alloc(sizeof(*result));
 	result->type = ast_list_t;
+	result->data.list.size = AST_LIST_SIZE;
+	result->data.list.items = alloc(result->data.list.size *
+		sizeof(*result->data.list.items));
 	result->data.list.count = 0;
-	result->data.list.items = 0;
     }
-    assert(result->type == ast_list_t);
-    result->data.list.count++;
-    result->data.list.items = realloc(result->data.list.items,
-	    result->data.list.count * sizeof(*result->data.list.items));
-    result->data.list.items[result->data.list.count - 1] = to_append;
-    yak("Added a new parameter\n");
+    /* checking for a NULL 'to_append' allows for empty list creation */
+    if (to_append) {
+	assert(result->type == ast_list_t);
+	if (++(result->data.list.count) > result->data.list.size) {
+	    result->data.list.size << 1;
+	    result->data.list.items = realloc(result->data.list.items,
+		result->data.list.size * sizeof(*result->data.list.items));
+	}
+	result->data.list.items[result->data.list.count - 1] = to_append;
+	yak("Added a new parameter\n");
+    }
     return result;
 }
 

@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#define AST_LIST_SIZE 32
+
 typedef struct ASTNode
 {
     enum {  ast_int_t,
@@ -46,6 +48,7 @@ typedef struct ASTNode
 	struct
 	{
 	    int count;
+	    int size;
 	    struct ASTNode **items;
 	} list;
 	struct

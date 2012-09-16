@@ -15,6 +15,7 @@ struct LuciObject *copy_object(struct LuciObject* orig);
 /* destroys a LuciObject * */
 void destroy_object(struct LuciObject *trash);
 
+int list_append_object(struct LuciObject *list, struct LuciObject *item);
 
 struct func_def
 {

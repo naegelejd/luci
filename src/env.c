@@ -167,19 +167,18 @@ static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
     int idx = index->value.i_val;
     destroy_object(index);
 
-    LuciObject *list_node = get_list_node(list, idx);
+    LuciObject *item = list_get_object(list, idx);
+    /* dereference the list */
     destroy_object(list);
-    if (!list_node) {
-	die("List index exceeds length of list\n");
+    if (!item) {
+	die("Index %d out of bounds\n", idx);
     }
-
     /* COPY the list item.
        Think about it. When operating on an item
        in a list, you request a copy of the contents
        of this list at a given index.
     */
-    LuciObject *ret = copy_object(list_node->value.list.item);
-    return ret;
+    return copy_object(item);
 }
 
 /*
@@ -216,15 +215,16 @@ static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a
 	    die("Can't index a non-list object in assignment\n");
 	}
 
-	LuciObject *list_node = get_list_node(list, idx);
-	if (!list_node) {
+	/* get the item currently at the index */
+	LuciObject *item = list_get_object(list, idx);
+	if (!item) {
 	    destroy_object(right);
-	    die("List index exceeds length of list\n");
+	    die("Index %d out of bounds\n", idx);
 	}
-	/* destroy existing data object in list node */
-	destroy_object(list_node->value.list.item);
-	/* assign new object to list node */
-	list_node->value.list.item = right;
+	/* destroy the existing list item*/
+	destroy_object(item);
+	/* put the new item in the list at the index */
+	list_set_object(list, right, idx);
     }
 
     /* return an empty LuciObject * */
@@ -236,28 +236,16 @@ static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a
 */
 static LuciObject *exec_list(struct ExecContext *e, struct ASTNode *a)
 {
-    LuciObject *next = NULL;
+    LuciObject *list = create_object(obj_list_t);
     int i;
-    for (i = a->data.list.count - 1; i >= 0; i--)
+    for (i = 0; i < a->data.list.count; i++)
     {
 	/* create the Object */
 	LuciObject *item = dispatch_statement(e, a->data.list.items[i]);
-
-	/* create the list item container */
-	LuciObject *tail = create_object(obj_list_t);
-
-	/* link this container to 'next' container */
-	tail->value.list.next = next;
-
-	/* store ptr to actual object in container */
-	tail->value.list.item = item;
-
-	/* point 'next' to this container */
-	next = tail;
-
+	list_append_object(item);
 	yak("Adding new list item to list\n");
     }
-    return next;
+    return list;
 }
 
 /*

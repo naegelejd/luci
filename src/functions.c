@@ -51,7 +51,11 @@ LuciObject *create_object(int type)
 	    ret->value.file.f_ptr = NULL;
 	    break;
 	case obj_list_t:
-	    ret->value.list.next = NULL;
+	    ret->value.list.count = 0;
+	    ret->value.list.size = INIT_LIST_SIZE;
+	    ret->value.list.items = alloc(ret->value.list.size *
+		    sizeof(*ret->value.list.items));
+	    ret->value.list.items = NULL;
 	    break;
 	default:
 	    break;
@@ -151,6 +155,21 @@ void destroy_object(LuciObject *trash)
 	free(trash);
 	trash = NULL;
     }
+}
+
+int list_append_object(LuciObject *list, LuciObject *item)
+{
+    if (!list || (list->type != obj_list_t)) {
+	die("Can't append item to non-list object\n");
+    }
+    if (++(list->value.list.count) > list->value.list.size) {
+	list->value.list.size << 1;
+	/* realloc the list array */
+	list->value.list.items = realloc(list->value.list.items,
+		list->value.list.size * sizeof(*list->value.list.items));
+    }
+    list->value.liste.items[list->value.list.count - 1] = item;
+    return 1;
 }
 
 const struct func_def builtins[] =

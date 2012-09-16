@@ -22,12 +22,12 @@ done
 
 print(l)
 
-f = open("samples/insane.lx", "r")
+f = open("samples/wild.lx", "r")
 line = readline(f)
 print(line)
 close(f)
 
-f = open("samples/insane.lx", "r")
+f = open("samples/wild.lx", "r")
 lines = readlines(f)
 
 for l in lines do

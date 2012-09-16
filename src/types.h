@@ -57,8 +57,8 @@ typedef struct LuciObject
 	} file;
 	struct
 	{
-	    struct LuciObject *item;
-	    struct LuciObject *next;
+	    struct LuciObject **items;
+	    int count;
 	} list;
     } value;
 } LuciObject;

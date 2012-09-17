@@ -492,11 +492,13 @@ ExecContext *create_env(void)
 	sym->data.funcptr = builtins[i].func;
     }
 
+    /*
     extern struct var_def vars[];
     for (i = 0; vars[i].name != 0; i++) {
 	Symbol *sym = add_symbol(e, vars[i].name, sym_obj_t);
 	sym->data.object = vars[i].object;
     }
+    */
 
     return e;
 }

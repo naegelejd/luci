@@ -1557,329 +1557,329 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 61 "src/parser.y"
     { (yyval.node) = 0; }
     break;
 
   case 3:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 62 "src/parser.y"
     { (*(struct ASTNode **)root) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 4:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 66 "src/parser.y"
     { (yyval.node) = make_statement(NULL, (yyvsp[(1) - (2)].node)); }
     break;
 
   case 5:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 67 "src/parser.y"
     { (yyval.node) = make_statement((yyvsp[(1) - (3)].node), (yyvsp[(2) - (3)].node)); }
     break;
 
   case 6:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 71 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 7:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 72 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 8:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 73 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 9:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 74 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 10:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 75 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 11:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 79 "src/parser.y"
     { (yyval.node) = make_assignment((yyvsp[(1) - (3)].id), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 12:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 81 "src/parser.y"
     { (yyval.node) = make_list_assignment((yyvsp[(1) - (6)].id), (yyvsp[(3) - (6)].node), (yyvsp[(6) - (6)].node));}
     break;
 
   case 13:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 85 "src/parser.y"
     { (yyval.node) = make_call((yyvsp[(1) - (4)].id), (yyvsp[(3) - (4)].node)); }
     break;
 
   case 14:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 86 "src/parser.y"
     { (yyval.node) = make_call((yyvsp[(1) - (4)].id), (yyvsp[(3) - (4)].node)); }
     break;
 
   case 15:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 90 "src/parser.y"
     { (yyval.node) = (yyvsp[(2) - (3)].node); }
     break;
 
   case 16:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 91 "src/parser.y"
     { (yyval.node) = (yyvsp[(2) - (3)].node); }
     break;
 
   case 17:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 95 "src/parser.y"
     { (yyval.node) = make_list(NULL, NULL); }
     break;
 
   case 18:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 99 "src/parser.y"
     { (yyval.node) = make_list(NULL, (yyvsp[(1) - (1)].node)); }
     break;
 
   case 19:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 100 "src/parser.y"
     { (yyval.node) = make_list((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node)); }
     break;
 
   case 20:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 104 "src/parser.y"
     { (yyval.node) = make_list_index((yyvsp[(1) - (4)].node), (yyvsp[(3) - (4)].node)); }
     break;
 
   case 21:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 108 "src/parser.y"
     { (yyval.node) = make_while_loop((yyvsp[(2) - (6)].node), (yyvsp[(5) - (6)].node)); }
     break;
 
   case 22:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 112 "src/parser.y"
     { (yyval.node) = make_for_loop((yyvsp[(2) - (8)].id), (yyvsp[(4) - (8)].node), (yyvsp[(7) - (8)].node)); }
     break;
 
   case 23:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 117 "src/parser.y"
     { (yyval.node) =  make_if_else((yyvsp[(2) - (6)].node), (yyvsp[(5) - (6)].node), NULL); }
     break;
 
   case 24:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 119 "src/parser.y"
     { (yyval.node) = make_if_else((yyvsp[(2) - (9)].node), (yyvsp[(5) - (9)].node), (yyvsp[(8) - (9)].node)); }
     break;
 
   case 25:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 123 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 26:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 124 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (2)].node); }
     break;
 
   case 27:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 128 "src/parser.y"
     { (yyval.node) = make_expr_from_int((yyvsp[(1) - (1)].i_val)); }
     break;
 
   case 28:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 129 "src/parser.y"
     { (yyval.node) = make_expr_from_float((yyvsp[(1) - (1)].d_val)); }
     break;
 
   case 29:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 130 "src/parser.y"
     { (yyval.node) = make_expr_from_string((yyvsp[(1) - (1)].s_val)); }
     break;
 
   case 30:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 131 "src/parser.y"
     { (yyval.node) = make_expr_from_id((yyvsp[(1) - (1)].id)); }
     break;
 
   case 31:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 132 "src/parser.y"
     { (yyval.node) = make_binary_expr(
                                                 make_expr_from_int(0), (yyvsp[(2) - (2)].node), op_sub_t); }
     break;
 
   case 32:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 134 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_add_t); }
     break;
 
   case 33:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 135 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_sub_t); }
     break;
 
   case 34:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 136 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_mul_t); }
     break;
 
   case 35:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 137 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_div_t); }
     break;
 
   case 36:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 138 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_pow_t); }
     break;
 
   case 37:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 139 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_mod_t); }
     break;
 
   case 38:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 140 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_lt_t); }
     break;
 
   case 39:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 141 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_gt_t); }
     break;
 
   case 40:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 142 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_neq_t); }
     break;
 
   case 41:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 143 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_eq_t); }
     break;
 
   case 42:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 144 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_lte_t); }
     break;
 
   case 43:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 145 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_gte_t); }
     break;
 
   case 44:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 146 "src/parser.y"
     { (yyval.node) = make_binary_expr(
                                                 make_expr_from_int(0), (yyvsp[(2) - (2)].node), op_lnot_t); }
     break;
 
   case 45:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 148 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_lor_t); }
     break;
 
   case 46:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 149 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_land_t); }
     break;
 
   case 47:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 150 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_bxor_t); }
     break;
 
   case 48:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 151 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_bor_t); }
     break;
 
   case 49:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 152 "src/parser.y"
     { (yyval.node) = make_binary_expr((yyvsp[(1) - (3)].node), (yyvsp[(3) - (3)].node), op_band_t); }
     break;
 
   case 50:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 153 "src/parser.y"
     { (yyval.node) = make_binary_expr(
                                                 make_expr_from_int(0), (yyvsp[(2) - (2)].node), op_bnot_t); }
     break;
 
   case 51:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 155 "src/parser.y"
     { (yyval.node) = (yyvsp[(2) - (3)].node); /*make_binary_expr(
                                                 make_expr_from_int(0), $2, op_add_t);*/ }
     break;
 
   case 52:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 157 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 53:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 158 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 54:
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 159 "src/parser.y"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
 
-/* Line 1802 of yacc.c  */
+/* Line 1787 of yacc.c  */
 #line 1884 "src/parser.tab.c"
       default: break;
     }

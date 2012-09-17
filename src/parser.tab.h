@@ -96,7 +96,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
 {
-/* Line 2055 of yacc.c  */
+/* Line 2049 of yacc.c  */
 #line 22 "src/parser.y"
 
     int i_val;
@@ -106,7 +106,7 @@ typedef union YYSTYPE
     struct ASTNode *node;
 
 
-/* Line 2055 of yacc.c  */
+/* Line 2049 of yacc.c  */
 #line 111 "src/parser.tab.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1

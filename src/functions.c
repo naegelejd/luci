@@ -217,11 +217,13 @@ struct var_def *init_variables(void)
 }
 */
 
+/*
 const struct var_def vars[] =
 {
     "stdout", make_stdout(),
     0, 0
 };
+*/
 
 const struct func_def builtins[] =
 {

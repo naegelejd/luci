@@ -7,9 +7,10 @@
 
 extern int VERBOSE;
 
-const char *NTYPES[] = {"INT", "DOUBLE", "STRING", "ID", "EXPR",
-	"LISTREF", "LIST", "ASSGNMT",
-	"WHILE", "IF", "CALL", "STMT"};
+/* for verbosity */
+const char *NTYPES[] = {"int", "float", "string", "id", "expr",
+	"list_index", "list_assign", "list", "assignment",
+	"while", "for", "if_else", "call", "statements"};
 
 ASTNode *make_expr_from_int(int val)
 {
@@ -94,7 +95,7 @@ ASTNode *make_list(ASTNode *result, ASTNode *to_append)
     if (to_append) {
 	assert(result->type == ast_list_t);
 	if (++(result->data.list.count) > result->data.list.size) {
-	    result->data.list.size << 1;
+	    result->data.list.size = result->data.list.size << 1;
 	    result->data.list.items = realloc(result->data.list.items,
 		result->data.list.size * sizeof(*result->data.list.items));
 	}

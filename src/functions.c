@@ -140,7 +140,7 @@ void destroy_object(LuciObject *trash)
 	    default:
 		break;
 	}
-	yak("Freeing obj with type %d\n", trash->type);
+	yak("Destroying obj with type %d\n", trash->type);
 
 	/* destroy the LuciObject itself */
 	free(trash);
@@ -154,10 +154,11 @@ int list_append_object(LuciObject *list, LuciObject *item)
 	die("Can't append item to non-list object\n");
     }
     if (++(list->value.list.count) > list->value.list.size) {
-	list->value.list.size << 1;
+	list->value.list.size = list->value.list.size << 1;
 	/* realloc the list array */
 	list->value.list.items = realloc(list->value.list.items,
 		list->value.list.size * sizeof(*list->value.list.items));
+	yak("Reallocated space for list\n");
     }
     list->value.list.items[list->value.list.count - 1] = item;
     return 1;
@@ -209,6 +210,9 @@ const struct func_def builtins[] =
     "readlines", luci_flines,
     "range", luci_range,
     "sum", luci_sum,
+    "len", luci_len,
+    "max", luci_max,
+    "min", luci_min,
     0, 0
 };
 
@@ -811,6 +815,128 @@ LuciObject * luci_sum(LuciObject *paramlist)
 	ret->value.f_val = sum;
     }
 
+    return ret;
+}
+
+LuciObject *luci_len(LuciObject *paramlist)
+{
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to len()\n");
+    }
+
+    LuciObject *list = list_get_object(paramlist, 0);
+
+    if (!list || (list->type != obj_list_t)) {
+	die("Must specify a list to calculate len\n");
+    }
+
+    LuciObject *ret = create_object(obj_int_t);
+    ret->value.i_val = list->value.list.count;
+    return ret;
+}
+
+LuciObject *luci_max(LuciObject *paramlist)
+{
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to max()\n");
+    }
+
+    LuciObject *list = list_get_object(paramlist, 0);
+
+    if (!list || (list->type != obj_list_t)) {
+	die("Must specify a list to calculate max\n");
+    }
+
+    LuciObject *item;
+    double max = 0;
+    int i, found_float = 0;
+    for (i = 0; i < list->value.list.count; i ++) {
+	item = list_get_object(list, i);
+	if (!item) {
+	    die("Can't calulate max of list containing NULL value\n");
+	}
+	switch (item->type) {
+	    case obj_int_t:
+		if ( (double)item->value.i_val > max) {
+		    max = (double)item->value.i_val;
+		}
+		break;
+	    case obj_float_t:
+		found_float = 1;
+		if (item->value.f_val > max) {
+		    max = item->value.f_val;
+		}
+		break;
+	    default:
+		die("Can't calculate max of list containing non-numeric value\n");
+	}
+    }
+
+    LuciObject *ret;
+    if (!found_float) {
+	ret = create_object(obj_int_t);
+	ret->value.i_val = (long)max;
+    }
+    else {
+	ret = create_object(obj_float_t);
+	ret->value.f_val = max;
+    }
+    return ret;
+}
+
+LuciObject *luci_min(LuciObject *paramlist)
+{
+    if (! paramlist->value.list.count) {
+	die("Missing parameter to min()\n");
+    }
+
+    LuciObject *list = list_get_object(paramlist, 0);
+
+    if (!list || (list->type != obj_list_t)) {
+	die("Must specify a list to calculate min\n");
+    }
+
+    LuciObject *item;
+    double min = 0;
+    int i, found_float = 0;
+
+    for (i = 0; i < list->value.list.count; i ++) {
+	item = list_get_object(list, i);
+	if (!item) {
+	    die("Can't calulate max of list containing NULL value\n");
+	}
+	switch (item->type) {
+	    case obj_int_t:
+		if (i == 0) {
+		    min = (double)item->value.i_val;
+		}
+		else if ( (double)item->value.i_val < min) {
+		    min = (double)item->value.i_val;
+		}
+		break;
+	    case obj_float_t:
+		found_float = 1;
+		if (i == 0) {
+		    min = item->value.f_val;
+		}
+		else if (item->value.f_val < min) {
+		    min = item->value.f_val;
+		}
+		break;
+	    default:
+		die("Can't calculate min of list containing non-numeric value\n");
+	}
+    }
+
+    LuciObject *ret;
+    if (!found_float) {
+	ret = create_object(obj_int_t);
+	ret->value.i_val = (long)min;
+    }
+    else {
+	ret = create_object(obj_float_t);
+	ret->value.f_val = min;
+    }
     return ret;
 }
 

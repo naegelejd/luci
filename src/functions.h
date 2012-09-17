@@ -26,7 +26,7 @@ struct func_def
 
 struct LuciObject *luci_help(struct LuciObject *);
 struct LuciObject *luci_print(struct LuciObject *);
-struct LuciObject *luci_readline(struct LuciObject *in);
+struct LuciObject *luci_readline(struct LuciObject *);
 struct LuciObject *luci_typeof(struct LuciObject *);
 struct LuciObject *luci_assert(struct LuciObject *);
 
@@ -38,10 +38,13 @@ struct LuciObject *luci_fopen(struct LuciObject *);
 struct LuciObject *luci_fclose(struct LuciObject *);
 struct LuciObject *luci_fread(struct LuciObject *);
 struct LuciObject *luci_fwrite(struct LuciObject *);
-struct LuciObject *luci_flines(struct LuciObject *param);
+struct LuciObject *luci_flines(struct LuciObject *);
 
 struct LuciObject *luci_range(struct LuciObject *);
 struct LuciObject *luci_sum(struct LuciObject *);
+struct LuciObject *luci_len(struct LuciObject *);
+struct LuciObject *luci_max(struct LuciObject *);
+struct LuciObject *luci_min(struct LuciObject *);
 
 struct LuciObject *solve_bin_expr(struct LuciObject *left,
 	struct LuciObject *right, int op);

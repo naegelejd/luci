@@ -484,12 +484,18 @@ ExecContext *create_env(void)
     e->name = alloc(strlen(name) + 1);
     strcpy(e->name, name);
 
-    extern struct func_def builtins[];
     int i;
+    extern struct func_def builtins[];
     for (i = 0; builtins[i].name != 0; i++)
     {
 	Symbol *sym = add_symbol(e, builtins[i].name, sym_func_t);
 	sym->data.funcptr = builtins[i].func;
+    }
+
+    extern struct var_def vars[];
+    for (i = 0; vars[i].name != 0; i++) {
+	Symbol *sym = add_symbol(e, vars[i].name, sym_obj_t);
+	sym->data.object = vars[i].object;
     }
 
     return e;

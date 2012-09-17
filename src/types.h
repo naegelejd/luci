@@ -53,7 +53,7 @@ typedef struct LuciObject
 	char *s_val;
 	struct
 	{
-	    FILE *f_ptr;
+	    FILE *ptr;
 	    long size;	/* in bytes */
 	    LuciFileMode mode;
 	} file;

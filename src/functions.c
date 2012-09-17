@@ -50,7 +50,7 @@ LuciObject *create_object(int type)
 	    ret->value.s_val = NULL;
 	    break;
 	case obj_file_t:
-	    ret->value.file.f_ptr = NULL;
+	    ret->value.file.ptr = NULL;
 	    break;
 	case obj_list_t:
 	    ret->value.list.count = 0;
@@ -98,7 +98,7 @@ LuciObject *copy_object(LuciObject *orig)
 	    strcpy(copy->value.s_val, orig->value.s_val);
 	    break;
 	case obj_file_t:
-	    copy->value.file.f_ptr = orig->value.file.f_ptr;
+	    copy->value.file.ptr = orig->value.file.ptr;
 	    copy->value.file.size = orig->value.file.size;
 	    copy->value.file.mode = orig->value.file.mode;
 	    break;
@@ -126,10 +126,10 @@ void destroy_object(LuciObject *trash)
 		free(trash->value.list.items);
 		break;
 	    case obj_file_t:
-		if (trash->value.file.f_ptr) {
+		if (trash->value.file.ptr) {
 		    /* TODO: method of closing only open files */
 		    /* yak("Closing file object\n"); */
-		    /* close_file(trash->value.file.f_ptr); */
+		    /* close_file(trash->value.file.ptr); */
 		}
 		break;
 	    case obj_str_t:
@@ -191,6 +191,37 @@ LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
     destroy_object(list_get_object(list, index));
     list->value.list.items[index] = item;
 }
+
+LuciObject * make_stdout(void)
+{
+    LuciObject *luci_stdout = create_object(obj_file_t);
+    luci_stdout->value.file.ptr = stdout;
+    luci_stdout->value.file.size = 0;
+    luci_stdout->value.file.mode = f_write_m;
+    return luci_stdout;
+}
+/*
+struct var_def *init_variables(void)
+{
+    LuciObject *luci_stdout = create_object(obj_file_t);
+    luci_stdout->value.file.ptr = stdout;
+    luci_stdout->value.file.size = 0;
+    luci_stdout->value.file.mode = f_write_m;
+
+    struct var_def[] vars[] =
+    {
+	"stdout", luci_stdout,
+	0, 0
+    }
+    return vars;
+}
+*/
+
+const struct var_def vars[] =
+{
+    "stdout", make_stdout(),
+    0, 0
+};
 
 const struct func_def builtins[] =
 {
@@ -306,7 +337,7 @@ LuciObject *luci_readline(LuciObject *paramlist)
 	LuciObject *item = list_get_object(paramlist, 0);
 	if (item && (item->type == obj_file_t)) {
 	    yak("readline from file\n");
-	    read_from = item->value.file.f_ptr;
+	    read_from = item->value.file.ptr;
 	}
 	else {
 	    die("Can't readline from non-file object\n");
@@ -597,7 +628,7 @@ LuciObject *luci_fopen(LuciObject *paramlist)
     }
 
     LuciObject *ret = create_object(obj_file_t);
-    ret->value.file.f_ptr = file;
+    ret->value.file.ptr = file;
     ret->value.file.mode = mode;
     ret->value.file.size = file_length;
 
@@ -620,8 +651,8 @@ LuciObject *luci_fclose(LuciObject *paramlist)
 	die("Not a file object\n");
     }
 
-    if (fobj->value.file.f_ptr) {
-	close_file(fobj->value.file.f_ptr);
+    if (fobj->value.file.ptr) {
+	close_file(fobj->value.file.ptr);
     }
     /* else, probably already closed (it's NULL) */
 
@@ -647,14 +678,14 @@ LuciObject *luci_fread(LuciObject *paramlist)
     }
 
     /* seek to file start, we're gonna read the whole thing */
-    /* fseek(fobj->value.file.f_ptr, 0, SEEK_SET); */
+    /* fseek(fobj->value.file.ptr, 0, SEEK_SET); */
 
     long len = fobj->value.file.size;
     char *read = alloc(len + 1);
-    fread(read, sizeof(char), len, fobj->value.file.f_ptr);
+    fread(read, sizeof(char), len, fobj->value.file.ptr);
     read[len] = '\0';
 
-    /* fseek(fobj->value.file.f_ptr, 0, SEEK_SET); */
+    /* fseek(fobj->value.file.ptr, 0, SEEK_SET); */
 
     LuciObject *ret = create_object(obj_str_t);
     ret->value.s_val = read;
@@ -685,7 +716,7 @@ LuciObject *luci_fwrite(LuciObject *paramlist)
 	die("Can't write to file. It is opened for reading.\n");
     }
 
-    fwrite(text, sizeof(char), strlen(text), fobj->value.file.f_ptr);
+    fwrite(text, sizeof(char), strlen(text), fobj->value.file.ptr);
     return NULL;
 }
 
@@ -1155,7 +1186,7 @@ static LuciObject *eq(LuciObject *left, LuciObject *right)
 	    r = !(strcmp(left->value.s_val, right->value.s_val));
 	    break;
 	case obj_file_t:
-	    r = (left->value.file.f_ptr == right->value.file.f_ptr);
+	    r = (left->value.file.ptr == right->value.file.ptr);
 	default:
 	    r = 0;
     }

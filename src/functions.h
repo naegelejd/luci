@@ -24,6 +24,12 @@ struct func_def
     struct LuciObject * (*func) (struct LuciObject *);
 };
 
+struct var_def
+{
+    const char *name;
+    struct LuciObject *object;
+};
+
 struct LuciObject *luci_help(struct LuciObject *);
 struct LuciObject *luci_print(struct LuciObject *);
 struct LuciObject *luci_readline(struct LuciObject *);

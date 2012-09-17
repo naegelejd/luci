@@ -53,4 +53,4 @@ doc: Doxyfile $(SRCDIR)/*.c
 	doxygen Doxyfile >> /dev/null
 
 clean:
-	rm -rf $(BINDIR) $(OBJDIR)
+	rm -f $(BINDIR)/* $(OBJDIR)/* $(SRCDIR)/*.yy.c $(SRCDIR)/*.tab.c $(SRCDIR)/*.tab.h

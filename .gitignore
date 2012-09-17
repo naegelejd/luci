@@ -2,6 +2,9 @@
 *.png
 *.jpg
 
+*.tab.*
+*.yy.*
+
 bin/
 obj/
 doc/

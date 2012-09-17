@@ -1,9 +1,9 @@
-#include "types.h"
-#include "driver.h"
-#include "ast.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
+#include "common.h"
+#include "types.h"
+#include "ast.h"
 
 extern int VERBOSE;
 

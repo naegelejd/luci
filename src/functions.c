@@ -4,8 +4,8 @@
 #include <math.h>
 #include <assert.h>
 #include "functions.h"
+#include "common.h"
 #include "types.h"
-#include "driver.h"
 
 /* Forward declarations */
 static LuciObject *add(LuciObject *left, LuciObject *right);
@@ -127,8 +127,9 @@ void destroy_object(LuciObject *trash)
 		break;
 	    case obj_file_t:
 		if (trash->value.file.f_ptr) {
-		    yak("Closing file object\n");
-		    close_file(trash->value.file.f_ptr);
+		    /* TODO: method of closing only open files */
+		    /* yak("Closing file object\n"); */
+		    /* close_file(trash->value.file.f_ptr); */
 		}
 		break;
 	    case obj_str_t:
@@ -686,9 +687,6 @@ LuciObject *luci_fwrite(LuciObject *paramlist)
 
 LuciObject *luci_flines(LuciObject *paramlist)
 {
-    if (! paramlist->value.list.count) {
-	die("Missing parameter to readlines()\n");
-    }
     LuciObject *list = create_object(obj_list_t);
     LuciObject *line = luci_readline(paramlist);
     while (line) {

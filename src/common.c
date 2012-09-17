@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include "driver.h"
+#include "common.h"
 #include "ast.h"
 #include "env.h"
 

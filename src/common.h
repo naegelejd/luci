@@ -1,5 +1,5 @@
-#ifndef DRIVER_H
-#define DRIVER_H
+#ifndef COMMON_H
+#define COMMON_H
 
 void *alloc(size_t size);
 void yak(const char *, ... );

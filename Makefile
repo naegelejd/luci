@@ -2,8 +2,7 @@ CC = gcc
 CFLAGS =
 
 TARGET = luci
-#OBJECTS = driver.o ast.o env.o functions.o parser.tab.o lexer.yy.o
-LIBS = 
+LIBS =
 
 SRCDIR = src
 OBJDIR = obj
@@ -14,7 +13,7 @@ EXECUTABLE = $(BINDIR)/$(TARGET)
 
 SOURCES := $(wildcard $(SRCDIR)/*.c)
 INCLUDES := $(wildcard $(SRCDIR)/*.h)
-OBJECTS := $(addprefix $(OBJDIR)/,ast.o env.o driver.o functions.o parser.tab.o lexer.yy.o)
+OBJECTS := $(addprefix $(OBJDIR)/,ast.o env.o common.o functions.o parser.tab.o lexer.yy.o)
 
 #all: $(EXECUTABLE)
 all: debug

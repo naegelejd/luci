@@ -28,12 +28,14 @@ typedef struct ASTNode
 	    ast_statements_t,
 	    ast_last_t
     } type;
+
     union
     {
 	int i_val;
 	double f_val;
 	char *s_val;
 	char *name;
+
 	struct
 	{
 	    struct ASTNode *left, *right;
@@ -80,13 +82,15 @@ typedef struct ASTNode
 	} if_else;
 	struct
 	{
-	    struct ASTNode *param_list;
+	    struct ASTNode *arglist;
 	    char *name;
 	} call;
 	struct
 	{
-	    struct ASTNode *call_sig;
+	    struct ASTNode *param_list;
 	    struct ASTNode *statements;
+	    struct ASTNode *ret_expr;
+	    char *name;
 	} func_def;
 	struct
 	{
@@ -114,7 +118,7 @@ ASTNode *make_list_index(ASTNode *, ASTNode *);
 ASTNode *make_list_assignment(char *, ASTNode *, ASTNode *);
 ASTNode *make_list(ASTNode *, ASTNode *);
 ASTNode *make_call(char *, ASTNode *);
-ASTNode *make_func_def(ASTNode *, ASTNode *);
+ASTNode *make_func_def(char *, ASTNode *, ASTNode *, ASTNode *);
 ASTNode *make_assignment(char *, ASTNode *);
 ASTNode *make_while_loop(ASTNode *, ASTNode *);
 ASTNode *make_for_loop(char *, ASTNode *, ASTNode *);

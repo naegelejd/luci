@@ -77,6 +77,7 @@ typedef struct Symbol
     {
 	LuciObject * object;
 	LuciFunction funcptr;  /* function ptr to a LuciFunction */
+	void *user_defined;
     } data;
     struct Symbol *next;
 } Symbol;

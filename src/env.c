@@ -364,7 +364,7 @@ static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
    syntax tree.
    First it searches for the function corresponding to the user
    specified ID in the Execution Context's symbol table.
-   If found, the function's parameters node is executed and the results
+   If found, the function's arglist node is executed and the results
    are passed to the function's definition.
 */
 static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
@@ -375,14 +375,36 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
     if (!(s = get_symbol(e, a->data.call.name))) {
 	die("Invalid function name: %s\n", a->data.call.name);
     }
-    if (s->type == sym_bfunc_t)
-    {
-	LuciObject *param_list = dispatch_statement(e, a->data.call.param_list);
-	if (param_list->type != obj_list_t) {
-	    die("Malformed function parameters\n");
+    if (s->type == sym_bfunc_t) {
+	LuciObject *arglist = dispatch_statement(e, a->data.call.arglist);
+	if (arglist->type != obj_list_t) {
+	    die("Malformed function arguments\n");
 	}
-	LuciObject *ret = (*(s->data.funcptr))(param_list);
-	destroy_object(param_list);
+	LuciObject *ret = (*(s->data.funcptr))(arglist);
+	destroy_object(arglist);
+	return ret;
+    }
+    else if (s->type == sym_ufunc_t) {
+	LuciObject *arglist = dispatch_statement(e, a->data.call.arglist);
+	struct ASTNode *func_node = s->data.user_defined;
+
+	struct ASTNode *param_list = func_node->data.func_def.param_list;
+	int i;
+	for (i = 0; i < param_list->data.list.count; i++) {
+	    printf("%s\n", param_list->data.list.items[i]->data.s_val);
+	}
+
+	printf("%s\n", func_node->data.func_def.name);
+
+	/* execute the function's return expression */
+	LuciObject *ret;
+	if (func_node->data.func_def.ret_expr) {
+	    ret = dispatch_statement(e, func_node->data.func_def.ret_expr);
+	} else {
+	    ret = NULL;
+	}
+
+	destroy_object(arglist);
 	return ret;
     }
     else
@@ -396,14 +418,17 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 */
 static LuciObject *exec_func_def(struct ExecContext *e, struct ASTNode *a)
 {
-    struct ASTNode *call_sig = a->data.func_def.call_sig;
-    yak("Defining function %s\n", call_sig->data.call.name);
-
+    char *name;
     Symbol *s;
 
-    if (!(s = add_symbol(e, a->data.call.name, sym_ufunc_t))) {
-	die("Can't create symbol %s\n", a->data.call.name);
+    name = a->data.func_def.name;
+    yak("Defining function %s\n", name);
+
+    if (!(s = add_symbol(e, name, sym_ufunc_t))) {
+	die("Can't create symbol %s\n", name);
     }
+    /* store the ASTNode for the user-defined function in the symbol */
+    s->data.user_defined = a;
 
     return NULL;
 }

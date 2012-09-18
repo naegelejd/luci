@@ -31,7 +31,7 @@ void yyerror(const char *msg);
 
 %type <node> expr cond call assignment statement statements
 %type <node> while_loop for_loop if_else
-%type <node> func_def
+%type <node> func_def params
 %type <node> empty_list list_items list_index list
 %type <node> program
 
@@ -42,7 +42,7 @@ void yyerror(const char *msg);
 %token NEWLINE COMMA
 %token WHILE FOR IN DO DONE
 %token IF THEN ELSE END
-%token DEF
+%token DEF RETURN
 
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
@@ -85,9 +85,19 @@ assignment:
         ;
 
 func_def:
-            DEF call NEWLINE END                { $$ = make_func_def($2, NULL); }
-        |   DEF call NEWLINE statements END     { $$ = make_func_def($2, $4); }
+            DEF ID LPAREN empty_list RPAREN NEWLINE statements END
+                    { $$ = make_func_def($2, $4, $7, NULL); }
+        |   DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr END
+                    { $$ = make_func_def($2, $4, $7, $9); }
+        |   DEF ID LPAREN params RPAREN NEWLINE statements END
+                    { $$ = make_func_def($2, $4, $7, NULL); }
+        |   DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr END
+                    { $$ = make_func_def($2, $4, $7, $9); }
         ;
+
+params:
+            ID                      { $$ = make_list(NULL, make_expr_from_string($1)); }
+        |   params COMMA ID         { $$ = make_list($1, make_expr_from_string($3)); }
 
 call:
             ID LPAREN empty_list RPAREN         { $$ = make_call($1, $3); }

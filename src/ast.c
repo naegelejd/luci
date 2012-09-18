@@ -102,21 +102,24 @@ ASTNode *make_list(ASTNode *result, ASTNode *to_append)
     return result;
 }
 
-ASTNode *make_call(char *id, ASTNode *param_list)
+ASTNode *make_call(char *id, ASTNode *arglist)
 {
     ASTNode *result = create_node(ast_call_t);
     result->data.call.name = id;
-    result->data.call.param_list = param_list;
+    result->data.call.arglist = arglist;
     yak("Made call node with name: %s\n", id);
     return result;
 }
 
-ASTNode *make_func_def(ASTNode *call_sig, ASTNode *statements)
+ASTNode *make_func_def(char *name, ASTNode *param_list,
+	ASTNode *statements, ASTNode *return_expr)
 {
     ASTNode *result = create_node(ast_funcdef_t);
-    result->data.func_def.call_sig = call_sig;
+    result->data.func_def.name = name;
+    result->data.func_def.param_list = param_list;
     result->data.func_def.statements = statements;
-    yak("Made function definition node with name: %s\n", call_sig->data.call.name);
+    result->data.func_def.ret_expr = return_expr;
+    yak("Made function definition node with name: %s\n", name);
     return result;
 }
 
@@ -199,6 +202,12 @@ void destroy_AST(ASTNode *root)
 	    }
 	    free(root->data.statements.statements);
 	    break;
+	case ast_funcdef_t:
+	    free(root->data.func_def.name);
+	    destroy_AST(root->data.func_def.param_list);
+	    destroy_AST(root->data.func_def.statements);
+	    destroy_AST(root->data.func_def.ret_expr);
+	    break;
 	case ast_list_t:
 	    for (i = 0; i < root->data.list.count; i++)
 	    {
@@ -225,7 +234,7 @@ void destroy_AST(ASTNode *root)
 	    free(root->data.assignment.name);
 	    break;
 	case ast_call_t:
-	    destroy_AST(root->data.call.param_list);
+	    destroy_AST(root->data.call.arglist);
 	    free(root->data.call.name);
 	    break;
 	case ast_listindex_t:

@@ -3,7 +3,11 @@
 
 #include <stddef.h>
 
+/* the initial size of the array which represents a list of expressions */
 #define AST_LIST_SIZE 32
+
+/* the initial size of the array which holds pointers to statement nodes */
+#define AST_STMNTS_SIZE 32
 
 typedef struct ASTNode
 {
@@ -20,6 +24,7 @@ typedef struct ASTNode
 	    ast_for_t,
 	    ast_if_t,
 	    ast_call_t,
+	    ast_funcdef_t,
 	    ast_statements_t,
 	    ast_last_t
     } type;
@@ -80,7 +85,13 @@ typedef struct ASTNode
 	} call;
 	struct
 	{
+	    struct ASTNode *call_sig;
+	    struct ASTNode *statements;
+	} func_def;
+	struct
+	{
 	    int count;
+	    int size;
 	    struct ASTNode ** statements;
 	} statements;
     } data;
@@ -103,6 +114,7 @@ ASTNode *make_list_index(ASTNode *, ASTNode *);
 ASTNode *make_list_assignment(char *, ASTNode *, ASTNode *);
 ASTNode *make_list(ASTNode *, ASTNode *);
 ASTNode *make_call(char *, ASTNode *);
+ASTNode *make_func_def(ASTNode *, ASTNode *);
 ASTNode *make_assignment(char *, ASTNode *);
 ASTNode *make_while_loop(ASTNode *, ASTNode *);
 ASTNode *make_for_loop(char *, ASTNode *, ASTNode *);

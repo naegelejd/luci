@@ -6,6 +6,8 @@
 #include "functions.h"
 #include "common.h"
 #include "types.h"
+/* HACK: used for dir() function to iterate over symbol table */
+#include "env.h"
 
 /* Forward declarations */
 static LuciObject *add(LuciObject *left, LuciObject *right);
@@ -192,42 +194,56 @@ LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
     list->value.list.items[index] = item;
 }
 
-LuciObject * make_stdout(void)
-{
-    LuciObject *luci_stdout = create_object(obj_file_t);
-    luci_stdout->value.file.ptr = stdout;
-    luci_stdout->value.file.size = 0;
-    luci_stdout->value.file.mode = f_write_m;
-    return luci_stdout;
-}
-/*
-struct var_def *init_variables(void)
-{
-    LuciObject *luci_stdout = create_object(obj_file_t);
-    luci_stdout->value.file.ptr = stdout;
-    luci_stdout->value.file.size = 0;
-    luci_stdout->value.file.mode = f_write_m;
 
-    struct var_def[] vars[] =
-    {
-	"stdout", luci_stdout,
-	0, 0
-    }
-    return vars;
-}
-*/
-
-/*
-const struct var_def vars[] =
+struct var_def globals[] =
 {
-    "stdout", make_stdout(),
+    "stdout", 0,
+    "stderr", 0,
+    "stdin", 0,
+    "e", 0,
+    "pi", 0,
     0, 0
 };
-*/
+
+void init_variables(void)
+{
+    /* stdout */
+    LuciObject *luci_stdout = create_object(obj_file_t);
+    luci_stdout->value.file.ptr = stdout;
+    luci_stdout->value.file.size = 0;
+    luci_stdout->value.file.mode = f_append_m;
+    globals[0].object = luci_stdout;
+
+    /* stderr */
+    LuciObject *luci_stderr = create_object(obj_file_t);
+    luci_stdout->value.file.ptr = stderr;
+    luci_stdout->value.file.size = 0;
+    luci_stdout->value.file.mode = f_append_m;
+    globals[1].object = luci_stderr;
+
+    /* stdin */
+    LuciObject *luci_stdin = create_object(obj_file_t);
+    luci_stdout->value.file.ptr = stdin;
+    luci_stdout->value.file.size = 0;
+    luci_stdout->value.file.mode = f_read_m;
+    globals[2].object = luci_stdin;
+
+    /* e */
+    LuciObject *luci_e = create_object(obj_float_t);
+    luci_e->value.f_val = M_E;
+    globals[3].object = luci_e;
+
+    /* pi */
+    LuciObject *luci_pi = create_object(obj_float_t);
+    luci_pi->value.f_val = M_PI;
+    globals[4].object = luci_pi;
+}
+
 
 const struct func_def builtins[] =
 {
     "help", luci_help,
+    "dir", luci_dir,
     "print",  luci_print,
     "input", luci_readline,
     "readline", luci_readline,
@@ -274,6 +290,23 @@ LuciObject *luci_help(LuciObject *paramlist)
     }
     printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 
+    return NULL;
+}
+
+/* HACK: iterates over root ExecContext's symbol table */
+LuciObject *luci_dir(LuciObject *paramlist)
+{
+    /* this is a terrible way of printing all vars in the global
+       namespace but it works for now.
+    */
+    extern ExecContext *root_env;
+
+    Symbol *ptr;
+    for (ptr = root_env->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next) {
+	if (ptr->type == sym_obj_t) {
+	    puts(ptr->name);
+	}
+    }
     return NULL;
 }
 
@@ -542,12 +575,12 @@ LuciObject *luci_cast_str(LuciObject *paramlist)
 	case obj_int_t:
 	    ret->value.s_val = alloc(32);
 	    sprintf(ret->value.s_val, "%d", item->value.i_val);
-	    //ret->value.s_val[16] = '\0';
+	    /* ret->value.s_val[16] = '\0'; */
 	    break;
 	case obj_float_t:
 	    ret->value.s_val = alloc(32);
 	    sprintf(ret->value.s_val, "%f", (float)item->value.f_val);
-	    //ret->value.s_val[16] = '\0';
+	    /* ret->value.s_val[16] = '\0'; */
 	    break;
 	case obj_str_t:
 	    ret->value.s_val = alloc(strlen(item->value.s_val) + 1);
@@ -1039,7 +1072,19 @@ int evaluate_condition(LuciObject *cond)
 
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 {
-    if (!types_match(left, right))
+    if (left->type == obj_float_t && right->type == obj_int_t) {
+	LuciObject *tmp = right;
+	right = create_object(obj_float_t);
+	right->value.f_val = (float)tmp->value.i_val;
+	destroy_object(tmp);
+    }
+    else if (right->type == obj_float_t && left->type == obj_int_t) {
+	LuciObject *tmp = left;
+	left = create_object(obj_float_t);
+	left->value.f_val = (float)tmp->value.i_val;
+	destroy_object(tmp);
+    }
+    else if (!types_match(left, right))
     {
 	yak("Types don't match\n");
 	return NULL;

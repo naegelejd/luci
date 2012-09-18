@@ -31,6 +31,7 @@ void yyerror(const char *msg);
 
 %type <node> expr cond call assignment statement statements
 %type <node> while_loop for_loop if_else
+%type <node> func_def
 %type <node> empty_list list_items list_index list
 %type <node> program
 
@@ -41,6 +42,7 @@ void yyerror(const char *msg);
 %token NEWLINE COMMA
 %token WHILE FOR IN DO DONE
 %token IF THEN ELSE END
+%token DEF
 
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
@@ -68,7 +70,8 @@ statements:
         ;
 
 statement:
-            assignment                  { $$ = $1; }
+            func_def                    { $$ = $1; }
+        |   assignment                  { $$ = $1; }
         |   call                        { $$ = $1; }
         |   while_loop                  { $$ = $1; }
         |   for_loop                    { $$ = $1; }
@@ -79,6 +82,11 @@ assignment:
             ID ASSIGN expr              { $$ = make_assignment($1, $3); }
         |   ID LSQUARE expr RSQUARE ASSIGN expr
                     { $$ = make_list_assignment($1, $3, $6);}
+        ;
+
+func_def:
+            DEF call NEWLINE END                { $$ = make_func_def($2, NULL); }
+        |   DEF call NEWLINE statements END     { $$ = make_func_def($2, $4); }
         ;
 
 call:

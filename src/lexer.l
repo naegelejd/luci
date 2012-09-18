@@ -28,6 +28,7 @@ WS	    [ \t\f\r]+
 [tT][hH][eE][nN]	{ return THEN; }
 [eE][lL][sS][eE]	{ return ELSE; }
 [eE][nN][dD]		{ return END; }
+[dD][eE][fF]            { return DEF; }
 
 ^\n|{WS}\n	{ LINE_NUM++; /* ignore empty lines */ }
 \n	{ LINE_NUM++; return NEWLINE; }

@@ -24,6 +24,7 @@ static struct LuciObject *exec_while(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_for(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_if(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_call(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *exec_func_def(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_statement(ExecContext *e, struct ASTNode *a);
 
 /* Lookup Array for AST nodes which yield values */
@@ -42,6 +43,7 @@ static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
     exec_for,
     exec_if,
     exec_call,
+    exec_func_def,
     exec_statement,
 };
 
@@ -400,6 +402,27 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 }
 
 /*
+   Executes a function definition node
+*/
+static LuciObject *exec_func_def(struct ExecContext *e, struct ASTNode *a)
+{
+    struct ASTNode *call_sig = a->data.func_def.call_sig;
+    yak("Defining function %s\n", call_sig->data.call.name);
+
+    Symbol *s;
+    if (!(s = get_symbol(e, a->data.call.name))) {
+	/* The function hasn't yet been defined
+	   Make a new symbol */
+    }
+    else {
+	/* The function is already defined in the symbol table
+	   Gotta clean it up, free it and make a new symbol */
+    }
+
+    return NULL;
+}
+
+/*
    Executes a statement node in the abstract syntax tree.
 */
 static LuciObject *exec_statement(struct ExecContext *e, struct ASTNode *a)
@@ -492,13 +515,12 @@ ExecContext *create_env(void)
 	sym->data.funcptr = builtins[i].func;
     }
 
-    /*
-    extern struct var_def vars[];
-    for (i = 0; vars[i].name != 0; i++) {
-	Symbol *sym = add_symbol(e, vars[i].name, sym_obj_t);
-	sym->data.object = vars[i].object;
+    init_variables();	/* populates extern array of initial symbols */
+    extern struct var_def globals[];
+    for (i = 0; globals[i].name != 0; i++) {
+	Symbol *sym = add_symbol(e, globals[i].name, sym_obj_t);
+	sym->data.object = globals[i].object;
     }
-    */
 
     return e;
 }

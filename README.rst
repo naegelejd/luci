@@ -1,5 +1,6 @@
+******
 luci
-====
+******
 
 Luci is my toy programming language, implemented in C.
 
@@ -21,11 +22,11 @@ of performing basic tasks that I would normally do in Bash or simple Python.
 My C is a few years rusty but I'll do my best to retroactively clean up messy stuff.
 
 Binaries
----------
+=========
 Coming soon... Linux/Mac first, then Windows.
 
 Tools Needed to Build
------------------------
+=======================
 - `flex (lex)`_
 - `bison (yacc)`_
 - a decent C compiler (gcc)
@@ -35,31 +36,26 @@ Tools Needed to Build
 
 
 References
-------------
+============
 - `Immensely helpful`_
 - `Just as useful`_
 
 .. _Immensely helpful: http://stackoverflow.com/a/2644949
 .. _Just as useful: http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/
 
-Additional
-------------
-
-- I use `graphviz`_ to view the bison graph output of my parser.
-
-.. _graphviz: http://www.graphviz.org
-
 TODO List
----------
+=========
 
-#. Re-work allocation/deallocation of LuciObjects to incorporate
-   reference counts.
-#. Figure out how the hell to implement break/continue statements.
-#. Handle mixed-type binary operations (string * int)
-#. Invent more builtin functions just for fun
+-  Implement user-defined functions
+-  Implement better error management (possibly Exception objects)...
+   A fair amount of function calls will leak small amounts of memory
+   on error (like passed parameters).
+-  Handle mixed-type binary operations (string * int)
+-  Figure out how the hell to implement break/continue statements or forget them.
+-  Implement more builtin functions for fun
 
 Completed
----------
+=========
 
 #. Implement all unary/binary operations offered by the C++ standard (with proper operator precedence for each)
 #. Implement Integer, Double, and String types
@@ -71,4 +67,41 @@ Completed
 #. Implement a FILE * luci type, with open(), close(), read(), write() functions
 #. Create list types (syntax/parse), rename 'parameter' AST nodes since they're lists
 #. Implement For loops
+#. Re-work allocation/deallocation of LuciObjects to incorporate
+   reference counts.
+#. Rewrite list implementation to use dynamic array of pointers (rather than singly-linked
+   list. The singly-linked list was far less convenient since I'm using lists to implement
+   function parameters.
 
+Syntax Ideas
+=============
+
+-  function definitions::
+
+      def identifier(param1, param2, etc.)
+       statements
+      end
+
+   but I'm seriously considering::
+
+      def identifier param1 param2 etc.
+       statements
+      end
+
+   with calls like::
+
+      identifier param1 param2
+
+-  ``puts string`` rather than ``print(string)``
+
+-  list range::
+
+      0..9, 0..42..3    (ruby)
+
+   instead of::
+
+      range(10), range(0, 42, 3)    (python)
+
+-  some kind of block comments, not just single line ``#...`` comments
+
+-

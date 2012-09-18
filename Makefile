@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS =
+CFLAGS = -ansi #-pedantic
 
 TARGET = luci
 LIBS =

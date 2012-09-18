@@ -29,8 +29,11 @@ struct var_def
     const char *name;
     struct LuciObject *object;
 };
+/* populates the array of var_def structs with valid LuciObjects */
+void init_variables(void);
 
 struct LuciObject *luci_help(struct LuciObject *);
+struct LuciObject *luci_dir(struct LuciObject *);
 struct LuciObject *luci_print(struct LuciObject *);
 struct LuciObject *luci_readline(struct LuciObject *);
 struct LuciObject *luci_typeof(struct LuciObject *);

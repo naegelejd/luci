@@ -303,7 +303,7 @@ LuciObject *luci_dir(LuciObject *paramlist)
 
     Symbol *ptr;
     for (ptr = root_env->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next) {
-	if (ptr->type == sym_obj_t) {
+	if (ptr->type == sym_bobj_t) {
 	    puts(ptr->name);
 	}
     }

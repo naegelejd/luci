@@ -112,7 +112,7 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
     if (!(s = get_symbol(e, a->data.name))) {
 	die("Can't find symbol %s\n", a->data.name);
     }
-    if (s->type == sym_obj_t)
+    if (s->type == sym_bobj_t || s->type == sym_uobj_t)
     {
 	LuciObject *orig = s->data.object;
 
@@ -131,6 +131,7 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
     }
     else
     {
+	die("Found function symbol, but you shouldn't be here\n");
 	yak("Found function symbol %s\n", a->data.name);
 	return NULL;	 /* look up a->name in symbol table */
     }
@@ -255,21 +256,10 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
     LuciObject *right = dispatch_statement(e, a->data.assignment.right);
 
     Symbol *s;
-    if (!(s = get_symbol(e, a->data.assignment.name)))
-    {
-	s = add_symbol(e, a->data.assignment.name, sym_obj_t);
-    }
-    else
-    {
-	/* if the symbol already exists, free its existing Object */
-	/* TODO: this should close any open file pointers...
-	   if a symbol points to a FILE object and the user
-	   wants to point the symbol to something else, it would
-	   be nice for the file pointer to be closed
-	*/
-	destroy_object(s->data.object);
-    }
 
+    if (!(s = add_symbol(e, a->data.assignment.name, sym_uobj_t))) {
+	die("Can't create symbol in assignment%s\n", a->data.assignment.name);
+    }
     /* set the symbol's new payload */
     s->data.object = right;
 
@@ -317,16 +307,16 @@ static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
     /* create the symbol ahead of time if it doesn't exist */
     const char *name = a->data.for_loop.name;
     Symbol *s;
-    if (!(s = get_symbol(e, name))) {
-	s = add_symbol(e, name, sym_obj_t);
-    }
-    else {
-	if (s->type = sym_obj_t) {
-	    destroy_object(s->data.object);
-	}
+
+    /* recycle the symbol if it exists or just make new*/
+    if (!(s = add_symbol(e, name, sym_uobj_t))) {
+	die("Can't create symbol %s\n", name);
     }
 
     /* iterate through list, assigning value to symbol, then executing all statements */
+    /* NOTE: this directly changes the value of the symbol, rather than deleting it
+       from the symbol table and re-creating it
+    */
     LuciObject *item, *none;
     int i;
     for (i = 0; i < list->value.list.count; i++) {
@@ -385,11 +375,7 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
     if (!(s = get_symbol(e, a->data.call.name))) {
 	die("Invalid function name: %s\n", a->data.call.name);
     }
-    if (s->type != sym_func_t)
-    {
-	die("%s is not a function\n", s->name);
-    }
-    else
+    if (s->type == sym_bfunc_t)
     {
 	LuciObject *param_list = dispatch_statement(e, a->data.call.param_list);
 	if (param_list->type != obj_list_t) {
@@ -398,6 +384,10 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 	LuciObject *ret = (*(s->data.funcptr))(param_list);
 	destroy_object(param_list);
 	return ret;
+    }
+    else
+    {
+	die("%s is not a function\n", s->name);
     }
 }
 
@@ -410,13 +400,9 @@ static LuciObject *exec_func_def(struct ExecContext *e, struct ASTNode *a)
     yak("Defining function %s\n", call_sig->data.call.name);
 
     Symbol *s;
-    if (!(s = get_symbol(e, a->data.call.name))) {
-	/* The function hasn't yet been defined
-	   Make a new symbol */
-    }
-    else {
-	/* The function is already defined in the symbol table
-	   Gotta clean it up, free it and make a new symbol */
+
+    if (!(s = add_symbol(e, a->data.call.name, sym_ufunc_t))) {
+	die("Can't create symbol %s\n", a->data.call.name);
     }
 
     return NULL;
@@ -446,6 +432,52 @@ void exec_AST(struct ExecContext *e, struct ASTNode *a)
     destroy_object(none);
 }
 
+/* destroys the memory used by Symbol *s
+   This will will only delete builtin symbols
+   if `force` is non-zero
+*/
+int destroy_symbol(Symbol *s, int force)
+{
+    if (!s) {
+	return 1;
+    }
+
+    /* TODO: this should close any open file pointers...
+       if a symbol points to a FILE object and the user
+       wants to point the symbol to something else, it would
+       be nice for the file pointer to be closed
+    */
+
+    /* destroy the symbol's name */
+    free(s->name);
+    /* destroy the symbol's payload */
+    switch (s->type)
+    {
+	case sym_bobj_t:
+	    if (!force) {
+		return 0;
+	    }
+	    break;
+	case sym_bfunc_t:
+	    if (!force) {
+		return 0;
+	    }
+	    break;
+	case sym_uobj_t:
+	    destroy_object(s->data.object);
+	    break;
+	case sym_ufunc_t:
+	    break;
+	default:
+	    ;
+    }
+    /* destroy the symbol (struct) */
+    free(s);
+    s = NULL;
+    /* return success */
+    return 1;
+}
+
 /*
    Adds a new symbol to the symbol table of the specified
    Execution Context, returning a pointer to the new symbol.
@@ -455,24 +487,60 @@ void exec_AST(struct ExecContext *e, struct ASTNode *a)
 */
 Symbol *add_symbol (struct ExecContext *e, char const *name, int type)
 {
-    Symbol *ptr = (Symbol *) alloc (sizeof (Symbol));
-    ptr->name = (char *) alloc (strlen (name) + 1);
-    strcpy (ptr->name, name);
-    ptr->type = type;
-    switch (type) {
-	case sym_obj_t:
-	    ptr->data.object = NULL;
+    Symbol *new=NULL, *ptr=NULL, *prev=NULL;
+
+    yak("searching for symbol %s\n", name);
+    /* First, do a search for the symbol */
+    for (
+	    ptr = e->symtable, prev = NULL;
+	    ptr != (Symbol *) 0;
+	    prev = ptr, ptr = ptr->next
+	)
+    {
+	/* if we find the symbol */
+	if (strcmp (ptr->name, name) == 0) {
+	    yak("found existing symbol %s\n", name);
+	    /* maintain the linked list by pointing the previous symbol to the next */
+	    if (prev) {
+		prev->next = ptr->next;
+	    }
+	    else {
+		e->symtable = ptr->next;
+	    }
+	    /* free the symbol's memory */
+	    if (!(destroy_symbol(ptr, 0))) {
+		return 0;
+	    }
 	    break;
-	case sym_func_t:
-	    ptr->data.funcptr = NULL;
+	}
+    }
+
+    /* Create New Symbol */
+    yak("creating new symbol %s\n", name);
+    new = (Symbol *) alloc (sizeof (Symbol));
+    new->name = (char *) alloc (strlen (name) + 1);
+    strcpy (new->name, name);
+    new->type = type;
+    switch (type) {
+	case sym_bobj_t:
+	    new->data.object = NULL;
+	    break;
+	case sym_uobj_t:
+	    new->data.object = NULL;
+	    break;
+	case sym_bfunc_t:
+	    new->data.funcptr = NULL;
+	    break;
+	case sym_ufunc_t:
+	    new->data.funcptr = NULL;
 	    break;
 	default:
 	    break;
     }
-    /* caller must set the data (payload) */
-    ptr->next = e->symtable;
-    e->symtable = ptr;
-    return ptr;
+    /* caller must explicitly set the data (payload) */
+    new->next = e->symtable;
+    e->symtable = new;
+    return new;
 }
 
 /*
@@ -511,14 +579,14 @@ ExecContext *create_env(void)
     extern struct func_def builtins[];
     for (i = 0; builtins[i].name != 0; i++)
     {
-	Symbol *sym = add_symbol(e, builtins[i].name, sym_func_t);
+	Symbol *sym = add_symbol(e, builtins[i].name, sym_bfunc_t);
 	sym->data.funcptr = builtins[i].func;
     }
 
     init_variables();	/* populates extern array of initial symbols */
     extern struct var_def globals[];
     for (i = 0; globals[i].name != 0; i++) {
-	Symbol *sym = add_symbol(e, globals[i].name, sym_obj_t);
+	Symbol *sym = add_symbol(e, globals[i].name, sym_bobj_t);
 	sym->data.object = globals[i].object;
     }
 
@@ -539,15 +607,8 @@ void destroy_env(ExecContext *e)
     while (ptr != (Symbol *) 0)
     {
 	next = (Symbol *)ptr->next;
-	/* free the char* name of each Symbol */
-	free(ptr->name);
-	if (ptr->type == sym_obj_t)
-	{
-	    /* free the Object payload if symbol is an object */
-	    destroy_object(ptr->data.object);
-	}
-	/* free the Symbol struct itself */
-	free(ptr);
+	/* destroy symbol, force destruction of builtins */
+	destroy_symbol(ptr, 1);
 	ptr = next;
     }
     /* Free the environment struct */

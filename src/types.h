@@ -71,7 +71,7 @@ typedef LuciObject * (*LuciFunction) (LuciObject *);
 
 typedef struct Symbol
 {
-    enum { sym_obj_t, sym_func_t } type;
+    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;
     char *name;
     union
     {

@@ -1,7 +1,0 @@
-f = open("samples/insane.lx", "r")
-
-buff = read(f)
-
-close(f)
-
-

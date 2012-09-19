@@ -1,5 +1,22 @@
+print("started calling functions")
+
 def say_hello(to, whom)
-    print("hello world")
+    print(to, whom)
 end
 
-say_hello()
+def this_can_see_globals()
+    return pi
+end
+
+def but_locals_take_precedence(something)
+    e = something
+    return e
+end
+
+say_hello("Hello", "World")
+print(this_can_see_globals())
+say_hello("Goodbye", "Joe")
+
+print(e, but_locals_take_precedence(-e))
+
+print("finished calling functions")

@@ -85,13 +85,18 @@ assignment:
         ;
 
 func_def:
+
             DEF ID LPAREN empty_list RPAREN NEWLINE statements END
                     { $$ = make_func_def($2, $4, $7, NULL); }
-        |   DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr END
+        |   DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
+                    { $$ = make_func_def($2, $4, make_statement(NULL, NULL), $8); }
+        |   DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
                     { $$ = make_func_def($2, $4, $7, $9); }
         |   DEF ID LPAREN params RPAREN NEWLINE statements END
                     { $$ = make_func_def($2, $4, $7, NULL); }
-        |   DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr END
+        |   DEF ID LPAREN params RPAREN NEWLINE RETURN expr END
+                    { $$ = make_func_def($2, $4, make_statement(NULL, NULL), $8); }
+        |   DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
                     { $$ = make_func_def($2, $4, $7, $9); }
         ;
 

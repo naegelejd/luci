@@ -70,7 +70,8 @@ int main(int argc, char *argv[])
 
     if (root_node)
     {
-	root_env = create_env();
+	root_env = create_context("global", NULL);
+	initialize_context(root_env);
 	exec_AST(root_env, root_node);
 	cleanup();
     }
@@ -120,6 +121,6 @@ void die(const char* format, ... )
 
 void cleanup(void)
 {
-    destroy_env(root_env);
+    destroy_context(root_env);
     destroy_AST(root_node);
 }

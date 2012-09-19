@@ -175,14 +175,17 @@ ASTNode *make_statement(ASTNode *result, ASTNode *to_append)
 		sizeof(*result->data.statements.statements));
     }
 
-    /* realloc the array of statement pointers if necessary */
-    if(++(result->data.statements.count) > result->data.statements.size) {
-	result->data.statements.size = result->data.statements.size << 1;
-	result->data.statements.statements = realloc(result->data.statements.statements,
-	    result->data.statements.size * sizeof(*result->data.statements.statements));
+    /* checking if to_append is not NULL allows us to make empty statements */
+    if (to_append) {
+	/* realloc the array of statement pointers if necessary */
+	if(++(result->data.statements.count) > result->data.statements.size) {
+	    result->data.statements.size = result->data.statements.size << 1;
+	    result->data.statements.statements = realloc(result->data.statements.statements,
+		result->data.statements.size * sizeof(*result->data.statements.statements));
+	}
+	result->data.statements.statements[result->data.statements.count - 1] = to_append;
+	yak("Added a new statement\n");
     }
-    result->data.statements.statements[result->data.statements.count - 1] = to_append;
-    yak("Added a new statement\n");
     return result;
 }
 

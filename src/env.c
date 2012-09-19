@@ -386,15 +386,36 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
     }
     else if (s->type == sym_ufunc_t) {
 	LuciObject *arglist = dispatch_statement(e, a->data.call.arglist);
+	if (arglist->type != obj_list_t) {
+	    die("Malformed function arguments\n");
+	}
 	struct ASTNode *func_node = s->data.user_defined;
-
+	char *func_name = func_node->data.func_def.name;
 	struct ASTNode *param_list = func_node->data.func_def.param_list;
+
+	if (param_list->data.list.count != arglist->value.list.count) {
+	    die("Incorrect number of args to function %s\n", func_name);
+	}
+	/* create an execution context for the function */
+	struct ExecContext *local = create_context(func_name, e);
+
+	Symbol *s;
 	int i;
 	for (i = 0; i < param_list->data.list.count; i++) {
-	    printf("%s\n", param_list->data.list.items[i]->data.s_val);
+	    if (param_list->data.list.items[i]->type != ast_str_t) {
+		die("Malformed function parameters\n");
+	    }
+	    char *param_name = param_list->data.list.items[i]->data.s_val;
+	    if (!(s = add_symbol(local, param_name, sym_uobj_t))) {
+		die("Can't create symbol %s local to function %s\n",
+			param_name, func_name);
+	    }
+	    s->data.object = copy_object(arglist->value.list.items[i]);
 	}
 
-	printf("%s\n", func_node->data.func_def.name);
+	/* execute the function's statements, using it's local ExecContext */
+	LuciObject *none = dispatch_statement(local, func_node->data.func_def.statements);
+	destroy_object(none);
 
 	/* execute the function's return expression */
 	LuciObject *ret;
@@ -404,6 +425,7 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 	    ret = NULL;
 	}
 
+	destroy_context(local);
 	destroy_object(arglist);
 	return ret;
     }
@@ -572,12 +594,17 @@ Symbol *add_symbol (struct ExecContext *e, char const *name, int type)
    Searches for a symbol with a matching name in the
    symbol table of the specified Execution Context
 */
-Symbol *get_symbol (struct ExecContext *e, const char *name)
+Symbol *get_symbol (struct ExecContext *context, const char *name)
 {
     Symbol *ptr;
-    for (ptr = e->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next)
-	if (strcmp (ptr->name, name) == 0)
-	    return ptr;
+    ExecContext *e = context;
+    while (e) {
+	for (ptr = e->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next)
+	    if (strcmp (ptr->name, name) == 0)
+		return ptr;
+	e = e->parent;
+    }
+
     return 0;
 }
 
@@ -585,7 +612,7 @@ Symbol *get_symbol (struct ExecContext *e, const char *name)
    Creates an Execution Context, which consists
    of various members, most importantly its symbol table.
 */
-ExecContext *create_env(void)
+ExecContext *create_context(const char* name, ExecContext *parent)
 {
     /* Check that we have dispatchers for all types of statements */
     if (ast_last_t != (sizeof(exec_lookup) / sizeof(*exec_lookup))) {
@@ -596,10 +623,16 @@ ExecContext *create_env(void)
     ExecContext *e = alloc(sizeof(struct ExecContext));
 
     /* give the global context a name */
-    char *name = "global";
     e->name = alloc(strlen(name) + 1);
     strcpy(e->name, name);
 
+    e->parent = parent;
+
+    return e;
+}
+
+void initialize_context(ExecContext *e)
+{
     int i;
     extern struct func_def builtins[];
     for (i = 0; builtins[i].name != 0; i++)
@@ -615,13 +648,12 @@ ExecContext *create_env(void)
 	sym->data.object = globals[i].object;
     }
 
-    return e;
 }
 
 /*
    Destroys the Execution Context by freeing its members.
 */
-void destroy_env(ExecContext *e)
+void destroy_context(ExecContext *e)
 {
     /* destroy the Context's name */
     free(e->name);

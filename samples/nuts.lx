@@ -17,6 +17,6 @@ say_hello("Hello", "World")
 print(this_can_see_globals())
 say_hello("Goodbye", "Joe")
 
-print(e, but_locals_take_precedence(-e))
+print(e, but_locals_take_precedence(3.14), e)
 
 print("finished calling functions")

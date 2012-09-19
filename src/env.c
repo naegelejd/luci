@@ -123,9 +123,7 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
 	}
 
 	/* else, return a copy of symbol's object */
-	int t = orig->type;
-	yak("Found object symbol %s. Returning its data, with type:%d\n",
-		a->data.name, s->type, t);
+	yak("Found object symbol %s\n", a->data.name);
 	/* return a reference to this symbol's value */
 	return reference_object(orig);
     }
@@ -410,7 +408,7 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 		die("Can't create symbol %s local to function %s\n",
 			param_name, func_name);
 	    }
-	    s->data.object = copy_object(arglist->value.list.items[i]);
+	    s->data.object = reference_object(arglist->value.list.items[i]);
 	}
 
 	/* execute the function's statements, using it's local ExecContext */
@@ -420,7 +418,7 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 	/* execute the function's return expression */
 	LuciObject *ret;
 	if (func_node->data.func_def.ret_expr) {
-	    ret = dispatch_statement(e, func_node->data.func_def.ret_expr);
+	    ret = dispatch_statement(local, func_node->data.func_def.ret_expr);
 	} else {
 	    ret = NULL;
 	}
@@ -496,6 +494,7 @@ int destroy_symbol(Symbol *s, int force)
     */
 
     /* destroy the symbol's name */
+    yak("destroying symbol %s (type %d)\n", s->name, s->type);
     free(s->name);
     /* destroy the symbol's payload */
     switch (s->type)
@@ -620,6 +619,7 @@ ExecContext *create_context(const char* name, ExecContext *parent)
 	return NULL;
     }
 
+    yak("creating context %s\n", name);
     ExecContext *e = alloc(sizeof(struct ExecContext));
 
     /* give the global context a name */
@@ -633,6 +633,8 @@ ExecContext *create_context(const char* name, ExecContext *parent)
 
 void initialize_context(ExecContext *e)
 {
+    yak("populating context %s with builtins\n", e->name);
+
     int i;
     extern struct func_def builtins[];
     for (i = 0; builtins[i].name != 0; i++)
@@ -655,6 +657,7 @@ void initialize_context(ExecContext *e)
 */
 void destroy_context(ExecContext *e)
 {
+    yak("destroying context %s\n", e->name);
     /* destroy the Context's name */
     free(e->name);
 
@@ -671,3 +674,4 @@ void destroy_context(ExecContext *e)
     /* Free the environment struct */
     free(e);
 }
+

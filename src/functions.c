@@ -1073,21 +1073,21 @@ int evaluate_condition(LuciObject *cond)
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 {
     if (left->type == obj_float_t && right->type == obj_int_t) {
-	LuciObject *tmp = right;
-	right = create_object(obj_float_t);
-	right->value.f_val = (float)tmp->value.i_val;
-	destroy_object(tmp);
+	/* maybe bzero it ? */
+	int i = right->value.i_val;
+	right->value.i_val = 0;
+	right->type = obj_float_t;
+	right->value.f_val = (float)i;
     }
     else if (right->type == obj_float_t && left->type == obj_int_t) {
-	LuciObject *tmp = left;
-	left = create_object(obj_float_t);
-	left->value.f_val = (float)tmp->value.i_val;
-	destroy_object(tmp);
+	int i = left->value.i_val;
+	left->value.i_val = 0;
+	left->type = obj_float_t;
+	left->value.f_val = (float)i;
     }
     else if (!types_match(left, right))
     {
-	yak("Types don't match\n");
-	return NULL;
+	die("Type mismatch in expression\n");
     }
     LuciObject *result = NULL;
     result = solvers[op](left, right);

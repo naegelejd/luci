@@ -94,7 +94,7 @@ func_def:
                     { $$ = make_func_def($2, $4, $7, $9); }
         |   DEF ID LPAREN params RPAREN NEWLINE statements END
                     { $$ = make_func_def($2, $4, $7, NULL); }
-        |   DEF ID LPAREN params RPAREN NEWLINE RETURN expr END
+        |   DEF ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
                     { $$ = make_func_def($2, $4, make_statement(NULL, NULL), $8); }
         |   DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
                     { $$ = make_func_def($2, $4, $7, $9); }

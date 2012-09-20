@@ -46,10 +46,11 @@ References
 TODO List
 =========
 
--  Implement user-defined functions
 -  Implement better error management (possibly Exception objects)...
    A fair amount of function calls will leak small amounts of memory
    on error (like passed parameters).
+   One idea is a global "allocated pointer table".
+-  Track line numbers in abstract syntax tree for more helpful Runtime Error messages.
 -  Handle mixed-type binary operations (string * int)
 -  Figure out how the hell to implement break/continue statements or forget them.
 -  Implement more builtin functions for fun
@@ -72,6 +73,7 @@ Completed
 #. Rewrite list implementation to use dynamic array of pointers (rather than singly-linked
    list. The singly-linked list was far less convenient since I'm using lists to implement
    function parameters.
+#. Implement user-defined functions
 
 Syntax Ideas
 =============

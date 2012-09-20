@@ -14,6 +14,8 @@ int VERBOSE;
 struct ASTNode *root_node;
 struct ExecContext *root_env;
 
+const char *VERSION = "Luci v0.1";
+
 const char *options[] =
 {
     "-v",
@@ -48,6 +50,10 @@ int main(int argc, char *argv[])
 	    arg = argv[i];
 	    if (strcmp(arg, "-v") == 0) {
 		VERBOSE = 1;
+	    }
+	    if (strcmp(arg, "-V") == 0) {
+		fprintf(stdout, "%s\n", VERSION);
+		exit(0);
 	    }
 	}
 

@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -ansi #-pedantic
 
 TARGET = luci
-LIBS =
+LIBS = -lm
 
 SRCDIR = src
 OBJDIR = obj

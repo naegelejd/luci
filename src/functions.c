@@ -1161,6 +1161,17 @@ static LuciObject *divide(LuciObject *left, LuciObject *right)
 {
     LuciObject *ret;
 
+    /* this could probably be replace by a generic right->value.f_val
+       since both the float and int obj->value structs are aligned
+    */
+    if ((right->type == obj_int_t && right->value.i_val == 0) ||
+	(right->type == obj_float_t && right->value.f_val == 0.0)) {
+	    /* memory leak */
+	    /* printf("peace\n"); */
+	    /* exit(1); */
+	    die("Divide by zero error\n");
+    }
+
     switch (left->type)
     {
 	case obj_int_t:

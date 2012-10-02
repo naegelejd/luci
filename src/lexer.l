@@ -72,4 +72,6 @@ WS	    [ \t\f\r]+
 "&"	{ return BWAND; }
 "~"	{ return BWNOT; }
 
+<<EOF>>     { yy_delete_buffer(YY_CURRENT_BUFFER); yyterminate(); }
+
 %%

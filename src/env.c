@@ -502,6 +502,8 @@ int destroy_symbol(Symbol *s, int force)
 	    if (!force) {
 		return 0;
 	    }
+	    /* else, destroy object */
+	    destroy_object(s->data.object);
 	    break;
 	case sym_bfunc_t:
 	    if (!force) {

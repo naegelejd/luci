@@ -4,7 +4,6 @@
 #include <math.h>
 #include <assert.h>
 #include "common.h"
-#include "types.h"
 #include "env.h"
 #include "ast.h"
 #include "functions.h"
@@ -27,7 +26,9 @@ static struct LuciObject *exec_call(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_func_def(ExecContext *e, struct ASTNode *a);
 static struct LuciObject *exec_statement(ExecContext *e, struct ASTNode *a);
 
-/* Lookup Array for AST nodes which yield values */
+/**
+  Lookup Array for AST nodes which yield values
+ */
 static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
 {
     exec_int_expression,
@@ -129,9 +130,7 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
     }
     else
     {
-	die("Found function symbol, but you shouldn't be here\n");
-	yak("Found function symbol %s\n", a->data.name);
-	return NULL;	 /* look up a->name in symbol table */
+	die("Found function symbol, but function references aren't supported yet\n");
     }
 }
 

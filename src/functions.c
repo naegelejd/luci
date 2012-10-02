@@ -5,7 +5,6 @@
 #include <assert.h>
 #include "functions.h"
 #include "common.h"
-#include "types.h"
 /* HACK: used for dir() function to iterate over symbol table */
 #include "env.h"
 

@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include "common.h"
-#include "types.h"
 #include "ast.h"
 
 extern int VERBOSE;

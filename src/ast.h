@@ -1,8 +1,6 @@
 #ifndef AST_H
 #define AST_H
 
-#include <stddef.h>
-
 /* the initial size of the array which represents a list of expressions */
 #define AST_LIST_SIZE 32
 
@@ -100,13 +98,6 @@ typedef struct ASTNode
 	} statements;
     } data;
 } ASTNode;
-
-/* linked list for ASTNodes */
-typedef struct ASTNode_list
-{
-    ASTNode *elem;
-    struct ASTNode_list* next;
-} ASTNode_list;
 
 void destroy_AST(ASTNode *);
 ASTNode *make_expr_from_int(int);

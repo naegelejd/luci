@@ -7,9 +7,7 @@
 /* the initial size of the array which holds pointers to statement nodes */
 #define AST_STMNTS_SIZE 32
 
-typedef struct ASTNode
-{
-    enum {  ast_int_t,
+typedef enum {  ast_int_t,
 	    ast_float_t,
 	    ast_str_t,
 	    ast_id_t,
@@ -25,7 +23,12 @@ typedef struct ASTNode
 	    ast_funcdef_t,
 	    ast_statements_t,
 	    ast_last_t
-    } type;
+} AstType;
+
+
+typedef struct ASTNode
+{
+    AstType type;
 
     union
     {
@@ -34,11 +37,11 @@ typedef struct ASTNode
 	char *s_val;
 	char *name;
 
-	struct
-	{
-	    struct ASTNode *left, *right;
-	    int op;
-	} expression;
+        struct
+        {
+            struct ASTNode *left, *right;
+            int op;
+        } expression;
 	struct
 	{
 	    struct ASTNode *list;

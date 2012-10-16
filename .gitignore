@@ -6,6 +6,7 @@
 *.yy.*
 
 bin/
+build/*
 obj/
 doc/
 trash/

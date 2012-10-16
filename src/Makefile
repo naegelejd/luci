@@ -1,2 +1,0 @@
-all: *.c
-	cd ../ && make

@@ -1,0 +1,2909 @@
+Terminals unused in grammar
+
+   UPLUS
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: /* empty */
+    2        | statements
+
+    3 statements: statement NEWLINE
+    4           | statements statement NEWLINE
+
+    5 statement: func_def
+    6          | assignment
+    7          | call
+    8          | while_loop
+    9          | for_loop
+   10          | if_else
+
+   11 assignment: ID ASSIGN expr
+   12           | ID LSQUARE expr RSQUARE ASSIGN expr
+
+   13 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements END
+   14         | DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
+   15         | DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
+   16         | DEF ID LPAREN params RPAREN NEWLINE statements END
+   17         | DEF ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
+   18         | DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
+
+   19 params: ID
+   20       | params COMMA ID
+
+   21 call: ID LPAREN empty_list RPAREN
+   22     | ID LPAREN list_items RPAREN
+
+   23 list: LSQUARE empty_list RSQUARE
+   24     | LSQUARE list_items RSQUARE
+
+   25 empty_list: /* empty */
+
+   26 list_items: expr
+   27           | list_items COMMA expr
+
+   28 list_index: expr LSQUARE expr RSQUARE
+
+   29 while_loop: WHILE cond DO NEWLINE statements DONE
+
+   30 for_loop: FOR ID IN expr DO NEWLINE statements DONE
+
+   31 if_else: IF cond THEN NEWLINE statements END
+   32        | IF cond THEN NEWLINE statements ELSE NEWLINE statements END
+
+   33 cond: expr
+   34     | expr NEWLINE
+
+   35 expr: INT
+   36     | FLOAT
+   37     | STRING
+   38     | ID
+   39     | MINUS expr
+   40     | expr PLUS expr
+   41     | expr MINUS expr
+   42     | expr TIMES expr
+   43     | expr DIVIDE expr
+   44     | expr POW expr
+   45     | expr MOD expr
+   46     | expr LTHAN expr
+   47     | expr GTHAN expr
+   48     | expr NOTEQ expr
+   49     | expr EQUAL expr
+   50     | expr LTHEQ expr
+   51     | expr GTHEQ expr
+   52     | LGNOT expr
+   53     | expr LGOR expr
+   54     | expr LGAND expr
+   55     | expr BWXOR expr
+   56     | expr BWOR expr
+   57     | expr BWAND expr
+   58     | BWNOT expr
+   59     | LPAREN expr RPAREN
+   60     | list_index
+   61     | list
+   62     | call
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+INT (258) 35
+FLOAT (259) 36
+STRING (260) 37
+ID (261) 11 12 13 14 15 16 17 18 19 20 21 22 30 38
+NEWLINE (262) 3 4 13 14 15 16 17 18 29 30 31 32 34
+COMMA (263) 20 27
+WHILE (264) 29
+FOR (265) 30
+IN (266) 30
+DO (267) 29 30
+DONE (268) 29 30
+IF (269) 31 32
+THEN (270) 31 32
+ELSE (271) 32
+END (272) 13 14 15 16 17 18 31 32
+DEF (273) 13 14 15 16 17 18
+RETURN (274) 14 15 17 18
+LGAND (275) 54
+LGOR (276) 53
+BWAND (277) 57
+BWXOR (278) 55
+BWOR (279) 56
+NOTEQ (280) 48
+EQUAL (281) 49
+GTHEQ (282) 51
+GTHAN (283) 47
+LTHEQ (284) 50
+LTHAN (285) 46
+MINUS (286) 39 41
+PLUS (287) 40
+MOD (288) 45
+DIVIDE (289) 43
+TIMES (290) 42
+POW (291) 44
+RPAREN (292) 13 14 15 16 17 18 21 22 59
+LPAREN (293) 13 14 15 16 17 18 21 22 59
+RSQUARE (294) 12 23 24 28
+LSQUARE (295) 12 23 24 28
+ASSIGN (296) 11 12
+BWNOT (297) 58
+LGNOT (298) 52
+UBWNOT (299)
+ULGNOT (300)
+UMINUS (301)
+UPLUS (302)
+
+
+Nonterminals, with rules where they appear
+
+$accept (48)
+    on left: 0
+program (49)
+    on left: 1 2, on right: 0
+statements (50)
+    on left: 3 4, on right: 2 4 13 15 16 18 29 30 31 32
+statement (51)
+    on left: 5 6 7 8 9 10, on right: 3 4
+assignment (52)
+    on left: 11 12, on right: 6
+func_def (53)
+    on left: 13 14 15 16 17 18, on right: 5
+params (54)
+    on left: 19 20, on right: 16 17 18 20
+call (55)
+    on left: 21 22, on right: 7 62
+list (56)
+    on left: 23 24, on right: 61
+empty_list (57)
+    on left: 25, on right: 13 14 15 21 23
+list_items (58)
+    on left: 26 27, on right: 22 24 27
+list_index (59)
+    on left: 28, on right: 60
+while_loop (60)
+    on left: 29, on right: 8
+for_loop (61)
+    on left: 30, on right: 9
+if_else (62)
+    on left: 31 32, on right: 10
+cond (63)
+    on left: 33 34, on right: 29 31 32
+expr (64)
+    on left: 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52
+    53 54 55 56 57 58 59 60 61 62, on right: 11 12 14 15 17 18 26 27
+    28 30 33 34 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55
+    56 57 58 59
+
+
+state 0
+
+    0 $accept: . program $end
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    $default  reduce using rule 1 (program)
+
+    program     go to state 6
+    statements  go to state 7
+    statement   go to state 8
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 1
+
+   11 assignment: ID . ASSIGN expr
+   12           | ID . LSQUARE expr RSQUARE ASSIGN expr
+   21 call: ID . LPAREN empty_list RPAREN
+   22     | ID . LPAREN list_items RPAREN
+
+    LPAREN   shift, and go to state 15
+    LSQUARE  shift, and go to state 16
+    ASSIGN   shift, and go to state 17
+
+
+state 2
+
+   29 while_loop: WHILE . cond DO NEWLINE statements DONE
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    cond        go to state 30
+    expr        go to state 31
+
+
+state 3
+
+   30 for_loop: FOR . ID IN expr DO NEWLINE statements DONE
+
+    ID  shift, and go to state 32
+
+
+state 4
+
+   31 if_else: IF . cond THEN NEWLINE statements END
+   32        | IF . cond THEN NEWLINE statements ELSE NEWLINE statements END
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    cond        go to state 33
+    expr        go to state 31
+
+
+state 5
+
+   13 func_def: DEF . ID LPAREN empty_list RPAREN NEWLINE statements END
+   14         | DEF . ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
+   15         | DEF . ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
+   16         | DEF . ID LPAREN params RPAREN NEWLINE statements END
+   17         | DEF . ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
+   18         | DEF . ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
+
+    ID  shift, and go to state 34
+
+
+state 6
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 35
+
+
+state 7
+
+    2 program: statements .
+    4 statements: statements . statement NEWLINE
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    $default  reduce using rule 2 (program)
+
+    statement   go to state 36
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 8
+
+    3 statements: statement . NEWLINE
+
+    NEWLINE  shift, and go to state 37
+
+
+state 9
+
+    6 statement: assignment .
+
+    $default  reduce using rule 6 (statement)
+
+
+state 10
+
+    5 statement: func_def .
+
+    $default  reduce using rule 5 (statement)
+
+
+state 11
+
+    7 statement: call .
+
+    $default  reduce using rule 7 (statement)
+
+
+state 12
+
+    8 statement: while_loop .
+
+    $default  reduce using rule 8 (statement)
+
+
+state 13
+
+    9 statement: for_loop .
+
+    $default  reduce using rule 9 (statement)
+
+
+state 14
+
+   10 statement: if_else .
+
+    $default  reduce using rule 10 (statement)
+
+
+state 15
+
+   21 call: ID LPAREN . empty_list RPAREN
+   22     | ID LPAREN . list_items RPAREN
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    $default  reduce using rule 25 (empty_list)
+
+    call        go to state 27
+    list        go to state 28
+    empty_list  go to state 38
+    list_items  go to state 39
+    list_index  go to state 29
+    expr        go to state 40
+
+
+state 16
+
+   12 assignment: ID LSQUARE . expr RSQUARE ASSIGN expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 41
+
+
+state 17
+
+   11 assignment: ID ASSIGN . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 42
+
+
+state 18
+
+   35 expr: INT .
+
+    $default  reduce using rule 35 (expr)
+
+
+state 19
+
+   36 expr: FLOAT .
+
+    $default  reduce using rule 36 (expr)
+
+
+state 20
+
+   37 expr: STRING .
+
+    $default  reduce using rule 37 (expr)
+
+
+state 21
+
+   21 call: ID . LPAREN empty_list RPAREN
+   22     | ID . LPAREN list_items RPAREN
+   38 expr: ID .
+
+    LPAREN  shift, and go to state 15
+
+    $default  reduce using rule 38 (expr)
+
+
+state 22
+
+   39 expr: MINUS . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 43
+
+
+state 23
+
+   59 expr: LPAREN . expr RPAREN
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 44
+
+
+state 24
+
+   23 list: LSQUARE . empty_list RSQUARE
+   24     | LSQUARE . list_items RSQUARE
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    $default  reduce using rule 25 (empty_list)
+
+    call        go to state 27
+    list        go to state 28
+    empty_list  go to state 45
+    list_items  go to state 46
+    list_index  go to state 29
+    expr        go to state 40
+
+
+state 25
+
+   58 expr: BWNOT . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 47
+
+
+state 26
+
+   52 expr: LGNOT . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 48
+
+
+state 27
+
+   62 expr: call .
+
+    $default  reduce using rule 62 (expr)
+
+
+state 28
+
+   61 expr: list .
+
+    $default  reduce using rule 61 (expr)
+
+
+state 29
+
+   60 expr: list_index .
+
+    $default  reduce using rule 60 (expr)
+
+
+state 30
+
+   29 while_loop: WHILE cond . DO NEWLINE statements DONE
+
+    DO  shift, and go to state 49
+
+
+state 31
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   33 cond: expr .
+   34     | expr . NEWLINE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    NEWLINE  shift, and go to state 50
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 33 (cond)
+
+
+state 32
+
+   30 for_loop: FOR ID . IN expr DO NEWLINE statements DONE
+
+    IN  shift, and go to state 69
+
+
+state 33
+
+   31 if_else: IF cond . THEN NEWLINE statements END
+   32        | IF cond . THEN NEWLINE statements ELSE NEWLINE statements END
+
+    THEN  shift, and go to state 70
+
+
+state 34
+
+   13 func_def: DEF ID . LPAREN empty_list RPAREN NEWLINE statements END
+   14         | DEF ID . LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
+   15         | DEF ID . LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
+   16         | DEF ID . LPAREN params RPAREN NEWLINE statements END
+   17         | DEF ID . LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
+   18         | DEF ID . LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
+
+    LPAREN  shift, and go to state 71
+
+
+state 35
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+state 36
+
+    4 statements: statements statement . NEWLINE
+
+    NEWLINE  shift, and go to state 72
+
+
+state 37
+
+    3 statements: statement NEWLINE .
+
+    $default  reduce using rule 3 (statements)
+
+
+state 38
+
+   21 call: ID LPAREN empty_list . RPAREN
+
+    RPAREN  shift, and go to state 73
+
+
+state 39
+
+   22 call: ID LPAREN list_items . RPAREN
+   27 list_items: list_items . COMMA expr
+
+    COMMA   shift, and go to state 74
+    RPAREN  shift, and go to state 75
+
+
+state 40
+
+   26 list_items: expr .
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 26 (list_items)
+
+
+state 41
+
+   12 assignment: ID LSQUARE expr . RSQUARE ASSIGN expr
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    RSQUARE  shift, and go to state 76
+    LSQUARE  shift, and go to state 68
+
+
+state 42
+
+   11 assignment: ID ASSIGN expr .
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 11 (assignment)
+
+
+state 43
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   39 expr: MINUS expr .
+   40     | expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    $default  reduce using rule 39 (expr)
+
+
+state 44
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+   59     | LPAREN expr . RPAREN
+
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    RPAREN   shift, and go to state 77
+    LSQUARE  shift, and go to state 68
+
+
+state 45
+
+   23 list: LSQUARE empty_list . RSQUARE
+
+    RSQUARE  shift, and go to state 78
+
+
+state 46
+
+   24 list: LSQUARE list_items . RSQUARE
+   27 list_items: list_items . COMMA expr
+
+    COMMA    shift, and go to state 74
+    RSQUARE  shift, and go to state 79
+
+
+state 47
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+   58     | BWNOT expr .
+
+    $default  reduce using rule 58 (expr)
+
+
+state 48
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   52     | LGNOT expr .
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    $default  reduce using rule 52 (expr)
+
+
+state 49
+
+   29 while_loop: WHILE cond DO . NEWLINE statements DONE
+
+    NEWLINE  shift, and go to state 80
+
+
+state 50
+
+   34 cond: expr NEWLINE .
+
+    $default  reduce using rule 34 (cond)
+
+
+state 51
+
+   54 expr: expr LGAND . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 81
+
+
+state 52
+
+   53 expr: expr LGOR . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 82
+
+
+state 53
+
+   57 expr: expr BWAND . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 83
+
+
+state 54
+
+   55 expr: expr BWXOR . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 84
+
+
+state 55
+
+   56 expr: expr BWOR . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 85
+
+
+state 56
+
+   48 expr: expr NOTEQ . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 86
+
+
+state 57
+
+   49 expr: expr EQUAL . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 87
+
+
+state 58
+
+   51 expr: expr GTHEQ . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 88
+
+
+state 59
+
+   47 expr: expr GTHAN . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 89
+
+
+state 60
+
+   50 expr: expr LTHEQ . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 90
+
+
+state 61
+
+   46 expr: expr LTHAN . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 91
+
+
+state 62
+
+   41 expr: expr MINUS . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 92
+
+
+state 63
+
+   40 expr: expr PLUS . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 93
+
+
+state 64
+
+   45 expr: expr MOD . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 94
+
+
+state 65
+
+   43 expr: expr DIVIDE . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 95
+
+
+state 66
+
+   42 expr: expr TIMES . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 96
+
+
+state 67
+
+   44 expr: expr POW . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 97
+
+
+state 68
+
+   28 list_index: expr LSQUARE . expr RSQUARE
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 98
+
+
+state 69
+
+   30 for_loop: FOR ID IN . expr DO NEWLINE statements DONE
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 99
+
+
+state 70
+
+   31 if_else: IF cond THEN . NEWLINE statements END
+   32        | IF cond THEN . NEWLINE statements ELSE NEWLINE statements END
+
+    NEWLINE  shift, and go to state 100
+
+
+state 71
+
+   13 func_def: DEF ID LPAREN . empty_list RPAREN NEWLINE statements END
+   14         | DEF ID LPAREN . empty_list RPAREN NEWLINE RETURN expr NEWLINE END
+   15         | DEF ID LPAREN . empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
+   16         | DEF ID LPAREN . params RPAREN NEWLINE statements END
+   17         | DEF ID LPAREN . params RPAREN NEWLINE RETURN expr NEWLINE END
+   18         | DEF ID LPAREN . params RPAREN NEWLINE statements RETURN expr NEWLINE END
+
+    ID  shift, and go to state 101
+
+    $default  reduce using rule 25 (empty_list)
+
+    params      go to state 102
+    empty_list  go to state 103
+
+
+state 72
+
+    4 statements: statements statement NEWLINE .
+
+    $default  reduce using rule 4 (statements)
+
+
+state 73
+
+   21 call: ID LPAREN empty_list RPAREN .
+
+    $default  reduce using rule 21 (call)
+
+
+state 74
+
+   27 list_items: list_items COMMA . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 104
+
+
+state 75
+
+   22 call: ID LPAREN list_items RPAREN .
+
+    $default  reduce using rule 22 (call)
+
+
+state 76
+
+   12 assignment: ID LSQUARE expr RSQUARE . ASSIGN expr
+
+    ASSIGN  shift, and go to state 105
+
+
+state 77
+
+   59 expr: LPAREN expr RPAREN .
+
+    $default  reduce using rule 59 (expr)
+
+
+state 78
+
+   23 list: LSQUARE empty_list RSQUARE .
+
+    $default  reduce using rule 23 (list)
+
+
+state 79
+
+   24 list: LSQUARE list_items RSQUARE .
+
+    $default  reduce using rule 24 (list)
+
+
+state 80
+
+   29 while_loop: WHILE cond DO NEWLINE . statements DONE
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    statements  go to state 106
+    statement   go to state 8
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 81
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   54     | expr LGAND expr .
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 54 (expr)
+
+
+state 82
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   53     | expr LGOR expr .
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 53 (expr)
+
+
+state 83
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+   57     | expr BWAND expr .
+
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 57 (expr)
+
+
+state 84
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   55     | expr BWXOR expr .
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 55 (expr)
+
+
+state 85
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   56     | expr BWOR expr .
+   57     | expr . BWAND expr
+
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 56 (expr)
+
+
+state 86
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   48     | expr NOTEQ expr .
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 48 (expr)
+
+
+state 87
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   49     | expr EQUAL expr .
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 49 (expr)
+
+
+state 88
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   51     | expr GTHEQ expr .
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 51 (expr)
+
+
+state 89
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   47     | expr GTHAN expr .
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 47 (expr)
+
+
+state 90
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   50     | expr LTHEQ expr .
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 50 (expr)
+
+
+state 91
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   46     | expr LTHAN expr .
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 46 (expr)
+
+
+state 92
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   41     | expr MINUS expr .
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 41 (expr)
+
+
+state 93
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   40     | expr PLUS expr .
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 40 (expr)
+
+
+state 94
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   45     | expr MOD expr .
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 45 (expr)
+
+
+state 95
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   43     | expr DIVIDE expr .
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 43 (expr)
+
+
+state 96
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   42     | expr TIMES expr .
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 42 (expr)
+
+
+state 97
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   44     | expr POW expr .
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 44 (expr)
+
+
+state 98
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   28           | expr LSQUARE expr . RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    RSQUARE  shift, and go to state 107
+    LSQUARE  shift, and go to state 68
+
+
+state 99
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   30 for_loop: FOR ID IN expr . DO NEWLINE statements DONE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    DO       shift, and go to state 108
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+
+state 100
+
+   31 if_else: IF cond THEN NEWLINE . statements END
+   32        | IF cond THEN NEWLINE . statements ELSE NEWLINE statements END
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    statements  go to state 109
+    statement   go to state 8
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 101
+
+   19 params: ID .
+
+    $default  reduce using rule 19 (params)
+
+
+state 102
+
+   16 func_def: DEF ID LPAREN params . RPAREN NEWLINE statements END
+   17         | DEF ID LPAREN params . RPAREN NEWLINE RETURN expr NEWLINE END
+   18         | DEF ID LPAREN params . RPAREN NEWLINE statements RETURN expr NEWLINE END
+   20 params: params . COMMA ID
+
+    COMMA   shift, and go to state 110
+    RPAREN  shift, and go to state 111
+
+
+state 103
+
+   13 func_def: DEF ID LPAREN empty_list . RPAREN NEWLINE statements END
+   14         | DEF ID LPAREN empty_list . RPAREN NEWLINE RETURN expr NEWLINE END
+   15         | DEF ID LPAREN empty_list . RPAREN NEWLINE statements RETURN expr NEWLINE END
+
+    RPAREN  shift, and go to state 112
+
+
+state 104
+
+   27 list_items: list_items COMMA expr .
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 27 (list_items)
+
+
+state 105
+
+   12 assignment: ID LSQUARE expr RSQUARE ASSIGN . expr
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 113
+
+
+state 106
+
+    4 statements: statements . statement NEWLINE
+   29 while_loop: WHILE cond DO NEWLINE statements . DONE
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    DONE   shift, and go to state 114
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    statement   go to state 36
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 107
+
+   28 list_index: expr LSQUARE expr RSQUARE .
+
+    $default  reduce using rule 28 (list_index)
+
+
+state 108
+
+   30 for_loop: FOR ID IN expr DO . NEWLINE statements DONE
+
+    NEWLINE  shift, and go to state 115
+
+
+state 109
+
+    4 statements: statements . statement NEWLINE
+   31 if_else: IF cond THEN NEWLINE statements . END
+   32        | IF cond THEN NEWLINE statements . ELSE NEWLINE statements END
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    ELSE   shift, and go to state 116
+    END    shift, and go to state 117
+    DEF    shift, and go to state 5
+
+    statement   go to state 36
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 110
+
+   20 params: params COMMA . ID
+
+    ID  shift, and go to state 118
+
+
+state 111
+
+   16 func_def: DEF ID LPAREN params RPAREN . NEWLINE statements END
+   17         | DEF ID LPAREN params RPAREN . NEWLINE RETURN expr NEWLINE END
+   18         | DEF ID LPAREN params RPAREN . NEWLINE statements RETURN expr NEWLINE END
+
+    NEWLINE  shift, and go to state 119
+
+
+state 112
+
+   13 func_def: DEF ID LPAREN empty_list RPAREN . NEWLINE statements END
+   14         | DEF ID LPAREN empty_list RPAREN . NEWLINE RETURN expr NEWLINE END
+   15         | DEF ID LPAREN empty_list RPAREN . NEWLINE statements RETURN expr NEWLINE END
+
+    NEWLINE  shift, and go to state 120
+
+
+state 113
+
+   12 assignment: ID LSQUARE expr RSQUARE ASSIGN expr .
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 12 (assignment)
+
+
+state 114
+
+   29 while_loop: WHILE cond DO NEWLINE statements DONE .
+
+    $default  reduce using rule 29 (while_loop)
+
+
+state 115
+
+   30 for_loop: FOR ID IN expr DO NEWLINE . statements DONE
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    statements  go to state 121
+    statement   go to state 8
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 116
+
+   32 if_else: IF cond THEN NEWLINE statements ELSE . NEWLINE statements END
+
+    NEWLINE  shift, and go to state 122
+
+
+state 117
+
+   31 if_else: IF cond THEN NEWLINE statements END .
+
+    $default  reduce using rule 31 (if_else)
+
+
+state 118
+
+   20 params: params COMMA ID .
+
+    $default  reduce using rule 20 (params)
+
+
+state 119
+
+   16 func_def: DEF ID LPAREN params RPAREN NEWLINE . statements END
+   17         | DEF ID LPAREN params RPAREN NEWLINE . RETURN expr NEWLINE END
+   18         | DEF ID LPAREN params RPAREN NEWLINE . statements RETURN expr NEWLINE END
+
+    ID      shift, and go to state 1
+    WHILE   shift, and go to state 2
+    FOR     shift, and go to state 3
+    IF      shift, and go to state 4
+    DEF     shift, and go to state 5
+    RETURN  shift, and go to state 123
+
+    statements  go to state 124
+    statement   go to state 8
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 120
+
+   13 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE . statements END
+   14         | DEF ID LPAREN empty_list RPAREN NEWLINE . RETURN expr NEWLINE END
+   15         | DEF ID LPAREN empty_list RPAREN NEWLINE . statements RETURN expr NEWLINE END
+
+    ID      shift, and go to state 1
+    WHILE   shift, and go to state 2
+    FOR     shift, and go to state 3
+    IF      shift, and go to state 4
+    DEF     shift, and go to state 5
+    RETURN  shift, and go to state 125
+
+    statements  go to state 126
+    statement   go to state 8
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 121
+
+    4 statements: statements . statement NEWLINE
+   30 for_loop: FOR ID IN expr DO NEWLINE statements . DONE
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    DONE   shift, and go to state 127
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    statement   go to state 36
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 122
+
+   32 if_else: IF cond THEN NEWLINE statements ELSE NEWLINE . statements END
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    DEF    shift, and go to state 5
+
+    statements  go to state 128
+    statement   go to state 8
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 123
+
+   17 func_def: DEF ID LPAREN params RPAREN NEWLINE RETURN . expr NEWLINE END
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 129
+
+
+state 124
+
+    4 statements: statements . statement NEWLINE
+   16 func_def: DEF ID LPAREN params RPAREN NEWLINE statements . END
+   18         | DEF ID LPAREN params RPAREN NEWLINE statements . RETURN expr NEWLINE END
+
+    ID      shift, and go to state 1
+    WHILE   shift, and go to state 2
+    FOR     shift, and go to state 3
+    IF      shift, and go to state 4
+    END     shift, and go to state 130
+    DEF     shift, and go to state 5
+    RETURN  shift, and go to state 131
+
+    statement   go to state 36
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 125
+
+   14 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE RETURN . expr NEWLINE END
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 132
+
+
+state 126
+
+    4 statements: statements . statement NEWLINE
+   13 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements . END
+   15         | DEF ID LPAREN empty_list RPAREN NEWLINE statements . RETURN expr NEWLINE END
+
+    ID      shift, and go to state 1
+    WHILE   shift, and go to state 2
+    FOR     shift, and go to state 3
+    IF      shift, and go to state 4
+    END     shift, and go to state 133
+    DEF     shift, and go to state 5
+    RETURN  shift, and go to state 134
+
+    statement   go to state 36
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 127
+
+   30 for_loop: FOR ID IN expr DO NEWLINE statements DONE .
+
+    $default  reduce using rule 30 (for_loop)
+
+
+state 128
+
+    4 statements: statements . statement NEWLINE
+   32 if_else: IF cond THEN NEWLINE statements ELSE NEWLINE statements . END
+
+    ID     shift, and go to state 1
+    WHILE  shift, and go to state 2
+    FOR    shift, and go to state 3
+    IF     shift, and go to state 4
+    END    shift, and go to state 135
+    DEF    shift, and go to state 5
+
+    statement   go to state 36
+    assignment  go to state 9
+    func_def    go to state 10
+    call        go to state 11
+    while_loop  go to state 12
+    for_loop    go to state 13
+    if_else     go to state 14
+
+
+state 129
+
+   17 func_def: DEF ID LPAREN params RPAREN NEWLINE RETURN expr . NEWLINE END
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    NEWLINE  shift, and go to state 136
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+
+state 130
+
+   16 func_def: DEF ID LPAREN params RPAREN NEWLINE statements END .
+
+    $default  reduce using rule 16 (func_def)
+
+
+state 131
+
+   18 func_def: DEF ID LPAREN params RPAREN NEWLINE statements RETURN . expr NEWLINE END
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 137
+
+
+state 132
+
+   14 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr . NEWLINE END
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    NEWLINE  shift, and go to state 138
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+
+state 133
+
+   13 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements END .
+
+    $default  reduce using rule 13 (func_def)
+
+
+state 134
+
+   15 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN . expr NEWLINE END
+
+    INT      shift, and go to state 18
+    FLOAT    shift, and go to state 19
+    STRING   shift, and go to state 20
+    ID       shift, and go to state 21
+    MINUS    shift, and go to state 22
+    LPAREN   shift, and go to state 23
+    LSQUARE  shift, and go to state 24
+    BWNOT    shift, and go to state 25
+    LGNOT    shift, and go to state 26
+
+    call        go to state 27
+    list        go to state 28
+    list_index  go to state 29
+    expr        go to state 139
+
+
+state 135
+
+   32 if_else: IF cond THEN NEWLINE statements ELSE NEWLINE statements END .
+
+    $default  reduce using rule 32 (if_else)
+
+
+state 136
+
+   17 func_def: DEF ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE . END
+
+    END  shift, and go to state 140
+
+
+state 137
+
+   18 func_def: DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr . NEWLINE END
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    NEWLINE  shift, and go to state 141
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+
+state 138
+
+   14 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE . END
+
+    END  shift, and go to state 142
+
+
+state 139
+
+   15 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr . NEWLINE END
+   28 list_index: expr . LSQUARE expr RSQUARE
+   40 expr: expr . PLUS expr
+   41     | expr . MINUS expr
+   42     | expr . TIMES expr
+   43     | expr . DIVIDE expr
+   44     | expr . POW expr
+   45     | expr . MOD expr
+   46     | expr . LTHAN expr
+   47     | expr . GTHAN expr
+   48     | expr . NOTEQ expr
+   49     | expr . EQUAL expr
+   50     | expr . LTHEQ expr
+   51     | expr . GTHEQ expr
+   53     | expr . LGOR expr
+   54     | expr . LGAND expr
+   55     | expr . BWXOR expr
+   56     | expr . BWOR expr
+   57     | expr . BWAND expr
+
+    NEWLINE  shift, and go to state 143
+    LGAND    shift, and go to state 51
+    LGOR     shift, and go to state 52
+    BWAND    shift, and go to state 53
+    BWXOR    shift, and go to state 54
+    BWOR     shift, and go to state 55
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+
+state 140
+
+   17 func_def: DEF ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END .
+
+    $default  reduce using rule 17 (func_def)
+
+
+state 141
+
+   18 func_def: DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE . END
+
+    END  shift, and go to state 144
+
+
+state 142
+
+   14 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END .
+
+    $default  reduce using rule 14 (func_def)
+
+
+state 143
+
+   15 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE . END
+
+    END  shift, and go to state 145
+
+
+state 144
+
+   18 func_def: DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END .
+
+    $default  reduce using rule 18 (func_def)
+
+
+state 145
+
+   15 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END .
+
+    $default  reduce using rule 15 (func_def)

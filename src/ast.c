@@ -52,6 +52,7 @@ AstNode * construct_node(AstType atype, ... )
     char *s;
 
     va_list args;
+
     va_start(args, atype);
 
     switch(atype) {
@@ -374,31 +375,31 @@ static AstNode *make_func_def(char *name, AstNode *param_list,
     return result;
 }
 
-static AstNode *make_statements(AstNode *result, AstNode *to_append)
+static AstNode *make_statements(AstNode *list, AstNode *new)
 {
-    if (!result)
+    if (!list)
     {
-        result = create_node(ast_stmnts_t);
-        result->data.statements.count = 0;
-        result->data.statements.size = AST_STMNTS_SIZE;
-        result->data.statements.statements = alloc(
-                result->data.statements.size *
-                sizeof(*result->data.statements.statements));
+        list = create_node(ast_stmnts_t);
+        list->data.statements.count = 0;
+        list->data.statements.size = AST_STMNTS_SIZE;
+        list->data.statements.statements = alloc(
+                list->data.statements.size *
+                sizeof(*list->data.statements.statements));
     }
 
-    /* checking if to_append is not NULL allows us to make empty statements */
-    if (to_append) {
+    /* if 'new' is NULL, then return the empty array node 'list' */
+    if (new) {
         /* realloc the array of statement pointers if necessary */
-        if(++(result->data.statements.count) > result->data.statements.size) {
-            result->data.statements.size = result->data.statements.size << 1;
-            result->data.statements.statements = realloc(
-                    result->data.statements.statements,
-                    result->data.statements.size *
-                    sizeof(*result->data.statements.statements));
+        if(++(list->data.statements.count) > list->data.statements.size) {
+            list->data.statements.size <<= 1;
+            list->data.statements.statements = realloc(
+                    list->data.statements.statements,
+                    list->data.statements.size *
+                    sizeof(*list->data.statements.statements));
         }
-        result->data.statements.statements[result->data.statements.count - 1] =
-                to_append;
+        list->data.statements.statements[list->data.statements.count - 1] =
+                new;
         yak("Added a new statement\n");
     }
-    return result;
+    return list;
 }

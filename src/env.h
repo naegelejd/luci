@@ -1,8 +1,8 @@
 #ifndef ASTEXEC_H
 #define ASTEXEC_H
 
-/* ASTNode from ast.h */
-struct ASTNode;
+/* AstNode from ast.h */
+struct AstNode;
 
 /* Symbol from symbol.h */
 struct Symbol;
@@ -16,7 +16,7 @@ typedef struct ExecContext
 } ExecContext;
 
 /* executes an AST */
-void exec_AST(struct ExecContext* e, struct ASTNode *root);
+void exec_AST(struct ExecContext* e, struct AstNode *root);
 
 int destroy_symbol(struct Symbol *s, int force);
 struct Symbol *add_symbol (ExecContext *e, char const *name, int type);

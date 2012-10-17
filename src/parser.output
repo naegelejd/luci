@@ -60,26 +60,26 @@ Grammar
    36     | FLOAT
    37     | STRING
    38     | ID
-   39     | MINUS expr
-   40     | expr PLUS expr
-   41     | expr MINUS expr
-   42     | expr TIMES expr
-   43     | expr DIVIDE expr
-   44     | expr POW expr
-   45     | expr MOD expr
-   46     | expr LTHAN expr
-   47     | expr GTHAN expr
-   48     | expr NOTEQ expr
-   49     | expr EQUAL expr
-   50     | expr LTHEQ expr
-   51     | expr GTHEQ expr
-   52     | LGNOT expr
-   53     | expr LGOR expr
-   54     | expr LGAND expr
-   55     | expr BWXOR expr
-   56     | expr BWOR expr
-   57     | expr BWAND expr
-   58     | BWNOT expr
+   39     | expr PLUS expr
+   40     | expr MINUS expr
+   41     | expr TIMES expr
+   42     | expr DIVIDE expr
+   43     | expr POW expr
+   44     | expr MOD expr
+   45     | expr LTHAN expr
+   46     | expr GTHAN expr
+   47     | expr NOTEQ expr
+   48     | expr EQUAL expr
+   49     | expr LTHEQ expr
+   50     | expr GTHEQ expr
+   51     | expr LGOR expr
+   52     | expr LGAND expr
+   53     | expr BWXOR expr
+   54     | expr BWOR expr
+   55     | expr BWAND expr
+   56     | BWNOT expr
+   57     | LGNOT expr
+   58     | MINUS expr
    59     | LPAREN expr RPAREN
    60     | list_index
    61     | list
@@ -107,30 +107,30 @@ ELSE (271) 32
 END (272) 13 14 15 16 17 18 31 32
 DEF (273) 13 14 15 16 17 18
 RETURN (274) 14 15 17 18
-LGAND (275) 54
-LGOR (276) 53
-BWAND (277) 57
-BWXOR (278) 55
-BWOR (279) 56
-NOTEQ (280) 48
-EQUAL (281) 49
-GTHEQ (282) 51
-GTHAN (283) 47
-LTHEQ (284) 50
-LTHAN (285) 46
-MINUS (286) 39 41
-PLUS (287) 40
-MOD (288) 45
-DIVIDE (289) 43
-TIMES (290) 42
-POW (291) 44
+LGAND (275) 52
+LGOR (276) 51
+BWAND (277) 55
+BWXOR (278) 53
+BWOR (279) 54
+NOTEQ (280) 47
+EQUAL (281) 48
+GTHEQ (282) 50
+GTHAN (283) 46
+LTHEQ (284) 49
+LTHAN (285) 45
+MINUS (286) 40 58
+PLUS (287) 39
+MOD (288) 44
+DIVIDE (289) 42
+TIMES (290) 41
+POW (291) 43
 RPAREN (292) 13 14 15 16 17 18 21 22 59
 LPAREN (293) 13 14 15 16 17 18 21 22 59
 RSQUARE (294) 12 23 24 28
 LSQUARE (295) 12 23 24 28
 ASSIGN (296) 11 12
-BWNOT (297) 58
-LGNOT (298) 52
+BWNOT (297) 56
+LGNOT (298) 57
 UBWNOT (299)
 ULGNOT (300)
 UMINUS (301)
@@ -452,7 +452,7 @@ state 21
 
 state 22
 
-   39 expr: MINUS . expr
+   58 expr: MINUS . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -517,7 +517,7 @@ state 24
 
 state 25
 
-   58 expr: BWNOT . expr
+   56 expr: BWNOT . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -537,7 +537,7 @@ state 25
 
 state 26
 
-   52 expr: LGNOT . expr
+   57 expr: LGNOT . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -588,23 +588,23 @@ state 31
    28 list_index: expr . LSQUARE expr RSQUARE
    33 cond: expr .
    34     | expr . NEWLINE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     NEWLINE  shift, and go to state 50
     LGAND    shift, and go to state 51
@@ -697,23 +697,23 @@ state 40
 
    26 list_items: expr .
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     LGAND    shift, and go to state 51
     LGOR     shift, and go to state 52
@@ -741,23 +741,23 @@ state 41
 
    12 assignment: ID LSQUARE expr . RSQUARE ASSIGN expr
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     LGAND    shift, and go to state 51
     LGOR     shift, and go to state 52
@@ -784,23 +784,23 @@ state 42
 
    11 assignment: ID ASSIGN expr .
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     LGAND    shift, and go to state 51
     LGOR     shift, and go to state 52
@@ -827,48 +827,48 @@ state 42
 state 43
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   39 expr: MINUS expr .
-   40     | expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+   58     | MINUS expr .
 
-    $default  reduce using rule 39 (expr)
+    $default  reduce using rule 58 (expr)
 
 
 state 44
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
    59     | LPAREN expr . RPAREN
 
     LGAND    shift, and go to state 51
@@ -911,51 +911,51 @@ state 46
 state 47
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
-   58     | BWNOT expr .
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+   56     | BWNOT expr .
 
-    $default  reduce using rule 58 (expr)
+    $default  reduce using rule 56 (expr)
 
 
 state 48
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   52     | LGNOT expr .
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+   57     | LGNOT expr .
 
-    $default  reduce using rule 52 (expr)
+    $default  reduce using rule 57 (expr)
 
 
 state 49
@@ -974,7 +974,7 @@ state 50
 
 state 51
 
-   54 expr: expr LGAND . expr
+   52 expr: expr LGAND . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -994,7 +994,7 @@ state 51
 
 state 52
 
-   53 expr: expr LGOR . expr
+   51 expr: expr LGOR . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1014,7 +1014,7 @@ state 52
 
 state 53
 
-   57 expr: expr BWAND . expr
+   55 expr: expr BWAND . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1034,7 +1034,7 @@ state 53
 
 state 54
 
-   55 expr: expr BWXOR . expr
+   53 expr: expr BWXOR . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1054,7 +1054,7 @@ state 54
 
 state 55
 
-   56 expr: expr BWOR . expr
+   54 expr: expr BWOR . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1074,7 +1074,7 @@ state 55
 
 state 56
 
-   48 expr: expr NOTEQ . expr
+   47 expr: expr NOTEQ . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1094,7 +1094,7 @@ state 56
 
 state 57
 
-   49 expr: expr EQUAL . expr
+   48 expr: expr EQUAL . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1114,7 +1114,7 @@ state 57
 
 state 58
 
-   51 expr: expr GTHEQ . expr
+   50 expr: expr GTHEQ . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1134,7 +1134,7 @@ state 58
 
 state 59
 
-   47 expr: expr GTHAN . expr
+   46 expr: expr GTHAN . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1154,7 +1154,7 @@ state 59
 
 state 60
 
-   50 expr: expr LTHEQ . expr
+   49 expr: expr LTHEQ . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1174,7 +1174,7 @@ state 60
 
 state 61
 
-   46 expr: expr LTHAN . expr
+   45 expr: expr LTHAN . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1194,7 +1194,7 @@ state 61
 
 state 62
 
-   41 expr: expr MINUS . expr
+   40 expr: expr MINUS . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1214,7 +1214,7 @@ state 62
 
 state 63
 
-   40 expr: expr PLUS . expr
+   39 expr: expr PLUS . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1234,7 +1234,7 @@ state 63
 
 state 64
 
-   45 expr: expr MOD . expr
+   44 expr: expr MOD . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1254,7 +1254,7 @@ state 64
 
 state 65
 
-   43 expr: expr DIVIDE . expr
+   42 expr: expr DIVIDE . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1274,7 +1274,7 @@ state 65
 
 state 66
 
-   42 expr: expr TIMES . expr
+   41 expr: expr TIMES . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1294,7 +1294,7 @@ state 66
 
 state 67
 
-   44 expr: expr POW . expr
+   43 expr: expr POW . expr
 
     INT      shift, and go to state 18
     FLOAT    shift, and go to state 19
@@ -1469,24 +1469,24 @@ state 80
 state 81
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   54     | expr LGAND expr .
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   52     | expr LGAND expr .
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     BWAND    shift, and go to state 53
     BWXOR    shift, and go to state 54
@@ -1505,30 +1505,30 @@ state 81
     POW      shift, and go to state 67
     LSQUARE  shift, and go to state 68
 
-    $default  reduce using rule 54 (expr)
+    $default  reduce using rule 52 (expr)
 
 
 state 82
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   53     | expr LGOR expr .
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   51     | expr LGOR expr .
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     BWAND    shift, and go to state 53
     BWXOR    shift, and go to state 54
@@ -1547,69 +1547,30 @@ state 82
     POW      shift, and go to state 67
     LSQUARE  shift, and go to state 68
 
-    $default  reduce using rule 53 (expr)
+    $default  reduce using rule 51 (expr)
 
 
 state 83
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
-   57     | expr BWAND expr .
-
-    NOTEQ    shift, and go to state 56
-    EQUAL    shift, and go to state 57
-    GTHEQ    shift, and go to state 58
-    GTHAN    shift, and go to state 59
-    LTHEQ    shift, and go to state 60
-    LTHAN    shift, and go to state 61
-    MINUS    shift, and go to state 62
-    PLUS     shift, and go to state 63
-    MOD      shift, and go to state 64
-    DIVIDE   shift, and go to state 65
-    TIMES    shift, and go to state 66
-    POW      shift, and go to state 67
-    LSQUARE  shift, and go to state 68
-
-    $default  reduce using rule 57 (expr)
-
-
-state 84
-
-   28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   55     | expr BWXOR expr .
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+   55     | expr BWAND expr .
 
     NOTEQ    shift, and go to state 56
     EQUAL    shift, and go to state 57
@@ -1628,27 +1589,27 @@ state 84
     $default  reduce using rule 55 (expr)
 
 
-state 85
+state 84
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   56     | expr BWOR expr .
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   53     | expr BWXOR expr .
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     NOTEQ    shift, and go to state 56
     EQUAL    shift, and go to state 57
@@ -1664,30 +1625,106 @@ state 85
     POW      shift, and go to state 67
     LSQUARE  shift, and go to state 68
 
-    $default  reduce using rule 56 (expr)
+    $default  reduce using rule 53 (expr)
+
+
+state 85
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   54     | expr BWOR expr .
+   55     | expr . BWAND expr
+
+    NOTEQ    shift, and go to state 56
+    EQUAL    shift, and go to state 57
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 54 (expr)
 
 
 state 86
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   48     | expr NOTEQ expr .
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   47     | expr NOTEQ expr .
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+
+    GTHEQ    shift, and go to state 58
+    GTHAN    shift, and go to state 59
+    LTHEQ    shift, and go to state 60
+    LTHAN    shift, and go to state 61
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 47 (expr)
+
+
+state 87
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   48     | expr EQUAL expr .
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     GTHEQ    shift, and go to state 58
     GTHAN    shift, and go to state 59
@@ -1704,130 +1741,27 @@ state 86
     $default  reduce using rule 48 (expr)
 
 
-state 87
-
-   28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   49     | expr EQUAL expr .
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
-
-    GTHEQ    shift, and go to state 58
-    GTHAN    shift, and go to state 59
-    LTHEQ    shift, and go to state 60
-    LTHAN    shift, and go to state 61
-    MINUS    shift, and go to state 62
-    PLUS     shift, and go to state 63
-    MOD      shift, and go to state 64
-    DIVIDE   shift, and go to state 65
-    TIMES    shift, and go to state 66
-    POW      shift, and go to state 67
-    LSQUARE  shift, and go to state 68
-
-    $default  reduce using rule 49 (expr)
-
-
 state 88
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   51     | expr GTHEQ expr .
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
-
-    MINUS    shift, and go to state 62
-    PLUS     shift, and go to state 63
-    MOD      shift, and go to state 64
-    DIVIDE   shift, and go to state 65
-    TIMES    shift, and go to state 66
-    POW      shift, and go to state 67
-    LSQUARE  shift, and go to state 68
-
-    $default  reduce using rule 51 (expr)
-
-
-state 89
-
-   28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   47     | expr GTHAN expr .
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
-
-    MINUS    shift, and go to state 62
-    PLUS     shift, and go to state 63
-    MOD      shift, and go to state 64
-    DIVIDE   shift, and go to state 65
-    TIMES    shift, and go to state 66
-    POW      shift, and go to state 67
-    LSQUARE  shift, and go to state 68
-
-    $default  reduce using rule 47 (expr)
-
-
-state 90
-
-   28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   50     | expr LTHEQ expr .
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   50     | expr GTHEQ expr .
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     MINUS    shift, and go to state 62
     PLUS     shift, and go to state 63
@@ -1840,27 +1774,27 @@ state 90
     $default  reduce using rule 50 (expr)
 
 
-state 91
+state 89
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   46     | expr LTHAN expr .
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   46     | expr GTHAN expr .
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     MINUS    shift, and go to state 62
     PLUS     shift, and go to state 63
@@ -1873,58 +1807,93 @@ state 91
     $default  reduce using rule 46 (expr)
 
 
-state 92
+state 90
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   41     | expr MINUS expr .
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   49     | expr LTHEQ expr .
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
     MOD      shift, and go to state 64
     DIVIDE   shift, and go to state 65
     TIMES    shift, and go to state 66
     POW      shift, and go to state 67
     LSQUARE  shift, and go to state 68
 
-    $default  reduce using rule 41 (expr)
+    $default  reduce using rule 49 (expr)
 
 
-state 93
+state 91
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   40     | expr PLUS expr .
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   45     | expr LTHAN expr .
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+
+    MINUS    shift, and go to state 62
+    PLUS     shift, and go to state 63
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 45 (expr)
+
+
+state 92
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   40     | expr MINUS expr .
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     MOD      shift, and go to state 64
     DIVIDE   shift, and go to state 65
@@ -1935,83 +1904,86 @@ state 93
     $default  reduce using rule 40 (expr)
 
 
+state 93
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   39 expr: expr . PLUS expr
+   39     | expr PLUS expr .
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+
+    MOD      shift, and go to state 64
+    DIVIDE   shift, and go to state 65
+    TIMES    shift, and go to state 66
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 39 (expr)
+
+
 state 94
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   45     | expr MOD expr .
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   44     | expr MOD expr .
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     POW      shift, and go to state 67
     LSQUARE  shift, and go to state 68
 
-    $default  reduce using rule 45 (expr)
+    $default  reduce using rule 44 (expr)
 
 
 state 95
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   43     | expr DIVIDE expr .
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
-
-    POW      shift, and go to state 67
-    LSQUARE  shift, and go to state 68
-
-    $default  reduce using rule 43 (expr)
-
-
-state 96
-
-   28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   42     | expr TIMES expr .
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   42     | expr DIVIDE expr .
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     POW      shift, and go to state 67
     LSQUARE  shift, and go to state 68
@@ -2019,54 +1991,82 @@ state 96
     $default  reduce using rule 42 (expr)
 
 
+state 96
+
+   28 list_index: expr . LSQUARE expr RSQUARE
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   41     | expr TIMES expr .
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
+
+    POW      shift, and go to state 67
+    LSQUARE  shift, and go to state 68
+
+    $default  reduce using rule 41 (expr)
+
+
 state 97
 
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   44     | expr POW expr .
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   43     | expr POW expr .
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     LSQUARE  shift, and go to state 68
 
-    $default  reduce using rule 44 (expr)
+    $default  reduce using rule 43 (expr)
 
 
 state 98
 
    28 list_index: expr . LSQUARE expr RSQUARE
    28           | expr LSQUARE expr . RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     LGAND    shift, and go to state 51
     LGOR     shift, and go to state 52
@@ -2093,23 +2093,23 @@ state 99
 
    28 list_index: expr . LSQUARE expr RSQUARE
    30 for_loop: FOR ID IN expr . DO NEWLINE statements DONE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     DO       shift, and go to state 108
     LGAND    shift, and go to state 51
@@ -2184,23 +2184,23 @@ state 104
 
    27 list_items: list_items COMMA expr .
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     LGAND    shift, and go to state 51
     LGOR     shift, and go to state 52
@@ -2331,23 +2331,23 @@ state 113
 
    12 assignment: ID LSQUARE expr RSQUARE ASSIGN expr .
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     LGAND    shift, and go to state 51
     LGOR     shift, and go to state 52
@@ -2624,23 +2624,23 @@ state 129
 
    17 func_def: DEF ID LPAREN params RPAREN NEWLINE RETURN expr . NEWLINE END
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     NEWLINE  shift, and go to state 136
     LGAND    shift, and go to state 51
@@ -2694,23 +2694,23 @@ state 132
 
    14 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr . NEWLINE END
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     NEWLINE  shift, and go to state 138
     LGAND    shift, and go to state 51
@@ -2778,23 +2778,23 @@ state 137
 
    18 func_def: DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr . NEWLINE END
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     NEWLINE  shift, and go to state 141
     LGAND    shift, and go to state 51
@@ -2828,23 +2828,23 @@ state 139
 
    15 func_def: DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr . NEWLINE END
    28 list_index: expr . LSQUARE expr RSQUARE
-   40 expr: expr . PLUS expr
-   41     | expr . MINUS expr
-   42     | expr . TIMES expr
-   43     | expr . DIVIDE expr
-   44     | expr . POW expr
-   45     | expr . MOD expr
-   46     | expr . LTHAN expr
-   47     | expr . GTHAN expr
-   48     | expr . NOTEQ expr
-   49     | expr . EQUAL expr
-   50     | expr . LTHEQ expr
-   51     | expr . GTHEQ expr
-   53     | expr . LGOR expr
-   54     | expr . LGAND expr
-   55     | expr . BWXOR expr
-   56     | expr . BWOR expr
-   57     | expr . BWAND expr
+   39 expr: expr . PLUS expr
+   40     | expr . MINUS expr
+   41     | expr . TIMES expr
+   42     | expr . DIVIDE expr
+   43     | expr . POW expr
+   44     | expr . MOD expr
+   45     | expr . LTHAN expr
+   46     | expr . GTHAN expr
+   47     | expr . NOTEQ expr
+   48     | expr . EQUAL expr
+   49     | expr . LTHEQ expr
+   50     | expr . GTHEQ expr
+   51     | expr . LGOR expr
+   52     | expr . LGAND expr
+   53     | expr . BWXOR expr
+   54     | expr . BWOR expr
+   55     | expr . BWAND expr
 
     NEWLINE  shift, and go to state 143
     LGAND    shift, and go to state 51

@@ -1,122 +1,136 @@
 #ifndef AST_H
 #define AST_H
 
+#include <stdarg.h>
+
 /* the initial size of the array which represents a list of expressions */
 #define AST_LIST_SIZE 32
 
 /* the initial size of the array which holds pointers to statement nodes */
 #define AST_STMNTS_SIZE 32
 
-typedef enum {  ast_int_t,
-	    ast_float_t,
-	    ast_str_t,
-	    ast_id_t,
-	    ast_expression_t,
-	    ast_listindex_t,
-	    ast_listassign_t,
-	    ast_list_t,
-	    ast_assignment_t,
-	    ast_while_t,
-	    ast_for_t,
-	    ast_if_t,
-	    ast_call_t,
-	    ast_funcdef_t,
-	    ast_statements_t,
-	    ast_last_t
+typedef enum {
+    ast_int_t,
+    ast_float_t,
+    ast_string_t,
+    ast_id_t,
+    ast_expr_t,
+    ast_listindex_t,
+    ast_listassign_t,
+    ast_list_t,
+    ast_assign_t,
+    ast_while_t,
+    ast_for_t,
+    ast_if_t,
+    ast_call_t,
+    ast_func_t,
+    ast_stmnts_t,
+    ast_last_t
 } AstType;
 
+/* for verbosity */
+const char *NTYPES[15];
 
-typedef struct ASTNode
+struct AstNode;
+
+typedef struct
+{
+    struct AstNode *left, *right;
+    int op;
+} AstExpression;
+
+typedef struct
+{
+    struct AstNode *right;
+    char *name;
+} AstAssignment;
+
+typedef struct
+{
+    int count;
+    int size;
+    struct AstNode **items;
+} AstListDef;
+
+typedef struct
+{
+    struct AstNode *list;
+    struct AstNode *index;
+} AstListIndex;
+
+typedef struct
+{
+    char *name;
+    struct AstNode *index;
+    struct AstNode *right;
+} AstListAssign;
+
+typedef struct
+{
+    struct AstNode *cond;
+    struct AstNode *statements;
+} AstWhileLoop;
+
+typedef struct
+{
+    struct AstNode *list;
+    struct AstNode *statements;
+    char *name;
+} AstForLoop;
+
+typedef struct
+{
+    struct AstNode *cond;
+    struct AstNode *ifstatements;
+    struct AstNode *elstatements;
+} AstIfElse;
+
+typedef struct
+{
+    struct AstNode *arglist;
+    char *name;
+} AstFuncCall;
+
+typedef struct
+{
+    struct AstNode *param_list;
+    struct AstNode *statements;
+    struct AstNode *ret_expr;
+    char *name;
+} AstFuncDef;
+
+typedef struct
+{
+    int count;
+    int size;
+    struct AstNode ** statements;
+} AstStatements;
+
+typedef struct AstNode
 {
     AstType type;
+    union {
+        long i_val;
+        double f_val;
+        char *s_val;
+        char *name;
 
-    union
-    {
-	int i_val;
-	double f_val;
-	char *s_val;
-	char *name;
-
-        struct
-        {
-            struct ASTNode *left, *right;
-            int op;
-        } expression;
-	struct
-	{
-	    struct ASTNode *list;
-	    struct ASTNode *index;
-	} listindex;
-	struct
-	{
-	    char *name;
-	    struct ASTNode *index;
-	    struct ASTNode *right;
-	} listassign;
-	struct
-	{
-	    int count;
-	    int size;
-	    struct ASTNode **items;
-	} list;
-	struct
-	{
-	    struct ASTNode *right;
-	    char *name;
-	} assignment;
-	struct
-	{
-	    struct ASTNode *cond;
-	    struct ASTNode *statements;
-	} while_loop;
-	struct
-	{
-	    struct ASTNode *list;
-	    struct ASTNode *statements;
-	    char *name;
-	} for_loop;
-	struct
-	{
-	    struct ASTNode *cond;
-	    struct ASTNode *ifstatements;
-	    struct ASTNode *elstatements;
-	} if_else;
-	struct
-	{
-	    struct ASTNode *arglist;
-	    char *name;
-	} call;
-	struct
-	{
-	    struct ASTNode *param_list;
-	    struct ASTNode *statements;
-	    struct ASTNode *ret_expr;
-	    char *name;
-	} func_def;
-	struct
-	{
-	    int count;
-	    int size;
-	    struct ASTNode ** statements;
-	} statements;
+        AstExpression expression;
+        AstListIndex listindex;
+        AstListAssign listassign;
+        AstListDef list;
+        AstAssignment assignment;
+        AstWhileLoop while_loop;
+        AstForLoop for_loop;
+        AstIfElse if_else;
+        AstFuncCall call;
+        AstFuncDef func_def;
+        AstStatements statements;
     } data;
-} ASTNode;
+} AstNode;
 
-void destroy_AST(ASTNode *);
-ASTNode *make_expr_from_int(int);
-ASTNode *make_expr_from_float(double);
-ASTNode *make_expr_from_string(char *);
-ASTNode *make_expr_from_id(char *);
-ASTNode *make_binary_expr(ASTNode *, ASTNode *, int op);
-ASTNode *make_list_index(ASTNode *, ASTNode *);
-ASTNode *make_list_assignment(char *, ASTNode *, ASTNode *);
-ASTNode *make_list(ASTNode *, ASTNode *);
-ASTNode *make_call(char *, ASTNode *);
-ASTNode *make_func_def(char *, ASTNode *, ASTNode *, ASTNode *);
-ASTNode *make_assignment(char *, ASTNode *);
-ASTNode *make_while_loop(ASTNode *, ASTNode *);
-ASTNode *make_for_loop(char *, ASTNode *, ASTNode *);
-ASTNode *make_if_else(ASTNode *, ASTNode *, ASTNode *);
-ASTNode *make_statement(ASTNode *, ASTNode *);
+void destroy_tree(AstNode *);
+
+AstNode *construct_node(AstType, ...);
 
 #endif

@@ -36,8 +36,11 @@ WS	    [ \t\f\r]+
 #.*\n	{ LINE_NUM++; } /* ignore one-line comments */
 {WS}	; /* ignore */
 
-{STRING}	{ yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2); return STRING; }
-{FLOAT}		{ yylval.d_val = atof(yytext); return FLOAT; }
+{STRING}	{
+                    yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2);
+                    return STRING;
+                }
+{FLOAT}		{ yylval.f_val = atof(yytext); return FLOAT; }
 {INTEGER}	{ yylval.i_val = atoi(yytext); return INT; }
 {WORD}		{ yylval.id = strdup(yytext); return ID; }
 
@@ -72,6 +75,9 @@ WS	    [ \t\f\r]+
 "&"	{ return BWAND; }
 "~"	{ return BWNOT; }
 
-<<EOF>>     { yy_delete_buffer(YY_CURRENT_BUFFER); yyterminate(); }
+<<EOF>>     {
+                yy_delete_buffer(YY_CURRENT_BUFFER);
+                yyterminate();
+            }
 
 %%

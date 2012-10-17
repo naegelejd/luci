@@ -20,11 +20,11 @@ void yyerror(const char *msg);
 %error-verbose
 
 %union {
-    int i_val;
-    double d_val;
+    long i_val;
+    double f_val;
     char *s_val;
     char *id;
-    struct ASTNode *node;
+    struct AstNode *node;
 }
 
 %start program
@@ -36,7 +36,7 @@ void yyerror(const char *msg);
 %type <node> program
 
 %token <i_val> INT
-%token <d_val> FLOAT
+%token <f_val> FLOAT
 %token <s_val> STRING
 %token <id> ID
 %token NEWLINE COMMA
@@ -61,53 +61,75 @@ void yyerror(const char *msg);
 %%
 
 program:
-        /* nothing */               { $$ = 0; }
-    |   statements                  { (*(struct ASTNode **)root) = $1; }
+        /* nothing */       { $$ = 0; }
+    |   statements          { (*(struct AstNode **)root) = $1; }
     ;
 
 statements:
-        statement NEWLINE               { $$ = make_statement(NULL, $1); }
-    |   statements statement NEWLINE    { $$ = make_statement($1, $2); }
+        statement NEWLINE
+                { $$ = construct_node(ast_stmnts_t, NULL, $1); }
+    |   statements statement NEWLINE
+                { $$ = construct_node(ast_stmnts_t, $1, $2); }
     ;
 
 statement:
-        func_def                    { $$ = $1; }
-    |   assignment                  { $$ = $1; }
-    |   call                        { $$ = $1; }
-    |   while_loop                  { $$ = $1; }
-    |   for_loop                    { $$ = $1; }
-    |   if_else                     { $$ = $1; }
+        func_def            { $$ = $1; }
+    |   assignment          { $$ = $1; }
+    |   call                { $$ = $1; }
+    |   while_loop          { $$ = $1; }
+    |   for_loop            { $$ = $1; }
+    |   if_else             { $$ = $1; }
     ;
 
 assignment:
-        ID ASSIGN expr              { $$ = make_assignment($1, $3); }
+        ID ASSIGN expr
+                { $$ = construct_node(ast_assign_t, $1, $3); }
     |   ID LSQUARE expr RSQUARE ASSIGN expr
-                { $$ = make_list_assignment($1, $3, $6);}
+                { $$ = construct_node(ast_listassign_t, $1, $3, $6); }
     ;
 
 func_def:
         DEF ID LPAREN empty_list RPAREN NEWLINE statements END
-                { $$ = make_func_def($2, $4, $7, NULL); }
+            { $$ = construct_node(ast_func_t, $2, $4, $7, NULL); }
     |   DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
-                { $$ = make_func_def($2, $4, make_statement(NULL, NULL), $8); }
+            { $$ = construct_node(
+                    ast_func_t, $2, $4,
+                    construct_node(ast_stmnts_t, NULL, NULL), $8
+                    );
+            }
     |   DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
-                { $$ = make_func_def($2, $4, $7, $9); }
+            { $$ = construct_node(ast_func_t, $2, $4, $7, $9); }
     |   DEF ID LPAREN params RPAREN NEWLINE statements END
-                { $$ = make_func_def($2, $4, $7, NULL); }
+            { $$ = construct_node(ast_func_t, $2, $4, $7, NULL); }
     |   DEF ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
-                { $$ = make_func_def($2, $4, make_statement(NULL, NULL), $8); }
+            { $$ = construct_node(
+                    ast_func_t, $2, $4,
+                    construct_node(ast_stmnts_t, NULL, NULL), $8
+                    );
+            }
     |   DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
-                { $$ = make_func_def($2, $4, $7, $9); }
+            { $$ = construct_node(ast_func_t, $2, $4, $7, $9); }
     ;
 
 params:
-        ID                      { $$ = make_list(NULL, make_expr_from_string($1)); }
-    |   params COMMA ID         { $$ = make_list($1, make_expr_from_string($3)); }
+        ID      { $$ = construct_node(
+                        ast_list_t, NULL,
+                        construct_node(ast_string_t, $1)
+                        );
+                }
+    |   params COMMA ID
+                { $$ = construct_node(
+                        ast_list_t, $1,
+                        construct_node(ast_string_t, $3)
+                        );
+                }
     ;
 
 call:
-        ID LPAREN empty_list RPAREN         { $$ = make_call($1, $3); }
-    |   ID LPAREN list_items RPAREN         { $$ = make_call($1, $3); }
+        ID LPAREN empty_list RPAREN
+                { $$ = construct_node(ast_call_t, $1, $3); }
+    |   ID LPAREN list_items RPAREN
+                { $$ = construct_node(ast_call_t, $1, $3); }
     ;
 
 list:
@@ -116,31 +138,34 @@ list:
     ;
 
 empty_list:
-    /* nothing */   { $$ = make_list(NULL, NULL); }
+    /* nothing */   { $$ = construct_node(ast_list_t, NULL, NULL); }
     ;
 
 list_items:
-        expr                            { $$ = make_list(NULL, $1); }
-    |   list_items COMMA expr           { $$ = make_list($1, $3); }
+        expr        { $$ = construct_node(ast_list_t, NULL, $1); }
+    |   list_items COMMA expr   { $$ = construct_node(ast_list_t, $1, $3); }
     ;
 
 list_index:
-        expr LSQUARE expr RSQUARE   { $$ = make_list_index($1, $3); }
+        expr LSQUARE expr RSQUARE
+                { $$ = construct_node(ast_listindex_t, $1, $3); }
     ;
 
 while_loop:
-        WHILE cond DO NEWLINE statements DONE       { $$ = make_while_loop($2, $5); }
+        WHILE cond DO NEWLINE statements DONE
+                { $$ = construct_node(ast_while_t, $2, $5); }
     ;
 
 for_loop:
-        FOR ID IN expr DO NEWLINE statements DONE   { $$ = make_for_loop($2, $4, $7); }
+        FOR ID IN expr DO NEWLINE statements DONE
+                { $$ = construct_node(ast_for_t, $2, $4, $7); }
     ;
 
 if_else:
         IF cond THEN NEWLINE statements END
-                { $$ =  make_if_else($2, $5, NULL); }
+                { $$ = construct_node(ast_if_t, $2, $5, NULL); }
     |   IF cond THEN NEWLINE statements ELSE NEWLINE statements END
-                { $$ = make_if_else($2, $5, $8); }
+                { $$ = construct_node(ast_if_t, $2, $5, $8); }
     ;
 
 cond:
@@ -149,38 +174,63 @@ cond:
     ;
 
 expr:
-        INT                         { $$ = make_expr_from_int($1); }
-    |   FLOAT                       { $$ = make_expr_from_float($1); }
-    |   STRING                      { $$ = make_expr_from_string($1); }
-    |   ID                          { $$ = make_expr_from_id($1); }
-    |   MINUS expr %prec UMINUS     { $$ = make_binary_expr(
-                                            make_expr_from_int(0), $2, op_sub_t); }
-    |   expr PLUS expr              { $$ = make_binary_expr($1, $3, op_add_t); }
-    |   expr MINUS expr             { $$ = make_binary_expr($1, $3, op_sub_t); }
-    |   expr TIMES expr             { $$ = make_binary_expr($1, $3, op_mul_t); }
-    |   expr DIVIDE expr            { $$ = make_binary_expr($1, $3, op_div_t); }
-    |   expr POW expr               { $$ = make_binary_expr($1, $3, op_pow_t); }
-    |   expr MOD expr               { $$ = make_binary_expr($1, $3, op_mod_t); }
-    |   expr LTHAN expr             { $$ = make_binary_expr($1, $3, op_lt_t); }
-    |   expr GTHAN expr             { $$ = make_binary_expr($1, $3, op_gt_t); }
-    |   expr NOTEQ expr             { $$ = make_binary_expr($1, $3, op_neq_t); }
-    |   expr EQUAL expr             { $$ = make_binary_expr($1, $3, op_eq_t); }
-    |   expr LTHEQ expr             { $$ = make_binary_expr($1, $3, op_lte_t); }
-    |   expr GTHEQ expr             { $$ = make_binary_expr($1, $3, op_gte_t); }
-    |   LGNOT expr %prec ULGNOT     { $$ = make_binary_expr(
-                                            make_expr_from_int(0), $2, op_lnot_t); }
-    |   expr LGOR expr              { $$ = make_binary_expr($1, $3, op_lor_t); }
-    |   expr LGAND expr             { $$ = make_binary_expr($1, $3, op_land_t); }
-    |   expr BWXOR expr             { $$ = make_binary_expr($1, $3, op_bxor_t); }
-    |   expr BWOR expr              { $$ = make_binary_expr($1, $3, op_bor_t); }
-    |   expr BWAND expr             { $$ = make_binary_expr($1, $3, op_band_t); }
-    |   BWNOT expr %prec UBWNOT     { $$ = make_binary_expr(
-                                            make_expr_from_int(0), $2, op_bnot_t); }
-    |   LPAREN expr RPAREN          { $$ = $2; /*make_binary_expr(
-                                            make_expr_from_int(0), $2, op_add_t);*/ }
-    |   list_index                  { $$ = $1; }
-    |   list                        { $$ = $1; }
-    |   call                        { $$ = $1; }
+        INT                     { $$ = construct_node(ast_int_t, $1); }
+    |   FLOAT                   { $$ = construct_node(ast_float_t, $1); }
+    |   STRING                  { $$ = construct_node(ast_string_t, $1); }
+    |   ID                      { $$ = construct_node(ast_id_t, $1); }
+    |   expr PLUS expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_add_t); }
+    |   expr MINUS expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_sub_t); }
+    |   expr TIMES expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_mul_t); }
+    |   expr DIVIDE expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_div_t); }
+    |   expr POW expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_pow_t); }
+    |   expr MOD expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_mod_t); }
+    |   expr LTHAN expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_lt_t); }
+    |   expr GTHAN expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_gt_t); }
+    |   expr NOTEQ expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_neq_t); }
+    |   expr EQUAL expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_eq_t); }
+    |   expr LTHEQ expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_lte_t); }
+    |   expr GTHEQ expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_gte_t); }
+    |   expr LGOR expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_lor_t); }
+    |   expr LGAND expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_land_t); }
+    |   expr BWXOR expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_bxor_t); }
+    |   expr BWOR expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_bor_t); }
+    |   expr BWAND expr
+                { $$ = construct_node(ast_expr_t, $1, $3, op_band_t); }
+    |   BWNOT expr %prec UBWNOT
+                { $$ = construct_node(ast_expr_t,
+                        construct_node(ast_int_t, 0), $2, op_bnot_t
+                        );
+                }
+    |   LGNOT expr %prec ULGNOT
+                { $$ = construct_node(ast_expr_t,
+                        construct_node(ast_int_t, 0), $2, op_lnot_t
+                        );
+                }
+    |   MINUS expr %prec UMINUS
+                { $$ = construct_node(ast_expr_t,
+                        construct_node(ast_int_t, 0), $2, op_sub_t
+                        );
+                }
+    |   LPAREN expr RPAREN      { $$ = $2; }
+    |   list_index              { $$ = $1; }
+    |   list                    { $$ = $1; }
+    |   call                    { $$ = $1; }
     ;
 
 %%
@@ -188,6 +238,6 @@ expr:
 void yyerror(const char *msg)
 {
     fprintf(stderr, "Syntax Error: %s @ line #%d\n", msg, LINE_NUM);
-    exit(-1);
+    /* exit(-1); */
 }
 

@@ -9,27 +9,27 @@
 #include "functions.h"
 
 
-static struct LuciObject *dispatch_statement(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_int_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_float_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_string_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_id_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_bin_expression(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_list_index(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_list_assignment(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_list(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_assignment(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_while(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_for(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_if(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_call(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_func_def(ExecContext *e, struct ASTNode *a);
-static struct LuciObject *exec_statement(ExecContext *e, struct ASTNode *a);
+static struct LuciObject *dispatch_statement(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_int_expression(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_float_expression(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_string_expression(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_id_expression(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_bin_expression(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_list_index(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_list_assignment(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_list(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_assignment(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_while(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_for(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_if(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_call(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_func_def(ExecContext *e, struct AstNode *a);
+static struct LuciObject *exec_statement(ExecContext *e, struct AstNode *a);
 
 /**
   Lookup Array for AST nodes which yield values
  */
-static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
+static LuciObject * (*exec_lookup[])(ExecContext *e, AstNode *a) =
 {
     exec_int_expression,
     exec_float_expression,
@@ -49,9 +49,9 @@ static LuciObject * (*exec_lookup[])(ExecContext *e, ASTNode *a) =
 };
 
 /* Calls the corresponding handler function for the type
-   of the given ASTNode *
+   of the given AstNode *
 */
-static LuciObject *dispatch_statement(ExecContext *e, ASTNode *a)
+static LuciObject *dispatch_statement(ExecContext *e, AstNode *a)
 {
     if (!e) {
 	die("NULL Execution Context\n");
@@ -70,7 +70,7 @@ static LuciObject *dispatch_statement(ExecContext *e, ASTNode *a)
     }
 }
 
-static LuciObject *exec_int_expression(ExecContext *e, ASTNode *a)
+static LuciObject *exec_int_expression(ExecContext *e, AstNode *a)
 {
     yak("Allocating a new object of type obj_int_t, with value %d\n",
 	    a->data.i_val);
@@ -81,7 +81,7 @@ static LuciObject *exec_int_expression(ExecContext *e, ASTNode *a)
     return ret;
 }
 
-static LuciObject *exec_float_expression(ExecContext *e, ASTNode *a)
+static LuciObject *exec_float_expression(ExecContext *e, AstNode *a)
 {
     yak("Allocating a new object of type obj_float_t, with value %f\n",
 	    a->data.f_val);
@@ -92,13 +92,13 @@ static LuciObject *exec_float_expression(ExecContext *e, ASTNode *a)
     return ret;
 }
 
-static LuciObject *exec_string_expression(ExecContext *e, ASTNode *a)
+static LuciObject *exec_string_expression(ExecContext *e, AstNode *a)
 {
     yak("Allocating a new object of type obj_str_t, with value %s\n",
 	    a->data.s_val);
 
     LuciObject *ret = create_object(obj_str_t);
-    /* copy the 'string' from the ASTNode to the LuciObject */
+    /* copy the 'string' from the AstNode to the LuciObject */
     size_t len = strlen(a->data.s_val);
     ret->value.s_val = (char *) alloc(len + 1);
     strncpy (ret->value.s_val, a->data.s_val, len);
@@ -107,7 +107,7 @@ static LuciObject *exec_string_expression(ExecContext *e, ASTNode *a)
     return ret;
 }
 
-static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
+static LuciObject *exec_id_expression(ExecContext *e, AstNode *a)
 {
     Symbol *s;
     if (!(s = get_symbol(e, a->data.name))) {
@@ -134,7 +134,7 @@ static LuciObject *exec_id_expression(ExecContext *e, ASTNode *a)
     }
 }
 
-static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
+static LuciObject *exec_bin_expression(ExecContext *e, AstNode *a)
 {
     LuciObject *left = dispatch_statement(e, a->data.expression.left);
     LuciObject *right = dispatch_statement(e, a->data.expression.right);
@@ -144,7 +144,7 @@ static LuciObject *exec_bin_expression(ExecContext *e, ASTNode *a)
     return result;
 }
 
-static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_list_index(struct ExecContext *e, struct AstNode *a)
 {
     LuciObject *list = dispatch_statement(e, a->data.listindex.list);
     if (!list) {
@@ -189,7 +189,7 @@ static LuciObject *exec_list_index(struct ExecContext *e, struct ASTNode *a)
    this wouldn't work because exec_list_index returns a COPY of the value
    at the list's index.
 */
-static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_list_assignment(struct ExecContext *e, struct AstNode *a)
 {
     LuciObject *index = dispatch_statement(e, a->data.listassign.index);
     if (!index || (index->type != obj_int_t)) {
@@ -226,7 +226,7 @@ static LuciObject *exec_list_assignment(struct ExecContext *e, struct ASTNode *a
 /*
    Executes a list node in the abstract syntax tree.
 */
-static LuciObject *exec_list(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_list(struct ExecContext *e, struct AstNode *a)
 {
     LuciObject *list = create_object(obj_list_t);
     int i;
@@ -244,7 +244,7 @@ static LuciObject *exec_list(struct ExecContext *e, struct ASTNode *a)
    Executes a variable assignment node in the abstract
    syntax tree.
 */
-static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_assignment(struct ExecContext *e, struct AstNode *a)
 {
     /* right could be an object with refcount=1 (expression result,
        function return)
@@ -267,7 +267,7 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct ASTNode *a)
 /*
    Executes a while loop in the abstract syntax tree.
 */
-static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_while(struct ExecContext *e, struct AstNode *a)
 {
     yak("Begin while loop\n");
 
@@ -291,7 +291,7 @@ static LuciObject *exec_while(struct ExecContext *e, struct ASTNode *a)
 /*
    Executes a for loop in the abstract syntax tree
 */
-static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_for(struct ExecContext *e, struct AstNode *a)
 {
     yak("Begin for loop\n");
 
@@ -336,7 +336,7 @@ static LuciObject *exec_for(struct ExecContext *e, struct ASTNode *a)
 /*
    Executes an if/else statement in the abstract syntax tree.
 */
-static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_if(struct ExecContext *e, struct AstNode *a)
 {
     yak("Begin if block\n");
 
@@ -364,7 +364,7 @@ static LuciObject *exec_if(struct ExecContext *e, struct ASTNode *a)
    If found, the function's arglist node is executed and the results
    are passed to the function's definition.
 */
-static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_call(struct ExecContext *e, struct AstNode *a)
 {
     yak("Calling %s\n", a->data.call.name);
 
@@ -386,9 +386,9 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 	if (arglist->type != obj_list_t) {
 	    die("Malformed function arguments\n");
 	}
-	struct ASTNode *func_node = s->data.user_defined;
+	struct AstNode *func_node = s->data.user_defined;
 	char *func_name = func_node->data.func_def.name;
-	struct ASTNode *param_list = func_node->data.func_def.param_list;
+	struct AstNode *param_list = func_node->data.func_def.param_list;
 
 	if (param_list->data.list.count != arglist->value.list.count) {
 	    die("Incorrect number of args to function %s\n", func_name);
@@ -399,7 +399,7 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 	Symbol *s;
 	int i;
 	for (i = 0; i < param_list->data.list.count; i++) {
-	    if (param_list->data.list.items[i]->type != ast_str_t) {
+	    if (param_list->data.list.items[i]->type != ast_string_t) {
 		die("Malformed function parameters\n");
 	    }
 	    char *param_name = param_list->data.list.items[i]->data.s_val;
@@ -435,7 +435,7 @@ static LuciObject *exec_call(struct ExecContext *e, struct ASTNode *a)
 /*
    Executes a function definition node
 */
-static LuciObject *exec_func_def(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_func_def(struct ExecContext *e, struct AstNode *a)
 {
     char *name;
     Symbol *s;
@@ -446,7 +446,7 @@ static LuciObject *exec_func_def(struct ExecContext *e, struct ASTNode *a)
     if (!(s = add_symbol(e, name, sym_ufunc_t))) {
 	die("Can't create symbol %s\n", name);
     }
-    /* store the ASTNode for the user-defined function in the symbol */
+    /* store the AstNode for the user-defined function in the symbol */
     s->data.user_defined = a;
 
     return NULL;
@@ -455,7 +455,7 @@ static LuciObject *exec_func_def(struct ExecContext *e, struct ASTNode *a)
 /*
    Executes a statement node in the abstract syntax tree.
 */
-static LuciObject *exec_statement(struct ExecContext *e, struct ASTNode *a)
+static LuciObject *exec_statement(struct ExecContext *e, struct AstNode *a)
 {
     LuciObject *none;
     int i;
@@ -470,7 +470,7 @@ static LuciObject *exec_statement(struct ExecContext *e, struct ASTNode *a)
 /*
    Entry point for executing the abstract syntax tree.
 */
-void exec_AST(struct ExecContext *e, struct ASTNode *a)
+void exec_AST(struct ExecContext *e, struct AstNode *a)
 {
     LuciObject *none = dispatch_statement(e, a);
     destroy_object(none);
@@ -616,7 +616,7 @@ ExecContext *create_context(const char* name, ExecContext *parent)
 {
     /* Check that we have dispatchers for all types of statements */
     if (ast_last_t != (sizeof(exec_lookup) / sizeof(*exec_lookup))) {
-	fprintf(stderr, "Mismatch in # of ASTNode types and AST execution functions.\n");
+	fprintf(stderr, "Mismatch in # of AstNode types and AST execution functions.\n");
 	return NULL;
     }
 

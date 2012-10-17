@@ -11,7 +11,7 @@ extern yydebug();
 
 int VERBOSE;
 
-struct ASTNode *root_node;
+struct AstNode *root_node;
 struct ExecContext *root_env;
 
 const char *VERSION = "Luci v0.1";
@@ -33,8 +33,6 @@ int is_option(const char *arg)
     }
     return 0;
 }
-
-
 
 int main(int argc, char *argv[])
 {
@@ -128,5 +126,5 @@ void die(const char* format, ... )
 void cleanup(void)
 {
     destroy_context(root_env);
-    destroy_AST(root_node);
+    destroy_tree(root_node);
 }

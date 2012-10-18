@@ -9,20 +9,21 @@ extern FILE *yyin;
 extern yyparse();
 extern yydebug();
 
-int VERBOSE;
+static int VERBOSE;
+static int GRAPH;
 
-struct AstNode *root_node;
-struct ExecContext *root_env;
+static struct AstNode *root_node = NULL;
+static struct ExecContext *root_env = NULL;
 
-const char *VERSION = "Luci v0.1";
+static const char *VERSION = "Luci v0.1";
 
-const char *options[] =
+static const char *options[] =
 {
     "-v",
     0
 };
 
-int is_option(const char *arg)
+static int is_option(const char *arg)
 {
     int i = 0;
     while (options[i] != 0) {
@@ -32,6 +33,12 @@ int is_option(const char *arg)
 	++i;
     }
     return 0;
+}
+
+static void cleanup(void)
+{
+    destroy_context(root_env);
+    destroy_tree(root_node);
 }
 
 int main(int argc, char *argv[])
@@ -49,6 +56,9 @@ int main(int argc, char *argv[])
 	    if (strcmp(arg, "-v") == 0) {
 		VERBOSE = 1;
 	    }
+            if (strcmp(arg, "-g") == 0) {
+                GRAPH = 1;
+            }
 	    if (strcmp(arg, "-V") == 0) {
 		fprintf(stdout, "%s\n", VERSION);
 		exit(0);
@@ -72,17 +82,32 @@ int main(int argc, char *argv[])
 
     yyparse(&root_node);
 
-    if (root_node)
-    {
+    if (!root_node)
+        return EXIT_SUCCESS;
+
+    if (GRAPH) {
+        printf("digraph hierarchy {\n");
+        printf("node [color=Green,fontcolor=Blue]\n");
+        print_ast_graph(root_node, 0);
+        printf("}");
+    }
+
+
+    else {
 	root_env = create_context("global", NULL);
 	initialize_context(root_env);
 	exec_AST(root_env, root_node);
-	cleanup();
     }
+
+    cleanup();
 
     return EXIT_SUCCESS;
 }
 
+struct ExecContext *get_root_env()
+{
+    return root_env;
+}
 /*  Safely allocate memory, and quit on failure */
 void *alloc(size_t size)
 {
@@ -121,10 +146,4 @@ void die(const char* format, ... )
 
     cleanup();
     exit(1);
-}
-
-void cleanup(void)
-{
-    destroy_context(root_env);
-    destroy_tree(root_node);
 }

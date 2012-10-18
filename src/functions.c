@@ -298,7 +298,7 @@ LuciObject *luci_dir(LuciObject *paramlist)
     /* this is a terrible way of printing all vars in the global
        namespace but it works for now.
     */
-    extern ExecContext *root_env;
+    ExecContext *root_env = get_root_env();
 
     Symbol *ptr;
     for (ptr = root_env->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next) {

@@ -4,11 +4,13 @@
 /* for FILE* */
 #include <stdio.h>
 
+/* public functions */
+struct ExecContext *get_root_env();
+
 /* common functions */
 void *alloc(size_t size);
 void yak(const char *, ... );
 void die(const char *, ... );
-void cleanup(void);
 
 /* initial allocated size of a new List */
 #define INIT_LIST_SIZE 32

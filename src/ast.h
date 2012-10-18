@@ -148,4 +148,6 @@ AstNode *make_func_call(char *, AstNode *);
 AstNode *make_func_def(char *, AstNode *, AstNode *, AstNode *);
 AstNode *make_statements(AstNode *, AstNode *);
 
+int print_ast_graph(AstNode *root, int);
+
 #endif

@@ -293,3 +293,115 @@ AstNode *make_statements(AstNode *list, AstNode *new)
     }
     return list;
 }
+
+int print_ast_graph(AstNode *root, int id)
+{
+    /* can't walk a NULL statement */
+    if (!root)
+        return;
+
+    int rID = id;
+
+    int i;
+    switch (root->type)
+    {
+        case ast_stmnts_t:
+            printf("%d [label=\"statements\"]\n", rID);
+            for (i = 0; i < root->data.statements.count; i++)
+            {
+                printf("%d -> %d\n", rID, ++id);
+                id = print_ast_graph(root->data.statements.statements[i], id);
+            }
+            break;
+        case ast_func_t:
+            printf("%d [label=\"func %s\"]\n", rID, root->data.func_def.name);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.func_def.param_list, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.func_def.statements, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.func_def.ret_expr, id);
+            break;
+        case ast_list_t:
+            printf("%d [label=\"list\"]\n", rID);
+            for (i = 0; i < root->data.list.count; i++)
+            {
+                printf("%d -> %d\n", rID, ++id);
+                id = print_ast_graph(root->data.list.items[i], id);
+            }
+            break;
+        case ast_while_t:
+            printf("%d [label=\"while\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.while_loop.cond, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.while_loop.statements, id);
+            break;
+        case ast_for_t:
+            printf("%d [label=\"for\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.for_loop.list, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.for_loop.statements, id);
+            break;
+        case ast_if_t:
+            printf("%d [label=\"if\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.if_else.cond, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.if_else.ifstatements, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.if_else.elstatements, id);
+            break;
+        case ast_assign_t:
+            printf("%d [label=\"assign\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            printf("%d [label=\"%s\"]\n", id, root->data.assignment.name);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.assignment.right, id);
+            break;
+        case ast_call_t:
+            printf("%d [label=\"func call: %s\"]\n", rID, root->data.call.name);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.call.arglist, id);
+            break;
+        case ast_listindex_t:
+            printf("%d [label=\"listindex\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.listindex.list, i);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.listindex.index, i);
+            break;
+        case ast_listassign_t:
+            printf("%d [label=\"listassign\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.listassign.index, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.listassign.right, id);
+            break;
+        case ast_expr_t:
+            printf("%d [label=\"expression\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.expression.left, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.expression.right, id);
+            break;
+        case ast_id_t:
+            printf("%d [label=\"ID: %s\"]\n", rID, root->data.name);
+            break;
+        case ast_string_t:
+            printf("%d [label=\"string: %s\"]\n", rID, root->data.s_val);
+            break;
+        case ast_int_t:
+            printf("%d [label=\"int: %ld\"]\n", rID, root->data.i_val);
+            break;
+        case ast_float_t:
+            printf("%d [label=\"float: %g\"]\n", rID, root->data.f_val);
+            break;
+        default:
+            break;
+    }
+
+    return id;
+}
+

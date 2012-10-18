@@ -108,6 +108,7 @@ typedef struct AstNode
 {
     AstType type;
     int lineno;
+    int column;
 
     union {
         long i_val;
@@ -131,20 +132,20 @@ typedef struct AstNode
 
 void destroy_tree(AstNode *);
 
-AstNode *make_int_expr(int lineno, long);
-AstNode *make_float_expr(int lineno, double);
-AstNode *make_string_expr(int lineno, char *);
-AstNode *make_id_expr(int lineno, char *);
-AstNode *make_binary_expr(int lineno, AstNode *, AstNode *, int op);
-AstNode *make_list_index(int lineno, AstNode *, AstNode *);
-AstNode *make_list_assignment(int lineno, char *, AstNode *, AstNode *);
-AstNode *make_list_def(int lineno, AstNode *, AstNode *);
-AstNode *make_assignment(int lineno, char *, AstNode *);
-AstNode *make_while_loop(int lineno, AstNode *, AstNode *);
-AstNode *make_for_loop(int lineno, char *, AstNode *, AstNode *);
-AstNode *make_if_else(int lineno, AstNode *, AstNode *, AstNode *);
-AstNode *make_func_call(int lineno, char *, AstNode *);
-AstNode *make_func_def(int lineno, char *, AstNode *, AstNode *, AstNode *);
-AstNode *make_statements(int lineno, AstNode *, AstNode *);
+AstNode *make_int_expr(long);
+AstNode *make_float_expr(double);
+AstNode *make_string_expr(char *);
+AstNode *make_id_expr(char *);
+AstNode *make_binary_expr(AstNode *, AstNode *, int op);
+AstNode *make_list_index(AstNode *, AstNode *);
+AstNode *make_list_assignment(char *, AstNode *, AstNode *);
+AstNode *make_list_def(AstNode *, AstNode *);
+AstNode *make_assignment(char *, AstNode *);
+AstNode *make_while_loop(AstNode *, AstNode *);
+AstNode *make_for_loop(char *, AstNode *, AstNode *);
+AstNode *make_if_else(AstNode *, AstNode *, AstNode *);
+AstNode *make_func_call(char *, AstNode *);
+AstNode *make_func_def(char *, AstNode *, AstNode *, AstNode *);
+AstNode *make_statements(AstNode *, AstNode *);
 
 #endif

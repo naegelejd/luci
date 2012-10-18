@@ -658,6 +658,11 @@ void initialize_context(ExecContext *e)
 */
 void destroy_context(ExecContext *e)
 {
+    if (e == NULL) {
+        /* context doesn't exist */
+        return;
+    }
+
     yak("destroying context %s\n", e->name);
     /* destroy the Context's name */
     free(e->name);

@@ -168,14 +168,14 @@ AstNode *make_list_index(AstNode *list, AstNode *index)
     return result;
 }
 
-AstNode *make_list_assignment(char *id,
+AstNode *make_list_assignment(AstNode *id,
         AstNode *index, AstNode *right)
 {
     AstNode *result = create_node(ast_listassign_t);
     result->data.listassign.name = id;
     result->data.listassign.index = index;
     result->data.listassign.right = right;
-    yak("Made list assignment node to id: %s\n", id);
+    yak("Made list assignment node\n", id);
     return result;
 }
 
@@ -202,12 +202,12 @@ AstNode *make_list_def(AstNode *result, AstNode *to_append)
     return result;
 }
 
-AstNode *make_assignment(char *id, AstNode *right)
+AstNode *make_assignment(AstNode *id, AstNode *right)
 {
     AstNode *result = create_node(ast_assign_t);
     result->data.assignment.name = id;
     result->data.assignment.right = right;
-    yak("Made assignment node to id: %s\n", id);
+    yak("Made assignment node to\n", id);
     return result;
 }
 
@@ -221,7 +221,7 @@ AstNode *make_while_loop(AstNode *cond, AstNode *statements)
     return result;
 }
 
-AstNode *make_for_loop(char *id,
+AstNode *make_for_loop(AstNode *id,
         AstNode *list, AstNode *statements)
 {
     AstNode *result = create_node(ast_for_t);
@@ -244,16 +244,16 @@ AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)
     return result;
 }
 
-AstNode *make_func_call(char *id, AstNode *arglist)
+AstNode *make_func_call(AstNode *id, AstNode *arglist)
 {
     AstNode *result = create_node(ast_call_t);
     result->data.call.name = id;
     result->data.call.arglist = arglist;
-    yak("Made call node with name: %s\n", id);
+    yak("Made call node with name\n", id);
     return result;
 }
 
-AstNode *make_func_def(char *name, AstNode *param_list,
+AstNode *make_func_def(AstNode *name, AstNode *param_list,
         AstNode *statements, AstNode *return_expr)
 {
     AstNode *result = create_node(ast_func_t);
@@ -261,7 +261,7 @@ AstNode *make_func_def(char *name, AstNode *param_list,
     result->data.func_def.param_list = param_list;
     result->data.func_def.statements = statements;
     result->data.func_def.ret_expr = return_expr;
-    yak("Made function definition node with name: %s\n", name);
+    yak("Made function definition node with name\n", name);
     return result;
 }
 
@@ -296,13 +296,15 @@ AstNode *make_statements(AstNode *list, AstNode *new)
 
 int print_ast_graph(AstNode *root, int id)
 {
-    /* can't walk a NULL statement */
-    if (!root)
-        return;
-
+    AstNode *args = NULL;
+    int i = 0;
     int rID = id;
 
-    int i;
+    if (!root)  {
+        /* could be non-existing 'else' in an 'if' clause, for example */
+        return id;
+    }
+
     switch (root->type)
     {
         case ast_stmnts_t:
@@ -314,7 +316,9 @@ int print_ast_graph(AstNode *root, int id)
             }
             break;
         case ast_func_t:
-            printf("%d [label=\"func %s\"]\n", rID, root->data.func_def.name);
+            printf("%d [label=\"func def\"]\n", rID);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.func_def.name, id);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.func_def.param_list, id);
             printf("%d -> %d\n", rID, ++id);
@@ -356,21 +360,28 @@ int print_ast_graph(AstNode *root, int id)
         case ast_assign_t:
             printf("%d [label=\"assign\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            printf("%d [label=\"%s\"]\n", id, root->data.assignment.name);
+            id = print_ast_graph(root->data.assignment.name, id);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.assignment.right, id);
             break;
         case ast_call_t:
-            printf("%d [label=\"func call: %s\"]\n", rID, root->data.call.name);
+            printf("%d [label=\"func call\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.call.arglist, id);
+            id = print_ast_graph(root->data.call.name, id);
+            args = root->data.call.arglist;
+            assert(args->type == ast_list_t);
+            for (i = 0; i < args->data.list.count; i++)
+            {
+                printf("%d -> %d\n", rID, ++id);
+                id = print_ast_graph(args->data.list.items[i], id);
+            }
             break;
         case ast_listindex_t:
             printf("%d [label=\"listindex\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listindex.list, i);
+            id = print_ast_graph(root->data.listindex.list, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listindex.index, i);
+            id = print_ast_graph(root->data.listindex.index, id);
             break;
         case ast_listassign_t:
             printf("%d [label=\"listassign\"]\n", rID);

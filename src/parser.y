@@ -18,25 +18,23 @@ void yyerror(const char *msg);
 %error-verbose
 
 %union {
-    long i_val;
-    double f_val;
-    char *s_val;
-    char *id;
+    long int_v;
+    double float_v;
+    char *string_v;
     struct AstNode *node;
 }
 
 %start program
 
-%type <node> expr cond call assignment statement statements
+%type <node> expr id cond call assignment statement statements
 %type <node> while_loop for_loop if_else
 %type <node> func_def params
 %type <node> empty_list list_items list_index list
 %type <node> program
 
-%token <i_val> INT
-%token <f_val> FLOAT
-%token <s_val> STRING
-%token <id> ID
+%token <int_v> INT
+%token <float_v> FLOAT
+%token <string_v> STRING ID
 
 %token NEWLINE COMMA
 %token WHILE FOR IN DO DONE
@@ -81,45 +79,45 @@ statement:
     ;
 
 assignment:
-        ID ASSIGN expr
+        id ASSIGN expr
                 { $$ = make_assignment($1, $3); }
-    |   ID LSQUARE expr RSQUARE ASSIGN expr
+    |   id LSQUARE expr RSQUARE ASSIGN expr
                 { $$ = make_list_assignment($1, $3, $6); }
     ;
 
 func_def:
-        DEF ID LPAREN empty_list RPAREN NEWLINE statements END
+        DEF id LPAREN empty_list RPAREN NEWLINE statements END
             { $$ = make_func_def($2, $4, $7, NULL); }
-    |   DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
+    |   DEF id LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
             { $$ = make_func_def(
                     $2, $4, make_statements(NULL, NULL), $8);
             }
-    |   DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
+    |   DEF id LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
             { $$ = make_func_def($2, $4, $7, $9); }
-    |   DEF ID LPAREN params RPAREN NEWLINE statements END
+    |   DEF id LPAREN params RPAREN NEWLINE statements END
             { $$ = make_func_def($2, $4, $7, NULL); }
-    |   DEF ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
+    |   DEF id LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
             { $$ = make_func_def(
                     $2, $4, make_statements(NULL, NULL), $8);
             }
-    |   DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
+    |   DEF id LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
             { $$ = make_func_def($2, $4, $7, $9); }
     ;
 
 params:
-        ID      { $$ = make_list_def(NULL,
+        id      { $$ = make_list_def(NULL,
                         make_string_expr($1));
                 }
-    |   params COMMA ID
+    |   params COMMA id
                 { $$ = make_list_def( $1,
                         make_string_expr($3));
                 }
     ;
 
 call:
-        ID LPAREN empty_list RPAREN
+        id LPAREN empty_list RPAREN
                 { $$ = make_func_call($1, $3); }
-    |   ID LPAREN list_items RPAREN
+    |   id LPAREN list_items RPAREN
                 { $$ = make_func_call($1, $3); }
     ;
 
@@ -148,7 +146,7 @@ while_loop:
     ;
 
 for_loop:
-        FOR ID IN expr DO NEWLINE statements DONE
+        FOR id IN expr DO NEWLINE statements DONE
                 { $$ = make_for_loop($2, $4, $7); }
     ;
 
@@ -164,11 +162,14 @@ cond:
     |   expr NEWLINE        { $$ = $1; }
     ;
 
+id:     ID                      { $$ = make_id_expr($1); }
+    ;
+
 expr:
         INT                     { $$ = make_int_expr($1); }
     |   FLOAT                   { $$ = make_float_expr($1); }
     |   STRING                  { $$ = make_string_expr($1); }
-    |   ID                      { $$ = make_id_expr($1); }
+    |   id                      { $$ = $1; }
     |   expr PLUS expr
                 { $$ = make_binary_expr($1, $3, op_add_t); }
     |   expr MINUS expr

@@ -40,7 +40,7 @@ typedef struct
 typedef struct
 {
     struct AstNode *right;
-    char *name;
+    struct AstNode *name;
 } AstAssignment;
 
 typedef struct
@@ -58,7 +58,7 @@ typedef struct
 
 typedef struct
 {
-    char *name;
+    struct AstNode *name;
     struct AstNode *index;
     struct AstNode *right;
 } AstListAssign;
@@ -73,7 +73,7 @@ typedef struct
 {
     struct AstNode *list;
     struct AstNode *statements;
-    char *name;
+    struct AstNode *name;
 } AstForLoop;
 
 typedef struct
@@ -86,7 +86,7 @@ typedef struct
 typedef struct
 {
     struct AstNode *arglist;
-    char *name;
+    struct AstNode *name;
 } AstFuncCall;
 
 typedef struct
@@ -94,7 +94,7 @@ typedef struct
     struct AstNode *param_list;
     struct AstNode *statements;
     struct AstNode *ret_expr;
-    char *name;
+    struct AstNode *name;
 } AstFuncDef;
 
 typedef struct
@@ -138,14 +138,14 @@ AstNode *make_string_expr(char *);
 AstNode *make_id_expr(char *);
 AstNode *make_binary_expr(AstNode *, AstNode *, int op);
 AstNode *make_list_index(AstNode *, AstNode *);
-AstNode *make_list_assignment(char *, AstNode *, AstNode *);
+AstNode *make_list_assignment(AstNode *, AstNode *, AstNode *);
 AstNode *make_list_def(AstNode *, AstNode *);
-AstNode *make_assignment(char *, AstNode *);
+AstNode *make_assignment(AstNode *, AstNode *);
 AstNode *make_while_loop(AstNode *, AstNode *);
-AstNode *make_for_loop(char *, AstNode *, AstNode *);
+AstNode *make_for_loop(AstNode *, AstNode *, AstNode *);
 AstNode *make_if_else(AstNode *, AstNode *, AstNode *);
-AstNode *make_func_call(char *, AstNode *);
-AstNode *make_func_def(char *, AstNode *, AstNode *, AstNode *);
+AstNode *make_func_call(AstNode *, AstNode *);
+AstNode *make_func_def(AstNode *, AstNode *, AstNode *, AstNode *);
 AstNode *make_statements(AstNode *, AstNode *);
 
 int print_ast_graph(AstNode *root, int);

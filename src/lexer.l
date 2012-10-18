@@ -42,21 +42,21 @@ IGNORE      ({WS}|;)+
 {IGNORE}        { COL += yyleng; } /* ignore whitespace/semicolon */
 
 {STRING}	{
-                    yylval.s_val = strndup(yytext + 1, strlen(yytext) - 2);
+                    yylval.string_v = strndup(yytext + 1, strlen(yytext) - 2);
                     COL += yyleng;
                     return STRING;
                 }
 {FLOAT}		{
-                    yylval.f_val = atof(yytext);
+                    yylval.float_v = atof(yytext);
                     COL += yyleng;
                     return FLOAT;
                 }
 {INTEGER}	{
-                    yylval.i_val = atoi(yytext);
+                    yylval.int_v = atoi(yytext);
                     COL += yyleng;
                     return INT;
                 }
-{WORD}		{ yylval.id = strdup(yytext);
+{WORD}		{ yylval.string_v = strdup(yytext);
                     COL += yyleng;
                     return ID;
                 }

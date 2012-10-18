@@ -11,7 +11,7 @@
 
 #define YYPARSE_PARAM root
 
-int LINE_NUM = 1;
+int LINENUM = 1;
 
 void yyerror(const char *msg);
 
@@ -67,9 +67,9 @@ program:
 
 statements:
         statement NEWLINE
-                { $$ = construct_node(ast_stmnts_t, NULL, $1); }
+                { $$ = make_statements(LINENUM, NULL, $1); }
     |   statements statement NEWLINE
-                { $$ = construct_node(ast_stmnts_t, $1, $2); }
+                { $$ = make_statements(LINENUM, $1, $2); }
     ;
 
 statement:
@@ -83,53 +83,45 @@ statement:
 
 assignment:
         ID ASSIGN expr
-                { $$ = construct_node(ast_assign_t, $1, $3); }
+                { $$ = make_assignment(LINENUM, $1, $3); }
     |   ID LSQUARE expr RSQUARE ASSIGN expr
-                { $$ = construct_node(ast_listassign_t, $1, $3, $6); }
+                { $$ = make_list_assignment(LINENUM, $1, $3, $6); }
     ;
 
 func_def:
         DEF ID LPAREN empty_list RPAREN NEWLINE statements END
-            { $$ = construct_node(ast_func_t, $2, $4, $7, NULL); }
+            { $$ = make_func_def(LINENUM, $2, $4, $7, NULL); }
     |   DEF ID LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
-            { $$ = construct_node(
-                    ast_func_t, $2, $4,
-                    construct_node(ast_stmnts_t, NULL, NULL), $8
-                    );
+            { $$ = make_func_def(LINENUM,
+                    $2, $4, make_statements(LINENUM, NULL, NULL), $8);
             }
     |   DEF ID LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
-            { $$ = construct_node(ast_func_t, $2, $4, $7, $9); }
+            { $$ = make_func_def(LINENUM, $2, $4, $7, $9); }
     |   DEF ID LPAREN params RPAREN NEWLINE statements END
-            { $$ = construct_node(ast_func_t, $2, $4, $7, NULL); }
+            { $$ = make_func_def(LINENUM, $2, $4, $7, NULL); }
     |   DEF ID LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
-            { $$ = construct_node(
-                    ast_func_t, $2, $4,
-                    construct_node(ast_stmnts_t, NULL, NULL), $8
-                    );
+            { $$ = make_func_def(LINENUM,
+                    $2, $4, make_statements(LINENUM, NULL, NULL), $8);
             }
     |   DEF ID LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
-            { $$ = construct_node(ast_func_t, $2, $4, $7, $9); }
+            { $$ = make_func_def(LINENUM, $2, $4, $7, $9); }
     ;
 
 params:
-        ID      { $$ = construct_node(
-                        ast_list_t, NULL,
-                        construct_node(ast_string_t, $1)
-                        );
+        ID      { $$ = make_list_def(LINENUM, NULL,
+                        make_string_expr(LINENUM, $1));
                 }
     |   params COMMA ID
-                { $$ = construct_node(
-                        ast_list_t, $1,
-                        construct_node(ast_string_t, $3)
-                        );
+                { $$ = make_list_def(LINENUM,  $1,
+                        make_string_expr(LINENUM, $3));
                 }
     ;
 
 call:
         ID LPAREN empty_list RPAREN
-                { $$ = construct_node(ast_call_t, $1, $3); }
+                { $$ = make_func_call(LINENUM, $1, $3); }
     |   ID LPAREN list_items RPAREN
-                { $$ = construct_node(ast_call_t, $1, $3); }
+                { $$ = make_func_call(LINENUM, $1, $3); }
     ;
 
 list:
@@ -138,34 +130,34 @@ list:
     ;
 
 empty_list:
-    /* nothing */   { $$ = construct_node(ast_list_t, NULL, NULL); }
+    /* nothing */   { $$ = make_list_def(LINENUM, NULL, NULL); }
     ;
 
 list_items:
-        expr        { $$ = construct_node(ast_list_t, NULL, $1); }
-    |   list_items COMMA expr   { $$ = construct_node(ast_list_t, $1, $3); }
+        expr        { $$ = make_list_def(LINENUM, NULL, $1); }
+    |   list_items COMMA expr   { $$ = make_list_def(LINENUM, $1, $3); }
     ;
 
 list_index:
         expr LSQUARE expr RSQUARE
-                { $$ = construct_node(ast_listindex_t, $1, $3); }
+                { $$ = make_list_index(LINENUM, $1, $3); }
     ;
 
 while_loop:
         WHILE cond DO NEWLINE statements DONE
-                { $$ = construct_node(ast_while_t, $2, $5); }
+                { $$ = make_while_loop(LINENUM, $2, $5); }
     ;
 
 for_loop:
         FOR ID IN expr DO NEWLINE statements DONE
-                { $$ = construct_node(ast_for_t, $2, $4, $7); }
+                { $$ = make_for_loop(LINENUM, $2, $4, $7); }
     ;
 
 if_else:
         IF cond THEN NEWLINE statements END
-                { $$ = construct_node(ast_if_t, $2, $5, NULL); }
+                { $$ = make_if_else(LINENUM, $2, $5, NULL); }
     |   IF cond THEN NEWLINE statements ELSE NEWLINE statements END
-                { $$ = construct_node(ast_if_t, $2, $5, $8); }
+                { $$ = make_if_else(LINENUM, $2, $5, $8); }
     ;
 
 cond:
@@ -174,58 +166,55 @@ cond:
     ;
 
 expr:
-        INT                     { $$ = construct_node(ast_int_t, $1); }
-    |   FLOAT                   { $$ = construct_node(ast_float_t, $1); }
-    |   STRING                  { $$ = construct_node(ast_string_t, $1); }
-    |   ID                      { $$ = construct_node(ast_id_t, $1); }
+        INT                     { $$ = make_int_expr(LINENUM, $1); }
+    |   FLOAT                   { $$ = make_float_expr(LINENUM, $1); }
+    |   STRING                  { $$ = make_string_expr(LINENUM, $1); }
+    |   ID                      { $$ = make_id_expr(LINENUM, $1); }
     |   expr PLUS expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_add_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_add_t); }
     |   expr MINUS expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_sub_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_sub_t); }
     |   expr TIMES expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_mul_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_mul_t); }
     |   expr DIVIDE expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_div_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_div_t); }
     |   expr POW expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_pow_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_pow_t); }
     |   expr MOD expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_mod_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_mod_t); }
     |   expr LTHAN expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_lt_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_lt_t); }
     |   expr GTHAN expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_gt_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_gt_t); }
     |   expr NOTEQ expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_neq_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_neq_t); }
     |   expr EQUAL expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_eq_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_eq_t); }
     |   expr LTHEQ expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_lte_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_lte_t); }
     |   expr GTHEQ expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_gte_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_gte_t); }
     |   expr LGOR expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_lor_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_lor_t); }
     |   expr LGAND expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_land_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_land_t); }
     |   expr BWXOR expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_bxor_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_bxor_t); }
     |   expr BWOR expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_bor_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_bor_t); }
     |   expr BWAND expr
-                { $$ = construct_node(ast_expr_t, $1, $3, op_band_t); }
+                { $$ = make_binary_expr(LINENUM, $1, $3, op_band_t); }
     |   BWNOT expr %prec UBWNOT
-                { $$ = construct_node(ast_expr_t,
-                        construct_node(ast_int_t, 0), $2, op_bnot_t
-                        );
+                { $$ = make_binary_expr(LINENUM,
+                        make_int_expr(LINENUM, 0), $2, op_bnot_t);
                 }
     |   LGNOT expr %prec ULGNOT
-                { $$ = construct_node(ast_expr_t,
-                        construct_node(ast_int_t, 0), $2, op_lnot_t
-                        );
+                { $$ = make_binary_expr(LINENUM,
+                        make_int_expr(LINENUM, 0), $2, op_lnot_t);
                 }
     |   MINUS expr %prec UMINUS
-                { $$ = construct_node(ast_expr_t,
-                        construct_node(ast_int_t, 0), $2, op_sub_t
-                        );
+                { $$ = make_binary_expr(LINENUM,
+                        make_int_expr(LINENUM, 0), $2, op_sub_t);
                 }
     |   LPAREN expr RPAREN      { $$ = $2; }
     |   list_index              { $$ = $1; }
@@ -237,7 +226,6 @@ expr:
 
 void yyerror(const char *msg)
 {
-    fprintf(stderr, "Syntax Error: %s @ line #%d\n", msg, LINE_NUM);
-    /* exit(-1); */
+    die("Syntax Error: %s @ line #%d\n", msg, LINENUM);
 }
 

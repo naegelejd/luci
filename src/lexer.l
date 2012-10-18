@@ -5,7 +5,7 @@
 #include <string.h>
 #include "parser.tab.h"
 
-extern int LINE_NUM;
+extern int LINENUM;
 
 %}
 
@@ -31,9 +31,9 @@ WS	    [ \t\f\r]+
 [dD][eE][fF]            { return DEF; }
 [rR][eE][tT][uU][rR][nN]    { return RETURN; }
 
-^\n|{WS}\n	{ LINE_NUM++; /* ignore empty lines */ }
-\n	{ LINE_NUM++; return NEWLINE; }
-#.*\n	{ LINE_NUM++; } /* ignore one-line comments */
+^\n|{WS}\n	{ LINENUM++; /* ignore empty lines */ }
+\n	{ LINENUM++; return NEWLINE; }
+#.*\n	{ LINENUM++; } /* ignore one-line comments */
 {WS}	; /* ignore */
 
 {STRING}	{

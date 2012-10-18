@@ -24,124 +24,16 @@ const char *TYPE_NAMES[] = {
     "statements"
 };
 
-static AstNode *create_node(int type);
-static AstNode *make_int_expr(long);
-static AstNode *make_float_expr(double);
-static AstNode *make_string_expr(char *);
-static AstNode *make_id_expr(char *);
-static AstNode *make_binary_expr(AstNode *, AstNode *, int op);
-static AstNode *make_list_index(AstNode *, AstNode *);
-static AstNode *make_list_assignment(char *, AstNode *, AstNode *);
-static AstNode *make_list_def(AstNode *, AstNode *);
-static AstNode *make_assignment(char *, AstNode *);
-static AstNode *make_while_loop(AstNode *, AstNode *);
-static AstNode *make_for_loop(char *, AstNode *, AstNode *);
-static AstNode *make_if_else(AstNode *, AstNode *, AstNode *);
-static AstNode *make_func_call(char *, AstNode *);
-static AstNode *make_func_def(char *, AstNode *, AstNode *, AstNode *);
-static AstNode *make_statements(AstNode *, AstNode *);
+static AstNode *create_node(int lineno, int type);
 
 
-AstNode * construct_node(AstType atype, ... )
-{
-    AstNode *x = NULL, *y = NULL, *z = NULL;
-    AstNode *new = NULL;
-    int i;
-    long l;
-    double d;
-    char *s;
-
-    va_list args;
-
-    va_start(args, atype);
-
-    switch(atype) {
-        case ast_int_t:
-            l = va_arg(args, long);
-            new = make_int_expr(l);
-            break;
-        case ast_float_t:
-            d = va_arg(args, double);
-            new = make_float_expr(d);
-            break;
-        case ast_string_t:
-            s = va_arg(args, char *);
-            new = make_string_expr(s);
-            break;
-        case ast_id_t:
-            s = va_arg(args, char *);
-            new = make_id_expr(s);
-            break;
-        case ast_expr_t:
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            i = va_arg(args, int);
-            new = make_binary_expr(x, y, i);
-            break;
-        case ast_listindex_t:
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            new = make_list_index(x, y);
-            break;
-        case ast_listassign_t:
-            s = va_arg(args, char *);
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            new = make_list_assignment(s, x, y);
-            break;
-        case ast_list_t:
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            new = make_list_def(x, y);
-            break;
-        case ast_assign_t:
-            s = va_arg(args, char *);
-            x = va_arg(args, AstNode *);
-            new = make_assignment(s, x);
-            break;
-        case ast_while_t:
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            new = make_while_loop(x, y);
-            break;
-        case ast_for_t:
-            s = va_arg(args, char *);
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            new = make_for_loop(s, x, y);
-            break;
-        case ast_if_t:
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            z = va_arg(args, AstNode *);
-            new = make_if_else(x, y, z);
-            break;
-        case ast_call_t:
-            s = va_arg(args, char *);
-            x = va_arg(args, AstNode *);
-            new = make_func_call(s, x);
-            break;
-        case ast_func_t:
-            s = va_arg(args, char *);
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            z = va_arg(args, AstNode *);
-            new = make_func_def(s, x, y, z);
-            break;
-        case ast_stmnts_t:
-            x = va_arg(args, AstNode *);
-            y = va_arg(args, AstNode *);
-            new = make_statements(x, y);
-            break;
-        default:
-            /* va_end(args); */
-            die("Unknown AST Node type: %d", atype);
-    }
-
-    va_end(args);
-
+static AstNode *create_node(int lineno, int type) {
+    AstNode *new = alloc(sizeof(*new));
+    new->lineno = lineno;
+    new->type = type;
     return new;
 }
+
 
 void destroy_tree(AstNode *root)
 {
@@ -223,47 +115,42 @@ void destroy_tree(AstNode *root)
 }
 
 
-static AstNode *create_node(int type) {
-    AstNode *new = alloc(sizeof(*new));
-    new->type = type;
-    return new;
-}
-
-static AstNode *make_int_expr(long val)
+AstNode *make_int_expr(int lineno, long val)
 {
-    AstNode *result = create_node(ast_int_t);
+    AstNode *result = create_node(lineno, ast_int_t);
     result->data.i_val = val;
     yak("Made expression node from val %ld\n", val);
     return result;
 }
 
-static AstNode *make_float_expr(double val)
+AstNode *make_float_expr(int lineno, double val)
 {
-    AstNode *result = create_node(ast_float_t);
+    AstNode *result = create_node(lineno, ast_float_t);
     result->data.f_val = val;
     yak("Made expression node from val %f\n", val);
     return result;
 }
 
-static AstNode *make_string_expr(char *val)
+AstNode *make_string_expr(int lineno, char *val)
 {
-    AstNode *result = create_node(ast_string_t);
+    AstNode *result = create_node(lineno, ast_string_t);
     result->data.s_val = val;
     yak("Made expression node from string %s\n", val);
     return result;
 }
 
-static AstNode *make_id_expr(char *name)
+AstNode *make_id_expr(int lineno, char *name)
 {
-    AstNode *result = create_node(ast_id_t);
+    AstNode *result = create_node(lineno, ast_id_t);
     result->data.name = name;
     yak("Made expression node from id %s\n", name);
     return result;
 }
 
-static AstNode *make_binary_expr(AstNode *left, AstNode *right, int op)
+AstNode *make_binary_expr(int lineno, AstNode *left,
+        AstNode *right, int op)
 {
-    AstNode *result = create_node(ast_expr_t);
+    AstNode *result = create_node(lineno, ast_expr_t);
     result->data.expression.left = left;
     result->data.expression.right = right;
     result->data.expression.op = op;
@@ -271,18 +158,19 @@ static AstNode *make_binary_expr(AstNode *left, AstNode *right, int op)
     return result;
 }
 
-static AstNode *make_list_index(AstNode *list, AstNode *index)
+AstNode *make_list_index(int lineno, AstNode *list, AstNode *index)
 {
-    AstNode *result = create_node(ast_listindex_t);
+    AstNode *result = create_node(lineno, ast_listindex_t);
     result->data.listindex.list = list;
     result->data.listindex.index = index;
     yak("Made list index reference\n");
     return result;
 }
 
-static AstNode *make_list_assignment(char *id, AstNode *index, AstNode *right)
+AstNode *make_list_assignment(int lineno, char *id,
+        AstNode *index, AstNode *right)
 {
-    AstNode *result = create_node(ast_listassign_t);
+    AstNode *result = create_node(lineno, ast_listassign_t);
     result->data.listassign.name = id;
     result->data.listassign.index = index;
     result->data.listassign.right = right;
@@ -290,11 +178,11 @@ static AstNode *make_list_assignment(char *id, AstNode *index, AstNode *right)
     return result;
 }
 
-static AstNode *make_list_def(AstNode *result, AstNode *to_append)
+AstNode *make_list_def(int lineno, AstNode *result, AstNode *to_append)
 {
     if (!result)
     {
-        result = create_node(ast_list_t);
+        result = create_node(lineno, ast_list_t);
         result->data.list.size = AST_LIST_SIZE;
         result->data.list.items = alloc(result->data.list.size *
                 sizeof(*result->data.list.items));
@@ -313,18 +201,18 @@ static AstNode *make_list_def(AstNode *result, AstNode *to_append)
     return result;
 }
 
-static AstNode *make_assignment(char *id, AstNode *right)
+AstNode *make_assignment(int lineno, char *id, AstNode *right)
 {
-    AstNode *result = create_node(ast_assign_t);
+    AstNode *result = create_node(lineno, ast_assign_t);
     result->data.assignment.name = id;
     result->data.assignment.right = right;
     yak("Made assignment node to id: %s\n", id);
     return result;
 }
 
-static AstNode *make_while_loop(AstNode *cond, AstNode *statements)
+AstNode *make_while_loop(int lineno, AstNode *cond, AstNode *statements)
 {
-    AstNode *result = create_node(ast_while_t);
+    AstNode *result = create_node(lineno, ast_while_t);
     result->data.while_loop.cond = cond;
     result->data.while_loop.statements = statements;
     yak("Made while node containing %d stmts\n",
@@ -332,9 +220,10 @@ static AstNode *make_while_loop(AstNode *cond, AstNode *statements)
     return result;
 }
 
-static AstNode *make_for_loop(char *id, AstNode *list, AstNode *statements)
+AstNode *make_for_loop(int lineno, char *id,
+        AstNode *list, AstNode *statements)
 {
-    AstNode *result = create_node(ast_for_t);
+    AstNode *result = create_node(lineno, ast_for_t);
     result->data.for_loop.name = id;
     result->data.for_loop.list = list;
     result->data.for_loop.statements = statements;
@@ -343,9 +232,9 @@ static AstNode *make_for_loop(char *id, AstNode *list, AstNode *statements)
     return result;
 }
 
-static AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)
+AstNode *make_if_else(int lineno, AstNode *cond, AstNode *block1, AstNode *block2)
 {
-    AstNode *result = create_node(ast_if_t);
+    AstNode *result = create_node(lineno, ast_if_t);
     result->data.if_else.cond = cond;
     result->data.if_else.ifstatements = block1;
     result->data.if_else.elstatements = block2;
@@ -354,19 +243,19 @@ static AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)
     return result;
 }
 
-static AstNode *make_func_call(char *id, AstNode *arglist)
+AstNode *make_func_call(int lineno, char *id, AstNode *arglist)
 {
-    AstNode *result = create_node(ast_call_t);
+    AstNode *result = create_node(lineno, ast_call_t);
     result->data.call.name = id;
     result->data.call.arglist = arglist;
     yak("Made call node with name: %s\n", id);
     return result;
 }
 
-static AstNode *make_func_def(char *name, AstNode *param_list,
+AstNode *make_func_def(int lineno, char *name, AstNode *param_list,
         AstNode *statements, AstNode *return_expr)
 {
-    AstNode *result = create_node(ast_func_t);
+    AstNode *result = create_node(lineno, ast_func_t);
     result->data.func_def.name = name;
     result->data.func_def.param_list = param_list;
     result->data.func_def.statements = statements;
@@ -375,11 +264,11 @@ static AstNode *make_func_def(char *name, AstNode *param_list,
     return result;
 }
 
-static AstNode *make_statements(AstNode *list, AstNode *new)
+AstNode *make_statements(int lineno, AstNode *list, AstNode *new)
 {
     if (!list)
     {
-        list = create_node(ast_stmnts_t);
+        list = create_node(lineno, ast_stmnts_t);
         list->data.statements.count = 0;
         list->data.statements.size = AST_STMNTS_SIZE;
         list->data.statements.statements = alloc(

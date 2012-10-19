@@ -58,7 +58,7 @@ typedef struct
 
 typedef struct
 {
-    struct AstNode *name;
+    struct AstNode *list;
     struct AstNode *index;
     struct AstNode *right;
 } AstListAssign;
@@ -73,7 +73,7 @@ typedef struct
 {
     struct AstNode *list;
     struct AstNode *statements;
-    struct AstNode *name;
+    struct AstNode *iter;
 } AstForLoop;
 
 typedef struct
@@ -86,7 +86,7 @@ typedef struct
 typedef struct
 {
     struct AstNode *arglist;
-    struct AstNode *name;
+    struct AstNode *funcname;
 } AstFuncCall;
 
 typedef struct
@@ -94,7 +94,7 @@ typedef struct
     struct AstNode *param_list;
     struct AstNode *statements;
     struct AstNode *ret_expr;
-    struct AstNode *name;
+    struct AstNode *funcname;
 } AstFuncDef;
 
 typedef struct
@@ -114,7 +114,7 @@ typedef struct AstNode
         long i_val;
         double f_val;
         char *s_val;
-        char *name;
+        char *id_val;
 
         AstExpression expression;
         AstListIndex listindex;
@@ -125,7 +125,7 @@ typedef struct AstNode
         AstForLoop for_loop;
         AstIfElse if_else;
         AstFuncCall call;
-        AstFuncDef func_def;
+        AstFuncDef funcdef;
         AstStatements statements;
     } data;
 } AstNode;

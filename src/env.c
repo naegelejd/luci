@@ -9,22 +9,22 @@
 #include "functions.h"
 
 
-static struct LuciObject *dispatch_statement(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_int_expression(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_float_expression(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_string_expression(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_id_expression(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_bin_expression(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_list_index(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_list_assignment(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_list(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_assignment(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_while(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_for(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_if(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_call(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_func_def(ExecContext *e, struct AstNode *a);
-static struct LuciObject *exec_statement(ExecContext *e, struct AstNode *a);
+static LuciObject *dispatch_statement(ExecContext *e, AstNode *a);
+static LuciObject *exec_int_expression(ExecContext *e, AstNode *a);
+static LuciObject *exec_float_expression(ExecContext *e, AstNode *a);
+static LuciObject *exec_string_expression(ExecContext *e, AstNode *a);
+static LuciObject *exec_id_expression(ExecContext *e, AstNode *a);
+static LuciObject *exec_bin_expression(ExecContext *e, AstNode *a);
+static LuciObject *exec_list_index(ExecContext *e, AstNode *a);
+static LuciObject *exec_list_assignment(ExecContext *e, AstNode *a);
+static LuciObject *exec_list(ExecContext *e, AstNode *a);
+static LuciObject *exec_assignment(ExecContext *e, AstNode *a);
+static LuciObject *exec_while(ExecContext *e, AstNode *a);
+static LuciObject *exec_for(ExecContext *e, AstNode *a);
+static LuciObject *exec_if(ExecContext *e, AstNode *a);
+static LuciObject *exec_call(ExecContext *e, AstNode *a);
+static LuciObject *exec_func_def(ExecContext *e, AstNode *a);
+static LuciObject *exec_statement(ExecContext *e, AstNode *a);
 
 /**
   Lookup Array for AST nodes which yield values
@@ -110,8 +110,8 @@ static LuciObject *exec_string_expression(ExecContext *e, AstNode *a)
 static LuciObject *exec_id_expression(ExecContext *e, AstNode *a)
 {
     Symbol *s;
-    if (!(s = get_symbol(e, a->data.name))) {
-	die("Can't find symbol %s\n", a->data.name);
+    if (!(s = get_symbol(e, a->data.id_val))) {
+	die("Can't find symbol %s\n", a->data.id_val);
     }
     if (s->type == sym_bobj_t || s->type == sym_uobj_t)
     {
@@ -124,7 +124,7 @@ static LuciObject *exec_id_expression(ExecContext *e, AstNode *a)
 	}
 
 	/* else, return a copy of symbol's object */
-	yak("Found object symbol %s\n", a->data.name);
+	yak("Found object symbol %s\n", a->data.id_val);
 	/* return a reference to this symbol's value */
 	return reference_object(orig);
     }
@@ -200,24 +200,14 @@ static LuciObject *exec_list_assignment(struct ExecContext *e, struct AstNode *a
     destroy_object(index);
 
     LuciObject *right = dispatch_statement(e, a->data.listassign.right);
-
-    Symbol *s;
-    if (!(s = get_symbol(e, a->data.listassign.name)))
-    {
-	destroy_object(right);
-	die("List %s does not exist\n", a->data.listassign.name);
+    LuciObject *list = dispatch_statement(e, a->data.listassign.list);
+    if (!list || (list->type != obj_list_t)) {
+        destroy_object(right);
+        die("Can't index a non-list object in assignment\n");
     }
-    else
-    {
-	LuciObject *list = s->data.object;
-	if (!list || (list->type != obj_list_t)) {
-	    destroy_object(right);
-	    die("Can't index a non-list object in assignment\n");
-	}
-	/* put the new item in the list at the index */
-	/* this will also de-reference the item currently at the index */
-	list_set_object(list, right, idx);
-    }
+    /* put the new item in the list at the index */
+    /* this will also de-reference the item currently at the index */
+    list_set_object(list, right, idx);
 
     /* return an empty LuciObject * */
     return NULL;
@@ -250,12 +240,17 @@ static LuciObject *exec_assignment(struct ExecContext *e, struct AstNode *a)
        function return)
        or an object with refcount>=2 (the value of a symbol)
     */
+    AstNode *name = a->data.assignment.name;
     LuciObject *right = dispatch_statement(e, a->data.assignment.right);
-
     Symbol *s;
+    char *id;
 
-    if (!(s = add_symbol(e, a->data.assignment.name, sym_uobj_t))) {
-	die("Can't create symbol in assignment%s\n", a->data.assignment.name);
+    assert(name->type == ast_id_t);
+    id = name->data.id_val;
+
+    if (!(s = add_symbol(e, id, sym_uobj_t))) {
+        destroy_object(right);
+	die("Can't create symbol in assignment%s\n", id);
     }
     /* set the symbol's new payload */
     s->data.object = right;
@@ -302,7 +297,9 @@ static LuciObject *exec_for(struct ExecContext *e, struct AstNode *a)
     }
 
     /* create the symbol ahead of time if it doesn't exist */
-    const char *name = a->data.for_loop.name;
+    AstNode *iter = a->data.for_loop.iter;
+    assert(iter->type == ast_id_t);
+    const char *name = iter->data.id_val;
     Symbol *s;
 
     /* recycle the symbol if it exists or just make new*/
@@ -366,11 +363,22 @@ static LuciObject *exec_if(struct ExecContext *e, struct AstNode *a)
 */
 static LuciObject *exec_call(struct ExecContext *e, struct AstNode *a)
 {
-    yak("Calling %s\n", a->data.call.name);
+    AstNode *funcname = a->data.call.funcname;
+    assert(funcname->type == ast_id_t);
+    char *name = funcname->data.id_val;
 
+    yak("Calling %s\n", name);
+
+    /*
+     * Do a manual symbol lookup here because we need
+     * to check the type of the symbol.
+     *
+     * dispatch_xxx would call exec_id and simply
+     * return the symbol's payload
+     */
     Symbol *s;
-    if (!(s = get_symbol(e, a->data.call.name))) {
-	die("Invalid function name: %s\n", a->data.call.name);
+    if (!(s = get_symbol(e, name))) {
+	die("Invalid function name: %s\n", name);
     }
     if (s->type == sym_bfunc_t) {
 	LuciObject *arglist = dispatch_statement(e, a->data.call.arglist);
@@ -386,9 +394,11 @@ static LuciObject *exec_call(struct ExecContext *e, struct AstNode *a)
 	if (arglist->type != obj_list_t) {
 	    die("Malformed function arguments\n");
 	}
-	struct AstNode *func_node = s->data.user_defined;
-	char *func_name = func_node->data.func_def.name;
-	struct AstNode *param_list = func_node->data.func_def.param_list;
+	AstNode *func_node = s->data.user_defined;
+        AstNode *funcname = func_node->data.funcdef.funcname;
+	AstNode *param_list = func_node->data.funcdef.param_list;
+
+        char *func_name = funcname->data.id_val;
 
 	if (param_list->data.list.count != arglist->value.list.count) {
 	    die("Incorrect number of args to function %s\n", func_name);
@@ -411,13 +421,14 @@ static LuciObject *exec_call(struct ExecContext *e, struct AstNode *a)
 	}
 
 	/* execute the function's statements, using it's local ExecContext */
-	LuciObject *none = dispatch_statement(local, func_node->data.func_def.statements);
+	LuciObject *none = dispatch_statement(local,
+                func_node->data.funcdef.statements);
 	destroy_object(none);
 
 	/* execute the function's return expression */
 	LuciObject *ret;
-	if (func_node->data.func_def.ret_expr) {
-	    ret = dispatch_statement(local, func_node->data.func_def.ret_expr);
+	if (func_node->data.funcdef.ret_expr) {
+	    ret = dispatch_statement(local, func_node->data.funcdef.ret_expr);
 	} else {
 	    ret = NULL;
 	}
@@ -439,8 +450,9 @@ static LuciObject *exec_func_def(struct ExecContext *e, struct AstNode *a)
 {
     char *name;
     Symbol *s;
-
-    name = a->data.func_def.name;
+    AstNode *funcname = a->data.funcdef.funcname;
+    assert(funcname->type == ast_id_t);
+    name = funcname->data.id_val;
     yak("Defining function %s\n", name);
 
     if (!(s = add_symbol(e, name, sym_ufunc_t))) {

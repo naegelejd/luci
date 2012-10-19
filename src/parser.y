@@ -105,13 +105,9 @@ func_def:
     ;
 
 params:
-        id      { $$ = make_list_def(NULL,
-                        make_string_expr($1));
-                }
-    |   params COMMA id
-                { $$ = make_list_def( $1,
-                        make_string_expr($3));
-                }
+        ID      { $$ = make_list_def(NULL, make_string_expr($1)); }
+    |   params COMMA ID
+                { $$ = make_list_def($1, make_string_expr($3)); }
     ;
 
 call:

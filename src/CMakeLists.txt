@@ -11,6 +11,7 @@ add_executable(
     ${PROJECT_NAME}
     ${BISON_myparser_OUTPUTS}
     ${FLEX_myscanner_OUTPUTS}
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.c
     ${CMAKE_CURRENT_SOURCE_DIR}/common.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ast.c
     ${CMAKE_CURRENT_SOURCE_DIR}/env.c

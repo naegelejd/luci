@@ -23,7 +23,7 @@ static void cleanup(void)
 }
 
 
-int begin(int verbose, int graph, int execute)
+int begin(int verbose, int execute, int compile, int graph)
 {
     VERBOSE = verbose;
 
@@ -36,6 +36,9 @@ int begin(int verbose, int graph, int execute)
 
     if (!root_node)
         return EXIT_SUCCESS;
+
+    if (compile)
+        compile_ast(root_node);
 
     if (graph) {
         puts("digraph hierarchy {");

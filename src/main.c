@@ -12,6 +12,7 @@ static const char *options[] =
 {
     "-h",
     "-v",
+    "-c",
     "-g",
     "-V",
     0
@@ -39,6 +40,8 @@ int main(int argc, char *argv[])
 {
     /* initialize options */
     int verbose = 0;
+    int execute = 1;
+    int compile = 0;
     int graph = 0;
 
     if (argc < 2) {
@@ -51,15 +54,21 @@ int main(int argc, char *argv[])
 	    arg = argv[i];
             if (strcmp(arg, "-h") == 0) {
                 help();
-                exit(0);
+                goto finish;
             }
 	    if (strcmp(arg, "-v") == 0)
 		verbose = 1;
-            if (strcmp(arg, "-g") == 0)
+            if (strcmp(arg, "-c") == 0) {
+                compile = 1;
+                execute = 0;
+            }
+            if (strcmp(arg, "-g") == 0) {
                 graph = 1;
+                execute = 0;
+            }
 	    if (strcmp(arg, "-V") == 0) {
 		fprintf(stdout, "%s\n", version_string);
-		exit(0);
+                goto finish;
 	    }
 	}
 
@@ -75,9 +84,10 @@ int main(int argc, char *argv[])
 	}
     }
 
-    if (begin(verbose, graph, 1))
-        return EXIT_SUCCESS;
-    else
+    if (!(begin(verbose, execute, compile, graph)))
         return EXIT_FAILURE;
+
+finish:
+        return EXIT_SUCCESS;
 }
 

@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include "common.h"
 #include "ast.h"
+#include "compile.h"
 #include "env.h"
 
 extern yyparse();
@@ -37,8 +38,13 @@ int begin(int verbose, int execute, int compile, int graph)
     if (!root_node)
         return EXIT_SUCCESS;
 
-    if (compile)
-        compile_ast(root_node);
+    if (compile) {
+        Program *prog = compile_ast(root_node);
+        print_instructions(prog);
+        puts("");
+        eval(prog);
+        destroy_program(prog);
+    }
 
     if (graph) {
         puts("digraph hierarchy {");

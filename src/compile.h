@@ -5,25 +5,40 @@
 #include "common.h"     /* for LuciObject */
 
 typedef enum {
-    PUSH,
-    POP,
     CREATE,
     INCREF,
     DECREF,
     BINOP,
-    LOOKUP,
+    LOAD,
     STORE,
-    LABEL,
+    CALL,
     JUMPL,
     JUMPN,
-    TEST
+    TEST,
+    EXIT,
 } Opcode;
+
+
+typedef enum {
+    imm_long_t,
+    imm_double_t,
+    imm_string_t
+} ImmediateType;
+
+typedef struct {
+    ImmediateType t;
+    union {
+        long l;
+        double d;
+        char *s;
+    } v;
+} Immediate;
 
 typedef struct {
     Opcode opcode;
-    LuciObject *a;
-    LuciObject *b;
-    LuciObject *c;
+    Immediate *a;
+    Immediate *b;
+    Immediate *c;
 } Instruction;
 
 #define BASE_INSTR_COUNT 256
@@ -35,7 +50,9 @@ typedef struct {
 } Program;
 
 
-void compile_ast(AstNode *);
+Program * compile_ast(AstNode *);
 void eval(Program *);
+void destroy_program(Program *);
+void print_instructions(Program *prog);
 
 #endif

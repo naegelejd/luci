@@ -12,7 +12,7 @@ struct LuciObject *reference_object(struct LuciObject* orig);
 /* duplicates a LuciObject, creating a new one */
 struct LuciObject *copy_object(struct LuciObject* orig);
 
-/* destroys a LuciObject * */
+/* decrements object's refcount, and potentially destroys it */
 void destroy_object(struct LuciObject *trash);
 
 int list_append_object(struct LuciObject *list, struct LuciObject *item);

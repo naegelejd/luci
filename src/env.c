@@ -9,6 +9,11 @@
 #include "functions.h"
 
 
+static int destroy_symbol(struct Symbol *s, int force);
+static Symbol *add_symbol (ExecContext *e, char const *name, int type);
+static Symbol *get_symbol (ExecContext *e, const char *name);
+
+
 static LuciObject *dispatch_statement(ExecContext *e, AstNode *a);
 static LuciObject *exec_int_expression(ExecContext *e, AstNode *a);
 static LuciObject *exec_float_expression(ExecContext *e, AstNode *a);
@@ -492,7 +497,7 @@ void exec_AST(struct ExecContext *e, struct AstNode *a)
    This will will only delete builtin symbols
    if `force` is non-zero
 */
-int destroy_symbol(Symbol *s, int force)
+static int destroy_symbol(Symbol *s, int force)
 {
     if (!s) {
 	return 1;
@@ -544,7 +549,7 @@ int destroy_symbol(Symbol *s, int force)
    Only the symbol's name and type must be given. The caller
    is responsible for setting the symbol's data.
 */
-Symbol *add_symbol (struct ExecContext *e, char const *name, int type)
+static Symbol *add_symbol (struct ExecContext *e, char const *name, int type)
 {
     Symbol *new=NULL, *ptr=NULL, *prev=NULL;
 
@@ -606,7 +611,7 @@ Symbol *add_symbol (struct ExecContext *e, char const *name, int type)
    Searches for a symbol with a matching name in the
    symbol table of the specified Execution Context
 */
-Symbol *get_symbol (struct ExecContext *context, const char *name)
+static Symbol *get_symbol (struct ExecContext *context, const char *name)
 {
     Symbol *ptr;
     ExecContext *e = context;

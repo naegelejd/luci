@@ -56,6 +56,16 @@ IGNORE      ({WS}|;)+
                     COL += yyleng;
                     return INT;
                 }
+"True"          {
+                    yylval.int_v = 1;
+                    COL += yyleng;
+                    return INT;
+                }
+"False"         {
+                    yylval.int_v = 0;
+                    COL += yyleng;
+                    return INT;
+                }
 {WORD}		{ yylval.string_v = strdup(yytext);
                     COL += yyleng;
                     return ID;

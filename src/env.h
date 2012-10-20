@@ -18,10 +18,6 @@ typedef struct ExecContext
 /* executes an AST */
 void exec_AST(struct ExecContext* e, struct AstNode *root);
 
-int destroy_symbol(struct Symbol *s, int force);
-struct Symbol *add_symbol (ExecContext *e, char const *name, int type);
-struct Symbol *get_symbol (ExecContext *e, const char *name);
-
 /* creates the execution context */
 struct ExecContext* create_context(const char* name, struct ExecContext *parent);
 

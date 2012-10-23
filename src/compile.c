@@ -26,6 +26,7 @@ static char *instr_names[] = {
     "JUMPL",
     "JUMPN",
     "TEST",
+    "BUILD_LIST",
     "EXIT"
 };
 
@@ -146,12 +147,12 @@ static void _compile(AstNode *node, Program *prog)
             /* create a LuciObject list from the AstNode */
             yak("CREATE new list");
             /* push the new list object onto the stack */
-            /*
             for (i = 0; i < node->data.list.count; i++)
             {
                 _compile(node->data.list.items[i], prog);
             }
-            */
+            x = new_long_immediate(node->data.list.count);
+            add_instr(prog, BUILD_LIST, x, NULL, NULL);
             break;
         case ast_while_t:
             yak("LABEL while# begin");
@@ -381,6 +382,7 @@ void eval(Program *prog)
     st_init(&lstack);
 
     int ip = 0;
+    int i = 0;
 
     for(EVER) {
         instr = all_instr[ip++];
@@ -469,6 +471,15 @@ void eval(Program *prog)
                 x = st_pop(&lstack);    /* funcptr obj */
                 y = st_pop(&lstack);    /* arglist obj */
                 luci_print(y);
+                break;
+            case BUILD_LIST:
+                printf("Building list\n");
+                y = create_object(obj_list_t);
+                for (i = 0; i < a->v.l; i ++) {
+                    x = st_pop(&lstack);
+                    list_append_object(y, x);
+                }
+                st_push(&lstack, y);
                 break;
             case EXIT:
                 puts("EXIT");

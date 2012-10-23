@@ -15,6 +15,7 @@ typedef enum {
     JUMPL,
     JUMPN,
     TEST,
+    BUILD_LIST,
     EXIT,
 } Opcode;
 

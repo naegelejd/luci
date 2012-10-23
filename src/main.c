@@ -32,7 +32,13 @@ static int is_option(const char *arg)
 
 static void help()
 {
-    puts("\nHELP\n");
+    puts("Usage: luci [options] filename\n");
+    puts("Options:");
+    puts("    -h\t\tShow help and exit");
+    puts("    -v\t\tVerbose mode");
+    puts("    -g\t\tPrint a Graphviz dot spec for the parsed AST");
+    puts("    -c\t\tCompile the source to bytecode (dev)");
+    printf("\n%s\n", version_string);
 }
 
 
@@ -43,6 +49,8 @@ int main(int argc, char *argv[])
     int execute = 1;
     int compile = 0;
     int graph = 0;
+
+    char *infilename = NULL;
 
     if (argc < 2) {
 	yyin = stdin;
@@ -56,33 +64,32 @@ int main(int argc, char *argv[])
                 help();
                 goto finish;
             }
-	    if (strcmp(arg, "-v") == 0)
+            else if (strcmp(arg, "-v") == 0)
 		verbose = 1;
-            if (strcmp(arg, "-c") == 0) {
+            else if (strcmp(arg, "-c") == 0) {
                 compile = 1;
                 execute = 0;
             }
-            if (strcmp(arg, "-g") == 0) {
+            else if (strcmp(arg, "-g") == 0) {
                 graph = 1;
                 execute = 0;
             }
-	    if (strcmp(arg, "-V") == 0) {
+            else if (strcmp(arg, "-V") == 0) {
 		fprintf(stdout, "%s\n", version_string);
                 goto finish;
 	    }
-	}
-
-	char *filename = argv[i-1];
-	if (!is_option(filename)) {
-	    if (!(yyin = fopen(filename, "r"))) {
-		fprintf(stderr, "Error: Can't open file %s\n", filename);
-		exit(1);
-	    }
-	}
-	else {
-	    yyin = stdin;
+            else if (i == (argc - 1))
+                infilename = arg;
+            else
+                die("Invalid options: %s\n", arg);
 	}
     }
+
+    if (infilename == NULL)
+        yyin = stdin;
+    else if (!(yyin = fopen(infilename, "r")))
+        die("Can't read from file %s\n", infilename);
+    yak("Reading from %s\n", infilename? infilename : "stdin");
 
     if (!(begin(verbose, execute, compile, graph)))
         return EXIT_FAILURE;

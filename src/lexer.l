@@ -34,6 +34,8 @@ IGNORE      ({WS}|;)+
 [eE][lL][sS][eE]	    { COL += yyleng; return ELSE; }
 [eE][nN][dD]		    { COL += yyleng; return END; }
 [dD][eE][fF]                { COL += yyleng; return DEF; }
+[bB][rR][eE][aA][kK]        { COL += yyleng; return BREAK; }
+[cC][oO][nN][tT][iI][nN][uU][eE]    { COL += yyleng; return CONTINUE; }
 [rR][eE][tT][uU][rR][nN]    { COL += yyleng; return RETURN; }
 
 ^\n|{IGNORE}\n	{ LINE++; COL = 1; /* ignore empty lines */ }

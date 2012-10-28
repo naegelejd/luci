@@ -23,11 +23,14 @@ typedef enum {
     ast_call_t,
     ast_func_t,
     ast_stmnts_t,
+    ast_break_t,
+    ast_continue_t,
+    ast_return_t,
     ast_last_t
 } AstType;
 
 /* for verbosity */
-const char *NTYPES[15];
+const char *NTYPES[18];
 
 struct AstNode;
 
@@ -104,6 +107,11 @@ typedef struct
     struct AstNode ** statements;
 } AstStatements;
 
+typedef struct
+{
+    struct AstNode *expr;
+} AstReturn;
+
 typedef struct AstNode
 {
     AstType type;
@@ -127,6 +135,7 @@ typedef struct AstNode
         AstFuncCall call;
         AstFuncDef funcdef;
         AstStatements statements;
+        AstReturn return_stmt;
     } data;
 } AstNode;
 
@@ -147,6 +156,9 @@ AstNode *make_if_else(AstNode *, AstNode *, AstNode *);
 AstNode *make_func_call(AstNode *, AstNode *);
 AstNode *make_func_def(AstNode *, AstNode *, AstNode *, AstNode *);
 AstNode *make_statements(AstNode *, AstNode *);
+AstNode *make_break();
+AstNode *make_continue();
+AstNode *make_return(AstNode *);
 
 int print_ast_graph(AstNode *root, int);
 

@@ -30,6 +30,9 @@ static LuciObject *exec_if(ExecContext *e, AstNode *a);
 static LuciObject *exec_call(ExecContext *e, AstNode *a);
 static LuciObject *exec_func_def(ExecContext *e, AstNode *a);
 static LuciObject *exec_statement(ExecContext *e, AstNode *a);
+static LuciObject *exec_break(ExecContext *e, AstNode *a);
+static LuciObject *exec_continue(ExecContext *e, AstNode *a);
+static LuciObject *exec_return(ExecContext *e, AstNode *a);
 
 /**
   Lookup Array for AST nodes which yield values
@@ -51,6 +54,9 @@ static LuciObject * (*exec_lookup[])(ExecContext *e, AstNode *a) =
     exec_call,
     exec_func_def,
     exec_statement,
+    exec_break,
+    exec_continue,
+    exec_return,
 };
 
 /* Calls the corresponding handler function for the type
@@ -481,6 +487,22 @@ static LuciObject *exec_statement(struct ExecContext *e, struct AstNode *a)
 	none = dispatch_statement(e, a->data.statements.statements[i]);
 	destroy_object(none);
     }
+    return NULL;
+}
+
+
+static LuciObject *exec_break(ExecContext *e, AstNode *a)
+{
+    return NULL;
+}
+
+static LuciObject *exec_continue(ExecContext *e, AstNode *a)
+{
+    return NULL;
+}
+
+static LuciObject *exec_return(ExecContext *e, AstNode *a)
+{
     return NULL;
 }
 

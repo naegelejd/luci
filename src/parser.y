@@ -28,7 +28,7 @@ void yyerror(const char *msg);
 
 %type <node> expr id cond call assignment statement statements
 %type <node> while_loop for_loop if_else
-%type <node> func_def params
+%type <node> func_def params return
 %type <node> empty_list list_items list_index list
 %type <node> program
 
@@ -38,6 +38,7 @@ void yyerror(const char *msg);
 
 %token NEWLINE COMMA
 %token WHILE FOR IN DO DONE
+%token BREAK CONTINUE
 %token IF THEN ELSE END
 %token DEF RETURN
 
@@ -76,6 +77,9 @@ statement:
     |   while_loop          { $$ = $1; }
     |   for_loop            { $$ = $1; }
     |   if_else             { $$ = $1; }
+    |   return              { $$ = $1; }
+    |   BREAK               { $$ = make_break(); }
+    |   CONTINUE            { $$ = make_continue(); }
     ;
 
 assignment:
@@ -103,6 +107,8 @@ func_def:
     |   DEF id LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
             { $$ = make_func_def($2, $4, $7, $9); }
     ;
+
+return:     RETURN expr     { $$ = make_return($2); };
 
 params:
         ID      { $$ = make_list_def(NULL, make_string_expr($1)); }

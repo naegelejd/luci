@@ -21,7 +21,10 @@ const char *TYPE_NAMES[] = {
     "if else",
     "function call",
     "function definition",
-    "statements"
+    "statements",
+    "break",
+    "continue",
+    "return"
 };
 
 static AstNode *create_node(int type);
@@ -292,6 +295,23 @@ AstNode *make_statements(AstNode *list, AstNode *new)
         yak("Added a new statement\n");
     }
     return list;
+}
+
+AstNode *make_break()
+{
+    return create_node(ast_break_t);
+}
+
+AstNode *make_continue()
+{
+    return create_node(ast_continue_t);
+}
+
+AstNode *make_return(AstNode *expr)
+{
+    AstNode *ret = create_node(ast_return_t);
+    ret->data.return_stmt.expr = expr;
+    return ret;
 }
 
 

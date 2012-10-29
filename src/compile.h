@@ -2,6 +2,7 @@
 #define COMPILE_H
 
 #include "ast.h"        /* for AstNode */
+#include "symbol.h"     /* for Symbol Table */
 #include "common.h"     /* for LuciObject */
 
 typedef enum {
@@ -48,6 +49,8 @@ typedef struct {
     int count;
     int size;
     Instruction **instructions;
+    SymbolTable *symtable;
+    /* ConstantTable *constants; */
 } Program;
 
 

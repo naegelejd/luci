@@ -7,9 +7,7 @@
 
 
 const char *TYPE_NAMES[] = {
-    "int",
-    "float",
-    "string",
+    "constant",
     "id",
     "expr",
     "list index",
@@ -39,106 +37,26 @@ static AstNode *create_node(int type) {
 }
 
 
-void destroy_tree(AstNode *root)
+AstNode *make_int_constant(long val)
 {
-    /* don't free a NULL statement */
-    if (!root)
-        return;
-
-    int i;
-    switch (root->type)
-    {
-        case ast_stmnts_t:
-            for (i = 0; i < root->data.statements.count; i++)
-            {
-                destroy_tree(root->data.statements.statements[i]);
-            }
-            free(root->data.statements.statements);
-            break;
-        case ast_func_t:
-            destroy_tree(root->data.funcdef.funcname);
-            destroy_tree(root->data.funcdef.param_list);
-            destroy_tree(root->data.funcdef.statements);
-            destroy_tree(root->data.funcdef.ret_expr);
-            break;
-        case ast_list_t:
-            for (i = 0; i < root->data.list.count; i++)
-            {
-                destroy_tree(root->data.list.items[i]);
-            }
-            free(root->data.list.items);
-            break;
-        case ast_while_t:
-            destroy_tree(root->data.while_loop.cond);
-            destroy_tree(root->data.while_loop.statements);
-            break;
-        case ast_for_t:
-            destroy_tree(root->data.for_loop.list);
-            destroy_tree(root->data.for_loop.statements);
-            destroy_tree(root->data.for_loop.iter);
-            break;
-        case ast_if_t:
-            destroy_tree(root->data.if_else.cond);
-            destroy_tree(root->data.if_else.ifstatements);
-            destroy_tree(root->data.if_else.elstatements);
-            break;
-        case ast_assign_t:
-            destroy_tree(root->data.assignment.right);
-            destroy_tree(root->data.assignment.name);
-            break;
-        case ast_call_t:
-            destroy_tree(root->data.call.arglist);
-            destroy_tree(root->data.call.funcname);
-            break;
-        case ast_listindex_t:
-            destroy_tree(root->data.listindex.list);
-            destroy_tree(root->data.listindex.index);
-            break;
-        case ast_listassign_t:
-            destroy_tree(root->data.listassign.index);
-            destroy_tree(root->data.listassign.right);
-            destroy_tree(root->data.listassign.list);
-            break;
-        case ast_expr_t:
-            destroy_tree(root->data.expression.left);
-            destroy_tree(root->data.expression.right);
-            break;
-        case ast_id_t:
-            free(root->data.id_val);
-            break;
-        case ast_string_t:
-            free(root->data.s_val);
-            break;
-        default:
-            break;
-    }
-    /* for all nodes */
-    yak("Deleting %s\n", TYPE_NAMES[root->type]);
-    free(root);
-    return;
-}
-
-
-AstNode *make_int_expr(long val)
-{
-    AstNode *result = create_node(ast_int_t);
-    result->data.i_val = val;
+    AstNode *result = create_node(ast_constant_t);
+    result->data.constant.val.i = val;
     yak("Made expression node from val %ld\n", val);
     return result;
 }
 
-AstNode *make_float_expr(double val)
+AstNode *make_float_constant(double val)
 {
-    AstNode *result = create_node(ast_float_t);
-    result->data.f_val = val;
+    AstNode *result = create_node(ast_constant_t);
+    result->data.constant.val.f = val;
     yak("Made expression node from val %f\n", val);
     return result;
 }
 
-AstNode *make_string_expr(char *val)
+AstNode *make_string_constant(char *val)
 {
-    AstNode *result = create_node(ast_string_t);
-    result->data.s_val = val;
+    AstNode *result = create_node(ast_constant_t);
+    result->data.constant.val.s = val;
     yak("Made expression node from string %s\n", val);
     return result;
 }
@@ -146,7 +64,7 @@ AstNode *make_string_expr(char *val)
 AstNode *make_id_expr(char *name)
 {
     AstNode *result = create_node(ast_id_t);
-    result->data.id_val = name;
+    result->data.id.val = name;
     yak("Made expression node from id %s\n", name);
     return result;
 }
@@ -257,13 +175,12 @@ AstNode *make_func_call(AstNode *name, AstNode *arglist)
 }
 
 AstNode *make_func_def(AstNode *name, AstNode *param_list,
-        AstNode *statements, AstNode *return_expr)
+        AstNode *statements)
 {
     AstNode *result = create_node(ast_func_t);
     result->data.funcdef.funcname = name;
     result->data.funcdef.param_list = param_list;
     result->data.funcdef.statements = statements;
-    result->data.funcdef.ret_expr = return_expr;
     yak("Made function definition node with name\n", name);
     return result;
 }
@@ -344,8 +261,6 @@ int print_ast_graph(AstNode *root, int id)
             id = print_ast_graph(root->data.funcdef.param_list, id);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.funcdef.statements, id);
-            printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.funcdef.ret_expr, id);
             break;
         case ast_list_t:
             printf("%d [label=\"list\"]\n", rID);
@@ -421,21 +336,109 @@ int print_ast_graph(AstNode *root, int id)
             id = print_ast_graph(root->data.expression.right, id);
             break;
         case ast_id_t:
-            printf("%d [label=\"ID: %s\"]\n", rID, root->data.id_val);
+            printf("%d [label=\"ID: %s\"]\n", rID, root->data.id.val);
             break;
-        case ast_string_t:
-            printf("%d [label=\"string: %s\"]\n", rID, root->data.s_val);
-            break;
-        case ast_int_t:
-            printf("%d [label=\"int: %ld\"]\n", rID, root->data.i_val);
-            break;
-        case ast_float_t:
-            printf("%d [label=\"float: %g\"]\n", rID, root->data.f_val);
+        case ast_constant_t:
+            switch (root->data.constant.type) {
+                case co_string_t:
+                    printf("%d [label=\"string: %s\"]\n", rID,
+                            root->data.constant.val.s);
+                    break;
+                case co_int_t:
+                    printf("%d [label=\"int: %ld\"]\n", rID,
+                            root->data.constant.val.i);
+                    break;
+                case co_float_t:
+                    printf("%d [label=\"float: %g\"]\n", rID,
+                            root->data.constant.val.f);
+                    break;
+                default:
+                    die("Bad constant type\n");
+            }
             break;
         default:
             break;
     }
 
     return id;
+}
+
+void destroy_tree(AstNode *root)
+{
+    /* don't free a NULL statement */
+    if (!root)
+        return;
+
+    int i;
+    switch (root->type)
+    {
+        case ast_stmnts_t:
+            for (i = 0; i < root->data.statements.count; i++)
+            {
+                destroy_tree(root->data.statements.statements[i]);
+            }
+            free(root->data.statements.statements);
+            break;
+        case ast_func_t:
+            destroy_tree(root->data.funcdef.funcname);
+            destroy_tree(root->data.funcdef.param_list);
+            destroy_tree(root->data.funcdef.statements);
+            break;
+        case ast_list_t:
+            for (i = 0; i < root->data.list.count; i++)
+            {
+                destroy_tree(root->data.list.items[i]);
+            }
+            free(root->data.list.items);
+            break;
+        case ast_while_t:
+            destroy_tree(root->data.while_loop.cond);
+            destroy_tree(root->data.while_loop.statements);
+            break;
+        case ast_for_t:
+            destroy_tree(root->data.for_loop.list);
+            destroy_tree(root->data.for_loop.statements);
+            destroy_tree(root->data.for_loop.iter);
+            break;
+        case ast_if_t:
+            destroy_tree(root->data.if_else.cond);
+            destroy_tree(root->data.if_else.ifstatements);
+            destroy_tree(root->data.if_else.elstatements);
+            break;
+        case ast_assign_t:
+            destroy_tree(root->data.assignment.right);
+            destroy_tree(root->data.assignment.name);
+            break;
+        case ast_call_t:
+            destroy_tree(root->data.call.arglist);
+            destroy_tree(root->data.call.funcname);
+            break;
+        case ast_listindex_t:
+            destroy_tree(root->data.listindex.list);
+            destroy_tree(root->data.listindex.index);
+            break;
+        case ast_listassign_t:
+            destroy_tree(root->data.listassign.index);
+            destroy_tree(root->data.listassign.right);
+            destroy_tree(root->data.listassign.list);
+            break;
+        case ast_expr_t:
+            destroy_tree(root->data.expression.left);
+            destroy_tree(root->data.expression.right);
+            break;
+        case ast_id_t:
+            free(root->data.id.val);
+            break;
+        case ast_constant_t:
+            if (root->data.constant.type == co_string_t)
+                free(root->data.constant.val.s);
+            break;
+        default:
+            break;
+    }
+    /* for all nodes */
+    yak("Deleting %s\n", TYPE_NAMES[root->type]);
+    free(root);
+    return;
 }
 

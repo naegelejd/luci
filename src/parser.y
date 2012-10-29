@@ -91,29 +91,17 @@ assignment:
 
 func_def:
         DEF id LPAREN empty_list RPAREN NEWLINE statements END
-            { $$ = make_func_def($2, $4, $7, NULL); }
-    |   DEF id LPAREN empty_list RPAREN NEWLINE RETURN expr NEWLINE END
-            { $$ = make_func_def(
-                    $2, $4, make_statements(NULL, NULL), $8);
-            }
-    |   DEF id LPAREN empty_list RPAREN NEWLINE statements RETURN expr NEWLINE END
-            { $$ = make_func_def($2, $4, $7, $9); }
+            { $$ = make_func_def($2, $4, $7); }
     |   DEF id LPAREN params RPAREN NEWLINE statements END
-            { $$ = make_func_def($2, $4, $7, NULL); }
-    |   DEF id LPAREN params RPAREN NEWLINE RETURN expr NEWLINE END
-            { $$ = make_func_def(
-                    $2, $4, make_statements(NULL, NULL), $8);
-            }
-    |   DEF id LPAREN params RPAREN NEWLINE statements RETURN expr NEWLINE END
-            { $$ = make_func_def($2, $4, $7, $9); }
+            { $$ = make_func_def($2, $4, $7); }
     ;
 
 return:     RETURN expr     { $$ = make_return($2); };
 
 params:
-        ID      { $$ = make_list_def(NULL, make_string_expr($1)); }
+        ID      { $$ = make_list_def(NULL, make_string_constant($1)); }
     |   params COMMA ID
-                { $$ = make_list_def($1, make_string_expr($3)); }
+                { $$ = make_list_def($1, make_string_constant($3)); }
     ;
 
 call:
@@ -168,9 +156,9 @@ id:     ID                      { $$ = make_id_expr($1); }
     ;
 
 expr:
-        INT                     { $$ = make_int_expr($1); }
-    |   FLOAT                   { $$ = make_float_expr($1); }
-    |   STRING                  { $$ = make_string_expr($1); }
+        INT                     { $$ = make_int_constant($1); }
+    |   FLOAT                   { $$ = make_float_constant($1); }
+    |   STRING                  { $$ = make_string_constant($1); }
     |   id                      { $$ = $1; }
     |   expr PLUS expr
                 { $$ = make_binary_expr($1, $3, op_add_t); }
@@ -208,15 +196,15 @@ expr:
                 { $$ = make_binary_expr($1, $3, op_band_t); }
     |   BWNOT expr %prec UBWNOT
                 { $$ = make_binary_expr(
-                        make_int_expr(0), $2, op_bnot_t);
+                        make_int_constant(0), $2, op_bnot_t);
                 }
     |   LGNOT expr %prec ULGNOT
                 { $$ = make_binary_expr(
-                        make_int_expr(0), $2, op_lnot_t);
+                        make_int_constant(0), $2, op_lnot_t);
                 }
     |   MINUS expr %prec UMINUS
                 { $$ = make_binary_expr(
-                        make_int_expr(0), $2, op_sub_t);
+                        make_int_constant(0), $2, op_sub_t);
                 }
     |   LPAREN expr RPAREN      { $$ = $2; }
     |   list_index              { $$ = $1; }

@@ -6,6 +6,7 @@
 
 *.tab.*
 *.yy.*
+*.output
 
 bin/
 build/*

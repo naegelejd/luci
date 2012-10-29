@@ -1,22 +1,7 @@
 #ifndef FUNCTIONS_H
 #define FUNCTIONS_H
 
-struct LuciObject;
-
-/* creates and initializes a new LuciObject */
-struct LuciObject *create_object(int type);
-
-/* incrementes the object's refcount and returns it */
-struct LuciObject *reference_object(struct LuciObject* orig);
-
-/* duplicates a LuciObject, creating a new one */
-struct LuciObject *copy_object(struct LuciObject* orig);
-
-/* decrements object's refcount, and potentially destroys it */
-void destroy_object(struct LuciObject *trash);
-
-int list_append_object(struct LuciObject *list, struct LuciObject *item);
-struct LuciObject *list_get_object(struct LuciObject *list, int index);
+#include "object.h"
 
 struct func_def
 {

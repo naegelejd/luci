@@ -4,7 +4,9 @@
 #include "common.h"
 #include "ast.h"
 #include "compile.h"
+/*
 #include "env.h"
+*/
 
 extern yyparse();
 extern yydebug();
@@ -12,13 +14,17 @@ extern yydebug();
 static int VERBOSE = 0;
 
 static struct AstNode *root_node = NULL;
+/*
 static struct ExecContext *root_env = NULL;
+*/
 
 
 static void cleanup(void)
 {
+    /*
     if (root_env)
         destroy_context(root_env);
+    */
     if(root_node)
         destroy_tree(root_node);
 }
@@ -53,11 +59,13 @@ int begin(int verbose, int execute, int compile, int graph)
         puts("}");
     }
 
+    /*
     if (execute) {
 	root_env = create_context("global", NULL);
 	initialize_context(root_env);
 	exec_AST(root_env, root_node);
     }
+    */
 
     /* destroy the AST and the ExecEnviron */
     cleanup();
@@ -66,10 +74,12 @@ int begin(int verbose, int execute, int compile, int graph)
 }
 
 /* provide read-only access to the root of the AST */
+/*
 struct ExecContext *get_root_env()
 {
     return root_env;
 }
+*/
 
 /*  Safely allocate memory, and quit on failure */
 void *alloc(size_t size)

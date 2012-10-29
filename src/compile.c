@@ -1,19 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "compile.h"
 #include "common.h"
+#include "object.h"
+#include "compile.h"
+#include "ast.h"
+#include "symbol.h"
 #include "functions.h"
 #include "stack.h"
-#include "ast.h"
 
 static void _compile(AstNode *, Program *);
 static void add_instr(Program *, Opcode,
         Immediate *, Immediate *, Immediate *);
-
-static int destroy_symbol(Symbol *s, int force);
-static Symbol *add_symbol (Symbol *head, char const *name, int type);
-static Symbol *get_symbol (Symbol *head, const char *name);
 
 static char *instr_names[] = {
     "CREATE",
@@ -45,6 +43,7 @@ Program * compile_ast(AstNode *root)
     prog->count = 0;
     prog->size = BASE_INSTR_COUNT;
     prog->instructions = alloc(prog->size * sizeof(*(prog->instructions)));
+    prog->symtable = symtable_new(0xFFF);
 
     /* compile the AST */
     _compile(root, prog);
@@ -64,6 +63,7 @@ void destroy_program(Program *prog)
         free(instructions[i]);
     }
     free(prog->instructions);
+    symtable_delete(prog->symtable);
     free(prog);
 }
 
@@ -139,7 +139,6 @@ static void _compile(AstNode *node, Program *prog)
             yak("PUSH params");
             _compile(node->data.funcdef.param_list, prog);
             _compile(node->data.funcdef.statements, prog);
-            _compile(node->data.funcdef.ret_expr, prog);
             yak("STORE func->funcname in symtable");
             _compile(node->data.funcdef.funcname, prog);
             break;
@@ -179,7 +178,7 @@ static void _compile(AstNode *node, Program *prog)
             _compile(node->data.assignment.name, prog);
             add_instr(prog, DECREF, NULL, NULL, NULL);
             tmp = node->data.assignment.name;
-            x = new_string_immediate(tmp->data.id_val);
+            x = new_string_immediate(tmp->data.id.val);
             add_instr(prog, STORE, x, NULL, NULL);
             yak("DECREF (sp) if not NULL");
             yak("STORE (--sp) (sp++)");
@@ -214,148 +213,38 @@ static void _compile(AstNode *node, Program *prog)
             yak("OP (--sp) (--sp)"); /* push result ! */
             break;
         case ast_id_t:
-            x = new_string_immediate(node->data.id_val);
+            x = new_string_immediate(node->data.id.val);
             add_instr(prog, LOAD, x, NULL, NULL);
-            yak("LOAD %s\n", node->data.id_val);
-            yak("PUSH &%s\n", node->data.id_val);
+            yak("LOAD %s\n", node->data.id.val);
+            yak("PUSH &%s\n", node->data.id.val);
             break;
-        case ast_string_t:
-            x = new_string_immediate(node->data.s_val);
-            add_instr(prog, CREATE, x, NULL, NULL);
-            yak("CREATE new \"%s\"\n", node->data.s_val);
-            yak("PUSH &new\n");
-            break;
-        case ast_float_t:
-            x = new_double_immediate(node->data.f_val);
-            add_instr(prog, CREATE, x, NULL, NULL);
-            yak("CREATE new %g\n", node->data.f_val);
-            yak("PUSH &new\n");
-            break;
-        case ast_int_t:
-            x = new_long_immediate(node->data.i_val);
-            add_instr(prog, CREATE, x, NULL, NULL);
-            yak("CREATE new %ld\n", node->data.i_val);
-            yak("PUSH &new\n");
-            break;
-        default:
+        case ast_constant_t:
+            switch (node->data.constant.type) {
+                case co_string_t:
+                    x = new_string_immediate(node->data.constant.val.s);
+                    add_instr(prog, CREATE, x, NULL, NULL);
+                    yak("CREATE new \"%s\"\n", node->data.constant.val.s);
+                    yak("PUSH &new\n");
+                    break;
+                case co_float_t:
+                    x = new_double_immediate(node->data.constant.val.f);
+                    add_instr(prog, CREATE, x, NULL, NULL);
+                    yak("CREATE new %g\n", node->data.constant.val.f);
+                    yak("PUSH &new\n");
+                    break;
+                case co_int_t:
+                    x = new_long_immediate(node->data.constant.val.i);
+                    add_instr(prog, CREATE, x, NULL, NULL);
+                    yak("CREATE new %ld\n", node->data.constant.val.i);
+                    yak("PUSH &new\n");
+                    break;
+                default:
+                    die("Bad constant type\n");
+            }
             break;
     }
 
     return;
-}
-
-/*
-   Searches for a symbol with a matching name in the
-   symbol table of the specified Execution Context
-*/
-static Symbol *get_symbol (Symbol *head, const char *name)
-{
-    Symbol *ptr;
-    for (ptr = head; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next)
-        if (strcmp (ptr->name, name) == 0)
-            return ptr;
-
-    return 0;
-}
-
-/*
-   Adds a new symbol to the symbol table of the specified
-   Execution Context, returning a pointer to the new symbol.
-
-   Only the symbol's name and type must be given. The caller
-   is responsible for setting the symbol's data.
-*/
-static Symbol *add_symbol (Symbol *head, char const *name, int type)
-{
-    Symbol *new=NULL, *ptr=NULL, *prev=NULL;
-
-    /* Create New Symbol */
-    yak("creating new symbol %s\n", name);
-    new = (Symbol *) alloc (sizeof (Symbol));
-    new->name = (char *) alloc (strlen (name) + 1);
-    strcpy (new->name, name);
-    new->type = type;
-
-    yak("searching for symbol %s\n", name);
-    /* First, do a search for the symbol */
-    for (ptr = head, prev = NULL;
-            ptr != (Symbol *) NULL;
-            prev = ptr, ptr = ptr->next) {
-
-	/* if we find the symbol */
-	if (strcmp (ptr->name, name) == 0) {
-	    yak("found existing symbol %s\n", name);
-	    /* maintain the linked list by pointing the previous symbol
-             * to the next
-             */
-	    if (prev)
-		prev->next = ptr->next;
-	    else
-		head = ptr->next;
-	    /* free the symbol's memory */
-	    if (!(destroy_symbol(ptr, 0))) {
-		return 0;
-	    }
-	}
-    }
-
-    if (prev) {
-        /* append new to the end of the symbol table */
-        prev->next = new;
-        new->next = NULL;
-    }
-
-    /* caller must explicitly set the data (payload) */
-    return new;
-}
-
-/* destroys the memory used by Symbol *s
-   This will will only delete builtin symbols
-   if `force` is non-zero
-*/
-static int destroy_symbol(Symbol *s, int force)
-{
-    if (!s) {
-	return 1;
-    }
-
-    /* TODO: this should close any open file pointers...
-       if a symbol points to a FILE object and the user
-       wants to point the symbol to something else, it would
-       be nice for the file pointer to be closed
-    */
-
-    /* destroy the symbol's name */
-    yak("destroying symbol %s (type %d)\n", s->name, s->type);
-    free(s->name);
-    /* destroy the symbol's payload */
-    switch (s->type)
-    {
-	case sym_bobj_t:
-	    if (!force) {
-		return 0;
-	    }
-	    /* else, destroy object */
-	    destroy_object(s->data.object);
-	    break;
-	case sym_bfunc_t:
-	    if (!force) {
-		return 0;
-	    }
-	    break;
-	case sym_uobj_t:
-	    destroy_object(s->data.object);
-	    break;
-	case sym_ufunc_t:
-	    break;
-	default:
-	    ;
-    }
-    /* destroy the symbol (struct) */
-    free(s);
-    s = NULL;
-    /* return success */
-    return 1;
 }
 
 void print_instructions(Program *prog)

@@ -8,9 +8,7 @@
 #define AST_STMNTS_SIZE 32
 
 typedef enum {
-    ast_int_t,
-    ast_float_t,
-    ast_string_t,
+    ast_constant_t,
     ast_id_t,
     ast_expr_t,
     ast_listindex_t,
@@ -30,9 +28,30 @@ typedef enum {
 } AstType;
 
 /* for verbosity */
-const char *NTYPES[18];
+const char *NTYPES[16];
 
 struct AstNode;
+
+typedef enum {
+    co_int_t,
+    co_float_t,
+    co_string_t
+} ConstantType;
+
+typedef struct
+{
+    ConstantType type;
+    union {
+        long i;
+        double f;
+        char *s;
+    } val;
+} AstConstant;
+
+typedef struct
+{
+    char *val;
+} AstID;
 
 typedef struct
 {
@@ -96,7 +115,6 @@ typedef struct
 {
     struct AstNode *param_list;
     struct AstNode *statements;
-    struct AstNode *ret_expr;
     struct AstNode *funcname;
 } AstFuncDef;
 
@@ -119,11 +137,8 @@ typedef struct AstNode
     int column;
 
     union {
-        long i_val;
-        double f_val;
-        char *s_val;
-        char *id_val;
-
+        AstConstant constant;
+        AstID id;
         AstExpression expression;
         AstListIndex listindex;
         AstListAssign listassign;
@@ -141,9 +156,9 @@ typedef struct AstNode
 
 void destroy_tree(AstNode *);
 
-AstNode *make_int_expr(long);
-AstNode *make_float_expr(double);
-AstNode *make_string_expr(char *);
+AstNode *make_int_constant(long);
+AstNode *make_float_constant(double);
+AstNode *make_string_constant(char *);
 AstNode *make_id_expr(char *);
 AstNode *make_binary_expr(AstNode *, AstNode *, int op);
 AstNode *make_list_index(AstNode *, AstNode *);
@@ -154,7 +169,7 @@ AstNode *make_while_loop(AstNode *, AstNode *);
 AstNode *make_for_loop(AstNode *, AstNode *, AstNode *);
 AstNode *make_if_else(AstNode *, AstNode *, AstNode *);
 AstNode *make_func_call(AstNode *, AstNode *);
-AstNode *make_func_def(AstNode *, AstNode *, AstNode *, AstNode *);
+AstNode *make_func_def(AstNode *, AstNode *, AstNode *);
 AstNode *make_statements(AstNode *, AstNode *);
 AstNode *make_break();
 AstNode *make_continue();

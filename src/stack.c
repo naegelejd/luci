@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "object.h"
 #include "stack.h"
 
 void st_init(Stack *S)

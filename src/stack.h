@@ -2,7 +2,7 @@
 #define STACK_H
 
 /* include LuciObject definition */
-#include "common.h"
+#include "object.h"
 
 #define STACKMAX    64
 

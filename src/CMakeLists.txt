@@ -15,8 +15,9 @@ add_executable(
     ${CMAKE_CURRENT_SOURCE_DIR}/common.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stack.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ast.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/symbol.c
     ${CMAKE_CURRENT_SOURCE_DIR}/compile.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/env.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/env.c
     ${CMAKE_CURRENT_SOURCE_DIR}/functions.c
 )
 

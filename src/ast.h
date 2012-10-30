@@ -62,7 +62,7 @@ typedef struct
 typedef struct
 {
     struct AstNode *right;
-    struct AstNode *name;
+    char *name;
 } AstAssignment;
 
 typedef struct
@@ -80,7 +80,7 @@ typedef struct
 
 typedef struct
 {
-    struct AstNode *list;
+    char *name;
     struct AstNode *index;
     struct AstNode *right;
 } AstListAssign;
@@ -162,9 +162,9 @@ AstNode *make_string_constant(char *);
 AstNode *make_id_expr(char *);
 AstNode *make_binary_expr(AstNode *, AstNode *, int op);
 AstNode *make_list_index(AstNode *, AstNode *);
-AstNode *make_list_assignment(AstNode *, AstNode *, AstNode *);
+AstNode *make_list_assignment(char *, AstNode *, AstNode *);
 AstNode *make_list_def(AstNode *, AstNode *);
-AstNode *make_assignment(AstNode *, AstNode *);
+AstNode *make_assignment(char *, AstNode *);
 AstNode *make_while_loop(AstNode *, AstNode *);
 AstNode *make_for_loop(AstNode *, AstNode *, AstNode *);
 AstNode *make_if_else(AstNode *, AstNode *, AstNode *);

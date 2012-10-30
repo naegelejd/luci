@@ -4,6 +4,7 @@
 #include "common.h"
 #include "ast.h"
 #include "compile.h"
+#include "interpret.h"
 /*
 #include "env.h"
 */

@@ -85,10 +85,18 @@ static Symbol *symbol_new(const char *str, int index)
 static void *symbol_delete(Symbol *del)
 {
     if (del) {
+        /*
+         * The original creator of the 'char *'
+         * which the symbol represents should
+         * cleanup the memory allocated for
+         * the 'char *'
+         */
+        /*
         if (del->name) {
             free((char *)del->name);
             del->name = NULL;
         }
+        */
         free(del);
         del = NULL;
     }
@@ -267,7 +275,6 @@ int symbol_id(SymbolTable *symtable, const char *name)
     /* otherwise, we need to create the symbol and insert it */
 
     /* Increase count of Symbol/Object pairs */
-    symtable->count ++;
     if (symtable->count >= symtable->size) {
         /* ensure object array is large enough */
         symtable->size <<= 1;
@@ -281,29 +288,29 @@ int symbol_id(SymbolTable *symtable, const char *name)
     symtable_insert(symtable, new_symbol);
 
     /* return symbol's ID (object array index) */
-    return symtable->count;
+    return symtable->count++;
 }
 
 /**
- * Replaces the object in the table pertaining to ID
+ * Replaces the object in the table pertaining to id
  */
-void symtable_set(SymbolTable *symtable, LuciObject *obj, int ID)
+void symtable_set(SymbolTable *symtable, LuciObject *obj, int id)
 {
-    if ((ID >= symtable->count) || (ID < 0))
-        die("Symbol ID out of bounds\n");
+    if ((id < 0) || (id >= symtable->count))
+        die("Symbol id out of bounds\n");
 
-    symtable->objects[ID] = obj;
+    symtable->objects[id] = obj;
 }
 
 /**
- * Returns the object in the table pertaining to ID
+ * Returns the object in the table pertaining to id
  */
-LuciObject *symtable_get(SymbolTable *symtable, int ID)
+LuciObject *symtable_get(SymbolTable *symtable, int id)
 {
-    if ((ID >= symtable->count) || (ID < 0))
-        die("Symbol ID out of bounds\n");
+    if ((id < 0) || (id >= symtable->count))
+        die("Symbol id out of bounds\n");
 
-    return symtable->objects[ID];
+    return symtable->objects[id];
 }
 
 

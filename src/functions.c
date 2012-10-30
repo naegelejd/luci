@@ -3,10 +3,11 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
-#include "functions.h"
 #include "common.h"
+#include "object.h"
+#include "functions.h"
 /* HACK: used for dir() function to iterate over symbol table */
-#include "env.h"
+/* #include "env.h" */
 
 /* Forward declarations */
 static LuciObject *add(LuciObject *left, LuciObject *right);

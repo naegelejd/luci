@@ -1,7 +1,8 @@
 find_package(BISON)
 find_package(FLEX)
 
-BISON_TARGET(myparser parser.y ${CMAKE_CURRENT_SOURCE_DIR}/parser.tab.c VERBOSE parser.output COMPILE_FLAGS -d)
+#BISON_TARGET(myparser parser.y ${CMAKE_CURRENT_SOURCE_DIR}/parser.tab.c VERBOSE parser.output COMPILE_FLAGS -d)
+BISON_TARGET(myparser parser.y ${CMAKE_CURRENT_SOURCE_DIR}/parser.tab.c COMPILE_FLAGS -d)
 FLEX_TARGET(myscanner lexer.l ${CMAKE_CURRENT_SOURCE_DIR}/lexer.yy.c)
 ADD_FLEX_BISON_DEPENDENCY(myscanner myparser)
 
@@ -15,8 +16,11 @@ add_executable(
     ${CMAKE_CURRENT_SOURCE_DIR}/common.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stack.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ast.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/object.c
     ${CMAKE_CURRENT_SOURCE_DIR}/symbol.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/constant.c
     ${CMAKE_CURRENT_SOURCE_DIR}/compile.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/interpret.c
     # ${CMAKE_CURRENT_SOURCE_DIR}/env.c
     ${CMAKE_CURRENT_SOURCE_DIR}/functions.c
 )

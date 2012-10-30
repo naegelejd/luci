@@ -83,9 +83,9 @@ statement:
     ;
 
 assignment:
-        id ASSIGN expr
+        ID ASSIGN expr
                 { $$ = make_assignment($1, $3); }
-    |   id LSQUARE expr RSQUARE ASSIGN expr
+    |   ID LSQUARE expr RSQUARE ASSIGN expr
                 { $$ = make_list_assignment($1, $3, $6); }
     ;
 

@@ -89,11 +89,11 @@ AstNode *make_list_index(AstNode *list, AstNode *index)
     return result;
 }
 
-AstNode *make_list_assignment(AstNode *list,
+AstNode *make_list_assignment(char *name,
         AstNode *index, AstNode *right)
 {
     AstNode *result = create_node(ast_listassign_t);
-    result->data.listassign.list = list;
+    result->data.listassign.name = name;
     result->data.listassign.index = index;
     result->data.listassign.right = right;
     yak("Made list assignment node\n");
@@ -123,7 +123,7 @@ AstNode *make_list_def(AstNode *result, AstNode *to_append)
     return result;
 }
 
-AstNode *make_assignment(AstNode *id, AstNode *right)
+AstNode *make_assignment(char *id, AstNode *right)
 {
     AstNode *result = create_node(ast_assign_t);
     result->data.assignment.name = id;
@@ -296,7 +296,7 @@ int print_ast_graph(AstNode *root, int id)
         case ast_assign_t:
             printf("%d [label=\"assign\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.assignment.name, id);
+            printf("%d [label=\"ID: %s\"]\n", id, root->data.assignment.name);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.assignment.right, id);
             break;
@@ -322,7 +322,7 @@ int print_ast_graph(AstNode *root, int id)
         case ast_listassign_t:
             printf("%d [label=\"listassign\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listassign.list, id);
+            printf("%d [label=\"ID: %s\"]\n", id, root->data.listassign.name);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.listassign.index, id);
             printf("%d -> %d\n", rID, ++id);
@@ -407,7 +407,7 @@ void destroy_tree(AstNode *root)
             break;
         case ast_assign_t:
             destroy_tree(root->data.assignment.right);
-            destroy_tree(root->data.assignment.name);
+            free(root->data.assignment.name);
             break;
         case ast_call_t:
             destroy_tree(root->data.call.arglist);
@@ -420,7 +420,7 @@ void destroy_tree(AstNode *root)
         case ast_listassign_t:
             destroy_tree(root->data.listassign.index);
             destroy_tree(root->data.listassign.right);
-            destroy_tree(root->data.listassign.list);
+            free(root->data.listassign.name);
             break;
         case ast_expr_t:
             destroy_tree(root->data.expression.left);

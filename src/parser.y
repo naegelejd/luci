@@ -5,7 +5,6 @@
 #include <assert.h>
 #include "common.h"
 #include "ast.h"
-#include "env.h"
 
 #define YYDEBUG 1
 

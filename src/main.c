@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
 {
     /* initialize options */
     int verbose = 0;
-    int execute = 0;
-    int compile = 1;
+    int execute = 1;
+    int compile = 0;
     int graph = 0;
 
     char *infilename = NULL;

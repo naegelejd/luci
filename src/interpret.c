@@ -15,15 +15,9 @@
 void eval(Program *prog)
 {
     LuciObject *x = NULL, *y = NULL, *z = NULL;
-    Instruction **all_instr = prog->instructions;
-    Instruction *instr = NULL;
-    int a, b;
+    Instruction instr = 0;
+    int a;
 
-    /*
-    Symbol *s = NULL;
-    Symbol *symtable = add_symbol(NULL, "print", sym_bfunc_t);
-    symtable->data.funcptr = luci_print;
-    */
 
     Stack lstack;
     st_init(&lstack);
@@ -32,10 +26,9 @@ void eval(Program *prog)
     int i = 0;
 
     for(EVER) {
-        instr = all_instr[ip++];
-        a = instr->a;
-        b = instr->b;
-        switch (instr->opcode) {
+        instr = prog->instructions[ip++];
+        a = instr & 0x7FF;
+        switch (instr >> 11) {
             case NOP:
                 break;
             case LOADK:
@@ -56,11 +49,7 @@ void eval(Program *prog)
             case BINOP:
                 x = st_pop(&lstack);
                 y = st_pop(&lstack);
-                /*
-                printf("Performing binary op %d on top 2 stack values\n", a->v.l);
-                */
                 z = solve_bin_expr(x, y, a);
-                printf("%d\n", z->value.i_val);
                 st_push(&lstack, z);
                 break;
             case CALL:
@@ -68,16 +57,25 @@ void eval(Program *prog)
                 y = st_pop(&lstack);    /* arglist obj */
                 luci_print(y);
                 break;
-            case JUMPL:
+            case MKLIST:
+                x = create_object(obj_list_t);
+                for (i = 0; i < a; i ++)
+                    list_append_object(x, st_pop(&lstack));
+                st_push(&lstack, x);
                 break;
-            case JUMPN:
+            case JUMP:
+                ip = a;
+                break;
+            case JUMPZ:
+                x = st_pop(&lstack);
+                if (x->value.i_val == 0)
+                    ip = a;
                 break;
             case EXIT:
-                puts("EXIT");
                 goto done_eval;
                 break;
             default:
-                die("Invalid opcode: %d\n", instr->opcode);
+                die("Invalid opcode: %d\n", instr >> 11);
                 break;
         }
     }

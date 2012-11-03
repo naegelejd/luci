@@ -10,8 +10,9 @@ typedef enum {
     obj_float_t,
     obj_str_t,
     obj_file_t,
-    obj_list_t
-} LuciObjectType;
+    obj_list_t,
+    obj_func_t
+} LuciOType;
 
 typedef enum {
     f_read_m,
@@ -19,33 +20,33 @@ typedef enum {
     f_append_m
 } LuciFileMode;
 
+typedef union {
+    int i_val;
+    double f_val;
+    char *s_val;
+    struct {
+        FILE *ptr;
+        long size;	/* in bytes */
+        LuciFileMode mode;
+    } file;
+    struct {
+        struct LuciObject **items;
+        int count;	/* current number of items in list */
+        int size;	/* current count of allocated item pointers */
+    } list;
+    struct LuciObject * (*func)(struct LuciObject *);
+} LuciOVal;
+
+/* LuciFunction is a type of function that returns a LuciObject * */
+/* typedef struct LuciObject * (*LuciFunction) (struct LuciObject *); */
+
 /* Generic Object which allows for dynamic typing */
 typedef struct LuciObject
 {
-    LuciObjectType type;
+    LuciOType type;
     int refcount;
-    union
-    {
-	int i_val;
-	double f_val;
-	char *s_val;
-	struct
-	{
-	    FILE *ptr;
-	    long size;	/* in bytes */
-	    LuciFileMode mode;
-	} file;
-	struct
-	{
-	    struct LuciObject **items;
-	    int count;	/* current number of items in list */
-	    int size;	/* current count of allocated item pointers */
-	} list;
-    } value;
+    LuciOVal value;
 } LuciObject;
-
-/* LuciFunction is a type of function that returns a LuciObject * */
-typedef LuciObject * (*LuciFunction) (LuciObject *);
 
 /* creates and initializes a new LuciObject */
 struct LuciObject *create_object(int type);

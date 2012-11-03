@@ -1,29 +1,19 @@
 ******
-luci
+Luci
 ******
 
-Luci is my toy programming language, implemented in C.
+Luci is a toy scripting language, implemented in C.
 
-Like most of my side projects, a specific discipline in computer science
-caught my eye and I started playing with it. I read about Lex/Yacc
-and started with Bison's multi-function calculator tutorial. I then started
-digging around online for examples of creating homemade abstract syntax trees.
-Before I knew it I was working on a simple scripting language.
+Luci's syntax is still a work in progress, but the overall
+theme is a mix of Python, Ruby and Perl.
 
-Unlike most of my side projects, I'm actually continuing to work on my
-language implementation, even after reaching a point where I think I understand
-most of the nuances of creating/interpreting a basic language.
-
-The language resembles Python in many ways, mostly because Python's
-syntax is very intuitive, and because Python is the best interpreted language.
-I think my ultimate goal is to create a simple scripting language, capable
-of performing basic tasks that I would normally do in Bash or simple Python.
-
-My C is a few years rusty but I'll do my best to retroactively clean up messy stuff.
+The implementation is slowly developing toward a bytecode-compiled,
+virtual machine interpreter model, from its original model, which
+walked an abstract syntax tree and 'executed' each node.
 
 Binaries
 =========
-Coming soon... Linux/Mac first, then Windows.
+Coming soon... Linux/Mac first, followed by Windows.
 
 Tools Needed to Build
 =======================
@@ -34,7 +24,6 @@ Tools Needed to Build
 .. _flex (lex): http://flex.sourceforge.net/
 .. _bison (yacc): http://www.gnu.org/software/bison/
 
-
 References
 ============
 - `Immensely helpful`_
@@ -43,21 +32,34 @@ References
 .. _Immensely helpful: http://stackoverflow.com/a/2644949
 .. _Just as useful: http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/
 
-TODO List
-=========
+TODO (version 0.2)
+===================
 
--  Restructure function implementation to allow for a call-stack
--  Implement better error management (possibly Exception objects)...
-   One idea is a global "allocated pointer table".
--  Track line numbers in abstract syntax tree for more helpful Runtime Error messages.
--  Handle mixed-type binary operations (string * int)
--  Figure out how the hell to implement break/continue statements or forget them.
--  Implement more builtin functions for fun
+- Finalize syntax
+- Implement bytecode compiler
 
-Completed
-=========
+  - Determine/iteratively improve instruction set
+  - Implement efficient symbol table (hashing)
+  - Implement useful constant table
+  - Design function prototypes
 
-#. Implement all unary/binary operations offered by the C++ standard (with proper operator precedence for each)
+- Implement bytecode interpreter (VM)
+
+  - Efficient object stack
+  - Fast instruction dispatch (gcc ``computed goto`` vs. ``switch-case``)
+  - Proper function call/return handling
+
+- Possibly implement an API for creating libraries
+
+Completed in version 0.1
+=========================
+The following features were completed in Luci v0.1.
+This version is nearly obsolete, as the implementation
+was inefficient and did not allow for nested control flow
+statements, i.e. ``break``, ``continue``, ``return``.
+
+#. Implement all unary/binary operations offered by the C++ standard
+   (with proper operator precedence for each)
 #. Implement Integer, Double, and String types
 #. Implement a While loop construct
 #. Implement error recover (made a single exit point `die()`), which has global
@@ -73,36 +75,34 @@ Completed
    list. The singly-linked list was far less convenient since I'm using lists to implement
    function parameters.
 #. Implement user-defined functions (barely)
+#. Track line numbers in abstract syntax tree for more helpful Runtime Error messages.
 
 Syntax Ideas
 =============
 
 -  function definitions::
 
-      def identifier(param1, param2, etc.)
-       statements
-      end
+      identifier(param1, param2, etc.) {
 
-   but I'm seriously considering::
+      }
 
-      def identifier param1 param2 etc.
-       statements
-      end
+      identifier(arg1, arg2, etc)
 
-   with calls like::
+-  conditional blocks::
 
-      identifier param1 param2
+      if (condition) {
 
--  ``puts string`` rather than ``print(string)``
+      } else {
+
+      }
 
 -  list range::
 
       0..9, 0..42..3    (ruby)
 
-   instead of::
+   or::
 
       range(10), range(0, 42, 3)    (python)
 
 -  some kind of block comments, not just single line ``#...`` comments
 
--

@@ -10,7 +10,8 @@
 #include "stack.h"
 
 static void _compile(AstNode *, Program *);
-static void add_instr(Program *, Opcode, int, int);
+static int add_instr(Program *, Opcode, int);
+static void change_instr(Program *, int, Opcode, int);
 
 static char *instr_names[] = {
     "NOP",
@@ -19,8 +20,9 @@ static char *instr_names[] = {
     "STORE",
     "BINOP",
     "CALL",
-    "JUMPL",
-    "JUMPN",
+    "JUMP",
+    "JUMPZ",
+    "MKLIST",
     "EXIT"
 };
 
@@ -35,39 +37,52 @@ Program * compile_ast(AstNode *root)
     if (!root)
         die("Nothing to compile\n");
 
-    Program *prog = alloc(sizeof(*prog));
-    prog->count = 0;
-    prog->size = BASE_INSTR_COUNT;
-    prog->instructions = alloc(prog->size * sizeof(*(prog->instructions)));
+    Program *prog = program_new();
 
-    prog->symtable = symtable_new(0xFFF);
+    /* Add builtin symbols to symbol table */
+    int id;
+    LuciObject *o;
 
-    prog->cotable = cotable_new(0xFF);
+    o = create_object(obj_func_t);
+    o->value.func = luci_print;
+    id = symbol_id(prog->symtable, "print");
+    symtable_set(prog->symtable, o, id);
 
     /* compile the AST */
     _compile(root, prog);
 
     /* end the program with an EXIT instr */
-    add_instr(prog, EXIT, 0, 0);
+    add_instr(prog, EXIT, 0);
 
     return prog;
 }
 
-void destroy_program(Program *prog)
+Program *program_new(void)
+{
+    Program *prog = alloc(sizeof(*prog));
+    prog->count = 0;
+    prog->size = BASE_INSTR_COUNT;
+    prog->instructions = alloc(prog->size *
+            sizeof(*prog->instructions));
+
+    prog->symtable = symtable_new(BASE_SYMTABLE_SIZE);
+    prog->cotable = cotable_new(BASE_COTABLE_SIZE);
+
+    return prog;
+}
+
+void program_delete(Program *prog)
 {
     /* destroy each instruction, instruction list, and program */
     int i = 0;
-    Instruction **instructions = prog->instructions;
-    for (i = 0; i < prog->count; i ++) {
-        free(instructions[i]);
-    }
+    Instruction *instructions = prog->instructions;
     free(prog->instructions);
     symtable_delete(prog->symtable);
     cotable_delete(prog->cotable);
     free(prog);
 }
 
-static void add_instr(Program *prog, Opcode op, int a, int b)
+static int add_instr(Program *prog, Opcode op, int arg)
 {
     if (!prog)
         die("Program not allocated. Can't add instruction\n");
@@ -75,32 +90,42 @@ static void add_instr(Program *prog, Opcode op, int a, int b)
         die("Instruction list not allocated. Can't add instruction\n");
 
     /* Allocate and initialize the instruction */
-    Instruction *new_instr = alloc(sizeof(*new_instr));
-    new_instr->opcode = op;
-    new_instr->a = a;
-    new_instr->b = b;
+    Instruction instr = (op << 11) | (arg & 0x7FF);
 
     /* Reallocate the program's instruction list if necessary */
-    if (++(prog->count) > prog->size) {
+    if (prog->count > prog->size) {
         prog->size <<= 1;
         prog->instructions = realloc(prog->instructions,
                 prog->size * sizeof(*(prog->instructions)));
     }
 
     /* Append the new instruction to the instruction list */
-    prog->instructions[prog->count - 1] = new_instr;
+    prog->instructions[prog->count] = instr;
+
+    /* increment instruction count after appending */
+    return prog->count ++;
+}
+
+static void change_instr(Program *prog, int addr, Opcode op, int arg)
+{
+    if (addr < 0 || addr > prog->count)
+        die("Address out of bounds\n");
+
+    Instruction instr = (op << 11) | (arg & 0x7FF);
+
+    prog->instructions[addr] = instr;
 }
 
 static void _compile(AstNode *node, Program *prog)
 {
     int i = 0;
-    int a, b;
+    int a;
+    int addr1, addr2;
     size_t len;
     LuciObject *obj = NULL;
 
     if (!node) {
         /* don't compile a NULL statement */
-        yak("NOP");
         return;
     }
 
@@ -118,12 +143,13 @@ static void _compile(AstNode *node, Program *prog)
             _compile(node->data.funcdef.funcname, prog);
             break;
         case ast_list_t:
-            /* create a LuciObject list from the AstNode */
-            /* push the new list object onto the stack */
             for (i = 0; i < node->data.list.count; i++)
             {
+                /* compile each list member */
                 _compile(node->data.list.items[i], prog);
             }
+            /* add MKLIST instruction for # of list items */
+            add_instr(prog, MKLIST, node->data.list.count);
             break;
         case ast_while_t:
             yak("LABEL while# begin");
@@ -139,25 +165,42 @@ static void _compile(AstNode *node, Program *prog)
             _compile(node->data.for_loop.iter, prog);
             break;
         case ast_if_t:
-            yak("TEST cond? JUMP 2 : JUMP else #");
+            /* compile test expression */
             _compile(node->data.if_else.cond, prog);
+            /* add bogus instruction number 1 */
+            addr1 = add_instr(prog, NOP, 0);
+            /* compile TRUE statements */
             _compile(node->data.if_else.ifstatements, prog);
-            yak("LABEL else#");
-            _compile(node->data.if_else.elstatements, prog);
+
+            if (node->data.if_else.elstatements) {
+                /* add bogus instruction number 2 */
+                addr2 = add_instr(prog, NOP, 0);
+                /* change bogus instr 1 to a conditional jump */
+                change_instr(prog, addr1, JUMPZ, prog->count);
+                /* compile FALSE statements */
+                _compile(node->data.if_else.elstatements, prog);
+                /* change bogus instr 2 to a jump */
+                change_instr(prog, addr2, JUMP, prog->count);
+            }
+            else {
+                /* change bogus instr 1 to a conditional jump */
+                change_instr(prog, addr1, JUMPZ, prog->count);
+            }
             break;
         case ast_assign_t:
+            /* compile the right-hand value */
             _compile(node->data.assignment.right, prog);
+            /* get id of left-hand symbol */
             a = symbol_id(prog->symtable, node->data.assignment.name);
-            add_instr(prog, STORE, a, 0);
-            yak("STORE %d\n", a);
+            /* add a STORE instruction */
+            add_instr(prog, STORE, a);
             break;
         case ast_call_t:
             /* compile arglist, which pushes list onto stack */
             _compile(node->data.call.arglist, prog);
             /* compile funcname, which pushes symbol value onto stack */
             _compile(node->data.call.funcname, prog);
-            add_instr(prog, CALL, 0, 0);
-            yak("CALL");
+            add_instr(prog, CALL, 0);
             break;
         case ast_listindex_t:
             _compile(node->data.listindex.list, prog);
@@ -173,12 +216,12 @@ static void _compile(AstNode *node, Program *prog)
             _compile(node->data.expression.right, prog);
             a = node->data.expression.op;
             /* make long immediate from int op */
-            add_instr(prog, BINOP, a, 0);
+            add_instr(prog, BINOP, a);
             yak("BINOP %d\n", a);
             break;
         case ast_id_t:
             a = symbol_id(prog->symtable, node->data.id.val);
-            add_instr(prog, LOADS, a, 0);
+            add_instr(prog, LOADS, a);
             yak("LOADS %s\n", node->data.id.val);
             break;
         case ast_constant_t:
@@ -190,21 +233,21 @@ static void _compile(AstNode *node, Program *prog)
                     strncpy(obj->value.s_val, node->data.constant.val.s, len);
                     obj->value.s_val[len] = '\0';
                     a = constant_id(prog->cotable, obj);
-                    add_instr(prog, LOADK, a, 0);
+                    add_instr(prog, LOADK, a);
                     yak("LOADK \"%s\"\n", node->data.constant.val.s);
                     break;
                 case co_float_t:
                     obj = create_object(obj_float_t);
                     obj->value.f_val = node->data.constant.val.f;
                     a = constant_id(prog->cotable, obj);
-                    add_instr(prog, LOADK, a, 0);
+                    add_instr(prog, LOADK, a);
                     yak("LOADK %g\n", node->data.constant.val.f);
                     break;
                 case co_int_t:
                     obj = create_object(obj_int_t);
                     obj->value.i_val = node->data.constant.val.i;
                     a = constant_id(prog->cotable, obj);
-                    add_instr(prog, LOADK, a, 0);
+                    add_instr(prog, LOADK, a);
                     yak("LOADK %ld\n", node->data.constant.val.i);
                     break;
                 default:
@@ -220,7 +263,7 @@ void print_instructions(Program *prog)
 {
     int i = 0;
     for (i = 0; i < prog->count; i ++)
-        printf("%03x: %s %d %d\n", i,
-                instr_names[prog->instructions[i]->opcode],
-                prog->instructions[i]->a, prog->instructions[i]->b);
+        printf("%03x: %s %x\n", i,
+                instr_names[prog->instructions[i] >> 11],
+                prog->instructions[i] & 0x7FF);
 }

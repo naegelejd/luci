@@ -14,19 +14,17 @@ extern yydebug();
 
 static int VERBOSE = 0;
 
-static struct AstNode *root_node = NULL;
-/*
-static struct ExecContext *root_env = NULL;
-*/
-
+static AstNode *root_node = NULL;
+static Program *prog = NULL;
 
 static void cleanup(void)
 {
-    /*
-    if (root_env)
-        destroy_context(root_env);
-    */
-    if(root_node)
+    /* if the Program is still allocated */
+    if (prog)
+        program_delete(prog);
+
+    /* destroy the AST */
+    if (root_node)
         destroy_tree(root_node);
 }
 
@@ -37,22 +35,20 @@ int begin(int verbose, int execute, int compile, int graph)
 
     /*yydebug(1);*/
 
-    root_node = 0;
-
     /* parse yyin and build and AST */
     yyparse(&root_node);
 
     if (!root_node)
         return EXIT_SUCCESS;
 
-    if (compile) {
-        Program *prog = compile_ast(root_node);
-        print_instructions(prog);
-        puts("");
-        eval(prog);
-        destroy_program(prog);
-    }
+    /* Compile the AST */
+    prog = compile_ast(root_node);
 
+    /* Print the bytecode */
+    if (compile)
+        print_instructions(prog);
+
+    /* Print a DOT graph representation */
     if (graph) {
         puts("digraph hierarchy {");
         puts("node [color=Green,fontcolor=Blue]");
@@ -60,27 +56,14 @@ int begin(int verbose, int execute, int compile, int graph)
         puts("}");
     }
 
-    /*
-    if (execute) {
-	root_env = create_context("global", NULL);
-	initialize_context(root_env);
-	exec_AST(root_env, root_node);
-    }
-    */
+    /* Execute the bytecode */
+    if (execute)
+        eval(prog);
 
-    /* destroy the AST and the ExecEnviron */
     cleanup();
 
     return 1;
 }
-
-/* provide read-only access to the root of the AST */
-/*
-struct ExecContext *get_root_env()
-{
-    return root_env;
-}
-*/
 
 /*  Safely allocate memory, and quit on failure */
 void *alloc(size_t size)

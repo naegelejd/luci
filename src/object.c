@@ -117,14 +117,15 @@ int list_append_object(LuciObject *list, LuciObject *item)
     if (!list || (list->type != obj_list_t)) {
 	die("Can't append item to non-list object\n");
     }
-    if (++(list->value.list.count) > list->value.list.size) {
+    if (list->value.list.count > list->value.list.size) {
 	list->value.list.size = list->value.list.size << 1;
 	/* realloc the list array */
 	list->value.list.items = realloc(list->value.list.items,
 		list->value.list.size * sizeof(*list->value.list.items));
 	yak("Reallocated space for list\n");
     }
-    list->value.list.items[list->value.list.count - 1] = item;
+    /* increment count after appending object */
+    list->value.list.items[list->value.list.count ++] = item;
     return 1;
 }
 

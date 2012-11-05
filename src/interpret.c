@@ -47,15 +47,16 @@ void eval(Program *prog)
                 symtable_set(prog->symtable, x, a);
                 break;
             case BINOP:
-                x = st_pop(&lstack);
                 y = st_pop(&lstack);
+                x = st_pop(&lstack);
                 z = solve_bin_expr(x, y, a);
                 st_push(&lstack, z);
                 break;
             case CALL:
                 x = st_pop(&lstack);    /* funcptr obj */
                 y = st_pop(&lstack);    /* arglist obj */
-                luci_print(y);
+                z = x->value.func(y);
+                if (z) st_push(&lstack, z);
                 break;
             case MKLIST:
                 x = create_object(obj_list_t);

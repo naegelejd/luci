@@ -40,13 +40,19 @@ Program * compile_ast(AstNode *root)
     Program *prog = program_new();
 
     /* Add builtin symbols to symbol table */
-    int id;
+    int i, id;
     LuciObject *o;
+    extern struct func_def builtins[];
 
-    o = create_object(obj_func_t);
-    o->value.func = luci_print;
-    id = symbol_id(prog->symtable, "print");
-    symtable_set(prog->symtable, o, id);
+    for (i = 0; builtins[i].name != 0; i++)
+    {
+        /* create object for builtin function */
+        o = create_object(obj_func_t);
+        o->value.func = builtins[i].func;
+        /* add the symbol and function object to the symbol table */
+        id = symbol_id(prog->symtable, builtins[i].name);
+        symtable_set(prog->symtable, o, id);
+    }
 
     /* compile the AST */
     _compile(root, prog);
@@ -124,6 +130,8 @@ static void _compile(AstNode *node, Program *prog)
     size_t len;
     LuciObject *obj = NULL;
 
+    AstConstant constant;
+
     if (!node) {
         /* don't compile a NULL statement */
         return;
@@ -152,12 +160,18 @@ static void _compile(AstNode *node, Program *prog)
             add_instr(prog, MKLIST, node->data.list.count);
             break;
         case ast_while_t:
-            yak("LABEL while# begin");
-            yak("TEST cond? JUMP 2 : JUMP while# end");
+            /* store addr of start of while */
+            addr1 = prog->count;
+            /* compile test expression */
             _compile(node->data.while_loop.cond, prog);
+            /* push a bogus instr */
+            addr2 = add_instr(prog, NOP, 0);
+            /* compile body of while loop */
             _compile(node->data.while_loop.statements, prog);
-            yak("JUMP to while loop#");
-            yak("LABEL while# end");
+            /* add a jump to beginning of while loop */
+            add_instr(prog, JUMP, addr1);
+            /* change bogus instr to conditional jump */
+            change_instr(prog, addr2, JUMPZ, prog->count);
             break;
         case ast_for_t:
             _compile(node->data.for_loop.list, prog);
@@ -225,30 +239,30 @@ static void _compile(AstNode *node, Program *prog)
             yak("LOADS %s\n", node->data.id.val);
             break;
         case ast_constant_t:
-            switch (node->data.constant.type) {
+            constant = node->data.constant;
+            switch (constant.type) {
                 case co_string_t:
                     obj = create_object(obj_str_t);
-                    len = strlen(node->data.constant.val.s);
-                    obj->value.s_val = alloc(len + 1);
-                    strncpy(obj->value.s_val, node->data.constant.val.s, len);
-                    obj->value.s_val[len] = '\0';
+                    obj->value.s_val = strndup(constant.val.s,
+                            strlen(constant.val.s));
+
                     a = constant_id(prog->cotable, obj);
                     add_instr(prog, LOADK, a);
-                    yak("LOADK \"%s\"\n", node->data.constant.val.s);
+                    yak("LOADK \"%s\"\n", constant.val.s);
                     break;
                 case co_float_t:
                     obj = create_object(obj_float_t);
-                    obj->value.f_val = node->data.constant.val.f;
+                    obj->value.f_val = constant.val.f;
                     a = constant_id(prog->cotable, obj);
                     add_instr(prog, LOADK, a);
-                    yak("LOADK %g\n", node->data.constant.val.f);
+                    yak("LOADK %g\n", constant.val.f);
                     break;
                 case co_int_t:
                     obj = create_object(obj_int_t);
-                    obj->value.i_val = node->data.constant.val.i;
+                    obj->value.i_val = constant.val.i;
                     a = constant_id(prog->cotable, obj);
                     add_instr(prog, LOADK, a);
-                    yak("LOADK %ld\n", node->data.constant.val.i);
+                    yak("LOADK %ld\n", constant.val.i);
                     break;
                 default:
                     die("Bad constant type\n");

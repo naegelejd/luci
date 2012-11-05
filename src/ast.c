@@ -40,6 +40,7 @@ static AstNode *create_node(int type) {
 AstNode *make_int_constant(long val)
 {
     AstNode *result = create_node(ast_constant_t);
+    result->data.constant.type = co_int_t;
     result->data.constant.val.i = val;
     yak("Made expression node from val %ld\n", val);
     return result;
@@ -48,6 +49,7 @@ AstNode *make_int_constant(long val)
 AstNode *make_float_constant(double val)
 {
     AstNode *result = create_node(ast_constant_t);
+    result->data.constant.type = co_float_t;
     result->data.constant.val.f = val;
     yak("Made expression node from val %f\n", val);
     return result;
@@ -56,6 +58,7 @@ AstNode *make_float_constant(double val)
 AstNode *make_string_constant(char *val)
 {
     AstNode *result = create_node(ast_constant_t);
+    result->data.constant.type = co_string_t;
     result->data.constant.val.s = val;
     yak("Made expression node from string %s\n", val);
     return result;

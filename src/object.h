@@ -51,13 +51,14 @@ typedef struct LuciObject
 /* creates and initializes a new LuciObject */
 struct LuciObject *create_object(int type);
 
-/* incrementes the object's refcount and returns it */
-struct LuciObject *reference_object(struct LuciObject* orig);
-
+/* increments the object's refcount and returns it */
+struct LuciObject *incref(struct LuciObject* orig);
+/* decrements the object's refcount and returns it
+ * also potentially destroys object (refcount <= 0) */
+struct LuciObject *incref(struct LuciObject* orig);
 /* duplicates a LuciObject, creating a new one */
 struct LuciObject *copy_object(struct LuciObject* orig);
-
-/* decrements object's refcount, and potentially destroys it */
+/* destroys an object */
 void destroy_object(struct LuciObject *trash);
 
 int list_append_object(struct LuciObject *list, struct LuciObject *item);

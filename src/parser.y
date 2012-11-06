@@ -28,7 +28,7 @@ void yyerror(const char *msg);
 %type <node> expr id cond call assignment statement statements
 %type <node> while_loop for_loop if_else
 %type <node> func_def params return
-%type <node> empty_list list_items list_index list
+%type <node> empty_list list_items list_index list_assign list
 %type <node> program
 
 %token <int_v> INT
@@ -72,6 +72,7 @@ statements:
 statement:
         func_def            { $$ = $1; }
     |   assignment          { $$ = $1; }
+    |   list_assign         { $$ = $1; }
     |   call                { $$ = $1; }
     |   while_loop          { $$ = $1; }
     |   for_loop            { $$ = $1; }
@@ -84,7 +85,12 @@ statement:
 assignment:
         ID ASSIGN expr
                 { $$ = make_assignment($1, $3); }
-    |   ID LSQUARE expr RSQUARE ASSIGN expr
+    |   ID ASSIGN assignment
+                { $$ = make_assignment($1, $3); }
+    ;
+
+list_assign:
+        ID LSQUARE expr RSQUARE ASSIGN expr
                 { $$ = make_list_assignment($1, $3, $6); }
     ;
 

@@ -18,7 +18,7 @@ void cotable_delete(ConstantTable *cotable)
     int i;
     if (cotable->objects) {
         for (i = 0; i < cotable->count; i ++)
-            destroy_object(cotable->objects[i]);
+            decref(cotable->objects[i]);
         free(cotable->objects);
         cotable->objects = NULL;
     }
@@ -39,6 +39,7 @@ int constant_id(ConstantTable *cotable, LuciObject *const_obj)
                 cotable->size * sizeof(*cotable->objects));
     }
     cotable->objects[cotable->count] = const_obj;
+    incref(const_obj);
     /* return count (index a.k.a. ID ) */
     return cotable->count++;
 }

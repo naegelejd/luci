@@ -19,7 +19,7 @@ LuciObject *st_pop(Stack *S)
 
 LuciObject *st_top(Stack *S)
 {
-    return (S->impl[S->top]);
+    return (S->impl[S->top - 1]);
 }
 
 int st_size(Stack *S)

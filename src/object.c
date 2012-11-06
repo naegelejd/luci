@@ -7,7 +7,7 @@ LuciObject *create_object(int type)
 {
     LuciObject *ret = alloc(sizeof(*ret));
     ret->type = type;
-    ret->refcount = 1;
+    ret->refcount = 0;
     switch(type)
     {
 	case obj_str_t:
@@ -29,22 +29,37 @@ LuciObject *create_object(int type)
     return ret;
 }
 
-LuciObject *reference_object(LuciObject *orig)
+LuciObject *incref(LuciObject *orig)
 {
-    if (!orig) {
-	return NULL;
-    }
+    if (!orig)
+        die("Attempt to incref NULL\n");
 
     orig->refcount ++;
 
     return orig;
 }
 
+LuciObject *decref(LuciObject *orig)
+{
+    if (!orig)
+        return NULL;
+        /*
+        die("Attempt to decref NULL\n");
+        */
+    orig->refcount --;
+
+    if (orig->refcount < 1) {
+        destroy_object(orig);
+        return NULL;
+    }
+
+    return orig;
+}
+
 LuciObject *copy_object(LuciObject *orig)
 {
-    if (!orig) {
+    if (!orig)
 	return NULL;
-    }
 
     /* create the initial copy with only its type specified */
     LuciObject *copy = create_object(orig->type);
@@ -71,6 +86,9 @@ LuciObject *copy_object(LuciObject *orig)
 		list_append_object(copy, list_get_object(orig, i));
 	    }
 	    break;
+        case obj_func_t:
+            copy->value.func = orig->value.func;
+            break;
 	default:
 	    break;
     }
@@ -79,37 +97,39 @@ LuciObject *copy_object(LuciObject *orig)
 
 void destroy_object(LuciObject *trash)
 {
-    if (trash && (--(trash->refcount) <= 0))
-    {
-	int i;
-	switch(trash->type) {
-	    case obj_list_t:
-		for (i = 0; i < trash->value.list.count; i++) {
-		    destroy_object(trash->value.list.items[i]);
-		}
-		free(trash->value.list.items);
-		break;
-	    case obj_file_t:
-		if (trash->value.file.ptr) {
-		    /* TODO: method of closing only open files */
-		    /* yak("Closing file object\n"); */
-		    /* close_file(trash->value.file.ptr); */
-		}
-		break;
-	    case obj_str_t:
-		yak("Freeing str object with val %s\n", trash->value.s_val);
-		free(trash->value.s_val);
-		trash->value.s_val = NULL;
-		break;
-	    default:
-		break;
-	}
-	yak("Destroying obj with type %d\n", trash->type);
+    if (!trash)
+        die("Attempt to destroy NULL\n");
+    if (trash->refcount > 0)
+        yak("Destroying object with refcount > 0!\n");
 
-	/* destroy the LuciObject itself */
-	free(trash);
-	trash = NULL;
+    int i;
+    switch(trash->type) {
+        case obj_list_t:
+            for (i = 0; i < trash->value.list.count; i++) {
+                destroy_object(trash->value.list.items[i]);
+            }
+            free(trash->value.list.items);
+            break;
+        case obj_file_t:
+            if (trash->value.file.ptr) {
+                /* TODO: method of closing only open files */
+                /* yak("Closing file object\n"); */
+                /* close_file(trash->value.file.ptr); */
+            }
+            break;
+        case obj_str_t:
+            yak("Freeing str object with val %s\n", trash->value.s_val);
+            free(trash->value.s_val);
+            trash->value.s_val = NULL;
+            break;
+        default:
+            break;
     }
+    yak("Destroying obj with type %d\n", trash->type);
+
+    /* destroy the LuciObject itself */
+    free(trash);
+    trash = NULL;
 }
 
 int list_append_object(LuciObject *list, LuciObject *item)
@@ -153,8 +173,9 @@ LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
 	index = list->value.list.count = abs(index);
     }
     /* list_get_object will take care of any more error handling */
-    destroy_object(list_get_object(list, index));
+    LuciObject *old = list_get_object(list, index);
     list->value.list.items[index] = item;
+    return old;
 }
 
 

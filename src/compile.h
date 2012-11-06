@@ -12,6 +12,7 @@ typedef enum {
     NOP,
     LOADK,
     LOADS,
+    DUP,
     STORE,
     BINOP,
     CALL,

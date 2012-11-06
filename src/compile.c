@@ -17,6 +17,7 @@ static char *instr_names[] = {
     "NOP",
     "LOADK",
     "LOADS",
+    "COPYT",
     "STORE",
     "BINOP",
     "CALL",
@@ -130,6 +131,7 @@ static void _compile(AstNode *node, Program *prog)
     size_t len;
     LuciObject *obj = NULL;
 
+    AstNode *tmp;
     AstConstant constant;
 
     if (!node) {
@@ -145,11 +147,13 @@ static void _compile(AstNode *node, Program *prog)
                 _compile(node->data.statements.statements[i], prog);
             }
             break;
+
         case ast_func_t:
             _compile(node->data.funcdef.param_list, prog);
             _compile(node->data.funcdef.statements, prog);
             _compile(node->data.funcdef.funcname, prog);
             break;
+
         case ast_list_t:
             for (i = 0; i < node->data.list.count; i++)
             {
@@ -159,6 +163,7 @@ static void _compile(AstNode *node, Program *prog)
             /* add MKLIST instruction for # of list items */
             add_instr(prog, MKLIST, node->data.list.count);
             break;
+
         case ast_while_t:
             /* store addr of start of while */
             addr1 = prog->count;
@@ -173,11 +178,13 @@ static void _compile(AstNode *node, Program *prog)
             /* change bogus instr to conditional jump */
             change_instr(prog, addr2, JUMPZ, prog->count);
             break;
+
         case ast_for_t:
             _compile(node->data.for_loop.list, prog);
             _compile(node->data.for_loop.statements, prog);
             _compile(node->data.for_loop.iter, prog);
             break;
+
         case ast_if_t:
             /* compile test expression */
             _compile(node->data.if_else.cond, prog);
@@ -201,14 +208,33 @@ static void _compile(AstNode *node, Program *prog)
                 change_instr(prog, addr1, JUMPZ, prog->count);
             }
             break;
+
         case ast_assign_t:
-            /* compile the right-hand value */
-            _compile(node->data.assignment.right, prog);
-            /* get id of left-hand symbol */
-            a = symbol_id(prog->symtable, node->data.assignment.name);
-            /* add a STORE instruction */
+            tmp = node->data.assignment.right;
+            /* traverse nested assignments until we reach RH value */
+            while (tmp->type == ast_assign_t) {
+                tmp = tmp->data.assignment.right;
+            }
+            /* compile actual value of assignment */
+            _compile(tmp, prog);
+            tmp = node;
+            /* duplicate top-of-stack for each additional assignment */
+            while (tmp->data.assignment.right->type == ast_assign_t) {
+                add_instr(prog, DUP, 0);
+                /* get id of left-hand symbol */
+                a = symbol_id(prog->symtable, tmp->data.assignment.name);
+                /* add a STORE instruction */
+                add_instr(prog, STORE, a);
+
+                tmp = tmp->data.assignment.right;
+            }
+            /* get id of final left-hand symbol */
+            a = symbol_id(prog->symtable, tmp->data.assignment.name);
+            /* add final STORE instruction */
             add_instr(prog, STORE, a);
             break;
+
+
         case ast_call_t:
             /* compile arglist, which pushes list onto stack */
             _compile(node->data.call.arglist, prog);
@@ -216,15 +242,18 @@ static void _compile(AstNode *node, Program *prog)
             _compile(node->data.call.funcname, prog);
             add_instr(prog, CALL, 0);
             break;
+
         case ast_listindex_t:
             _compile(node->data.listindex.list, prog);
             _compile(node->data.listindex.index, prog);
             break;
+
         case ast_listassign_t:
             /* _compile(node->data.listassign.name, prog); */
             _compile(node->data.listassign.index, prog);
             _compile(node->data.listassign.right, prog);
             break;
+
         case ast_expr_t:
             _compile(node->data.expression.left, prog);
             _compile(node->data.expression.right, prog);
@@ -233,13 +262,16 @@ static void _compile(AstNode *node, Program *prog)
             add_instr(prog, BINOP, a);
             yak("BINOP %d\n", a);
             break;
+
         case ast_id_t:
             a = symbol_id(prog->symtable, node->data.id.val);
             add_instr(prog, LOADS, a);
             yak("LOADS %s\n", node->data.id.val);
             break;
+
         case ast_constant_t:
             constant = node->data.constant;
+
             switch (constant.type) {
                 case co_string_t:
                     obj = create_object(obj_str_t);
@@ -250,6 +282,7 @@ static void _compile(AstNode *node, Program *prog)
                     add_instr(prog, LOADK, a);
                     yak("LOADK \"%s\"\n", constant.val.s);
                     break;
+
                 case co_float_t:
                     obj = create_object(obj_float_t);
                     obj->value.f_val = constant.val.f;
@@ -257,6 +290,7 @@ static void _compile(AstNode *node, Program *prog)
                     add_instr(prog, LOADK, a);
                     yak("LOADK %g\n", constant.val.f);
                     break;
+
                 case co_int_t:
                     obj = create_object(obj_int_t);
                     obj->value.i_val = constant.val.i;
@@ -264,6 +298,7 @@ static void _compile(AstNode *node, Program *prog)
                     add_instr(prog, LOADK, a);
                     yak("LOADK %ld\n", constant.val.i);
                     break;
+
                 default:
                     die("Bad constant type\n");
             }

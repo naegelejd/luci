@@ -34,6 +34,6 @@ SymbolTable *symtable_new(int);
 void symtable_delete(SymbolTable *);
 int symbol_id(SymbolTable *, const char *);
 void symtable_set(SymbolTable *, LuciObject *, int);
-LuciObject *symtable_get(SymbolTable *, int);
+LuciObject * symtable_get(SymbolTable *, int);
 
 #endif

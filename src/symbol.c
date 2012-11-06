@@ -221,7 +221,7 @@ void symtable_delete(SymbolTable *symtable)
     /* deallocate all objects in table */
     for (i = 0; i < symtable->count; i ++) {
         if (symtable->objects[i])
-            destroy_object(symtable->objects[i]);
+            decref(symtable->objects[i]);
     }
 
     free(symtable->symbols);
@@ -233,6 +233,7 @@ void symtable_delete(SymbolTable *symtable)
 
     return;
 }
+
 
 static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)
 {
@@ -293,13 +294,19 @@ int symbol_id(SymbolTable *symtable, const char *name)
 
 /**
  * Replaces the object in the table pertaining to id
+ * Returns old object if it exists
  */
 void symtable_set(SymbolTable *symtable, LuciObject *obj, int id)
 {
+    LuciObject *old = NULL;
+
     if ((id < 0) || (id >= symtable->count))
         die("Symbol id out of bounds\n");
 
+    old = symtable->objects[id];
     symtable->objects[id] = obj;
+    incref(obj);
+    decref(old);
 }
 
 /**

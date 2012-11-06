@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef CONSTANT_H
 #define CONSTANT_H
 

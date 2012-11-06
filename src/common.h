@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef COMMON_H
 #define COMMON_H
 

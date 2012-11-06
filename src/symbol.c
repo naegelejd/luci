@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -17,6 +21,16 @@ static uint32_t hash_symbol(SymbolTable *, const char *);
 static uint32_t djb2(const char *);
 static uint32_t sdbm(const char *);
 static uint32_t oaat(const char *);
+
+/* http://planetmath.org/GoodHashTablePrimes.html */
+enum { N_BUCKET_OPTIONS = 26 };
+static unsigned int NBUCKETS[N_BUCKET_OPTIONS] = {
+    97, 193, 389, 769, 1543, 3079, 6151, 12289,
+    24593, 49157, 98317, 196613, 393241, 786433,
+    1572869, 3145739, 6291469, 12582917, 25165843,
+    50331653, 100663319, 201326611, 402653189,
+    805306457, 1610612741, 0
+};
 
 /*
  * hash(i) = hash(i - 1) * 33 + str[i]
@@ -70,7 +84,7 @@ static uint32_t (*hashfuncs[])(const char *str) = {
 
 static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
 {
-    return hashfuncs[0](name) % symtable->buckets;
+    return hashfuncs[0](name) % NBUCKETS[symtable->bscale];
 }
 
 static Symbol *symbol_new(const char *str, int index)
@@ -112,8 +126,8 @@ static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
     Symbol *cur = NULL, *prev = NULL;
 
     /* resize symbol table if if is over half full */
-    if (symtable->count > (symtable->buckets >> 2))
-        symtable = symtable_resize(symtable, symtable->buckets << 2);
+    if (symtable->count > (NBUCKETS[symtable->bscale] >> 1))
+        symtable = symtable_resize(symtable, symtable->bscale++);
 
     /* calculate hash of the symbol's name */
     uint32_t hash = hash_symbol(symtable, new_symbol->name);
@@ -136,27 +150,30 @@ static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
     return symtable;
 }
 
-static SymbolTable *symtable_resize(SymbolTable *symtable, int buckets)
+static SymbolTable *symtable_resize(SymbolTable *symtable, int bucketscale)
 {
-    if (symtable->buckets <= buckets)
+    /* no shrink implementation defined */
+    if (symtable->bscale >= bucketscale)
         return symtable;
 
-    yak("Resizing symtable from %d to %d\n", symtable->buckets, buckets);
+    yak("Resizing symtable from %d to %d\n",
+            NBUCKETS[symtable->bscale], NBUCKETS[bucketscale]);
 
     /* save the old attrs */
     Symbol **old_symbols = symtable->symbols;
-    int old_buckets = symtable->buckets;
+    int old_bscale = symtable->bscale;
 
     /* allocate new entry array and set bucket count */
-    symtable->symbols = calloc(buckets, sizeof(*(symtable->symbols)));
+    symtable->symbols = calloc(NBUCKETS[bucketscale],
+            sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
         die("Error allocating new, larger symtable entry array\n");
-    symtable->buckets = buckets;
+    symtable->bscale = bucketscale;
 
     Symbol *cur = NULL, *prev = NULL;
     Symbol *inserted = NULL;
     int i = 0;
-    for (i = 0; i < old_buckets; i ++) {
+    for (i = 0; i < NBUCKETS[old_bscale]; i ++) {
         cur = old_symbols[i];
         while (cur) {
             prev = cur;
@@ -175,21 +192,25 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, int buckets)
 /**
  * Allocates and returns a new symbol table.
  */
-SymbolTable *symtable_new(int buckets)
+SymbolTable *symtable_new(int bucketscale)
 {
     SymbolTable *symtable = calloc(1, sizeof(*symtable));
     if (!symtable)
         die("Error allocating symbol table\n");
     yak("Allocated symbol table\n");
 
-    symtable->buckets = buckets;
-    symtable->symbols = calloc(buckets, sizeof(*(symtable->symbols)));
+    if (bucketscale < 0 || bucketscale >= N_BUCKET_OPTIONS)
+        die("Symbol Table scale out of bounds\n");
+    symtable->bscale = bucketscale;
+
+    symtable->symbols = calloc(NBUCKETS[bucketscale],
+            sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
         die("Error allocating symtable symbols array\n");
     yak("Allocated symbol table symbols array\n");
 
-    /* make Symbol Table object array size = bucket count / 16 */
-    symtable->size = buckets >> 4;
+    /* make Symbol Table object array size = bucket count / 4 */
+    symtable->size = NBUCKETS[bucketscale] >> 2;
     symtable->objects = calloc(symtable->size, sizeof(*(symtable->objects)));
     if (!symtable->objects)
         die("Error allocating symtable objects array\n");
@@ -210,7 +231,7 @@ void symtable_delete(SymbolTable *symtable)
     Symbol *cur = NULL, *prev = NULL;
     int i;
     /* deallocate all symbols in table */
-    for (i = 0; i < symtable->buckets; i ++) {
+    for (i = 0; i < NBUCKETS[symtable->bscale]; i ++) {
         cur = symtable->symbols[i];
         while (cur) {
             prev = cur;
@@ -281,6 +302,11 @@ int symbol_id(SymbolTable *symtable, const char *name)
         symtable->size <<= 1;
         symtable->objects = realloc(symtable->objects,
                 symtable->size * sizeof(*(symtable->objects)));
+        if (!symtable->objects)
+            die("Could not increase symbol table object array size\n");
+        int i;
+        for (i = symtable->count; i < symtable->size; i++)
+            symtable->objects[i] = NULL;
     }
     /* create the new symbol */
     new_symbol = symbol_new(name, symtable->count);
@@ -303,10 +329,11 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, int id)
     if ((id < 0) || (id >= symtable->count))
         die("Symbol id out of bounds\n");
 
-    old = symtable->objects[id];
+    /* Decref any existing object */
+    if (symtable->objects[id])
+        decref(symtable->objects[id]);
     symtable->objects[id] = obj;
     incref(obj);
-    decref(old);
 }
 
 /**

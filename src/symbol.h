@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
@@ -23,7 +27,7 @@ typedef struct symbol
 typedef struct symtable
 {
     int count;      /* Current # of allocated symbol/object pairs */
-    int buckets;    /* Total # of buckets in hashtable */
+    int bscale;     /* Index into array of bucket size options (symbol.c) */
     int collisions; /* Current # of collisions in hashtable */
     int size;       /* Total object array size */
     Symbol **symbols;   /* Symbol array */

@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -72,7 +76,7 @@ Program *program_new(void)
     prog->instructions = alloc(prog->size *
             sizeof(*prog->instructions));
 
-    prog->symtable = symtable_new(BASE_SYMTABLE_SIZE);
+    prog->symtable = symtable_new(BASE_SYMTABLE_SCALE);
     prog->cotable = cotable_new(BASE_COTABLE_SIZE);
 
     return prog;

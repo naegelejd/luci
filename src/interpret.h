@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef INTERPRET_H
 #define INTERPRET_H
 

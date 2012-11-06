@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef COMPILE_H
 #define COMPILE_H
 
@@ -32,7 +36,7 @@ typedef struct {
 */
 
 #define BASE_INSTR_COUNT 256
-#define BASE_SYMTABLE_SIZE 0xFFF
+#define BASE_SYMTABLE_SCALE 0
 #define BASE_COTABLE_SIZE 0xFF
 
 typedef struct {

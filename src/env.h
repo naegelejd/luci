@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef ASTEXEC_H
 #define ASTEXEC_H
 

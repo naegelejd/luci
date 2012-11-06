@@ -7,16 +7,13 @@ Luci is a toy scripting language, implemented in C.
 Luci's syntax is still a work in progress, but the overall
 theme is a mix of Python, Ruby and Perl.
 
-The implementation is slowly developing toward a bytecode-compiled,
+The implementation is slowly evolving into a bytecode-compiled,
 virtual machine interpreter model, from its original model, which
 walked an abstract syntax tree and 'executed' each node.
 
-Binaries
-=========
-Coming soon... Linux/Mac first, followed by Windows.
-
 Tools Needed to Build
 =======================
+
 - `flex (lex)`_
 - `bison (yacc)`_
 - a decent C compiler (gcc)
@@ -26,11 +23,20 @@ Tools Needed to Build
 
 References
 ============
+
 - `Immensely helpful`_
 - `Just as useful`_
+- `One of my questions`_
+- `Implementation of Lua (PDF)`_
+- `Interpreter implementation options`_
+- `Python's Innards`_
 
 .. _Immensely helpful: http://stackoverflow.com/a/2644949
 .. _Just as useful: http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/
+.. _One of my questions: http://stackoverflow.com/q/13094001/1689220
+.. _Implementation of Lua (PDF): www.lua.org/doc/jucs05.pdf
+.. _Interpreter implementation options: http://realityforge.org/code/virtual-machines/2011/05/19/interpreters.html
+.. _Python's Innards: http://tech.blog.aknin.name/2010/04/02/pythons-innards-introduction/
 
 TODO (version 0.2)
 ===================
@@ -39,22 +45,40 @@ TODO (version 0.2)
 - Implement bytecode compiler
 
   - Determine/iteratively improve instruction set
-  - Implement efficient symbol table (hashing)
+  - Append instructions faster (currently function call for each)
+  - Backpatch instructions faster (currently function call for each)
+  - Cleanly store loop state for backpatching ``BREAK`` and ``CONTINUE``
+  - Implement efficient symbol table (hash)
   - Implement useful constant table
   - Design function prototypes
+  - Bytecode optimizations
 
 - Implement bytecode interpreter (VM)
 
   - Efficient object stack
+  - Change library-function API to use object stack (i.e. ``CALL #`` vs ``MKLIST #; CALL``
   - Fast instruction dispatch (gcc ``computed goto`` vs. ``switch-case``)
-  - Proper function call/return handling
+  - Proper function call/return handling (call stack)
+
+- Implement a memory manager optimized for allocating many small blocks
+
+  This is more for the learning experience... I know it's difficult to
+  out-perform the GNU libc memory management implementation
 
 - Possibly implement an API for creating libraries
 
 Completed in version 0.1
 =========================
+
 The following features were completed in Luci v0.1.
-This version is nearly obsolete, as the implementation
+Luci v0.1 simply walked the abstract syntax tree and,
+for each node, executed analogous expressions in C, i.e.
+for each ``if-else`` node, a C function in the AST walking
+code would recursively evaluate the conditional expression,
+then if it was "true", evaluate the ``if-statements`` node,
+otherwise it would evaluate the ``else-statements`` node.
+
+This version is now obsolete, as the implementation
 was inefficient and did not allow for nested control flow
 statements, i.e. ``break``, ``continue``, ``return``.
 

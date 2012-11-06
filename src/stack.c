@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #include <stdio.h>
 #include "object.h"
 #include "stack.h"

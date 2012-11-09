@@ -1,3 +1,5 @@
+set(LUCI luci)
+
 find_package(BISON)
 find_package(FLEX)
 
@@ -9,7 +11,7 @@ ADD_FLEX_BISON_DEPENDENCY(myscanner myparser)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(
-    ${PROJECT_NAME}
+    ${LUCI}
     ${BISON_myparser_OUTPUTS}
     ${FLEX_myscanner_OUTPUTS}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
@@ -24,6 +26,8 @@ add_executable(
     # ${CMAKE_CURRENT_SOURCE_DIR}/env.c
     ${CMAKE_CURRENT_SOURCE_DIR}/functions.c
 )
+
+install(TARGETS ${LUCI} DESTINATION bin)
 
 find_package(DOXYGEN)
 if(DOXYGEN_FOUND)

@@ -14,7 +14,7 @@ const char *TYPE_NAMES[] = {
     "constant",
     "id",
     "expr",
-    "list index",
+    "list access",
     "list assignment",
     "list definition",
     "assignment",
@@ -87,20 +87,20 @@ AstNode *make_binary_expr(AstNode *left,
     return result;
 }
 
-AstNode *make_list_index(AstNode *list, AstNode *index)
+AstNode *make_list_access(AstNode *list, AstNode *index)
 {
-    AstNode *result = create_node(ast_listindex_t);
-    result->data.listindex.list = list;
-    result->data.listindex.index = index;
-    yak("Made list index reference\n");
+    AstNode *result = create_node(ast_listaccess_t);
+    result->data.listaccess.list = list;
+    result->data.listaccess.index = index;
+    yak("Made list access reference\n");
     return result;
 }
 
-AstNode *make_list_assignment(char *name,
+AstNode *make_list_assignment(AstNode *name,
         AstNode *index, AstNode *right)
 {
     AstNode *result = create_node(ast_listassign_t);
-    result->data.listassign.name = name;
+    result->data.listassign.list = name;
     result->data.listassign.index = index;
     result->data.listassign.right = right;
     yak("Made list assignment node\n");
@@ -149,7 +149,7 @@ AstNode *make_while_loop(AstNode *cond, AstNode *statements)
     return result;
 }
 
-AstNode *make_for_loop(AstNode *iter,
+AstNode *make_for_loop(char *iter,
         AstNode *list, AstNode *statements)
 {
     AstNode *result = create_node(ast_for_t);
@@ -319,17 +319,17 @@ int print_ast_graph(AstNode *root, int id)
                 id = print_ast_graph(args->data.list.items[i], id);
             }
             break;
-        case ast_listindex_t:
-            printf("%d [label=\"listindex\"]\n", rID);
+        case ast_listaccess_t:
+            printf("%d [label=\"listaccess\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listindex.list, id);
+            id = print_ast_graph(root->data.listaccess.list, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listindex.index, id);
+            id = print_ast_graph(root->data.listaccess.index, id);
             break;
         case ast_listassign_t:
             printf("%d [label=\"listassign\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            printf("%d [label=\"ID: %s\"]\n", id, root->data.listassign.name);
+            id = print_ast_graph(root->data.listassign.list, id);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.listassign.index, id);
             printf("%d -> %d\n", rID, ++id);
@@ -405,7 +405,7 @@ void destroy_tree(AstNode *root)
         case ast_for_t:
             destroy_tree(root->data.for_loop.list);
             destroy_tree(root->data.for_loop.statements);
-            destroy_tree(root->data.for_loop.iter);
+            free(root->data.for_loop.iter);
             break;
         case ast_if_t:
             destroy_tree(root->data.if_else.cond);
@@ -420,14 +420,14 @@ void destroy_tree(AstNode *root)
             destroy_tree(root->data.call.arglist);
             destroy_tree(root->data.call.funcname);
             break;
-        case ast_listindex_t:
-            destroy_tree(root->data.listindex.list);
-            destroy_tree(root->data.listindex.index);
+        case ast_listaccess_t:
+            destroy_tree(root->data.listaccess.list);
+            destroy_tree(root->data.listaccess.index);
             break;
         case ast_listassign_t:
             destroy_tree(root->data.listassign.index);
             destroy_tree(root->data.listassign.right);
-            free(root->data.listassign.name);
+            destroy_tree(root->data.listassign.list);
             break;
         case ast_expr_t:
             destroy_tree(root->data.expression.left);

@@ -25,14 +25,16 @@ LuciObject *create_object(int type)
 	default:
 	    break;
     }
-
+    yak("Creating obj @ %lu with type %d\n",
+            (unsigned long) ret, ret->type);
     return ret;
 }
 
 LuciObject *incref(LuciObject *orig)
 {
     if (!orig)
-        die("Attempt to incref NULL\n");
+        return NULL;
+        /*die("Attempt to incref NULL\n"); */
 
     orig->refcount ++;
 
@@ -46,10 +48,11 @@ LuciObject *decref(LuciObject *orig)
         /*
         die("Attempt to decref NULL\n");
         */
+
     orig->refcount --;
 
     if (orig->refcount < 1) {
-        destroy_object(orig);
+        destroy(orig);
         return NULL;
     }
 
@@ -95,18 +98,23 @@ LuciObject *copy_object(LuciObject *orig)
     return copy;
 }
 
-void destroy_object(LuciObject *trash)
+void destroy(LuciObject *trash)
 {
-    if (!trash)
-        die("Attempt to destroy NULL\n");
-    if (trash->refcount > 0)
-        yak("Destroying object with refcount > 0!\n");
+    if (!trash) {
+        yak("Destroying a NULL object...\n");
+        return;
+    }
+
+    if (trash->refcount > 0) {
+        /* Attempts to destroy a referenced obj are ignored */
+        return;
+    }
 
     int i;
     switch(trash->type) {
         case obj_list_t:
             for (i = 0; i < trash->value.list.count; i++) {
-                destroy_object(trash->value.list.items[i]);
+                destroy(trash->value.list.items[i]);
             }
             free(trash->value.list.items);
             break;
@@ -118,14 +126,15 @@ void destroy_object(LuciObject *trash)
             }
             break;
         case obj_str_t:
-            yak("Freeing str object with val %s\n", trash->value.s_val);
+            yak("Freeing string %s\n", trash->value.s_val);
             free(trash->value.s_val);
             trash->value.s_val = NULL;
             break;
         default:
             break;
     }
-    yak("Destroying obj with type %d\n", trash->type);
+    yak("Destroying obj @ %lu with type %d\n",
+            (unsigned long) trash, trash->type);
 
     /* destroy the LuciObject itself */
     free(trash);

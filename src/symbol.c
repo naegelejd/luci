@@ -241,8 +241,9 @@ void symtable_delete(SymbolTable *symtable)
     }
     /* deallocate all objects in table */
     for (i = 0; i < symtable->count; i ++) {
-        if (symtable->objects[i])
+        if (symtable->objects[i]) {
             decref(symtable->objects[i]);
+        }
     }
 
     free(symtable->symbols);
@@ -346,5 +347,3 @@ LuciObject *symtable_get(SymbolTable *symtable, int id)
 
     return symtable->objects[id];
 }
-
-

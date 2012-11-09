@@ -32,7 +32,7 @@ void yyerror(const char *msg);
 %type <node> expr id cond call assignment statement statements
 %type <node> while_loop for_loop if_else
 %type <node> func_def params return
-%type <node> empty_list list_items list_index list_assign list
+%type <node> empty_list list_items list_index list_access list_assign list
 %type <node> program
 
 %token <int_v> INT
@@ -75,9 +75,9 @@ statements:
 
 statement:
         func_def            { $$ = $1; }
-    |   assignment          { $$ = $1; }
+    |   expr                { $$ = $1; }
     |   list_assign         { $$ = $1; }
-    |   call                { $$ = $1; }
+    |   assignment          { $$ = $1; }
     |   while_loop          { $$ = $1; }
     |   for_loop            { $$ = $1; }
     |   if_else             { $$ = $1; }
@@ -94,8 +94,8 @@ assignment:
     ;
 
 list_assign:
-        ID LSQUARE expr RSQUARE ASSIGN expr
-                { $$ = make_list_assignment($1, $3, $6); }
+        id list_index ASSIGN expr
+                { $$ = make_list_assignment($1, $2, $4); }
     ;
 
 func_def:
@@ -134,10 +134,12 @@ list_items:
     |   list_items COMMA expr   { $$ = make_list_def($1, $3); }
     ;
 
+list_access:
+        expr list_index { $$ = make_list_access($1, $2); };
+
 list_index:
-        expr LSQUARE expr RSQUARE
-                { $$ = make_list_index($1, $3); }
-    ;
+        LSQUARE expr RSQUARE
+                { $$ = $2; /* make_list_index($1, $3); */ };
 
 while_loop:
         WHILE cond DO NEWLINE statements DONE
@@ -145,7 +147,7 @@ while_loop:
     ;
 
 for_loop:
-        FOR id IN expr DO NEWLINE statements DONE
+        FOR ID IN expr DO NEWLINE statements DONE
                 { $$ = make_for_loop($2, $4, $7); }
     ;
 
@@ -216,7 +218,7 @@ expr:
                         make_int_constant(0), $2, op_sub_t);
                 }
     |   LPAREN expr RPAREN      { $$ = $2; }
-    |   list_index              { $$ = $1; }
+    |   list_access             { $$ = $1; }
     |   list                    { $$ = $1; }
     |   call                    { $$ = $1; }
     ;
@@ -225,7 +227,7 @@ expr:
 
 void yyerror(const char *msg)
 {
-    die("Syntax Error: %s @ line #%d, col #%d\n",
+    die("(Syntax) %s @ line #%d, col #%d\n",
             msg, get_line_num(), get_last_col_num());
 }
 

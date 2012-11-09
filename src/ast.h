@@ -15,7 +15,7 @@ typedef enum {
     ast_constant_t,
     ast_id_t,
     ast_expr_t,
-    ast_listindex_t,
+    ast_listaccess_t,
     ast_listassign_t,
     ast_list_t,
     ast_assign_t,
@@ -80,11 +80,11 @@ typedef struct
 {
     struct AstNode *list;
     struct AstNode *index;
-} AstListIndex;
+} AstListAccess;
 
 typedef struct
 {
-    char *name;
+    struct AstNode *list;
     struct AstNode *index;
     struct AstNode *right;
 } AstListAssign;
@@ -99,7 +99,7 @@ typedef struct
 {
     struct AstNode *list;
     struct AstNode *statements;
-    struct AstNode *iter;
+    char *iter;
 } AstForLoop;
 
 typedef struct
@@ -144,7 +144,7 @@ typedef struct AstNode
         AstConstant constant;
         AstID id;
         AstExpression expression;
-        AstListIndex listindex;
+        AstListAccess listaccess;
         AstListAssign listassign;
         AstListDef list;
         AstAssignment assignment;
@@ -165,12 +165,12 @@ AstNode *make_float_constant(double);
 AstNode *make_string_constant(char *);
 AstNode *make_id_expr(char *);
 AstNode *make_binary_expr(AstNode *, AstNode *, int op);
-AstNode *make_list_index(AstNode *, AstNode *);
-AstNode *make_list_assignment(char *, AstNode *, AstNode *);
+AstNode *make_list_access(AstNode *, AstNode *);
+AstNode *make_list_assignment(AstNode *, AstNode *, AstNode *);
 AstNode *make_list_def(AstNode *, AstNode *);
 AstNode *make_assignment(char *, AstNode *);
 AstNode *make_while_loop(AstNode *, AstNode *);
-AstNode *make_for_loop(AstNode *, AstNode *, AstNode *);
+AstNode *make_for_loop(char *, AstNode *, AstNode *);
 AstNode *make_if_else(AstNode *, AstNode *, AstNode *);
 AstNode *make_func_call(AstNode *, AstNode *);
 AstNode *make_func_def(AstNode *, AstNode *, AstNode *);

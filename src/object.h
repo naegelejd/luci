@@ -1,6 +1,8 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+struct _Stack;
+
 /* initial allocated size of a new List */
 #define INIT_LIST_SIZE 32
 
@@ -34,7 +36,7 @@ typedef union {
         int count;	/* current number of items in list */
         int size;	/* current count of allocated item pointers */
     } list;
-    struct LuciObject * (*func)(struct LuciObject *);
+    struct LuciObject * (*func)(struct _Stack *, int);
 } LuciOVal;
 
 /* LuciFunction is a type of function that returns a LuciObject * */
@@ -59,9 +61,9 @@ struct LuciObject *incref(struct LuciObject* orig);
 /* duplicates a LuciObject, creating a new one */
 struct LuciObject *copy_object(struct LuciObject* orig);
 /* destroys an object */
-void destroy_object(struct LuciObject *trash);
+void destroy(struct LuciObject *trash);
 
 int list_append_object(struct LuciObject *list, struct LuciObject *item);
-struct LuciObject *list_get_object(struct LuciObject *list, int index);
-
+LuciObject *list_get_object(LuciObject *list, int index);
+LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index);
 #endif

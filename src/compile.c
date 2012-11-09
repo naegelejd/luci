@@ -19,16 +19,19 @@ static void change_instr(Program *, int, Opcode, int);
 
 static char *instr_names[] = {
     "NOP",
+    "POP",
     "LOADK",
     "LOADS",
-    "COPYT",
+    "DUP",
     "STORE",
     "BINOP",
     "CALL",
-    "JUMP",
-    "JUMPZ",
     "MKLIST",
-    "EXIT"
+    "LISTGET",
+    "LISTPUT",
+    "HALT",
+    "JUMP",
+    "JUMPZ"
 };
 
 /**
@@ -62,8 +65,8 @@ Program * compile_ast(AstNode *root)
     /* compile the AST */
     _compile(root, prog);
 
-    /* end the program with an EXIT instr */
-    add_instr(prog, EXIT, 0);
+    /* end the program with an HALT instr */
+    add_instr(prog, HALT, 0);
 
     return prog;
 }
@@ -100,21 +103,29 @@ static int add_instr(Program *prog, Opcode op, int arg)
     if (!(prog->instructions))
         die("Instruction list not allocated. Can't add instruction\n");
 
-    /* Allocate and initialize the instruction */
-    Instruction instr = (op << 11) | (arg & 0x7FF);
-
     /* Reallocate the program's instruction list if necessary */
-    if (prog->count > prog->size) {
+    if (prog->count + 1 > prog->size) {
         prog->size <<= 1;
         prog->instructions = realloc(prog->instructions,
                 prog->size * sizeof(*(prog->instructions)));
     }
 
-    /* Append the new instruction to the instruction list */
-    prog->instructions[prog->count] = instr;
-
-    /* increment instruction count after appending */
-    return prog->count ++;
+    /* Allocate and initialize the instruction */
+    Instruction instr = (op << 11);
+    if (op >= JUMP) {
+        instr |= (0x7FF & (arg >> 16));
+        prog->instructions[prog->count++] = instr;
+        instr = 0xFFFF & arg;
+        prog->instructions[prog->count++] = instr;
+        /* return prog->count - 2, which points to the actual JUMP */
+        return prog->count - 2;
+    } else {
+        instr |= (arg & 0x7FF);
+        /* Append the new instruction to the instruction list */
+        prog->instructions[prog->count] = instr;
+        /* increment instruction count after appending */
+        return prog->count++;
+    }
 }
 
 static void change_instr(Program *prog, int addr, Opcode op, int arg)
@@ -122,9 +133,18 @@ static void change_instr(Program *prog, int addr, Opcode op, int arg)
     if (addr < 0 || addr > prog->count)
         die("Address out of bounds\n");
 
-    Instruction instr = (op << 11) | (arg & 0x7FF);
-
-    prog->instructions[addr] = instr;
+    Instruction instr = (op << 11);
+    if (op >= JUMP) {
+        instr |= (0x7FF & (arg >> 16));
+        prog->instructions[addr] = instr;
+        instr = 0xFFFF & arg;
+        prog->instructions[++addr] = instr;
+    } else {
+        instr |= (arg & 0x7FF);
+        /* Append the new instruction to the instruction list */
+        prog->instructions[addr] = instr;
+        /* increment instruction count after appending */
+    }
 }
 
 static void _compile(AstNode *node, Program *prog)
@@ -146,9 +166,13 @@ static void _compile(AstNode *node, Program *prog)
     switch (node->type)
     {
         case ast_stmnts_t:
-            for (i = 0; i < node->data.statements.count; i++)
-            {
-                _compile(node->data.statements.statements[i], prog);
+            for (i = 0; i < node->data.statements.count; i++) {
+                tmp = node->data.statements.statements[i];
+                _compile(tmp, prog);
+                if ((tmp->type == ast_expr_t) ||
+                        (tmp->type == ast_call_t)) {
+                    add_instr(prog, POP, 0);
+                }
             }
             break;
 
@@ -159,8 +183,8 @@ static void _compile(AstNode *node, Program *prog)
             break;
 
         case ast_list_t:
-            for (i = 0; i < node->data.list.count; i++)
-            {
+            /* compile list items in reverse order */
+            for (i = node->data.list.count - 1; i >= 0; i--) {
                 /* compile each list member */
                 _compile(node->data.list.items[i], prog);
             }
@@ -173,8 +197,8 @@ static void _compile(AstNode *node, Program *prog)
             addr1 = prog->count;
             /* compile test expression */
             _compile(node->data.while_loop.cond, prog);
-            /* push a bogus instr */
-            addr2 = add_instr(prog, NOP, 0);
+            /* push a bogus jump instr */
+            addr2 = add_instr(prog, JUMP, -1);
             /* compile body of while loop */
             _compile(node->data.while_loop.statements, prog);
             /* add a jump to beginning of while loop */
@@ -184,22 +208,28 @@ static void _compile(AstNode *node, Program *prog)
             break;
 
         case ast_for_t:
+            /* compile loop (expr) */
             _compile(node->data.for_loop.list, prog);
+            /* store addr of start of for-loop */
+            addr1 = prog->count;
+            /* compile body of for-loop */
             _compile(node->data.for_loop.statements, prog);
-            _compile(node->data.for_loop.iter, prog);
+            a = symbol_id(prog->symtable, node->data.for_loop.iter);
+            /* add jump to beginning of for-loop */
+            add_instr(prog, JUMP, addr1);
             break;
 
         case ast_if_t:
             /* compile test expression */
             _compile(node->data.if_else.cond, prog);
             /* add bogus instruction number 1 */
-            addr1 = add_instr(prog, NOP, 0);
+            addr1 = add_instr(prog, JUMP, -1);
             /* compile TRUE statements */
             _compile(node->data.if_else.ifstatements, prog);
 
             if (node->data.if_else.elstatements) {
                 /* add bogus instruction number 2 */
-                addr2 = add_instr(prog, NOP, 0);
+                addr2 = add_instr(prog, JUMP, -1);
                 /* change bogus instr 1 to a conditional jump */
                 change_instr(prog, addr1, JUMPZ, prog->count);
                 /* compile FALSE statements */
@@ -240,22 +270,28 @@ static void _compile(AstNode *node, Program *prog)
 
 
         case ast_call_t:
-            /* compile arglist, which pushes list onto stack */
-            _compile(node->data.call.arglist, prog);
+            /* compile arglist, which pushes each arg onto stack */
+            tmp = node->data.call.arglist;
+            for (i = 0; i < tmp->data.list.count; i++) {
+                _compile(tmp->data.list.items[i], prog);
+            }
             /* compile funcname, which pushes symbol value onto stack */
             _compile(node->data.call.funcname, prog);
-            add_instr(prog, CALL, 0);
+            /* add CALL instr, specifying # of args */
+            add_instr(prog, CALL, tmp->data.list.count);
             break;
 
-        case ast_listindex_t:
-            _compile(node->data.listindex.list, prog);
-            _compile(node->data.listindex.index, prog);
+        case ast_listaccess_t:
+            _compile(node->data.listaccess.index, prog);
+            _compile(node->data.listaccess.list, prog);
+            add_instr(prog, LISTGET, 0);
             break;
 
         case ast_listassign_t:
-            /* _compile(node->data.listassign.name, prog); */
-            _compile(node->data.listassign.index, prog);
             _compile(node->data.listassign.right, prog);
+            _compile(node->data.listassign.index, prog);
+            _compile(node->data.listassign.list, prog);
+            add_instr(prog, LISTPUT, 0);
             break;
 
         case ast_expr_t:
@@ -264,13 +300,13 @@ static void _compile(AstNode *node, Program *prog)
             a = node->data.expression.op;
             /* make long immediate from int op */
             add_instr(prog, BINOP, a);
-            yak("BINOP %d\n", a);
+            /* yak("BINOP %d\n", a); */
             break;
 
         case ast_id_t:
             a = symbol_id(prog->symtable, node->data.id.val);
             add_instr(prog, LOADS, a);
-            yak("LOADS %s\n", node->data.id.val);
+            /* yak("LOADS %s\n", node->data.id.val); */
             break;
 
         case ast_constant_t:
@@ -284,7 +320,7 @@ static void _compile(AstNode *node, Program *prog)
 
                     a = constant_id(prog->cotable, obj);
                     add_instr(prog, LOADK, a);
-                    yak("LOADK \"%s\"\n", constant.val.s);
+                    /* yak("LOADK \"%s\"\n", constant.val.s); */
                     break;
 
                 case co_float_t:
@@ -292,7 +328,7 @@ static void _compile(AstNode *node, Program *prog)
                     obj->value.f_val = constant.val.f;
                     a = constant_id(prog->cotable, obj);
                     add_instr(prog, LOADK, a);
-                    yak("LOADK %g\n", constant.val.f);
+                    /* yak("LOADK %g\n", constant.val.f); */
                     break;
 
                 case co_int_t:
@@ -300,7 +336,7 @@ static void _compile(AstNode *node, Program *prog)
                     obj->value.i_val = constant.val.i;
                     a = constant_id(prog->cotable, obj);
                     add_instr(prog, LOADK, a);
-                    yak("LOADK %ld\n", constant.val.i);
+                    /* yak("LOADK %ld\n", constant.val.i); */
                     break;
 
                 default:
@@ -314,9 +350,18 @@ static void _compile(AstNode *node, Program *prog)
 
 void print_instructions(Program *prog)
 {
-    int i = 0;
-    for (i = 0; i < prog->count; i ++)
-        printf("%03x: %s %x\n", i,
-                instr_names[prog->instructions[i] >> 11],
-                prog->instructions[i] & 0x7FF);
+    int i, a, instr;
+    const char *name = NULL;
+
+    for (i = 0; i < prog->count; i ++) {
+        a = prog->instructions[i] & 0x7FF;
+        instr = prog->instructions[i] >> 11;
+
+        /* rip out another instr if extended */
+        if (instr >= JUMP) {
+            i++;
+            a = prog->instructions[i] + (a << 16);
+        }
+        printf("%03x: %s %x\n", i, instr_names[instr], a);
+    }
 }

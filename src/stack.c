@@ -49,7 +49,7 @@ void st_print(Stack *S)
     else {
         printf("Stack contents: ");
         for (i = 0; i < S-> top; i++) {
-            printf("%ld  ", (long)S->impl[i]);
+            printf("%lu  ", (unsigned long)S->impl[i]);
         }
         printf("\n");
     }

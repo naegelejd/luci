@@ -17,21 +17,27 @@ ConstantTable *cotable_new(int size)
     return cotable;
 }
 
+/**
+ * Frees all memory allocated for constant table
+ */
 void cotable_delete(ConstantTable *cotable)
 {
     int i;
-    if (cotable->objects) {
-        for (i = 0; i < cotable->count; i ++)
-            decref(cotable->objects[i]);
-        free(cotable->objects);
-        cotable->objects = NULL;
-    }
+    /* destroy all constant objects */
+    for (i = 0; i < cotable->count; i ++)
+        destroy(cotable->objects[i]);
+    free(cotable->objects);
+    cotable->objects = NULL;
     free(cotable);
     cotable = NULL;
 
     return ;
 }
 
+/**
+ * Returns the ID of the constant value
+ * Inserts object into table if it is not already present
+ */
 int constant_id(ConstantTable *cotable, LuciObject *const_obj)
 {
     if (const_obj == NULL)
@@ -42,15 +48,20 @@ int constant_id(ConstantTable *cotable, LuciObject *const_obj)
         cotable->objects = realloc(cotable->objects,
                 cotable->size * sizeof(*cotable->objects));
     }
+    /* store object */
     cotable->objects[cotable->count] = const_obj;
-    incref(const_obj);
     /* return count (index a.k.a. ID ) */
     return cotable->count++;
 }
 
+/**
+ * Returns a COPY of the constant object
+ */
 LuciObject *cotable_get(ConstantTable *cotable, int id)
 {
     if ((id < 0) || (id >= cotable->count))
         die("Constant id out of bounds\n");
-    return cotable->objects[id];
+
+    /* return a copy of the constant */
+    return copy_object(cotable->objects[id]);
 }

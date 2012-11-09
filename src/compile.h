@@ -14,26 +14,23 @@
 
 typedef enum {
     NOP,
+    POP,
     LOADK,
     LOADS,
     DUP,
     STORE,
     BINOP,
     CALL,
+    MKLIST,
+    LISTGET,
+    LISTPUT,
+    HALT,
+    /* here begins extended length instructions */
     JUMP,
     JUMPZ,
-    MKLIST,
-    EXIT,
 } Opcode;
 
 typedef uint16_t Instruction;
-/*
-typedef struct {
-    Opcode opcode;
-    int a;
-    int b;
-} Instruction;
-*/
 
 #define BASE_INSTR_COUNT 256
 #define BASE_SYMTABLE_SCALE 0

@@ -10,7 +10,7 @@
 
 #define STACKMAX    64
 
-typedef struct {
+typedef struct _Stack {
     LuciObject *impl[STACKMAX];
     int top;
 } Stack;

@@ -1,36 +1,37 @@
-print("for-loop 1:")
-for i in range(10) do
- print (i)
-done
+print("for-loop 1:");
+for i in range(10) {
+ print (i);
+}
 
-print("for-loop 2:")
-for i in range(0, 7) do
-    print (i - 1)
-done
+print("for-loop 2:");
+for i in range(0, 7) {
+    print (i - 1);
+}
 
-print("for-loop 3:")
-for j in range(7, -6, -1) do
-    print (j)
-done
-l = range(3)
+print("for-loop 3:");
+for j in range(7, -6, -1) {
+    print (j);
+}
+l = range(3);
 
-print("type stuff and press enter")
+print("type stuff and press enter");
 
-for i in l do
-   l[i] = input()
-done
+for i in l {
+   l[i] = input();
+}
 
-print(l)
+print(l);
 
-f = open("samples/wild.lx", "r")
-line = readline(f)
-print(line)
-close(f)
+f = open("samples/wild.lx", "r");
+line = readline(f);
+print(line);
+close(f);
 
-f = open("samples/wild.lx", "r")
-lines = readlines(f)
+f = open("samples/wild.lx", "r");
+lines = readlines(f);
 
-for l in lines do
-  print(l)
-done
-close(f)
+for l in lines {
+  print(l);
+}
+close(f);
+

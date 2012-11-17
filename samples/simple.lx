@@ -1,38 +1,38 @@
 # Just some sample code to demonstrate the Luci language
 
-print(423)
+print(423);
 
 ######
-x = 42
-y = x + 1
-z = x * (y / 2)
-print(z)
+x = 42;
+y = x + 1;
+z = x * (y / 2);
+print(z);
 
 ############
-my_var = 512
+my_var = 512;
 
-an0th3r = 32
+an0th3r = 32;
 
-__bits__ = my_var / an0th3r
+__bits__ = my_var / an0th3r;
 
-print (     __bits__)
+print (     __bits__);
 
 ######
-x = !1
-y = (x + 2) ** 5
-print(y % 3)
+x = !1;
+y = (x + 2) ** 5;
+print(y % 3);
 
-z = 2
-print(z !=2 )
-print(z != 1)
-print(z == 2)
+z = 2;
+print(z !=2 );
+print(z != 1);
+print(z == 2);
 
 ############
-d = 3.141592
-print(d)
+d = 3.141592;
+print(d);
 
-s = "Hello World!"
+s = "Hello World!";
 
-print(s)
+print(s);
 
-# print(d + s)
+# print(d + s);

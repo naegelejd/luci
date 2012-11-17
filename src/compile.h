@@ -36,12 +36,24 @@ typedef uint16_t Instruction;
 #define BASE_SYMTABLE_SCALE 0
 #define BASE_COTABLE_SIZE 0xFF
 
-typedef struct {
-    int count;
+struct _loop_jump {
+    uint32_t addr;
+    struct _loop_jump *next;
+};
+
+struct _loop_list {
+    struct _loop_jump *breaks;
+    struct _loop_jump *continues;
+    struct _loop_list *parent;
+};
+
+typedef struct _program {
+    uint32_t count;
     int size;
     Instruction *instructions;
     SymbolTable *symtable;
     ConstantTable *cotable;
+    struct _loop_list *current_loop;
 } Program;
 
 

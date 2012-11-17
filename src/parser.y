@@ -29,7 +29,8 @@ void yyerror(const char *msg);
 
 %start program
 
-%type <node> expr id cond call assignment statement statements
+%type <node> statement statements
+%type <node> expr id call assignment
 %type <node> while_loop for_loop if_else
 %type <node> func_def params return
 %type <node> empty_list list_items list_index list_access list_assign list
@@ -39,7 +40,7 @@ void yyerror(const char *msg);
 %token <float_v> FLOAT
 %token <string_v> STRING ID
 
-%token NEWLINE COMMA
+%token NEWLINE SEMICOLON COMMA
 %token WHILE FOR IN DO DONE
 %token BREAK CONTINUE
 %token IF THEN ELSE END
@@ -54,6 +55,7 @@ void yyerror(const char *msg);
 %left POW
 %left LPAREN RPAREN
 %left LSQUARE RSQUARE
+%left LBRACK RBRACK
 
 %right ASSIGN
 %right LGNOT BWNOT
@@ -67,23 +69,23 @@ program:
     ;
 
 statements:
-        statement NEWLINE
+        statement
                 { $$ = make_statements(NULL, $1); }
-    |   statements statement NEWLINE
+    |   statements statement
                 { $$ = make_statements($1, $2); }
     ;
 
 statement:
-        func_def            { $$ = $1; }
-    |   expr                { $$ = $1; }
-    |   list_assign         { $$ = $1; }
-    |   assignment          { $$ = $1; }
-    |   while_loop          { $$ = $1; }
+        while_loop          { $$ = $1; }
     |   for_loop            { $$ = $1; }
     |   if_else             { $$ = $1; }
-    |   return              { $$ = $1; }
-    |   BREAK               { $$ = make_break(); }
-    |   CONTINUE            { $$ = make_continue(); }
+    |   func_def            { $$ = $1; }
+    |   expr SEMICOLON               { $$ = $1; }
+    |   list_assign SEMICOLON        { $$ = $1; }
+    |   assignment SEMICOLON         { $$ = $1; }
+    |   return SEMICOLON             { $$ = $1; }
+    |   BREAK SEMICOLON              { $$ = make_break(); }
+    |   CONTINUE SEMICOLON           { $$ = make_continue(); }
     ;
 
 assignment:
@@ -99,9 +101,9 @@ list_assign:
     ;
 
 func_def:
-        DEF id LPAREN empty_list RPAREN NEWLINE statements END
+        DEF id LPAREN empty_list RPAREN LBRACK statements RBRACK
             { $$ = make_func_def($2, $4, $7); }
-    |   DEF id LPAREN params RPAREN NEWLINE statements END
+    |   DEF id LPAREN params RPAREN LBRACK statements RBRACK
             { $$ = make_func_def($2, $4, $7); }
     ;
 
@@ -142,25 +144,20 @@ list_index:
                 { $$ = $2; /* make_list_index($1, $3); */ };
 
 while_loop:
-        WHILE cond DO NEWLINE statements DONE
-                { $$ = make_while_loop($2, $5); }
+        WHILE expr LBRACK statements RBRACK
+                { $$ = make_while_loop($2, $4); }
     ;
 
 for_loop:
-        FOR ID IN expr DO NEWLINE statements DONE
-                { $$ = make_for_loop($2, $4, $7); }
+        FOR ID IN expr LBRACK statements RBRACK
+                { $$ = make_for_loop($2, $4, $6); }
     ;
 
 if_else:
-        IF cond THEN NEWLINE statements END
-                { $$ = make_if_else($2, $5, NULL); }
-    |   IF cond THEN NEWLINE statements ELSE NEWLINE statements END
-                { $$ = make_if_else($2, $5, $8); }
-    ;
-
-cond:
-        expr                { $$ = $1; }
-    |   expr NEWLINE        { $$ = $1; }
+        IF expr LBRACK statements RBRACK
+                { $$ = make_if_else($2, $4, NULL); }
+    |   IF expr LBRACK statements RBRACK ELSE LBRACK statements RBRACK
+                { $$ = make_if_else($2, $4, $8); }
     ;
 
 id:     ID                      { $$ = make_id_expr($1); }

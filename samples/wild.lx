@@ -1,23 +1,23 @@
-l = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+l = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
-print(l)
+print(l);
 
-print(type(l))
+print(type(l));
 
-print(l[0])
+print(l[0]);
 
-print(l[1], l[3], l[6])
+print(l[1], l[3], l[6]);
 
-print(sum(l))
+print(sum(l));
 
-l[4] = "hello"
+l[4] = "hello";
 
-l[8] = "world"
+l[8] = "world";
 
-print(l)
+print(l);
 
-print(range(0))
-print(range(4))
-print(range(3, 7))
-print(range(11, 19, 2))
+print(range(0));
+print(range(4));
+print(range(3, 7));
+print(range(11, 19, 2));
 

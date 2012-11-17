@@ -1,22 +1,22 @@
-print("started calling functions")
+print("started calling functions");
 
-def say_hello(to, whom)
-    print(to, whom)
-end
+def say_hello(to, whom) {
+    print(to, whom);
+}
 
-def this_can_see_globals()
-    return pi
-end
+def this_can_see_globals() {
+    return pi;
+}
 
-def but_locals_take_precedence(something)
-    e = something
-    return e
-end
+def but_locals_take_precedence(something) {
+    e = something;
+    return e;
+}
 
-say_hello("Hello", "World")
-print(this_can_see_globals())
-say_hello("Goodbye", "Joe")
+say_hello("Hello", "World");
+print(this_can_see_globals());
+say_hello("Goodbye", "Joe");
 
-print(e, but_locals_take_precedence(3.14), e)
+print(e, but_locals_take_precedence(3.14), e);
 
-print("finished calling functions")
+print("finished calling functions");

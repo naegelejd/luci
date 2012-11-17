@@ -1,15 +1,46 @@
-*.swp
+# Vim
+.*.sw[a-z]
+*.un~
+Session.vim
+.netrwhist
 
+# Object files
 *.o
-*.png
-*.jpg
 
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Flex and Bison
 *.tab.*
 *.yy.*
 *.output
 
+# Ignore tags created by etags and ctags
+TAGS
+!TAGS/
+tags
+!tags/
+
+# Images
+*.png
+*.jpg
+
+# Directories
 bin/
 build/*
 obj/
 doc/
 trash/
+

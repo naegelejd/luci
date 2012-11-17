@@ -1,29 +1,28 @@
 # some simple code demonstrating if-else blocks
 
-x = 2
+x = 2;
 
-if x > 1 then
-print("true")
-end
+if x > 1 {
+print("true");
+}
 
-if x < 0 then
-    x = 0
-else
-    print("also true")
-end
+if x < 0 {
+    x = 0;
+} else {
+    print("also true");
+}
 
-if x % 2 == 1
-then
-print("true again?")
-else
-    if x / 2 == 33 then
-	print("this too?")
-    else
-	print("this is true!")
-    end
-end
+if x % 2 == 1 {
+print("true again?");
+} else {
+    if x / 2 == 33 {
+	print("this too?");
+    } else {
+	print("this is true!");
+    }
+}
 
 # demonstrating a few more builtin functions
-print("Concatenating this string with the int " + str(42))
+print("Concatenating this string with the int " + str(42));
 
-assert(42 < 100)
+assert(42 < 100);

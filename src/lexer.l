@@ -18,97 +18,99 @@ int get_last_col_num(void);
 
 %}
 
-INTEGER	    [0-9]+
-FLOAT	    [0-9]+\.[0-9]*|\.[0-9]+
-WORD	    [a-zA-Z_][a-zA-Z_0-9]*
-STRING	    \"[^\"]+\"
-WS	    [ \t\f\r]+
-BAD         [:]
-IGNORE      ({WS}|;)+
+INTEGER     [0-9]+
+FLOAT       [0-9]+\.[0-9]*|\.[0-9]+
+WORD        [a-zA-Z_][a-zA-Z_0-9]*
+STRING      \"[^\"]+\"
+WS          [ \t\f\r]+
 
 %%
 
-[wW][hH][iI][lL][eE]	    { COL += yyleng; return WHILE; }
-[fF][oO][rR]		    { COL += yyleng; return FOR; }
-[iI][nN]		    { COL += yyleng; return IN; }
-[dD][oO]		    { COL += yyleng; return DO; }
-[dD][oO][nN][eE]	    { COL += yyleng; return DONE; }
-[iI][fF]		    { COL += yyleng; return IF; }
-[tT][hH][eE][nN]	    { COL += yyleng; return THEN; }
-[eE][lL][sS][eE]	    { COL += yyleng; return ELSE; }
-[eE][nN][dD]		    { COL += yyleng; return END; }
-[dD][eE][fF]                { COL += yyleng; return DEF; }
-[bB][rR][eE][aA][kK]        { COL += yyleng; return BREAK; }
-[cC][oO][nN][tT][iI][nN][uU][eE]    { COL += yyleng; return CONTINUE; }
-[rR][eE][tT][uU][rR][nN]    { COL += yyleng; return RETURN; }
+"while"         { COL += yyleng; return WHILE; }
+"for"           { COL += yyleng; return FOR; }
+"in"            { COL += yyleng; return IN; }
+"do"            { COL += yyleng; return DO; }
+"done"          { COL += yyleng; return DONE; }
+"if"            { COL += yyleng; return IF; }
+"then"          { COL += yyleng; return THEN; }
+"else"          { COL += yyleng; return ELSE; }
+"end"           { COL += yyleng; return END; }
+"def"           { COL += yyleng; return DEF; }
+"break"         { COL += yyleng; return BREAK; }
+"continue"      { COL += yyleng; return CONTINUE; }
+"return"        { COL += yyleng; return RETURN; }
 
-^\n|{IGNORE}\n	{ LINE++; COL = 1; /* ignore empty lines */ }
-\n	        { LINE++; COL = 1; return NEWLINE; }
-#.*\n	        { LINE++; COL = 1; /* ignore one-line comments */ }
-{IGNORE}        { COL += yyleng; } /* ignore whitespace/semicolon */
-
-{STRING}	{
-                    yylval.string_v = strndup(yytext + 1, strlen(yytext) - 2);
+{STRING}        {
+                    yylval.string_v = strndup(yytext + 1,
+                            strlen(yytext) - 2);
                     COL += yyleng;
                     return STRING;
                 }
-{FLOAT}		{
+{FLOAT}         {
                     yylval.float_v = atof(yytext);
                     COL += yyleng;
                     return FLOAT;
                 }
-{INTEGER}	{
+{INTEGER}       {
                     yylval.int_v = atoi(yytext);
                     COL += yyleng;
                     return INT;
                 }
-"True"          {
+"true"          {
                     yylval.int_v = 1;
                     COL += yyleng;
                     return INT;
                 }
-"False"         {
+"false"         {
                     yylval.int_v = 0;
                     COL += yyleng;
                     return INT;
                 }
-{WORD}		{ yylval.string_v = strdup(yytext);
+{WORD}          { yylval.string_v = strdup(yytext);
                     COL += yyleng;
                     return ID;
                 }
 
-","	{ COL += yyleng; return COMMA; }
-"["	{ COL += yyleng; return LSQUARE; }
-"]"	{ COL += yyleng; return RSQUARE; }
+^\n|{WS}+\n     { LINE++; COL = 1; /* ignore empty lines */ }
+\n              { LINE++; COL = 1; }
+#.*\n           { LINE++; COL = 1; /* ignore one-line comments */ }
+{WS}+           { COL += yyleng; } /* ignore whitespace/semicolon */
 
-"-"	{ COL += yyleng; return MINUS; }
-"+"	{ COL += yyleng; return PLUS; }
-"**"	{ COL += yyleng; return POW; }
-"*"	{ COL += yyleng; return TIMES; }
-"/"	{ COL += yyleng; return DIVIDE; }
-"%"	{ COL += yyleng; return MOD; }
+"{"     { COL += 1; return LBRACK; }
+"}"     { COL += 1; return RBRACK; }
+";"     { COL += 1; return SEMICOLON; }
+","     { COL += 1; return COMMA; }
+"["     { COL += 1; return LSQUARE; }
+"]"     { COL += 1; return RSQUARE; }
 
-"<="	{ COL += yyleng; return LTHEQ; }
-">="	{ COL += yyleng; return GTHEQ; }
-"=="	{ COL += yyleng; return EQUAL; }
-"!="	{ COL += yyleng; return NOTEQ; }
-"<"	{ COL += yyleng; return LTHAN; }
-">"	{ COL += yyleng; return GTHAN; }
+"-"     { COL += 1; return MINUS; }
+"+"     { COL += 1; return PLUS; }
+"**"    { COL += 2; return POW; }
+"*"     { COL += 1; return TIMES; }
+"/"     { COL += 1; return DIVIDE; }
+"%"     { COL += 1; return MOD; }
 
-"!"	{ COL += yyleng; return LGNOT; }
-"||"	{ COL += yyleng; return LGOR; }
-"&&"	{ COL += yyleng; return LGAND; }
+"<="    { COL += 2; return LTHEQ; }
+">="    { COL += 2; return GTHEQ; }
+"=="    { COL += 2; return EQUAL; }
+"!="    { COL += 2; return NOTEQ; }
+"<"     { COL += 1; return LTHAN; }
+">"     { COL += 1; return GTHAN; }
 
-"("	{ COL += yyleng; return LPAREN; }
-")"	{ COL += yyleng; return RPAREN; }
-"="	{ COL += yyleng; return ASSIGN; }
+"!"     { COL += 1; return LGNOT; }
+"||"    { COL += 2; return LGOR; }
+"&&"    { COL += 2; return LGAND; }
 
-"^"	{ COL += yyleng; return BWXOR; }
-"|"	{ COL += yyleng; return BWOR; }
-"&"	{ COL += yyleng; return BWAND; }
-"~"	{ COL += yyleng; return BWNOT; }
+"("     { COL += 1; return LPAREN; }
+")"     { COL += 1; return RPAREN; }
+"="     { COL += 1; return ASSIGN; }
 
-{BAD}   { COL += yyleng; yyerror("Found invalid char %c", yytext[0]); }
+"^"     { COL += 1; return BWXOR; }
+"|"     { COL += 1; return BWOR; }
+"&"     { COL += 1; return BWAND; }
+"~"     { COL += 1; return BWNOT; }
+
+.       { COL += yyleng; /* ignore invalid chars */ }
 
 <<EOF>>     {
                 yy_delete_buffer(YY_CURRENT_BUFFER);

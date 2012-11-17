@@ -1,16 +1,16 @@
 # simple code demonstrating variable-parameter functions
 #   as well as reading/writing files
 
-print("hello", "world", "goodbye all")
+print("hello", "world", "goodbye all");
 
-f = open("samples/data/test1.txt", "r")
-contents1 = read(f)
-contents2 = read(f)
+f = open("samples/data/test1.txt", "r");
+contents1 = read(f);
+contents2 = read(f);
 
-print(contents1, contents2, type(f), type(read(f)))
+print(contents1, contents2, type(f), type(read(f)));
 
-close(f)
+close(f);
 
-f = open("samples/data/test2.txt", "a")
-write(f, contents1)
-close(f)
+f = open("samples/data/test2.txt", "a");
+write(f, contents1);
+close(f);

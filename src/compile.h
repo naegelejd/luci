@@ -24,10 +24,13 @@ typedef enum {
     MKLIST,
     LISTGET,
     LISTPUT,
+    MKITER,
     HALT,
     /* here begins extended length instructions */
     JUMP,
+    POPJUMP,
     JUMPZ,
+    ITERJUMP
 } Opcode;
 
 typedef uint16_t Instruction;
@@ -36,12 +39,17 @@ typedef uint16_t Instruction;
 #define BASE_SYMTABLE_SCALE 0
 #define BASE_COTABLE_SIZE 0xFF
 
+#define LOOP_TYPE_WHILE 0
+#define LOOP_TYPE_FOR   1
+
+
 struct _loop_jump {
     uint32_t addr;
     struct _loop_jump *next;
 };
 
 struct _loop_list {
+    uint8_t loop_type;      /* possible types defined above */
     struct _loop_jump *breaks;
     struct _loop_jump *continues;
     struct _loop_list *parent;

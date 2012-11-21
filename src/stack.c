@@ -21,7 +21,7 @@ LuciObject *st_pop(Stack *S)
     return (S->impl[--(S->top)]);
 }
 
-LuciObject *st_top(Stack *S)
+LuciObject *st_peek(Stack *S)
 {
     return (S->impl[S->top - 1]);
 }

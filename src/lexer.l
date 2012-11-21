@@ -26,6 +26,8 @@ WS          [ \t\f\r]+
 
 %%
 
+"/*"            { comment(); }
+
 "while"         { COL += yyleng; return WHILE; }
 "for"           { COL += yyleng; return FOR; }
 "in"            { COL += yyleng; return IN; }
@@ -39,6 +41,7 @@ WS          [ \t\f\r]+
 "break"         { COL += yyleng; return BREAK; }
 "continue"      { COL += yyleng; return CONTINUE; }
 "return"        { COL += yyleng; return RETURN; }
+"pass"          { COL += yyleng; return PASS; }
 
 {STRING}        {
                     yylval.string_v = strndup(yytext + 1,
@@ -129,3 +132,20 @@ int get_last_col_num(void)
 {
     return COL - yyleng;
 }
+
+comment()
+{
+    char c, c1;
+
+loop:
+    while ((c = input()) != '*' && c != 0) {
+        ;
+    }
+
+    if ((c1 = input()) != '/' && c != 0) {
+        unput(c1);
+        goto loop;
+    }
+
+}
+

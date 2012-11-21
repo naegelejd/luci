@@ -5,32 +5,8 @@
 #include <assert.h>
 #include "common.h"
 #include "object.h"
-#include "functions.h"
+#include "builtin.h"
 #include "stack.h"
-/* HACK: used for dir() function to iterate over symbol table */
-/* #include "env.h" */
-
-/* Forward declarations */
-static LuciObject *add(LuciObject *left, LuciObject *right);
-static LuciObject *sub(LuciObject *left, LuciObject *right);
-static LuciObject *mul(LuciObject *left, LuciObject *right);
-static LuciObject *divide(LuciObject *left, LuciObject *right);
-static LuciObject *mod(LuciObject *left, LuciObject *right);
-static LuciObject *power(LuciObject *left, LuciObject *right);
-static LuciObject *eq(LuciObject *left, LuciObject *right);
-static LuciObject *neq(LuciObject *left, LuciObject *right);
-static LuciObject *lt(LuciObject *left, LuciObject *right);
-static LuciObject *gt(LuciObject *left, LuciObject *right);
-static LuciObject *lte(LuciObject *left, LuciObject *right);
-static LuciObject *gte(LuciObject *left, LuciObject *right);
-static LuciObject *lgnot(LuciObject *left, LuciObject *right);
-static LuciObject *lgor(LuciObject *left, LuciObject *right);
-static LuciObject *lgand(LuciObject *left, LuciObject *right);
-static LuciObject *bwnot(LuciObject *left, LuciObject *right);
-static LuciObject *bwxor(LuciObject *left, LuciObject *right);
-static LuciObject *bwor(LuciObject *left, LuciObject *right);
-static LuciObject *bwand(LuciObject *left, LuciObject *right);
-
 
 static int close_file(FILE *fp)
 {
@@ -78,18 +54,17 @@ void init_variables(void)
 
     /* e */
     LuciObject *luci_e = create_object(obj_float_t);
-    luci_e->value.f_val = M_E;
+    luci_e->value.f = M_E;
     globals[3].object = luci_e;
 
     /* pi */
     LuciObject *luci_pi = create_object(obj_float_t);
-    luci_pi->value.f_val = M_PI;
+    luci_pi->value.f = M_PI;
     globals[4].object = luci_pi;
 }
 
 
-const struct func_def builtins[] =
-{
+const struct func_def builtins[] = {
     "help", luci_help,
     "dir", luci_dir,
     "print",  luci_print,
@@ -172,13 +147,13 @@ void print_object(LuciObject *in)
     switch (in->type)
     {
 	case obj_int_t:
-	    printf("%d", in->value.i_val);
+	    printf("%d", in->value.i);
 	    break;
 	case obj_float_t:
-	    printf("%f", in->value.f_val);
+	    printf("%f", in->value.f);
 	    break;
 	case obj_str_t:
-	    printf("%s", in->value.s_val);
+	    printf("%s", in->value.s);
 	    break;
 	case obj_list_t:
 	    printf("[");
@@ -260,14 +235,14 @@ LuciObject *luci_readline(Stack *lstack, int c)
        the size of the input buffer is far larger than it needs to be?
     */
     LuciObject *ret = create_object(obj_str_t);
-    ret->value.s_val = alloc((len + 1)* sizeof(char));
-    strncpy(ret->value.s_val, input, len);
-    ret->value.s_val[len] = '\0';
+    ret->value.s = alloc((len + 1)* sizeof(char));
+    strncpy(ret->value.s, input, len);
+    ret->value.s[len] = '\0';
 
     /* destroy the input buffer */
     free(input);
 
-    yak("Read line\n", ret->value.s_val);
+    yak("Read line\n", ret->value.s);
 
     return ret;
 }
@@ -308,8 +283,8 @@ LuciObject *luci_typeof(Stack *lstack, int c)
 		which = "None";
 	}
     }
-    ret->value.s_val = alloc(strlen(which) + 1);
-    strcpy(ret->value.s_val, which);
+    ret->value.s = alloc(strlen(which) + 1);
+    strcpy(ret->value.s, which);
 
     return ret;
 }
@@ -325,13 +300,13 @@ LuciObject *luci_assert(Stack *lstack, int c)
     switch(item->type)
     {
 	case obj_int_t:
-	    assert(item->value.i_val);
+	    assert(item->value.i);
 	    break;
 	case obj_float_t:
-	    assert((int)item->value.f_val);
+	    assert((int)item->value.f);
 	    break;
 	case obj_str_t:
-	    assert(strcmp("", item->value.s_val) != 0);
+	    assert(strcmp("", item->value.s) != 0);
 	    break;
 	case obj_list_t:
 	    assert(item->value.list.count); /* assert that it isn't empty? */
@@ -357,13 +332,13 @@ LuciObject *luci_cast_int(Stack *lstack, int c)
     int scanned = 0;
     switch (item->type) {
 	case obj_int_t:
-	    ret->value.i_val = item->value.i_val;
+	    ret->value.i = item->value.i;
 	    break;
 	case obj_float_t:
-	    ret->value.i_val = (int)item->value.f_val;
+	    ret->value.i = (int)item->value.f;
 	    break;
 	case obj_str_t:
-	    scanned = sscanf(item->value.s_val, "%d", &(ret->value.i_val));
+	    scanned = sscanf(item->value.s, "%d", &(ret->value.i));
 	    if (scanned <= 0 || scanned == EOF) {
 		die("Could not cast to int\n");
 	    }
@@ -389,13 +364,13 @@ LuciObject *luci_cast_float(Stack *lstack, int c)
     int scanned = 0;
     switch (item->type) {
 	case obj_int_t:
-	    ret->value.f_val = (double)item->value.i_val;
+	    ret->value.f = (double)item->value.i;
 	    break;
 	case obj_float_t:
-	    ret->value.f_val = item->value.f_val;
+	    ret->value.f = item->value.f;
 	    break;
 	case obj_str_t:
-	    scanned = sscanf(item->value.s_val, "%f", (float *)&(ret->value.f_val));
+	    scanned = sscanf(item->value.s, "%f", (float *)&(ret->value.f));
 	    if (scanned <= 0 || scanned == EOF) {
 		die("Could not cast to float\n");
 	    }
@@ -421,23 +396,23 @@ LuciObject *luci_cast_str(Stack *lstack, int c)
     switch (item->type)
     {
 	case obj_int_t:
-	    ret->value.s_val = alloc(32);
-	    sprintf(ret->value.s_val, "%d", item->value.i_val);
-	    /* ret->value.s_val[16] = '\0'; */
+	    ret->value.s = alloc(32);
+	    sprintf(ret->value.s, "%d", item->value.i);
+	    /* ret->value.s[16] = '\0'; */
 	    break;
 	case obj_float_t:
-	    ret->value.s_val = alloc(32);
-	    sprintf(ret->value.s_val, "%f", (float)item->value.f_val);
-	    /* ret->value.s_val[16] = '\0'; */
+	    ret->value.s = alloc(32);
+	    sprintf(ret->value.s, "%f", (float)item->value.f);
+	    /* ret->value.s[16] = '\0'; */
 	    break;
 	case obj_str_t:
-	    ret->value.s_val = alloc(strlen(item->value.s_val) + 1);
-	    strcpy(ret->value.s_val, item->value.s_val);
+	    ret->value.s = alloc(strlen(item->value.s) + 1);
+	    strcpy(ret->value.s, item->value.s);
 	    break;
 	default:
 	    break;
     }
-    yak("str() returning %s\n", ret->value.s_val);
+    yak("str() returning %s\n", ret->value.s);
 
     return ret;
 }
@@ -478,8 +453,8 @@ LuciObject *luci_fopen(Stack *lstack, int c)
 	die("Parameter 2 to open must be a string\n");
     }
 
-    filename = fname_obj->value.s_val;
-    req_mode = mode_obj->value.s_val;
+    filename = fname_obj->value.s;
+    req_mode = mode_obj->value.s;
 
     mode = get_file_mode(req_mode);
     if (mode < 0) {
@@ -568,7 +543,7 @@ LuciObject *luci_fread(Stack *lstack, int c)
     /* fseek(fobj->value.file.ptr, 0, SEEK_SET); */
 
     LuciObject *ret = create_object(obj_str_t);
-    ret->value.s_val = read;
+    ret->value.s = read;
 
     return ret;
 }
@@ -590,7 +565,7 @@ LuciObject *luci_fwrite(Stack *lstack, int c)
     if (!text_obj || (text_obj->type != obj_str_t) ) {
 	die("Not a string\n");
     }
-    char *text = text_obj->value.s_val;
+    char *text = text_obj->value.s;
 
     if (fobj->value.file.mode == f_read_m) {
 	die("Can't write to file. It is opened for reading.\n");
@@ -631,14 +606,14 @@ LuciObject * luci_range(Stack *lstack, int c)
 	if (second->type != obj_int_t) {
 	    die("Second parameter to range must be integer\n");
 	}
-	start = first->value.i_val;
-	end = second->value.i_val;
+	start = first->value.i;
+	end = second->value.i;
 	if (c > 2) {
 	    third = st_pop(lstack);
 	    if (third->type != obj_int_t) {
 		die("Third parameter to range must be integer\n");
 	    }
-	    incr = third->value.i_val;
+	    incr = third->value.i;
 	}
 	else {
 	    incr = 1;
@@ -646,7 +621,7 @@ LuciObject * luci_range(Stack *lstack, int c)
     }
     else {
 	start = 0;
-	end = first->value.i_val;
+	end = first->value.i;
 	incr = 1;
     }
 
@@ -671,10 +646,10 @@ LuciObject * luci_range(Stack *lstack, int c)
 	/* create the Object */
 	item = create_object(obj_int_t);
 	if (decreasing) {
-	    item->value.i_val = -i;
+	    item->value.i = -i;
 	}
 	else {
-	    item->value.i_val = i;
+	    item->value.i = i;
 	}
 	list_append_object(list, item);
 	/*yak("Adding new list item to list\n");*/
@@ -705,11 +680,11 @@ LuciObject * luci_sum(Stack *lstack, int c)
 	}
 	switch (item->type) {
 	    case obj_int_t:
-		sum += (double)item->value.i_val;
+		sum += (double)item->value.i;
 		break;
 	    case obj_float_t:
 		found_float = 1;
-		sum += (item->value.f_val);
+		sum += (item->value.f);
 		break;
 	    default:
 		die("Can't calculate sum of list containing non-numeric value\n");
@@ -719,11 +694,11 @@ LuciObject * luci_sum(Stack *lstack, int c)
     LuciObject *ret;
     if (!found_float) {
 	ret = create_object(obj_int_t);
-	ret->value.i_val = (long)sum;
+	ret->value.i = (long)sum;
     }
     else {
 	ret = create_object(obj_float_t);
-	ret->value.f_val = sum;
+	ret->value.f = sum;
     }
 
     return ret;
@@ -742,7 +717,7 @@ LuciObject *luci_len(Stack *lstack, int c)
     }
 
     LuciObject *ret = create_object(obj_int_t);
-    ret->value.i_val = list->value.list.count;
+    ret->value.i = list->value.list.count;
     return ret;
 }
 
@@ -768,14 +743,14 @@ LuciObject *luci_max(Stack *lstack, int c)
 	}
 	switch (item->type) {
 	    case obj_int_t:
-		if ( (double)item->value.i_val > max) {
-		    max = (double)item->value.i_val;
+		if ( (double)item->value.i > max) {
+		    max = (double)item->value.i;
 		}
 		break;
 	    case obj_float_t:
 		found_float = 1;
-		if (item->value.f_val > max) {
-		    max = item->value.f_val;
+		if (item->value.f > max) {
+		    max = item->value.f;
 		}
 		break;
 	    default:
@@ -786,11 +761,11 @@ LuciObject *luci_max(Stack *lstack, int c)
     LuciObject *ret;
     if (!found_float) {
 	ret = create_object(obj_int_t);
-	ret->value.i_val = (long)max;
+	ret->value.i = (long)max;
     }
     else {
 	ret = create_object(obj_float_t);
-	ret->value.f_val = max;
+	ret->value.f = max;
     }
     return ret;
 }
@@ -819,19 +794,19 @@ LuciObject *luci_min(Stack *lstack, int c)
 	switch (item->type) {
 	    case obj_int_t:
 		if (i == 0) {
-		    min = (double)item->value.i_val;
+		    min = (double)item->value.i;
 		}
-		else if ( (double)item->value.i_val < min) {
-		    min = (double)item->value.i_val;
+		else if ( (double)item->value.i < min) {
+		    min = (double)item->value.i;
 		}
 		break;
 	    case obj_float_t:
 		found_float = 1;
 		if (i == 0) {
-		    min = item->value.f_val;
+		    min = item->value.f;
 		}
-		else if (item->value.f_val < min) {
-		    min = item->value.f_val;
+		else if (item->value.f < min) {
+		    min = item->value.f;
 		}
 		break;
 	    default:
@@ -842,449 +817,11 @@ LuciObject *luci_min(Stack *lstack, int c)
     LuciObject *ret;
     if (!found_float) {
 	ret = create_object(obj_int_t);
-	ret->value.i_val = (long)min;
+	ret->value.i = (long)min;
     }
     else {
 	ret = create_object(obj_float_t);
-	ret->value.f_val = min;
-    }
-    return ret;
-}
-
-
-LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {
-    add,
-    sub,
-    mul,
-    divide,
-    mod,
-    power,
-    eq,
-    neq,
-    lt,
-    gt,
-    lte,
-    gte,
-    lgnot,
-    lgor,
-    lgand,
-    bwxor,
-    bwor,
-    bwand,
-    bwnot
-};
-
-int types_match(LuciObject *left, LuciObject *right)
-{
-    if (left && right)
-	return (left->type == right->type);
-    else
-	return 0;
-}
-
-/*
-   Evaluates a conditional statement, returning an integer
-   value of 0 if False, and non-zero if True.
-*/
-int evaluate_condition(LuciObject *cond)
-{
-    int huh = 0;
-    if (cond == NULL) {
-	return 0;
-    }
-    switch (cond->type)
-    {
-	case obj_int_t:
-	    huh = cond->value.i_val;
-	    break;
-	case obj_float_t:
-	    huh = (int)cond->value.f_val;
-	    break;
-	case obj_str_t:
-	    huh = strlen(cond->value.s_val);
-	    break;
-	case obj_list_t:
-	    huh = cond->value.list.count;
-	    break;
-	case obj_file_t:
-	    huh = 1;
-	    break;
-	default:
-	    huh = 0;
-    }
-    return huh;
-}
-
-LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
-{
-    if (left->type == obj_float_t && right->type == obj_int_t) {
-	/* maybe bzero it ? */
-	int i = right->value.i_val;
-	right->value.i_val = 0;
-	right->type = obj_float_t;
-	right->value.f_val = (float)i;
-    }
-    else if (right->type == obj_float_t && left->type == obj_int_t) {
-	int i = left->value.i_val;
-	left->value.i_val = 0;
-	left->type = obj_float_t;
-	left->value.f_val = (float)i;
-    }
-    else if (!types_match(left, right))
-    {
-	die("Type mismatch in expression\n");
-    }
-    LuciObject *result = NULL;
-    result = solvers[op](left, right);
-    return result;
-}
-
-static LuciObject *add(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret = create_object(left->type);
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret->value.i_val = left->value.i_val + right->value.i_val;
-	    break;
-	case obj_float_t:
-	    ret->value.f_val = left->value.f_val + right->value.f_val;
-	    break;
-	case obj_str_t:
-	    ret->value.s_val = alloc(strlen(left->value.s_val) +
-		    strlen(right->value.s_val) + 1);
-	    strcpy(ret->value.s_val, left->value.s_val);
-	    strcat(ret->value.s_val, right->value.s_val);
-	    break;
-	default:
-	    break;
-    }
-    return ret;
-}
-
-static LuciObject *sub(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = left->value.i_val - right->value.i_val;
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = left->value.f_val - right->value.f_val;
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *mul(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = left->value.i_val * right->value.i_val;
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = left->value.f_val * right->value.f_val;
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *divide(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    /* this could probably be replace by a generic right->value.f_val
-       since both the float and int obj->value structs are aligned
-    */
-    if ((right->type == obj_int_t && right->value.i_val == 0) ||
-	(right->type == obj_float_t && right->value.f_val == 0.0)) {
-	    /* memory leak */
-	    /* printf("peace\n"); */
-	    /* exit(1); */
-	    die("Divide by zero error\n");
-    }
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = left->value.i_val / right->value.i_val;
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = left->value.f_val / right->value.f_val;
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *mod(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = left->value.i_val % right->value.i_val;
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = (double)((int)left->value.f_val % (int)right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *power(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = pow(left->value.i_val, right->value.i_val);
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = pow(left->value.f_val, right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *eq(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret = create_object(obj_int_t);
-    int r;
-    switch (left->type)
-    {
-	case obj_int_t:
-	    r = (left->value.i_val == right->value.i_val);
-	    break;
-	case obj_float_t:
-	    r = (left->value.f_val == right->value.f_val);
-	    break;
-	case obj_str_t:
-	    r = !(strcmp(left->value.s_val, right->value.s_val));
-	    break;
-	case obj_file_t:
-	    r = (left->value.file.ptr == right->value.file.ptr);
-	default:
-	    r = 0;
-    }
-    ret->value.i_val = r;
-    return ret;
-}
-
-static LuciObject *neq(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret = eq(left, right);
-    if (ret)
-	ret->value.i_val = !ret->value.i_val;
-    return ret;
-}
-
-static LuciObject *lt(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = (left->value.i_val < right->value.i_val);
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = (left->value.f_val < right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *gt(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = (left->value.i_val > right->value.i_val);
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = (left->value.f_val > right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *lte(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret = gt(left, right);
-    if (ret)
-	ret->value.i_val = !ret->value.i_val;
-    return ret;
-}
-
-static LuciObject *gte(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret = lt(left, right);
-    if (ret)
-	ret->value.i_val = !ret->value.i_val;
-    return ret;
-}
-
-static LuciObject *lgnot(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = !right->value.i_val;
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = !left->value.f_val;
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *lgor(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = (left->value.i_val || right->value.i_val);
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = (left->value.f_val || right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *lgand(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = (left->value.i_val && right->value.i_val);
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = (left->value.f_val && right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *bwnot(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = ~right->value.i_val;
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = ~(int)right->value.f_val;
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *bwxor(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret = alloc(sizeof(*ret));
-    ret->type = obj_int_t;
-    ret->value.i_val = left->value.i_val ^ right->value.i_val;
-    return ret;
-}
-
-static LuciObject *bwor(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = (left->value.i_val | right->value.i_val);
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = ((int)left->value.f_val | (int)right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
-    }
-    return ret;
-}
-
-static LuciObject *bwand(LuciObject *left, LuciObject *right)
-{
-    LuciObject *ret;
-
-    switch (left->type)
-    {
-	case obj_int_t:
-	    ret = create_object(obj_int_t);
-	    ret->value.i_val = (left->value.i_val & right->value.i_val);
-	    break;
-	case obj_float_t:
-	    ret = create_object(obj_float_t);
-	    ret->value.f_val = ((int)left->value.f_val & (int)right->value.f_val);
-	    break;
-	default:
-	    ret = NULL;
+	ret->value.f = min;
     }
     return ret;
 }

@@ -1,5 +1,5 @@
-#ifndef FUNCTIONS_H
-#define FUNCTIONS_H
+#ifndef BUILTIN_H
+#define BUILTIN_H
 
 #include "object.h"
 #include "stack.h"
@@ -15,6 +15,7 @@ struct var_def
     const char *name;
     LuciObject *object;
 };
+
 /* populates the array of var_def structs with valid LuciObjects */
 void init_variables(void);
 
@@ -41,11 +42,6 @@ LuciObject *luci_len(Stack *, int);
 LuciObject *luci_max(Stack *, int);
 LuciObject *luci_min(Stack *, int);
 
-LuciObject *solve_bin_expr(LuciObject *left,
-	LuciObject *right, int op);
-
 LuciObject *get_list_node(LuciObject *list, int index);
-int evaluate_condition(LuciObject *);
-int types_match(LuciObject *left, LuciObject *right);
 
 #endif

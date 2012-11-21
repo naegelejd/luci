@@ -18,7 +18,7 @@ typedef struct _Stack {
 void st_init(Stack *);
 void st_push(Stack *, LuciObject *);
 LuciObject *st_pop(Stack *);
-LuciObject *st_top(Stack *);
+LuciObject *st_peek(Stack *);
 int st_size(Stack *);
 int st_full(Stack *);
 int st_empty(Stack *);

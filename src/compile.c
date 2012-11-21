@@ -10,29 +10,14 @@
 #include "compile.h"
 #include "ast.h"
 #include "symbol.h"
-#include "functions.h"
+#include "builtin.h"
 #include "stack.h"
 
 static void _compile(AstNode *, Program *);
 static uint32_t push_instr(Program *, Opcode, int);
 static uint32_t put_instr(Program *, uint32_t, Opcode, int);
-
-static char *instruction_names[] = {
-    "NOP",
-    "POP",
-    "LOADK",
-    "LOADS",
-    "DUP",
-    "STORE",
-    "BINOP",
-    "CALL",
-    "MKLIST",
-    "LISTGET",
-    "LISTPUT",
-    "HALT",
-    "JUMP",
-    "JUMPZ"
-};
+static void add_new_loop(Program *prog, uint8_t loop_type);
+static void back_patch_loop(Program *prog, uint32_t start, uint32_t end);
 
 /**
  * Public entry point for compilation.
@@ -50,16 +35,22 @@ Program * compile_ast(AstNode *root)
     /* Add builtin symbols to symbol table */
     int i, id;
     LuciObject *o;
-    extern struct func_def builtins[];
+    extern struct func_def builtins[];  /* defined in builtins.c */
 
-    for (i = 0; builtins[i].name != 0; i++)
-    {
+    for (i = 0; builtins[i].name != 0; i++) {
         /* create object for builtin function */
         o = create_object(obj_func_t);
         o->value.func = builtins[i].func;
         /* add the symbol and function object to the symbol table */
         id = symbol_id(prog->symtable, builtins[i].name);
         symtable_set(prog->symtable, o, id);
+    }
+
+    init_variables();
+    extern struct var_def globals[];
+    for (i = 0; globals[i].name != 0; i++) {
+        id = symbol_id(prog->symtable, globals[i].name);
+        symtable_set(prog->symtable, globals[i].object, id);
     }
 
     /* compile the AST */
@@ -144,9 +135,10 @@ static uint32_t put_instr(Program *prog, uint32_t addr,
     }
 }
 
-static void add_new_loop(Program *prog)
+static void add_new_loop(Program *prog, uint8_t loop_type)
 {
     struct _loop_list *loop = alloc(sizeof(*loop));
+    loop->loop_type = loop_type;
     loop->breaks = NULL;
     loop->continues = NULL;
     loop->parent = prog->current_loop;
@@ -157,9 +149,10 @@ static void add_new_loop(Program *prog)
 static void back_patch_loop(Program *prog, uint32_t start, uint32_t end)
 {
     struct _loop_jump *ptr = NULL, *old = NULL;
+    struct _loop_list *cur_loop = prog->current_loop;
     struct _loop_list *parent_loop = prog->current_loop->parent;
 
-    ptr = prog->current_loop->continues;
+    ptr = cur_loop->continues;
     while (ptr) {
         put_instr(prog, ptr->addr, JUMP, start);
         old = ptr;
@@ -167,15 +160,20 @@ static void back_patch_loop(Program *prog, uint32_t start, uint32_t end)
         free(old);
     }
 
-    ptr = prog->current_loop->breaks;
+    /* for-loops need a POPJUMP to cleanup iterator,
+     * while-loops just need a normal JUMP
+     */
+    Opcode break_jump = (cur_loop->loop_type == LOOP_TYPE_FOR) ? POPJUMP : JUMP;
+
+    ptr = cur_loop->breaks;
     while (ptr) {
-        put_instr(prog, ptr->addr, JUMP, end);
+        put_instr(prog, ptr->addr, break_jump, end);
         old = ptr;
         ptr = ptr->next;
         free(old);
     }
 
-    free(prog->current_loop);
+    free(cur_loop);
     prog->current_loop = parent_loop;
 }
 
@@ -188,7 +186,6 @@ static void _compile(AstNode *node, Program *prog)
     LuciObject *obj = NULL;
 
     AstNode *tmp;
-    AstConstant constant;
 
     if (!node) {
         /* don't compile a NULL statement */
@@ -201,8 +198,12 @@ static void _compile(AstNode *node, Program *prog)
             for (i = 0; i < node->data.statements.count; i++) {
                 tmp = node->data.statements.statements[i];
                 _compile(tmp, prog);
-                if ((tmp->type == ast_expr_t) ||
-                        (tmp->type == ast_call_t)) {
+                /* statements that leave a value on the stack (i.e.
+                 * expressions lacking an assignment, or void function
+                 * calls) need a post-POP statement */
+                if (    (tmp->type == ast_expr_t) ||
+                        (tmp->type == ast_call_t) ||
+                        (tmp->type == ast_id_t)) {
                     push_instr(prog, POP, 0);
                 }
             }
@@ -225,7 +226,7 @@ static void _compile(AstNode *node, Program *prog)
             break;
 
         case ast_while_t:
-            add_new_loop(prog);
+            add_new_loop(prog, LOOP_TYPE_WHILE);
             /* store addr of start of while */
             addr1 = prog->count;
             /* compile test expression */
@@ -243,15 +244,26 @@ static void _compile(AstNode *node, Program *prog)
             break;
 
         case ast_for_t:
+            add_new_loop(prog, LOOP_TYPE_FOR);
             /* compile loop (expr) */
             _compile(node->data.for_loop.list, prog);
+            /* Make Iterator */
+            push_instr(prog, MKITER, 0);
             /* store addr of start of for-loop */
             addr1 = prog->count;
+            /* push bogus jump for getting iterator->next */
+            addr2 = push_instr(prog, JUMP, -1);
+            /* store iterator output in symbol */
+            a = symbol_id(prog->symtable, node->data.for_loop.iter);
+            push_instr(prog, STORE, a);
             /* compile body of for-loop */
             _compile(node->data.for_loop.statements, prog);
-            a = symbol_id(prog->symtable, node->data.for_loop.iter);
             /* add jump to beginning of for-loop */
             push_instr(prog, JUMP, addr1);
+            /* change bogus jump to a JUMPI (get iter->next or jump) */
+            put_instr(prog, addr2, ITERJUMP, prog->count);
+
+            back_patch_loop(prog, addr1, prog->count);
             break;
 
         case ast_if_t:
@@ -344,39 +356,28 @@ static void _compile(AstNode *node, Program *prog)
             /* yak("LOADS %s\n", node->data.id.val); */
             break;
 
-        case ast_constant_t:
-            constant = node->data.constant;
+        case ast_string_t:
+            obj = create_object(obj_str_t);
+            obj->value.s = strndup(node->data.s, strlen(node->data.s));
+            a = constant_id(prog->cotable, obj);
+            push_instr(prog, LOADK, a);
+            /* yak("LOADK \"%s\"\n", constant.val.s); */
+            break;
 
-            switch (constant.type) {
-                case co_string_t:
-                    obj = create_object(obj_str_t);
-                    obj->value.s_val = strndup(constant.val.s,
-                            strlen(constant.val.s));
+        case ast_float_t:
+            obj = create_object(obj_float_t);
+            obj->value.f = node->data.f;
+            a = constant_id(prog->cotable, obj);
+            push_instr(prog, LOADK, a);
+            /* yak("LOADK %g\n", constant.val.f); */
+            break;
 
-                    a = constant_id(prog->cotable, obj);
-                    push_instr(prog, LOADK, a);
-                    /* yak("LOADK \"%s\"\n", constant.val.s); */
-                    break;
-
-                case co_float_t:
-                    obj = create_object(obj_float_t);
-                    obj->value.f_val = constant.val.f;
-                    a = constant_id(prog->cotable, obj);
-                    push_instr(prog, LOADK, a);
-                    /* yak("LOADK %g\n", constant.val.f); */
-                    break;
-
-                case co_int_t:
-                    obj = create_object(obj_int_t);
-                    obj->value.i_val = constant.val.i;
-                    a = constant_id(prog->cotable, obj);
-                    push_instr(prog, LOADK, a);
-                    /* yak("LOADK %ld\n", constant.val.i); */
-                    break;
-
-                default:
-                    die("Bad constant type\n");
-            }
+        case ast_integer_t:
+            obj = create_object(obj_int_t);
+            obj->value.i = node->data.i;
+            a = constant_id(prog->cotable, obj);
+            push_instr(prog, LOADK, a);
+            /* yak("LOADK %ld\n", constant.val.i); */
             break;
 
         case ast_break_t:
@@ -426,11 +427,39 @@ static void _compile(AstNode *node, Program *prog)
             }
             break;
         }
-    }
 
+        case ast_pass_t:
+            push_instr(prog, NOP, 0);
+            break;
+    }
     return;
 }
 
+
+static char *instruction_names[] = {
+    "NOP",
+    "POP",
+    "LOADK",
+    "LOADS",
+    "DUP",
+    "STORE",
+    "BINOP",
+    "CALL",
+    "MKLIST",
+    "LISTGET",
+    "LISTPUT",
+    "MKITER",
+    "HALT",
+    /* here begins extended length instructions */
+    "JUMP",
+    "POPJUMP",
+    "JUMPZ",
+    "ITERJUMP",
+};
+/*
+ * Prints string representations of each instruction in the program.
+ * Used for debugging (or fun)
+ */
 void print_instructions(Program *prog)
 {
     int i, a, instr;

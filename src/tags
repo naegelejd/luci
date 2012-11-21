@@ -4,796 +4,833 @@
 !_TAG_PROGRAM_NAME	Exuberant Ctags	//
 !_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
 !_TAG_PROGRAM_VERSION	5.8	//
-ASSIGN	parser.tab.c	/^     ASSIGN = 298,$/;"	e	enum:yytokentype	file:
-ASSIGN	parser.tab.h	/^     ASSIGN = 298,$/;"	e	enum:yytokentype
-ASTEXEC_H	env.h	/^#define ASTEXEC_H$/;"	d
-AST_H	ast.h	/^#define AST_H$/;"	d
-AST_LIST_SIZE	ast.h	/^#define AST_LIST_SIZE /;"	d
-AST_STMNTS_SIZE	ast.h	/^#define AST_STMNTS_SIZE /;"	d
-AstAssignment	ast.h	/^} AstAssignment;$/;"	t	typeref:struct:__anon7
-AstConstant	ast.h	/^} AstConstant;$/;"	t	typeref:struct:__anon3
-AstExpression	ast.h	/^} AstExpression;$/;"	t	typeref:struct:__anon6
-AstForLoop	ast.h	/^} AstForLoop;$/;"	t	typeref:struct:__anon12
-AstFuncCall	ast.h	/^} AstFuncCall;$/;"	t	typeref:struct:__anon14
-AstFuncDef	ast.h	/^} AstFuncDef;$/;"	t	typeref:struct:__anon15
-AstID	ast.h	/^} AstID;$/;"	t	typeref:struct:__anon5
-AstIfElse	ast.h	/^} AstIfElse;$/;"	t	typeref:struct:__anon13
-AstListAssign	ast.h	/^} AstListAssign;$/;"	t	typeref:struct:__anon10
-AstListDef	ast.h	/^} AstListDef;$/;"	t	typeref:struct:__anon8
-AstListIndex	ast.h	/^} AstListIndex;$/;"	t	typeref:struct:__anon9
-AstNode	ast.h	/^typedef struct AstNode$/;"	s
-AstNode	ast.h	/^} AstNode;$/;"	t	typeref:struct:AstNode
-AstReturn	ast.h	/^} AstReturn;$/;"	t	typeref:struct:__anon17
-AstStatements	ast.h	/^} AstStatements;$/;"	t	typeref:struct:__anon16
-AstType	ast.h	/^} AstType;$/;"	t	typeref:enum:__anon1
-AstWhileLoop	ast.h	/^} AstWhileLoop;$/;"	t	typeref:struct:__anon11
-BASE_COTABLE_SIZE	compile.h	/^#define BASE_COTABLE_SIZE /;"	d
-BASE_INSTR_COUNT	compile.h	/^#define BASE_INSTR_COUNT /;"	d
-BASE_SYMTABLE_SIZE	compile.h	/^#define BASE_SYMTABLE_SIZE /;"	d
-BEGIN	lexer.yy.c	/^#define BEGIN /;"	d	file:
-BINOP	compile.h	/^    BINOP,$/;"	e	enum:__anon20
-BREAK	parser.tab.c	/^     BREAK = 269,$/;"	e	enum:yytokentype	file:
-BREAK	parser.tab.h	/^     BREAK = 269,$/;"	e	enum:yytokentype
-BWAND	parser.tab.c	/^     BWAND = 279,$/;"	e	enum:yytokentype	file:
-BWAND	parser.tab.h	/^     BWAND = 279,$/;"	e	enum:yytokentype
-BWNOT	parser.tab.c	/^     BWNOT = 299,$/;"	e	enum:yytokentype	file:
-BWNOT	parser.tab.h	/^     BWNOT = 299,$/;"	e	enum:yytokentype
-BWOR	parser.tab.c	/^     BWOR = 281,$/;"	e	enum:yytokentype	file:
-BWOR	parser.tab.h	/^     BWOR = 281,$/;"	e	enum:yytokentype
-BWXOR	parser.tab.c	/^     BWXOR = 280,$/;"	e	enum:yytokentype	file:
-BWXOR	parser.tab.h	/^     BWXOR = 280,$/;"	e	enum:yytokentype
-CALL	compile.h	/^    CALL,$/;"	e	enum:__anon20
-COL	lexer.yy.c	/^static int COL = 1;$/;"	v	file:
-COMMA	parser.tab.c	/^     COMMA = 263,$/;"	e	enum:yytokentype	file:
-COMMA	parser.tab.h	/^     COMMA = 263,$/;"	e	enum:yytokentype
-COMMON_H	common.h	/^#define COMMON_H$/;"	d
-COMPILE_H	compile.h	/^#define COMPILE_H$/;"	d
-CONSTANT_H	constant.h	/^#define CONSTANT_H$/;"	d
-CONTINUE	parser.tab.c	/^     CONTINUE = 270,$/;"	e	enum:yytokentype	file:
-CONTINUE	parser.tab.h	/^     CONTINUE = 270,$/;"	e	enum:yytokentype
-ConstantTable	constant.h	/^} ConstantTable;$/;"	t	typeref:struct:cotable
-ConstantType	ast.h	/^} ConstantType;$/;"	t	typeref:enum:__anon2
-DEF	parser.tab.c	/^     DEF = 275,$/;"	e	enum:yytokentype	file:
-DEF	parser.tab.h	/^     DEF = 275,$/;"	e	enum:yytokentype
-DIVIDE	parser.tab.c	/^     DIVIDE = 291,$/;"	e	enum:yytokentype	file:
-DIVIDE	parser.tab.h	/^     DIVIDE = 291,$/;"	e	enum:yytokentype
-DO	parser.tab.c	/^     DO = 267,$/;"	e	enum:yytokentype	file:
-DO	parser.tab.h	/^     DO = 267,$/;"	e	enum:yytokentype
-DONE	parser.tab.c	/^     DONE = 268,$/;"	e	enum:yytokentype	file:
-DONE	parser.tab.h	/^     DONE = 268,$/;"	e	enum:yytokentype
-ECHO	lexer.yy.c	/^#define ECHO /;"	d	file:
-ELSE	parser.tab.c	/^     ELSE = 273,$/;"	e	enum:yytokentype	file:
-ELSE	parser.tab.h	/^     ELSE = 273,$/;"	e	enum:yytokentype
-END	parser.tab.c	/^     END = 274,$/;"	e	enum:yytokentype	file:
-END	parser.tab.h	/^     END = 274,$/;"	e	enum:yytokentype
-EOB_ACT_CONTINUE_SCAN	lexer.yy.c	/^#define EOB_ACT_CONTINUE_SCAN /;"	d	file:
-EOB_ACT_END_OF_FILE	lexer.yy.c	/^#define EOB_ACT_END_OF_FILE /;"	d	file:
-EOB_ACT_LAST_MATCH	lexer.yy.c	/^#define EOB_ACT_LAST_MATCH /;"	d	file:
-EQUAL	parser.tab.c	/^     EQUAL = 283,$/;"	e	enum:yytokentype	file:
-EQUAL	parser.tab.h	/^     EQUAL = 283,$/;"	e	enum:yytokentype
-EVER	interpret.c	/^#define EVER /;"	d	file:
-EXIT	compile.h	/^    EXIT,$/;"	e	enum:__anon20
-EXIT_SUCCESS	parser.tab.c	/^#      define EXIT_SUCCESS /;"	d	file:
-EXIT_SUCCESS	parser.tab.c	/^#    define EXIT_SUCCESS /;"	d	file:
-ExecContext	env.h	/^typedef struct ExecContext$/;"	s
-ExecContext	env.h	/^} ExecContext;$/;"	t	typeref:struct:ExecContext
-FLEXINT_H	lexer.yy.c	/^#define FLEXINT_H$/;"	d	file:
-FLEX_BETA	lexer.yy.c	/^#define FLEX_BETA$/;"	d	file:
-FLEX_SCANNER	lexer.yy.c	/^#define FLEX_SCANNER$/;"	d	file:
-FLOAT	parser.tab.c	/^     FLOAT = 259,$/;"	e	enum:yytokentype	file:
-FLOAT	parser.tab.h	/^     FLOAT = 259,$/;"	e	enum:yytokentype
-FOR	parser.tab.c	/^     FOR = 265,$/;"	e	enum:yytokentype	file:
-FOR	parser.tab.h	/^     FOR = 265,$/;"	e	enum:yytokentype
-FUNCTIONS_H	functions.h	/^#define FUNCTIONS_H$/;"	d
-GTHAN	parser.tab.c	/^     GTHAN = 285,$/;"	e	enum:yytokentype	file:
-GTHAN	parser.tab.h	/^     GTHAN = 285,$/;"	e	enum:yytokentype
-GTHEQ	parser.tab.c	/^     GTHEQ = 284,$/;"	e	enum:yytokentype	file:
-GTHEQ	parser.tab.h	/^     GTHEQ = 284,$/;"	e	enum:yytokentype
-ID	parser.tab.c	/^     ID = 261,$/;"	e	enum:yytokentype	file:
-ID	parser.tab.h	/^     ID = 261,$/;"	e	enum:yytokentype
-IF	parser.tab.c	/^     IF = 271,$/;"	e	enum:yytokentype	file:
-IF	parser.tab.h	/^     IF = 271,$/;"	e	enum:yytokentype
-IN	parser.tab.c	/^     IN = 266,$/;"	e	enum:yytokentype	file:
-IN	parser.tab.h	/^     IN = 266,$/;"	e	enum:yytokentype
-INITIAL	lexer.yy.c	/^#define INITIAL /;"	d	file:
-INIT_LIST_SIZE	object.h	/^#define INIT_LIST_SIZE /;"	d
-INT	parser.tab.c	/^     INT = 258,$/;"	e	enum:yytokentype	file:
-INT	parser.tab.h	/^     INT = 258,$/;"	e	enum:yytokentype
-INT16_MAX	lexer.yy.c	/^#define INT16_MAX /;"	d	file:
-INT16_MIN	lexer.yy.c	/^#define INT16_MIN /;"	d	file:
-INT32_MAX	lexer.yy.c	/^#define INT32_MAX /;"	d	file:
-INT32_MIN	lexer.yy.c	/^#define INT32_MIN /;"	d	file:
-INT8_MAX	lexer.yy.c	/^#define INT8_MAX /;"	d	file:
-INT8_MIN	lexer.yy.c	/^#define INT8_MIN /;"	d	file:
-INTERPRET_H	interpret.h	/^#define INTERPRET_H$/;"	d
-Instruction	compile.h	/^typedef uint16_t Instruction;$/;"	t
-JUMPL	compile.h	/^    JUMPL,$/;"	e	enum:__anon20
-JUMPN	compile.h	/^    JUMPN,$/;"	e	enum:__anon20
-LGAND	parser.tab.c	/^     LGAND = 277,$/;"	e	enum:yytokentype	file:
-LGAND	parser.tab.h	/^     LGAND = 277,$/;"	e	enum:yytokentype
-LGNOT	parser.tab.c	/^     LGNOT = 300,$/;"	e	enum:yytokentype	file:
-LGNOT	parser.tab.h	/^     LGNOT = 300,$/;"	e	enum:yytokentype
-LGOR	parser.tab.c	/^     LGOR = 278,$/;"	e	enum:yytokentype	file:
-LGOR	parser.tab.h	/^     LGOR = 278,$/;"	e	enum:yytokentype
-LINE	lexer.yy.c	/^static int LINE = 1;$/;"	v	file:
-LOADK	compile.h	/^    LOADK,$/;"	e	enum:__anon20
-LOADS	compile.h	/^    LOADS,$/;"	e	enum:__anon20
-LPAREN	parser.tab.c	/^     LPAREN = 295,$/;"	e	enum:yytokentype	file:
-LPAREN	parser.tab.h	/^     LPAREN = 295,$/;"	e	enum:yytokentype
-LSQUARE	parser.tab.c	/^     LSQUARE = 297,$/;"	e	enum:yytokentype	file:
-LSQUARE	parser.tab.h	/^     LSQUARE = 297,$/;"	e	enum:yytokentype
-LTHAN	parser.tab.c	/^     LTHAN = 287,$/;"	e	enum:yytokentype	file:
-LTHAN	parser.tab.h	/^     LTHAN = 287,$/;"	e	enum:yytokentype
-LTHEQ	parser.tab.c	/^     LTHEQ = 286,$/;"	e	enum:yytokentype	file:
-LTHEQ	parser.tab.h	/^     LTHEQ = 286,$/;"	e	enum:yytokentype
-LuciFileMode	object.h	/^} LuciFileMode;$/;"	t	typeref:enum:__anon23
-LuciOType	object.h	/^} LuciOType;$/;"	t	typeref:enum:__anon22
-LuciOVal	object.h	/^} LuciOVal;$/;"	t	typeref:union:__anon24
-LuciObject	object.h	/^typedef struct LuciObject$/;"	s
-LuciObject	object.h	/^} LuciObject;$/;"	t	typeref:struct:LuciObject
-MINUS	parser.tab.c	/^     MINUS = 288,$/;"	e	enum:yytokentype	file:
-MINUS	parser.tab.h	/^     MINUS = 288,$/;"	e	enum:yytokentype
-MKLIST	compile.h	/^    MKLIST,$/;"	e	enum:__anon20
-MOD	parser.tab.c	/^     MOD = 290,$/;"	e	enum:yytokentype	file:
-MOD	parser.tab.h	/^     MOD = 290,$/;"	e	enum:yytokentype
-NEWLINE	parser.tab.c	/^     NEWLINE = 262,$/;"	e	enum:yytokentype	file:
-NEWLINE	parser.tab.h	/^     NEWLINE = 262,$/;"	e	enum:yytokentype
-NOP	compile.h	/^    NOP,$/;"	e	enum:__anon20
-NOTEQ	parser.tab.c	/^     NOTEQ = 282,$/;"	e	enum:yytokentype	file:
-NOTEQ	parser.tab.h	/^     NOTEQ = 282,$/;"	e	enum:yytokentype
-NTYPES	ast.h	/^const char *NTYPES[16];$/;"	v
-OBJECT_H	object.h	/^#define OBJECT_H$/;"	d
-Opcode	compile.h	/^} Opcode;$/;"	t	typeref:enum:__anon20
-PLUS	parser.tab.c	/^     PLUS = 289,$/;"	e	enum:yytokentype	file:
-PLUS	parser.tab.h	/^     PLUS = 289,$/;"	e	enum:yytokentype
-POW	parser.tab.c	/^     POW = 293,$/;"	e	enum:yytokentype	file:
-POW	parser.tab.h	/^     POW = 293,$/;"	e	enum:yytokentype
-Program	compile.h	/^} Program;$/;"	t	typeref:struct:__anon21
-REJECT	lexer.yy.c	/^#define REJECT /;"	d	file:
-RETURN	parser.tab.c	/^     RETURN = 276,$/;"	e	enum:yytokentype	file:
-RETURN	parser.tab.h	/^     RETURN = 276,$/;"	e	enum:yytokentype
-RPAREN	parser.tab.c	/^     RPAREN = 294,$/;"	e	enum:yytokentype	file:
-RPAREN	parser.tab.h	/^     RPAREN = 294,$/;"	e	enum:yytokentype
-RSQUARE	parser.tab.c	/^     RSQUARE = 296,$/;"	e	enum:yytokentype	file:
-RSQUARE	parser.tab.h	/^     RSQUARE = 296,$/;"	e	enum:yytokentype
-STACKMAX	stack.h	/^#define STACKMAX /;"	d
-STACK_H	stack.h	/^#define STACK_H$/;"	d
-STORE	compile.h	/^    STORE,$/;"	e	enum:__anon20
-STRING	parser.tab.c	/^     STRING = 260,$/;"	e	enum:yytokentype	file:
-STRING	parser.tab.h	/^     STRING = 260,$/;"	e	enum:yytokentype
-SYMBOL_H	symbol.h	/^#define SYMBOL_H$/;"	d
-Stack	stack.h	/^} Stack;$/;"	t	typeref:struct:__anon27
-Symbol	symbol.h	/^} Symbol;$/;"	t	typeref:struct:symbol
-SymbolTable	symbol.h	/^} SymbolTable;$/;"	t	typeref:struct:symtable
-THEN	parser.tab.c	/^     THEN = 272,$/;"	e	enum:yytokentype	file:
-THEN	parser.tab.h	/^     THEN = 272,$/;"	e	enum:yytokentype
-TIMES	parser.tab.c	/^     TIMES = 292,$/;"	e	enum:yytokentype	file:
-TIMES	parser.tab.h	/^     TIMES = 292,$/;"	e	enum:yytokentype
-TYPE_NAMES	ast.c	/^const char *TYPE_NAMES[] = {$/;"	v
-UBWNOT	parser.tab.c	/^     UBWNOT = 301,$/;"	e	enum:yytokentype	file:
-UBWNOT	parser.tab.h	/^     UBWNOT = 301,$/;"	e	enum:yytokentype
-UINT16_MAX	lexer.yy.c	/^#define UINT16_MAX /;"	d	file:
-UINT32_MAX	lexer.yy.c	/^#define UINT32_MAX /;"	d	file:
-UINT8_MAX	lexer.yy.c	/^#define UINT8_MAX /;"	d	file:
-ULGNOT	parser.tab.c	/^     ULGNOT = 302,$/;"	e	enum:yytokentype	file:
-ULGNOT	parser.tab.h	/^     ULGNOT = 302,$/;"	e	enum:yytokentype
-UMINUS	parser.tab.c	/^     UMINUS = 303,$/;"	e	enum:yytokentype	file:
-UMINUS	parser.tab.h	/^     UMINUS = 303,$/;"	e	enum:yytokentype
-UPLUS	parser.tab.c	/^     UPLUS = 304$/;"	e	enum:yytokentype	file:
-UPLUS	parser.tab.h	/^     UPLUS = 304$/;"	e	enum:yytokentype
-VERBOSE	common.c	/^static int VERBOSE = 0;$/;"	v	file:
-WHILE	parser.tab.c	/^     WHILE = 264,$/;"	e	enum:yytokentype	file:
-WHILE	parser.tab.h	/^     WHILE = 264,$/;"	e	enum:yytokentype
-YYABORT	parser.tab.c	/^#define YYABORT	/;"	d	file:
-YYACCEPT	parser.tab.c	/^#define YYACCEPT	/;"	d	file:
-YYBACKUP	parser.tab.c	/^#define YYBACKUP(/;"	d	file:
-YYBISON	parser.tab.c	/^#define YYBISON /;"	d	file:
-YYBISON_VERSION	parser.tab.c	/^#define YYBISON_VERSION /;"	d	file:
-YYCASE_	parser.tab.c	/^# define YYCASE_(/;"	d	file:
-YYCASE_	parser.tab.c	/^# undef YYCASE_$/;"	d	file:
-YYCOPY	parser.tab.c	/^#   define YYCOPY(/;"	d	file:
-YYCOPY_NEEDED	parser.tab.c	/^# define YYCOPY_NEEDED /;"	d	file:
-YYDEBUG	parser.tab.c	/^# define YYDEBUG /;"	d	file:
-YYDEBUG	parser.tab.c	/^#define YYDEBUG /;"	d	file:
-YYDEBUG	parser.tab.h	/^# define YYDEBUG /;"	d
-YYDPRINTF	parser.tab.c	/^# define YYDPRINTF(/;"	d	file:
-YYEMPTY	parser.tab.c	/^#define YYEMPTY	/;"	d	file:
-YYEOF	parser.tab.c	/^#define YYEOF	/;"	d	file:
-YYERRCODE	parser.tab.c	/^#define YYERRCODE	/;"	d	file:
-YYERROR	parser.tab.c	/^#define YYERROR	/;"	d	file:
-YYERROR_VERBOSE	parser.tab.c	/^# define YYERROR_VERBOSE /;"	d	file:
-YYERROR_VERBOSE	parser.tab.c	/^# undef YYERROR_VERBOSE$/;"	d	file:
-YYFAIL	parser.tab.c	/^#define YYFAIL	/;"	d	file:
-YYFINAL	parser.tab.c	/^#define YYFINAL /;"	d	file:
-YYFPRINTF	parser.tab.c	/^#  define YYFPRINTF /;"	d	file:
-YYFREE	parser.tab.c	/^#   define YYFREE /;"	d	file:
-YYID	parser.tab.c	/^# define YYID(/;"	d	file:
-YYID	parser.tab.c	/^YYID (int yyi)$/;"	f	file:
-YYINITDEPTH	parser.tab.c	/^# define YYINITDEPTH /;"	d	file:
-YYLAST	parser.tab.c	/^#define YYLAST /;"	d	file:
-YYLEX	parser.tab.c	/^# define YYLEX /;"	d	file:
-YYLLOC_DEFAULT	parser.tab.c	/^# define YYLLOC_DEFAULT(/;"	d	file:
-YYMALLOC	parser.tab.c	/^#   define YYMALLOC /;"	d	file:
-YYMAXDEPTH	parser.tab.c	/^# define YYMAXDEPTH /;"	d	file:
-YYMAXUTOK	parser.tab.c	/^#define YYMAXUTOK /;"	d	file:
-YYNNTS	parser.tab.c	/^#define YYNNTS /;"	d	file:
-YYNRULES	parser.tab.c	/^#define YYNRULES /;"	d	file:
-YYNSTATES	parser.tab.c	/^#define YYNSTATES /;"	d	file:
-YYNTOKENS	parser.tab.c	/^#define YYNTOKENS /;"	d	file:
-YYPACT_NINF	parser.tab.c	/^#define YYPACT_NINF /;"	d	file:
-YYPARSE_PARAM	parser.tab.c	/^#define YYPARSE_PARAM /;"	d	file:
-YYPOPSTACK	parser.tab.c	/^#define YYPOPSTACK(/;"	d	file:
-YYPULL	parser.tab.c	/^#define YYPULL /;"	d	file:
-YYPURE	parser.tab.c	/^#define YYPURE /;"	d	file:
-YYPUSH	parser.tab.c	/^#define YYPUSH /;"	d	file:
-YYRECOVERING	parser.tab.c	/^#define YYRECOVERING(/;"	d	file:
-YYRHSLOC	parser.tab.c	/^#define YYRHSLOC(/;"	d	file:
-YYSIZE_MAXIMUM	parser.tab.c	/^#define YYSIZE_MAXIMUM /;"	d	file:
-YYSIZE_T	parser.tab.c	/^#  define YYSIZE_T /;"	d	file:
-YYSKELETON_NAME	parser.tab.c	/^#define YYSKELETON_NAME /;"	d	file:
-YYSTACK_ALLOC	parser.tab.c	/^#    define YYSTACK_ALLOC /;"	d	file:
-YYSTACK_ALLOC	parser.tab.c	/^#  define YYSTACK_ALLOC /;"	d	file:
-YYSTACK_ALLOC_MAXIMUM	parser.tab.c	/^#   define YYSTACK_ALLOC_MAXIMUM /;"	d	file:
-YYSTACK_BYTES	parser.tab.c	/^# define YYSTACK_BYTES(/;"	d	file:
-YYSTACK_FREE	parser.tab.c	/^#  define YYSTACK_FREE /;"	d	file:
-YYSTACK_FREE	parser.tab.c	/^#  define YYSTACK_FREE(/;"	d	file:
-YYSTACK_GAP_MAXIMUM	parser.tab.c	/^# define YYSTACK_GAP_MAXIMUM /;"	d	file:
-YYSTACK_RELOCATE	parser.tab.c	/^# define YYSTACK_RELOCATE(/;"	d	file:
-YYSTATE	lexer.yy.c	/^#define YYSTATE /;"	d	file:
-YYSTYPE	parser.tab.c	/^typedef union YYSTYPE$/;"	u	file:
-YYSTYPE	parser.tab.c	/^} YYSTYPE;$/;"	t	typeref:union:YYSTYPE	file:
-YYSTYPE	parser.tab.h	/^typedef union YYSTYPE$/;"	u
-YYSTYPE	parser.tab.h	/^} YYSTYPE;$/;"	t	typeref:union:YYSTYPE
-YYSTYPE_IS_DECLARED	parser.tab.c	/^# define YYSTYPE_IS_DECLARED /;"	d	file:
-YYSTYPE_IS_DECLARED	parser.tab.h	/^# define YYSTYPE_IS_DECLARED /;"	d
-YYSTYPE_IS_TRIVIAL	parser.tab.c	/^# define YYSTYPE_IS_TRIVIAL /;"	d	file:
-YYSTYPE_IS_TRIVIAL	parser.tab.h	/^# define YYSTYPE_IS_TRIVIAL /;"	d
-YYTABLES_NAME	lexer.yy.c	/^#define YYTABLES_NAME /;"	d	file:
-YYTABLE_NINF	parser.tab.c	/^#define YYTABLE_NINF /;"	d	file:
-YYTERROR	parser.tab.c	/^#define YYTERROR	/;"	d	file:
-YYTOKENTYPE	parser.tab.c	/^# define YYTOKENTYPE$/;"	d	file:
-YYTOKENTYPE	parser.tab.h	/^# define YYTOKENTYPE$/;"	d
-YYTRANSLATE	parser.tab.c	/^#define YYTRANSLATE(/;"	d	file:
-YYUNDEFTOK	parser.tab.c	/^#define YYUNDEFTOK /;"	d	file:
-YYUSE	parser.tab.c	/^# define YYUSE(/;"	d	file:
-YY_	parser.tab.c	/^#   define YY_(/;"	d	file:
-YY_	parser.tab.c	/^#  define YY_(/;"	d	file:
-YY_AT_BOL	lexer.yy.c	/^#define YY_AT_BOL(/;"	d	file:
-YY_BREAK	lexer.yy.c	/^#define YY_BREAK /;"	d	file:
-YY_BUFFER_EOF_PENDING	lexer.yy.c	/^#define YY_BUFFER_EOF_PENDING /;"	d	file:
-YY_BUFFER_NEW	lexer.yy.c	/^#define YY_BUFFER_NEW /;"	d	file:
-YY_BUFFER_NORMAL	lexer.yy.c	/^#define YY_BUFFER_NORMAL /;"	d	file:
-YY_BUFFER_STATE	lexer.yy.c	/^typedef struct yy_buffer_state *YY_BUFFER_STATE;$/;"	t	typeref:struct:yy_buffer_state	file:
-YY_BUF_SIZE	lexer.yy.c	/^#define YY_BUF_SIZE /;"	d	file:
-YY_CHAR	lexer.yy.c	/^typedef unsigned char YY_CHAR;$/;"	t	file:
-YY_CURRENT_BUFFER	lexer.yy.c	/^#define YY_CURRENT_BUFFER /;"	d	file:
-YY_CURRENT_BUFFER_LVALUE	lexer.yy.c	/^#define YY_CURRENT_BUFFER_LVALUE /;"	d	file:
-YY_DECL	lexer.yy.c	/^#define YY_DECL /;"	d	file:
-YY_DECL_IS_OURS	lexer.yy.c	/^#define YY_DECL_IS_OURS /;"	d	file:
-YY_DO_BEFORE_ACTION	lexer.yy.c	/^#define YY_DO_BEFORE_ACTION /;"	d	file:
-YY_END_OF_BUFFER	lexer.yy.c	/^#define YY_END_OF_BUFFER /;"	d	file:
-YY_END_OF_BUFFER_CHAR	lexer.yy.c	/^#define YY_END_OF_BUFFER_CHAR /;"	d	file:
-YY_EXIT_FAILURE	lexer.yy.c	/^#define YY_EXIT_FAILURE /;"	d	file:
-YY_EXTRA_TYPE	lexer.yy.c	/^#define YY_EXTRA_TYPE /;"	d	file:
-YY_FATAL_ERROR	lexer.yy.c	/^#define YY_FATAL_ERROR(/;"	d	file:
-YY_FLEX_MAJOR_VERSION	lexer.yy.c	/^#define YY_FLEX_MAJOR_VERSION /;"	d	file:
-YY_FLEX_MINOR_VERSION	lexer.yy.c	/^#define YY_FLEX_MINOR_VERSION /;"	d	file:
-YY_FLEX_SUBMINOR_VERSION	lexer.yy.c	/^#define YY_FLEX_SUBMINOR_VERSION /;"	d	file:
-YY_FLUSH_BUFFER	lexer.yy.c	/^#define YY_FLUSH_BUFFER /;"	d	file:
-YY_INPUT	lexer.yy.c	/^#define YY_INPUT(/;"	d	file:
-YY_INT_ALIGNED	lexer.yy.c	/^#define  YY_INT_ALIGNED /;"	d	file:
-YY_LESS_LINENO	lexer.yy.c	/^    #define YY_LESS_LINENO(/;"	d	file:
-YY_LOCATION_PRINT	parser.tab.c	/^# define YY_LOCATION_PRINT(/;"	d	file:
-YY_MORE_ADJ	lexer.yy.c	/^#define YY_MORE_ADJ /;"	d	file:
-YY_NEW_FILE	lexer.yy.c	/^#define YY_NEW_FILE /;"	d	file:
-YY_NULL	lexer.yy.c	/^#define YY_NULL /;"	d	file:
-YY_NULL	parser.tab.c	/^#   define YY_NULL /;"	d	file:
-YY_NUM_RULES	lexer.yy.c	/^#define YY_NUM_RULES /;"	d	file:
-YY_READ_BUF_SIZE	lexer.yy.c	/^#define YY_READ_BUF_SIZE /;"	d	file:
-YY_REDUCE_PRINT	parser.tab.c	/^# define YY_REDUCE_PRINT(/;"	d	file:
-YY_RESTORE_YY_MORE_OFFSET	lexer.yy.c	/^#define YY_RESTORE_YY_MORE_OFFSET$/;"	d	file:
-YY_RULE_SETUP	lexer.yy.c	/^#define YY_RULE_SETUP /;"	d	file:
-YY_SC_TO_UI	lexer.yy.c	/^#define YY_SC_TO_UI(/;"	d	file:
-YY_SKIP_YYWRAP	lexer.yy.c	/^#define YY_SKIP_YYWRAP$/;"	d	file:
-YY_STACK_PRINT	parser.tab.c	/^# define YY_STACK_PRINT(/;"	d	file:
-YY_START	lexer.yy.c	/^#define YY_START /;"	d	file:
-YY_START_STACK_INCR	lexer.yy.c	/^#define YY_START_STACK_INCR /;"	d	file:
-YY_STATE_BUF_SIZE	lexer.yy.c	/^#define YY_STATE_BUF_SIZE /;"	d	file:
-YY_STATE_EOF	lexer.yy.c	/^#define YY_STATE_EOF(/;"	d	file:
-YY_STRUCT_YY_BUFFER_STATE	lexer.yy.c	/^#define YY_STRUCT_YY_BUFFER_STATE$/;"	d	file:
-YY_SYMBOL_PRINT	parser.tab.c	/^# define YY_SYMBOL_PRINT(/;"	d	file:
-YY_TYPEDEF_YY_BUFFER_STATE	lexer.yy.c	/^#define YY_TYPEDEF_YY_BUFFER_STATE$/;"	d	file:
-YY_TYPEDEF_YY_SIZE_T	lexer.yy.c	/^#define YY_TYPEDEF_YY_SIZE_T$/;"	d	file:
-YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H	parser.tab.c	/^# define YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H$/;"	d	file:
-YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H	parser.tab.h	/^# define YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H$/;"	d
-YY_USER_ACTION	lexer.yy.c	/^#define YY_USER_ACTION$/;"	d	file:
-YY_USE_CONST	lexer.yy.c	/^#define YY_USE_CONST$/;"	d	file:
-__STDC_LIMIT_MACROS	lexer.yy.c	/^#define __STDC_LIMIT_MACROS /;"	d	file:
-_compile	compile.c	/^static void _compile(AstNode *node, Program *prog)$/;"	f	file:
-add	functions.c	/^static LuciObject *add(LuciObject *left, LuciObject *right)$/;"	f	file:
-add_instr	compile.c	/^static void add_instr(Program *prog, Opcode op, int arg)$/;"	f	file:
-add_symbol	env.c	/^static Symbol *add_symbol (struct ExecContext *e, char const *name, int type)$/;"	f	file:
-alloc	common.c	/^void *alloc(size_t size)$/;"	f
-alloca	parser.tab.c	/^#    define alloca /;"	d	file:
-arglist	ast.h	/^    struct AstNode *arglist;$/;"	m	struct:__anon14	typeref:struct:__anon14::AstNode
-assignment	ast.h	/^        AstAssignment assignment;$/;"	m	union:AstNode::__anon18
-assignment	parser.y	/^assignment:$/;"	l
-ast_assign_t	ast.h	/^    ast_assign_t,$/;"	e	enum:__anon1
-ast_break_t	ast.h	/^    ast_break_t,$/;"	e	enum:__anon1
-ast_call_t	ast.h	/^    ast_call_t,$/;"	e	enum:__anon1
-ast_constant_t	ast.h	/^    ast_constant_t,$/;"	e	enum:__anon1
-ast_continue_t	ast.h	/^    ast_continue_t,$/;"	e	enum:__anon1
-ast_expr_t	ast.h	/^    ast_expr_t,$/;"	e	enum:__anon1
-ast_for_t	ast.h	/^    ast_for_t,$/;"	e	enum:__anon1
-ast_func_t	ast.h	/^    ast_func_t,$/;"	e	enum:__anon1
-ast_id_t	ast.h	/^    ast_id_t,$/;"	e	enum:__anon1
-ast_if_t	ast.h	/^    ast_if_t,$/;"	e	enum:__anon1
-ast_last_t	ast.h	/^    ast_last_t$/;"	e	enum:__anon1
-ast_list_t	ast.h	/^    ast_list_t,$/;"	e	enum:__anon1
-ast_listassign_t	ast.h	/^    ast_listassign_t,$/;"	e	enum:__anon1
-ast_listindex_t	ast.h	/^    ast_listindex_t,$/;"	e	enum:__anon1
-ast_return_t	ast.h	/^    ast_return_t,$/;"	e	enum:__anon1
-ast_stmnts_t	ast.h	/^    ast_stmnts_t,$/;"	e	enum:__anon1
-ast_while_t	ast.h	/^    ast_while_t,$/;"	e	enum:__anon1
-begin	common.c	/^int begin(int verbose, int execute, int compile, int graph)$/;"	f
-buckets	symbol.h	/^    int buckets;    \/* Total # of buckets in hashtable *\/$/;"	m	struct:symtable
-builtins	functions.c	/^const struct func_def builtins[] =$/;"	v	typeref:struct:func_def
-bwand	functions.c	/^static LuciObject *bwand(LuciObject *left, LuciObject *right)$/;"	f	file:
-bwnot	functions.c	/^static LuciObject *bwnot(LuciObject *left, LuciObject *right)$/;"	f	file:
-bwor	functions.c	/^static LuciObject *bwor(LuciObject *left, LuciObject *right)$/;"	f	file:
-bwxor	functions.c	/^static LuciObject *bwxor(LuciObject *left, LuciObject *right)$/;"	f	file:
-call	ast.h	/^        AstFuncCall call;$/;"	m	union:AstNode::__anon18
-call	parser.y	/^call:$/;"	l
-cleanup	common.c	/^static void cleanup(void)$/;"	f	file:
-close_file	functions.c	/^static int close_file(FILE *fp)$/;"	f	file:
-co_float_t	ast.h	/^    co_float_t,$/;"	e	enum:__anon2
-co_int_t	ast.h	/^    co_int_t,$/;"	e	enum:__anon2
-co_string_t	ast.h	/^    co_string_t$/;"	e	enum:__anon2
-collisions	symbol.h	/^    int collisions; \/* Current # of collisions in hashtable *\/$/;"	m	struct:symtable
-column	ast.h	/^    int column;$/;"	m	struct:AstNode
-compile_ast	compile.c	/^Program * compile_ast(AstNode *root)$/;"	f
-cond	ast.h	/^    struct AstNode *cond;$/;"	m	struct:__anon11	typeref:struct:__anon11::AstNode
-cond	ast.h	/^    struct AstNode *cond;$/;"	m	struct:__anon13	typeref:struct:__anon13::AstNode
-cond	parser.y	/^cond:$/;"	l
-constant	ast.h	/^        AstConstant constant;$/;"	m	union:AstNode::__anon18
-constant_id	constant.c	/^int constant_id(ConstantTable *cotable, LuciObject *const_obj)$/;"	f
-copy_object	object.c	/^LuciObject *copy_object(LuciObject *orig)$/;"	f
-cotable	compile.h	/^    ConstantTable *cotable;$/;"	m	struct:__anon21
-cotable	constant.h	/^typedef struct cotable$/;"	s
-cotable_delete	constant.c	/^void cotable_delete(ConstantTable *cotable)$/;"	f
-cotable_get	constant.c	/^LuciObject *cotable_get(ConstantTable *cotable, int id)$/;"	f
-cotable_new	constant.c	/^ConstantTable *cotable_new(int size)$/;"	f
-count	ast.h	/^    int count;$/;"	m	struct:__anon16
-count	ast.h	/^    int count;$/;"	m	struct:__anon8
-count	compile.h	/^    int count;$/;"	m	struct:__anon21
-count	constant.h	/^    int count;      \/* Current # of objects in array *\/$/;"	m	struct:cotable
-count	object.h	/^        int count;	\/* current number of items in list *\/$/;"	m	struct:__anon24::__anon26
-count	symbol.h	/^    int count;      \/* Current # of allocated symbol\/object pairs *\/$/;"	m	struct:symtable
-create_context	env.c	/^ExecContext *create_context(const char* name, ExecContext *parent)$/;"	f
-create_node	ast.c	/^static AstNode *create_node(int type) {$/;"	f	file:
-create_object	object.c	/^LuciObject *create_object(int type)$/;"	f
-data	ast.h	/^    } data;$/;"	m	struct:AstNode	typeref:union:AstNode::__anon18
-destroy_context	env.c	/^void destroy_context(ExecContext *e)$/;"	f
-destroy_object	object.c	/^void destroy_object(LuciObject *trash)$/;"	f
-destroy_symbol	env.c	/^static int destroy_symbol(Symbol *s, int force)$/;"	f	file:
-destroy_tree	ast.c	/^void destroy_tree(AstNode *root)$/;"	f
-die	common.c	/^void die(const char* format, ... )$/;"	f
-dispatch_statement	env.c	/^static LuciObject *dispatch_statement(ExecContext *e, AstNode *a)$/;"	f	file:
-divide	functions.c	/^static LuciObject *divide(LuciObject *left, LuciObject *right)$/;"	f	file:
-djb2	symbol.c	/^static uint32_t djb2(const char *str)$/;"	f	file:
-elstatements	ast.h	/^    struct AstNode *elstatements;$/;"	m	struct:__anon13	typeref:struct:__anon13::AstNode
-empty_list	parser.y	/^empty_list:$/;"	l
-eq	functions.c	/^static LuciObject *eq(LuciObject *left, LuciObject *right)$/;"	f	file:
-eval	interpret.c	/^void eval(Program *prog)$/;"	f
-evaluate_condition	functions.c	/^int evaluate_condition(LuciObject *cond)$/;"	f
-exec_AST	env.c	/^void exec_AST(struct ExecContext *e, struct AstNode *a)$/;"	f
-exec_assignment	env.c	/^static LuciObject *exec_assignment(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_bin_expression	env.c	/^static LuciObject *exec_bin_expression(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_break	env.c	/^static LuciObject *exec_break(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_call	env.c	/^static LuciObject *exec_call(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_continue	env.c	/^static LuciObject *exec_continue(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_float_expression	env.c	/^static LuciObject *exec_float_expression(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_for	env.c	/^static LuciObject *exec_for(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_func_def	env.c	/^static LuciObject *exec_func_def(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_id_expression	env.c	/^static LuciObject *exec_id_expression(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_if	env.c	/^static LuciObject *exec_if(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_int_expression	env.c	/^static LuciObject *exec_int_expression(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_list	env.c	/^static LuciObject *exec_list(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_list_assignment	env.c	/^static LuciObject *exec_list_assignment(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_list_index	env.c	/^static LuciObject *exec_list_index(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_lookup	env.c	/^static LuciObject * (*exec_lookup[])(ExecContext *e, AstNode *a) =$/;"	v	file:
-exec_return	env.c	/^static LuciObject *exec_return(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_statement	env.c	/^static LuciObject *exec_statement(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-exec_string_expression	env.c	/^static LuciObject *exec_string_expression(ExecContext *e, AstNode *a)$/;"	f	file:
-exec_while	env.c	/^static LuciObject *exec_while(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
-expr	ast.h	/^    struct AstNode *expr;$/;"	m	struct:__anon17	typeref:struct:__anon17::AstNode
-expr	parser.y	/^expr:$/;"	l
-expression	ast.h	/^        AstExpression expression;$/;"	m	union:AstNode::__anon18
-f	ast.h	/^        double f;$/;"	m	union:__anon3::__anon4
-f_append_m	object.h	/^    f_append_m$/;"	e	enum:__anon23
-f_read_m	object.h	/^    f_read_m,$/;"	e	enum:__anon23
-f_val	object.h	/^    double f_val;$/;"	m	union:__anon24
-f_write_m	object.h	/^    f_write_m,$/;"	e	enum:__anon23
-file	object.h	/^    } file;$/;"	m	union:__anon24	typeref:struct:__anon24::__anon25
-find_symbol_by_name	symbol.c	/^static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)$/;"	f	file:
-flex_int16_t	lexer.yy.c	/^typedef int16_t flex_int16_t;$/;"	t	file:
-flex_int16_t	lexer.yy.c	/^typedef short int flex_int16_t;$/;"	t	file:
-flex_int32_t	lexer.yy.c	/^typedef int flex_int32_t;$/;"	t	file:
-flex_int32_t	lexer.yy.c	/^typedef int32_t flex_int32_t;$/;"	t	file:
-flex_int8_t	lexer.yy.c	/^typedef int8_t flex_int8_t;$/;"	t	file:
-flex_int8_t	lexer.yy.c	/^typedef signed char flex_int8_t;$/;"	t	file:
-flex_uint16_t	lexer.yy.c	/^typedef uint16_t flex_uint16_t;$/;"	t	file:
-flex_uint16_t	lexer.yy.c	/^typedef unsigned short int flex_uint16_t;$/;"	t	file:
-flex_uint32_t	lexer.yy.c	/^typedef uint32_t flex_uint32_t;$/;"	t	file:
-flex_uint32_t	lexer.yy.c	/^typedef unsigned int flex_uint32_t;$/;"	t	file:
-flex_uint8_t	lexer.yy.c	/^typedef uint8_t flex_uint8_t;$/;"	t	file:
-flex_uint8_t	lexer.yy.c	/^typedef unsigned char flex_uint8_t; $/;"	t	file:
-float_v	parser.tab.c	/^    double float_v;$/;"	m	union:YYSTYPE	file:
-float_v	parser.tab.h	/^    double float_v;$/;"	m	union:YYSTYPE
-for_loop	ast.h	/^        AstForLoop for_loop;$/;"	m	union:AstNode::__anon18
-for_loop	parser.y	/^for_loop:$/;"	l
-func	functions.h	/^    struct LuciObject * (*func) (struct LuciObject *);$/;"	m	struct:func_def	typeref:struct:func_def::func
-func	object.h	/^    struct LuciObject * (*func)(struct LuciObject *);$/;"	m	union:__anon24	typeref:struct:__anon24::func
-func_def	functions.h	/^struct func_def$/;"	s
-func_def	parser.y	/^func_def:$/;"	l
-funcdef	ast.h	/^        AstFuncDef funcdef;$/;"	m	union:AstNode::__anon18
-funcname	ast.h	/^    struct AstNode *funcname;$/;"	m	struct:__anon14	typeref:struct:__anon14::AstNode
-funcname	ast.h	/^    struct AstNode *funcname;$/;"	m	struct:__anon15	typeref:struct:__anon15::AstNode
-get_file_mode	functions.c	/^static int get_file_mode(const char *req_mode)$/;"	f	file:
-get_last_col_num	lexer.yy.c	/^int get_last_col_num(void)$/;"	f
-get_line_num	lexer.yy.c	/^int get_line_num(void)$/;"	f
-get_symbol	env.c	/^static Symbol *get_symbol (struct ExecContext *context, const char *name)$/;"	f	file:
-globals	functions.c	/^struct var_def globals[] =$/;"	v	typeref:struct:var_def
-gt	functions.c	/^static LuciObject *gt(LuciObject *left, LuciObject *right)$/;"	f	file:
-gte	functions.c	/^static LuciObject *gte(LuciObject *left, LuciObject *right)$/;"	f	file:
-hash_symbol	symbol.c	/^static uint32_t hash_symbol(SymbolTable *symtable, const char *name)$/;"	f	file:
-hashfuncs	symbol.c	/^static uint32_t (*hashfuncs[])(const char *str) = {$/;"	v	file:
-help	main.c	/^static void help()$/;"	f	file:
-i	ast.h	/^        long i;$/;"	m	union:__anon3::__anon4
-i_val	object.h	/^    int i_val;$/;"	m	union:__anon24
-id	ast.h	/^        AstID id;$/;"	m	union:AstNode::__anon18
-id	parser.y	/^id:     ID                      { $$ = make_id_expr($1); }$/;"	l
-if_else	ast.h	/^        AstIfElse if_else;$/;"	m	union:AstNode::__anon18
-if_else	parser.y	/^if_else:$/;"	l
-ifstatements	ast.h	/^    struct AstNode *ifstatements;$/;"	m	struct:__anon13	typeref:struct:__anon13::AstNode
-impl	stack.h	/^    LuciObject *impl[STACKMAX];$/;"	m	struct:__anon27
-index	ast.h	/^    struct AstNode *index;$/;"	m	struct:__anon10	typeref:struct:__anon10::AstNode
-index	ast.h	/^    struct AstNode *index;$/;"	m	struct:__anon9	typeref:struct:__anon9::AstNode
-index	symbol.h	/^    int index;$/;"	m	struct:symbol
-init_variables	functions.c	/^void init_variables(void)$/;"	f
-initialize_context	env.c	/^void initialize_context(ExecContext *e)$/;"	f
-instr_names	compile.c	/^static char *instr_names[] = {$/;"	v	file:
-instructions	compile.h	/^    Instruction *instructions;$/;"	m	struct:__anon21
-int_v	parser.tab.c	/^    long int_v;$/;"	m	union:YYSTYPE	file:
-int_v	parser.tab.h	/^    long int_v;$/;"	m	union:YYSTYPE
-is_option	main.c	/^static int is_option(const char *arg)$/;"	f	file:
-items	ast.h	/^    struct AstNode **items;$/;"	m	struct:__anon8	typeref:struct:__anon8::AstNode
-items	object.h	/^        struct LuciObject **items;$/;"	m	struct:__anon24::__anon26	typeref:struct:__anon24::__anon26::LuciObject
-iter	ast.h	/^    struct AstNode *iter;$/;"	m	struct:__anon12	typeref:struct:__anon12::AstNode
-left	ast.h	/^    struct AstNode *left, *right;$/;"	m	struct:__anon6	typeref:struct:__anon6::AstNode
-lgand	functions.c	/^static LuciObject *lgand(LuciObject *left, LuciObject *right)$/;"	f	file:
-lgnot	functions.c	/^static LuciObject *lgnot(LuciObject *left, LuciObject *right)$/;"	f	file:
-lgor	functions.c	/^static LuciObject *lgor(LuciObject *left, LuciObject *right)$/;"	f	file:
-lineno	ast.h	/^    int lineno;$/;"	m	struct:AstNode
-list	ast.h	/^        AstListDef list;$/;"	m	union:AstNode::__anon18
-list	ast.h	/^    struct AstNode *list;$/;"	m	struct:__anon12	typeref:struct:__anon12::AstNode
-list	ast.h	/^    struct AstNode *list;$/;"	m	struct:__anon9	typeref:struct:__anon9::AstNode
-list	object.h	/^    } list;$/;"	m	union:__anon24	typeref:struct:__anon24::__anon26
-list	parser.y	/^list:$/;"	l
-list_append_object	object.c	/^int list_append_object(LuciObject *list, LuciObject *item)$/;"	f
-list_get_object	object.c	/^LuciObject *list_get_object(LuciObject *list, int index)$/;"	f
-list_index	parser.y	/^list_index:$/;"	l
-list_items	parser.y	/^list_items:$/;"	l
-list_set_object	object.c	/^LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)$/;"	f
-listassign	ast.h	/^        AstListAssign listassign;$/;"	m	union:AstNode::__anon18
-listindex	ast.h	/^        AstListIndex listindex;$/;"	m	union:AstNode::__anon18
-lt	functions.c	/^static LuciObject *lt(LuciObject *left, LuciObject *right)$/;"	f	file:
-lte	functions.c	/^static LuciObject *lte(LuciObject *left, LuciObject *right)$/;"	f	file:
-luci_assert	functions.c	/^LuciObject *luci_assert(LuciObject *paramlist)$/;"	f
-luci_cast_float	functions.c	/^LuciObject *luci_cast_float(LuciObject *paramlist)$/;"	f
-luci_cast_int	functions.c	/^LuciObject *luci_cast_int(LuciObject *paramlist)$/;"	f
-luci_cast_str	functions.c	/^LuciObject *luci_cast_str(LuciObject *paramlist)$/;"	f
-luci_dir	functions.c	/^LuciObject *luci_dir(LuciObject *paramlist)$/;"	f
-luci_fclose	functions.c	/^LuciObject *luci_fclose(LuciObject *paramlist)$/;"	f
-luci_flines	functions.c	/^LuciObject *luci_flines(LuciObject *paramlist)$/;"	f
-luci_fopen	functions.c	/^LuciObject *luci_fopen(LuciObject *paramlist)$/;"	f
-luci_fread	functions.c	/^LuciObject *luci_fread(LuciObject *paramlist)$/;"	f
-luci_fwrite	functions.c	/^LuciObject *luci_fwrite(LuciObject *paramlist)$/;"	f
-luci_help	functions.c	/^LuciObject *luci_help(LuciObject *paramlist)$/;"	f
-luci_len	functions.c	/^LuciObject *luci_len(LuciObject *paramlist)$/;"	f
-luci_max	functions.c	/^LuciObject *luci_max(LuciObject *paramlist)$/;"	f
-luci_min	functions.c	/^LuciObject *luci_min(LuciObject *paramlist)$/;"	f
-luci_print	functions.c	/^LuciObject *luci_print(LuciObject *paramlist)$/;"	f
-luci_range	functions.c	/^LuciObject * luci_range(LuciObject *paramlist)$/;"	f
-luci_readline	functions.c	/^LuciObject *luci_readline(LuciObject *paramlist)$/;"	f
-luci_sum	functions.c	/^LuciObject * luci_sum(LuciObject *paramlist)$/;"	f
-luci_typeof	functions.c	/^LuciObject *luci_typeof(LuciObject *paramlist)$/;"	f
-main	main.c	/^int main(int argc, char *argv[])$/;"	f
-make_assignment	ast.c	/^AstNode *make_assignment(char *id, AstNode *right)$/;"	f
-make_binary_expr	ast.c	/^AstNode *make_binary_expr(AstNode *left,$/;"	f
-make_break	ast.c	/^AstNode *make_break()$/;"	f
-make_continue	ast.c	/^AstNode *make_continue()$/;"	f
-make_float_constant	ast.c	/^AstNode *make_float_constant(double val)$/;"	f
-make_for_loop	ast.c	/^AstNode *make_for_loop(AstNode *iter,$/;"	f
-make_func_call	ast.c	/^AstNode *make_func_call(AstNode *name, AstNode *arglist)$/;"	f
-make_func_def	ast.c	/^AstNode *make_func_def(AstNode *name, AstNode *param_list,$/;"	f
-make_id_expr	ast.c	/^AstNode *make_id_expr(char *name)$/;"	f
-make_if_else	ast.c	/^AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)$/;"	f
-make_int_constant	ast.c	/^AstNode *make_int_constant(long val)$/;"	f
-make_list_assignment	ast.c	/^AstNode *make_list_assignment(char *name,$/;"	f
-make_list_def	ast.c	/^AstNode *make_list_def(AstNode *result, AstNode *to_append)$/;"	f
-make_list_index	ast.c	/^AstNode *make_list_index(AstNode *list, AstNode *index)$/;"	f
-make_return	ast.c	/^AstNode *make_return(AstNode *expr)$/;"	f
-make_statements	ast.c	/^AstNode *make_statements(AstNode *list, AstNode *new)$/;"	f
-make_string_constant	ast.c	/^AstNode *make_string_constant(char *val)$/;"	f
-make_while_loop	ast.c	/^AstNode *make_while_loop(AstNode *cond, AstNode *statements)$/;"	f
-mod	functions.c	/^static LuciObject *mod(LuciObject *left, LuciObject *right)$/;"	f	file:
-mode	object.h	/^        LuciFileMode mode;$/;"	m	struct:__anon24::__anon25
-mul	functions.c	/^static LuciObject *mul(LuciObject *left, LuciObject *right)$/;"	f	file:
-name	ast.h	/^    char *name;$/;"	m	struct:__anon10
-name	ast.h	/^    char *name;$/;"	m	struct:__anon7
-name	env.h	/^    char* name;$/;"	m	struct:ExecContext
-name	functions.h	/^    const char *name;$/;"	m	struct:func_def
-name	functions.h	/^    const char *name;$/;"	m	struct:var_def
-name	symbol.h	/^    const char *name;$/;"	m	struct:symbol
-neq	functions.c	/^static LuciObject *neq(LuciObject *left, LuciObject *right)$/;"	f	file:
-next	symbol.h	/^    struct symbol *next;$/;"	m	struct:symbol	typeref:struct:symbol::symbol
-node	parser.tab.c	/^    struct AstNode *node;$/;"	m	union:YYSTYPE	typeref:struct:YYSTYPE::AstNode	file:
-node	parser.tab.h	/^    struct AstNode *node;$/;"	m	union:YYSTYPE	typeref:struct:YYSTYPE::AstNode
-oaat	symbol.c	/^static uint32_t oaat(const char *str)$/;"	f	file:
-obj_file_t	object.h	/^    obj_file_t,$/;"	e	enum:__anon22
-obj_float_t	object.h	/^    obj_float_t,$/;"	e	enum:__anon22
-obj_func_t	object.h	/^    obj_func_t$/;"	e	enum:__anon22
-obj_int_t	object.h	/^    obj_int_t,$/;"	e	enum:__anon22
-obj_list_t	object.h	/^    obj_list_t,$/;"	e	enum:__anon22
-obj_str_t	object.h	/^    obj_str_t,$/;"	e	enum:__anon22
-object	functions.h	/^    struct LuciObject *object;$/;"	m	struct:var_def	typeref:struct:var_def::LuciObject
-objects	constant.h	/^    LuciObject **objects;   \/* Constant object array *\/$/;"	m	struct:cotable
-objects	symbol.h	/^    LuciObject **objects;   \/* Object array *\/$/;"	m	struct:symtable
-op	ast.h	/^    int op;$/;"	m	struct:__anon6
-op_add_t	common.h	/^    op_add_t,$/;"	e	enum:__anon19
-op_band_t	common.h	/^    op_band_t,$/;"	e	enum:__anon19
-op_bnot_t	common.h	/^    op_bnot_t$/;"	e	enum:__anon19
-op_bor_t	common.h	/^    op_bor_t,$/;"	e	enum:__anon19
-op_bxor_t	common.h	/^    op_bxor_t,$/;"	e	enum:__anon19
-op_div_t	common.h	/^    op_div_t,$/;"	e	enum:__anon19
-op_eq_t	common.h	/^    op_eq_t,$/;"	e	enum:__anon19
-op_gt_t	common.h	/^    op_gt_t,$/;"	e	enum:__anon19
-op_gte_t	common.h	/^    op_gte_t,$/;"	e	enum:__anon19
-op_land_t	common.h	/^    op_land_t,$/;"	e	enum:__anon19
-op_lnot_t	common.h	/^    op_lnot_t,$/;"	e	enum:__anon19
-op_lor_t	common.h	/^    op_lor_t,$/;"	e	enum:__anon19
-op_lt_t	common.h	/^    op_lt_t,$/;"	e	enum:__anon19
-op_lte_t	common.h	/^    op_lte_t,$/;"	e	enum:__anon19
-op_mod_t	common.h	/^    op_mod_t,$/;"	e	enum:__anon19
-op_mul_t	common.h	/^    op_mul_t,$/;"	e	enum:__anon19
-op_neq_t	common.h	/^    op_neq_t,$/;"	e	enum:__anon19
-op_pow_t	common.h	/^    op_pow_t,$/;"	e	enum:__anon19
-op_sub_t	common.h	/^    op_sub_t,$/;"	e	enum:__anon19
-op_type	common.h	/^} op_type;$/;"	t	typeref:enum:__anon19
-options	main.c	/^static const char *options[] =$/;"	v	file:
-param_list	ast.h	/^    struct AstNode *param_list;$/;"	m	struct:__anon15	typeref:struct:__anon15::AstNode
-params	parser.y	/^params:$/;"	l
-parent	env.h	/^    struct ExecContext *parent;$/;"	m	struct:ExecContext	typeref:struct:ExecContext::ExecContext
-power	functions.c	/^static LuciObject *power(LuciObject *left, LuciObject *right)$/;"	f	file:
-print_ast_graph	ast.c	/^int print_ast_graph(AstNode *root, int id)$/;"	f
-print_instructions	compile.c	/^void print_instructions(Program *prog)$/;"	f
-print_object	functions.c	/^void print_object(LuciObject *in)$/;"	f
-prog	common.c	/^static Program *prog = NULL;$/;"	v	file:
-program	parser.y	/^program:$/;"	l
-program_delete	compile.c	/^void program_delete(Program *prog)$/;"	f
-program_new	compile.c	/^Program *program_new(void)$/;"	f
-ptr	object.h	/^        FILE *ptr;$/;"	m	struct:__anon24::__anon25
-refcount	object.h	/^    int refcount;$/;"	m	struct:LuciObject
-reference_object	object.c	/^LuciObject *reference_object(LuciObject *orig)$/;"	f
-return	parser.y	/^return:     RETURN expr     { $$ = make_return($2); };$/;"	l
-return_stmt	ast.h	/^        AstReturn return_stmt;$/;"	m	union:AstNode::__anon18
-right	ast.h	/^    struct AstNode *left, *right;$/;"	m	struct:__anon6	typeref:struct:__anon6::
-right	ast.h	/^    struct AstNode *right;$/;"	m	struct:__anon10	typeref:struct:__anon10::AstNode
-right	ast.h	/^    struct AstNode *right;$/;"	m	struct:__anon7	typeref:struct:__anon7::AstNode
-root_node	common.c	/^static AstNode *root_node = NULL;$/;"	v	file:
-s	ast.h	/^        char *s;$/;"	m	union:__anon3::__anon4
-s_val	object.h	/^    char *s_val;$/;"	m	union:__anon24
-sdbm	symbol.c	/^static uint32_t sdbm(const char *str)$/;"	f	file:
-short	parser.tab.c	/^# undef short$/;"	d	file:
-size	ast.h	/^    int size;$/;"	m	struct:__anon16
-size	ast.h	/^    int size;$/;"	m	struct:__anon8
-size	compile.h	/^    int size;$/;"	m	struct:__anon21
-size	constant.h	/^    int size;       \/* Total object array allocated size *\/$/;"	m	struct:cotable
-size	object.h	/^        int size;	\/* current count of allocated item pointers *\/$/;"	m	struct:__anon24::__anon26
-size	object.h	/^        long size;	\/* in bytes *\/$/;"	m	struct:__anon24::__anon25
-size	symbol.h	/^    int size;       \/* Total object array size *\/$/;"	m	struct:symtable
-solve_bin_expr	functions.c	/^LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)$/;"	f
-solvers	functions.c	/^LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {$/;"	v
-st_empty	stack.c	/^int st_empty(Stack *S)$/;"	f
-st_full	stack.c	/^int st_full(Stack *S)$/;"	f
-st_init	stack.c	/^void st_init(Stack *S)$/;"	f
-st_pop	stack.c	/^LuciObject *st_pop(Stack *S)$/;"	f
-st_print	stack.c	/^void st_print(Stack *S)$/;"	f
-st_push	stack.c	/^void st_push(Stack *S, LuciObject *obj)$/;"	f
-st_size	stack.c	/^int st_size(Stack *S)$/;"	f
-st_top	stack.c	/^LuciObject *st_top(Stack *S)$/;"	f
-statement	parser.y	/^statement:$/;"	l
-statements	ast.h	/^        AstStatements statements;$/;"	m	union:AstNode::__anon18
-statements	ast.h	/^    struct AstNode ** statements;$/;"	m	struct:__anon16	typeref:struct:__anon16::AstNode
-statements	ast.h	/^    struct AstNode *statements;$/;"	m	struct:__anon11	typeref:struct:__anon11::AstNode
-statements	ast.h	/^    struct AstNode *statements;$/;"	m	struct:__anon12	typeref:struct:__anon12::AstNode
-statements	ast.h	/^    struct AstNode *statements;$/;"	m	struct:__anon15	typeref:struct:__anon15::AstNode
-statements	parser.y	/^statements:$/;"	l
-string_v	parser.tab.c	/^    char *string_v;$/;"	m	union:YYSTYPE	file:
-string_v	parser.tab.h	/^    char *string_v;$/;"	m	union:YYSTYPE
-sub	functions.c	/^static LuciObject *sub(LuciObject *left, LuciObject *right)$/;"	f	file:
-sym_bfunc_t	symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon28
-sym_bobj_t	symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon28
-sym_ufunc_t	symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon28
-sym_uobj_t	symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon28
-symbol	symbol.h	/^typedef struct symbol$/;"	s
-symbol_delete	symbol.c	/^static void *symbol_delete(Symbol *del)$/;"	f	file:
-symbol_id	symbol.c	/^int symbol_id(SymbolTable *symtable, const char *name)$/;"	f
-symbol_new	symbol.c	/^static Symbol *symbol_new(const char *str, int index)$/;"	f	file:
-symbols	symbol.h	/^    Symbol **symbols;   \/* Symbol array *\/$/;"	m	struct:symtable
-symtable	compile.h	/^    SymbolTable *symtable;$/;"	m	struct:__anon21
-symtable	env.h	/^    struct Symbol *symtable;$/;"	m	struct:ExecContext	typeref:struct:ExecContext::Symbol
-symtable	symbol.h	/^typedef struct symtable$/;"	s
-symtable_delete	symbol.c	/^void symtable_delete(SymbolTable *symtable)$/;"	f
-symtable_get	symbol.c	/^LuciObject *symtable_get(SymbolTable *symtable, int id)$/;"	f
-symtable_insert	symbol.c	/^static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)$/;"	f	file:
-symtable_new	symbol.c	/^SymbolTable *symtable_new(int buckets)$/;"	f
-symtable_resize	symbol.c	/^static SymbolTable *symtable_resize(SymbolTable *symtable, int buckets)$/;"	f	file:
-symtable_set	symbol.c	/^void symtable_set(SymbolTable *symtable, LuciObject *obj, int id)$/;"	f
-top	stack.h	/^    int top;$/;"	m	struct:__anon27
-type	ast.h	/^    AstType type;$/;"	m	struct:AstNode
-type	ast.h	/^    ConstantType type;$/;"	m	struct:__anon3
-type	object.h	/^    LuciOType type;$/;"	m	struct:LuciObject
-type	symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	m	struct:symbol	typeref:enum:symbol::__anon28
-types_match	functions.c	/^int types_match(LuciObject *left, LuciObject *right)$/;"	f
-unput	lexer.yy.c	/^#define unput(/;"	d	file:
-val	ast.h	/^    char *val;$/;"	m	struct:__anon5
-val	ast.h	/^    } val;$/;"	m	struct:__anon3	typeref:union:__anon3::__anon4
-value	object.h	/^    LuciOVal value;$/;"	m	struct:LuciObject
-var_def	functions.h	/^struct var_def$/;"	s
-version_string	main.c	/^static const char const * version_string = "Luci v0.2";$/;"	v	file:
-while_loop	ast.h	/^        AstWhileLoop while_loop;$/;"	m	union:AstNode::__anon18
-while_loop	parser.y	/^while_loop:$/;"	l
-yak	common.c	/^void yak(const char *format, ... )$/;"	f
-yy_accept	lexer.yy.c	/^static yyconst flex_int16_t yy_accept[112] =$/;"	v	file:
-yy_at_bol	lexer.yy.c	/^	int yy_at_bol;$/;"	m	struct:yy_buffer_state	file:
-yy_base	lexer.yy.c	/^static yyconst flex_int16_t yy_base[115] =$/;"	v	file:
-yy_bs_column	lexer.yy.c	/^    int yy_bs_column; \/**< The column count. *\/$/;"	m	struct:yy_buffer_state	file:
-yy_bs_lineno	lexer.yy.c	/^    int yy_bs_lineno; \/**< The line count. *\/$/;"	m	struct:yy_buffer_state	file:
-yy_buf_pos	lexer.yy.c	/^	char *yy_buf_pos;		\/* current position in input buffer *\/$/;"	m	struct:yy_buffer_state	file:
-yy_buf_size	lexer.yy.c	/^	yy_size_t yy_buf_size;$/;"	m	struct:yy_buffer_state	file:
-yy_buffer_stack	lexer.yy.c	/^static YY_BUFFER_STATE * yy_buffer_stack = 0; \/**< Stack as an array. *\/$/;"	v	file:
-yy_buffer_stack_max	lexer.yy.c	/^static size_t yy_buffer_stack_max = 0; \/**< capacity of stack. *\/$/;"	v	file:
-yy_buffer_stack_top	lexer.yy.c	/^static size_t yy_buffer_stack_top = 0; \/**< index of top of stack. *\/$/;"	v	file:
-yy_buffer_state	lexer.yy.c	/^struct yy_buffer_state$/;"	s	file:
-yy_buffer_status	lexer.yy.c	/^	int yy_buffer_status;$/;"	m	struct:yy_buffer_state	file:
-yy_c_buf_p	lexer.yy.c	/^static char *yy_c_buf_p = (char *) 0;$/;"	v	file:
-yy_ch_buf	lexer.yy.c	/^	char *yy_ch_buf;		\/* input buffer *\/$/;"	m	struct:yy_buffer_state	file:
-yy_chk	lexer.yy.c	/^static yyconst flex_int16_t yy_chk[223] =$/;"	v	file:
-yy_create_buffer	lexer.yy.c	/^    YY_BUFFER_STATE yy_create_buffer  (FILE * file, int  size )$/;"	f
-yy_def	lexer.yy.c	/^static yyconst flex_int16_t yy_def[115] =$/;"	v	file:
-yy_delete_buffer	lexer.yy.c	/^    void yy_delete_buffer (YY_BUFFER_STATE  b )$/;"	f
-yy_did_buffer_switch_on_eof	lexer.yy.c	/^static int yy_did_buffer_switch_on_eof;$/;"	v	file:
-yy_ec	lexer.yy.c	/^static yyconst flex_int32_t yy_ec[256] =$/;"	v	file:
-yy_fatal_error	lexer.yy.c	/^static void yy_fatal_error (yyconst char* msg )$/;"	f	file:
-yy_fill_buffer	lexer.yy.c	/^	int yy_fill_buffer;$/;"	m	struct:yy_buffer_state	file:
-yy_flex_debug	lexer.yy.c	/^int yy_flex_debug = 0;$/;"	v
-yy_flex_strlen	lexer.yy.c	/^static int yy_flex_strlen (yyconst char * s )$/;"	f	file:
-yy_flex_strncpy	lexer.yy.c	/^static void yy_flex_strncpy (char* s1, yyconst char * s2, int n )$/;"	f	file:
-yy_flush_buffer	lexer.yy.c	/^    void yy_flush_buffer (YY_BUFFER_STATE  b )$/;"	f
-yy_get_next_buffer	lexer.yy.c	/^static int yy_get_next_buffer (void)$/;"	f	file:
-yy_get_previous_state	lexer.yy.c	/^    static yy_state_type yy_get_previous_state (void)$/;"	f	file:
-yy_hold_char	lexer.yy.c	/^static char yy_hold_char;$/;"	v	file:
-yy_init	lexer.yy.c	/^static int yy_init = 0;		\/* whether we need to initialize *\/$/;"	v	file:
-yy_init_buffer	lexer.yy.c	/^    static void yy_init_buffer  (YY_BUFFER_STATE  b, FILE * file )$/;"	f	file:
-yy_init_globals	lexer.yy.c	/^static int yy_init_globals (void)$/;"	f	file:
-yy_input_file	lexer.yy.c	/^	FILE *yy_input_file;$/;"	m	struct:yy_buffer_state	file:
-yy_is_interactive	lexer.yy.c	/^	int yy_is_interactive;$/;"	m	struct:yy_buffer_state	file:
-yy_is_our_buffer	lexer.yy.c	/^	int yy_is_our_buffer;$/;"	m	struct:yy_buffer_state	file:
-yy_last_accepting_cpos	lexer.yy.c	/^static char *yy_last_accepting_cpos;$/;"	v	file:
-yy_last_accepting_state	lexer.yy.c	/^static yy_state_type yy_last_accepting_state;$/;"	v	file:
-yy_load_buffer_state	lexer.yy.c	/^static void yy_load_buffer_state  (void)$/;"	f	file:
-yy_meta	lexer.yy.c	/^static yyconst flex_int32_t yy_meta[54] =$/;"	v	file:
-yy_n_chars	lexer.yy.c	/^	yy_size_t yy_n_chars;$/;"	m	struct:yy_buffer_state	file:
-yy_n_chars	lexer.yy.c	/^static yy_size_t yy_n_chars;		\/* number of characters read into yy_ch_buf *\/$/;"	v	file:
-yy_new_buffer	lexer.yy.c	/^#define yy_new_buffer /;"	d	file:
-yy_nxt	lexer.yy.c	/^	flex_int32_t yy_nxt;$/;"	m	struct:yy_trans_info	file:
-yy_nxt	lexer.yy.c	/^static yyconst flex_int16_t yy_nxt[223] =$/;"	v	file:
-yy_reduce_print	parser.tab.c	/^yy_reduce_print (YYSTYPE *yyvsp, int yyrule)$/;"	f	file:
-yy_scan_buffer	lexer.yy.c	/^YY_BUFFER_STATE yy_scan_buffer  (char * base, yy_size_t  size )$/;"	f
-yy_scan_bytes	lexer.yy.c	/^YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len )$/;"	f
-yy_scan_string	lexer.yy.c	/^YY_BUFFER_STATE yy_scan_string (yyconst char * yystr )$/;"	f
-yy_set_bol	lexer.yy.c	/^#define yy_set_bol(/;"	d	file:
-yy_set_interactive	lexer.yy.c	/^#define yy_set_interactive(/;"	d	file:
-yy_size_t	lexer.yy.c	/^typedef size_t yy_size_t;$/;"	t	file:
-yy_stack_print	parser.tab.c	/^yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)$/;"	f	file:
-yy_start	lexer.yy.c	/^static int yy_start = 0;	\/* start state number *\/$/;"	v	file:
-yy_state_type	lexer.yy.c	/^typedef int yy_state_type;$/;"	t	file:
-yy_switch_to_buffer	lexer.yy.c	/^    void yy_switch_to_buffer  (YY_BUFFER_STATE  new_buffer )$/;"	f
-yy_symbol_print	parser.tab.c	/^yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)$/;"	f	file:
-yy_symbol_value_print	parser.tab.c	/^yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)$/;"	f	file:
-yy_trans_info	lexer.yy.c	/^struct yy_trans_info$/;"	s	file:
-yy_try_NUL_trans	lexer.yy.c	/^    static yy_state_type yy_try_NUL_trans  (yy_state_type yy_current_state )$/;"	f	file:
-yy_verify	lexer.yy.c	/^	flex_int32_t yy_verify;$/;"	m	struct:yy_trans_info	file:
-yyalloc	lexer.yy.c	/^void *yyalloc (yy_size_t  size )$/;"	f
-yyalloc	parser.tab.c	/^union yyalloc$/;"	u	file:
-yychar	parser.tab.c	/^int yychar;$/;"	v
-yycheck	parser.tab.c	/^static const yytype_int16 yycheck[] =$/;"	v	file:
-yyclearin	parser.tab.c	/^#define yyclearin	/;"	d	file:
-yyconst	lexer.yy.c	/^#define yyconst /;"	d	file:
-yyconst	lexer.yy.c	/^#define yyconst$/;"	d	file:
-yydebug	parser.tab.c	/^int yydebug;$/;"	v
-yydefact	parser.tab.c	/^static const yytype_uint8 yydefact[] =$/;"	v	file:
-yydefgoto	parser.tab.c	/^static const yytype_int8 yydefgoto[] =$/;"	v	file:
-yydestruct	parser.tab.c	/^yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)$/;"	f	file:
-yyensure_buffer_stack	lexer.yy.c	/^static void yyensure_buffer_stack (void)$/;"	f	file:
-yyerrok	parser.tab.c	/^#define yyerrok	/;"	d	file:
-yyerror	parser.tab.c	/^void yyerror(const char *msg)$/;"	f
-yyfree	lexer.yy.c	/^void yyfree (void * ptr )$/;"	f
-yyget_debug	lexer.yy.c	/^int yyget_debug  (void)$/;"	f
-yyget_in	lexer.yy.c	/^FILE *yyget_in  (void)$/;"	f
-yyget_leng	lexer.yy.c	/^yy_size_t yyget_leng  (void)$/;"	f
-yyget_lineno	lexer.yy.c	/^int yyget_lineno  (void)$/;"	f
-yyget_out	lexer.yy.c	/^FILE *yyget_out  (void)$/;"	f
-yyget_text	lexer.yy.c	/^char *yyget_text  (void)$/;"	f
-yyin	lexer.yy.c	/^FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;$/;"	v
-yyinput	lexer.yy.c	/^    static int yyinput (void)$/;"	f	file:
-yyleng	lexer.yy.c	/^yy_size_t yyleng;$/;"	v
-yyless	lexer.yy.c	/^#define yyless(/;"	d	file:
-yyless	lexer.yy.c	/^#undef yyless$/;"	d	file:
-yylex_destroy	lexer.yy.c	/^int yylex_destroy  (void)$/;"	f
-yylineno	lexer.yy.c	/^int yylineno = 1;$/;"	v
-yylval	parser.tab.c	/^YYSTYPE yylval;$/;"	v
-yymore	lexer.yy.c	/^#define yymore(/;"	d	file:
-yynerrs	parser.tab.c	/^int yynerrs;$/;"	v
-yyout	lexer.yy.c	/^FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;$/;"	v
-yypact	parser.tab.c	/^static const yytype_int16 yypact[] =$/;"	v	file:
-yypact_value_is_default	parser.tab.c	/^#define yypact_value_is_default(/;"	d	file:
-yyparse	parser.tab.c	/^yyparse (void *YYPARSE_PARAM)$/;"	f
-yypgoto	parser.tab.c	/^static const yytype_int8 yypgoto[] =$/;"	v	file:
-yypop_buffer_state	lexer.yy.c	/^void yypop_buffer_state (void)$/;"	f
-yyprhs	parser.tab.c	/^static const yytype_uint8 yyprhs[] =$/;"	v	file:
-yypush_buffer_state	lexer.yy.c	/^void yypush_buffer_state (YY_BUFFER_STATE new_buffer )$/;"	f
-yyr1	parser.tab.c	/^static const yytype_uint8 yyr1[] =$/;"	v	file:
-yyr2	parser.tab.c	/^static const yytype_uint8 yyr2[] =$/;"	v	file:
-yyrealloc	lexer.yy.c	/^void *yyrealloc  (void * ptr, yy_size_t  size )$/;"	f
-yyrestart	lexer.yy.c	/^    void yyrestart  (FILE * input_file )$/;"	f
-yyrhs	parser.tab.c	/^static const yytype_int8 yyrhs[] =$/;"	v	file:
-yyrline	parser.tab.c	/^static const yytype_uint8 yyrline[] =$/;"	v	file:
-yyset_debug	lexer.yy.c	/^void yyset_debug (int  bdebug )$/;"	f
-yyset_in	lexer.yy.c	/^void yyset_in (FILE *  in_str )$/;"	f
-yyset_lineno	lexer.yy.c	/^void yyset_lineno (int  line_number )$/;"	f
-yyset_out	lexer.yy.c	/^void yyset_out (FILE *  out_str )$/;"	f
-yyss_alloc	parser.tab.c	/^  yytype_int16 yyss_alloc;$/;"	m	union:yyalloc	file:
-yystos	parser.tab.c	/^static const yytype_uint8 yystos[] =$/;"	v	file:
-yystpcpy	parser.tab.c	/^#   define yystpcpy /;"	d	file:
-yystpcpy	parser.tab.c	/^yystpcpy (char *yydest, const char *yysrc)$/;"	f	file:
-yystrlen	parser.tab.c	/^#   define yystrlen /;"	d	file:
-yystrlen	parser.tab.c	/^yystrlen (const char *yystr)$/;"	f	file:
-yystype	parser.tab.c	/^# define yystype /;"	d	file:
-yystype	parser.tab.h	/^# define yystype /;"	d
-yysyntax_error	parser.tab.c	/^yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,$/;"	f	file:
-yytable	parser.tab.c	/^static const yytype_uint8 yytable[] =$/;"	v	file:
-yytable_value_is_error	parser.tab.c	/^#define yytable_value_is_error(/;"	d	file:
-yyterminate	lexer.yy.c	/^#define yyterminate(/;"	d	file:
-yytext	lexer.yy.c	/^char *yytext;$/;"	v
-yytext_ptr	lexer.yy.c	/^#define yytext_ptr /;"	d	file:
-yytname	parser.tab.c	/^static const char *const yytname[] =$/;"	v	file:
-yytnamerr	parser.tab.c	/^yytnamerr (char *yyres, const char *yystr)$/;"	f	file:
-yytokentype	parser.tab.c	/^   enum yytokentype {$/;"	g	file:
-yytokentype	parser.tab.h	/^   enum yytokentype {$/;"	g
-yytoknum	parser.tab.c	/^static const yytype_uint16 yytoknum[] =$/;"	v	file:
-yytranslate	parser.tab.c	/^static const yytype_uint8 yytranslate[] =$/;"	v	file:
-yytype_int16	parser.tab.c	/^typedef YYTYPE_INT16 yytype_int16;$/;"	t	file:
-yytype_int16	parser.tab.c	/^typedef short int yytype_int16;$/;"	t	file:
-yytype_int8	parser.tab.c	/^typedef YYTYPE_INT8 yytype_int8;$/;"	t	file:
-yytype_int8	parser.tab.c	/^typedef short int yytype_int8;$/;"	t	file:
-yytype_int8	parser.tab.c	/^typedef signed char yytype_int8;$/;"	t	file:
-yytype_uint16	parser.tab.c	/^typedef YYTYPE_UINT16 yytype_uint16;$/;"	t	file:
-yytype_uint16	parser.tab.c	/^typedef unsigned short int yytype_uint16;$/;"	t	file:
-yytype_uint8	parser.tab.c	/^typedef YYTYPE_UINT8 yytype_uint8;$/;"	t	file:
-yytype_uint8	parser.tab.c	/^typedef unsigned char yytype_uint8;$/;"	t	file:
-yyunput	lexer.yy.c	/^    static void yyunput (int c, register char * yy_bp )$/;"	f	file:
-yyvs_alloc	parser.tab.c	/^  YYSTYPE yyvs_alloc;$/;"	m	union:yyalloc	file:
-yywrap	lexer.yy.c	/^#define yywrap(/;"	d	file:
+ASSIGN	./parser.tab.c	/^     ASSIGN = 302,$/;"	e	enum:yytokentype	file:
+ASSIGN	./parser.tab.h	/^     ASSIGN = 302,$/;"	e	enum:yytokentype
+ASTEXEC_H	./env.h	/^#define ASTEXEC_H$/;"	d
+AST_H	./ast.h	/^#define AST_H$/;"	d
+AST_LIST_SIZE	./ast.h	/^#define AST_LIST_SIZE /;"	d
+AST_STMNTS_SIZE	./ast.h	/^#define AST_STMNTS_SIZE /;"	d
+AstAssignment	./ast.h	/^} AstAssignment;$/;"	t	typeref:struct:__anon4
+AstExpression	./ast.h	/^} AstExpression;$/;"	t	typeref:struct:__anon3
+AstForLoop	./ast.h	/^} AstForLoop;$/;"	t	typeref:struct:__anon9
+AstFuncCall	./ast.h	/^} AstFuncCall;$/;"	t	typeref:struct:__anon11
+AstFuncDef	./ast.h	/^} AstFuncDef;$/;"	t	typeref:struct:__anon12
+AstID	./ast.h	/^} AstID;$/;"	t	typeref:struct:__anon2
+AstIfElse	./ast.h	/^} AstIfElse;$/;"	t	typeref:struct:__anon10
+AstListAccess	./ast.h	/^} AstListAccess;$/;"	t	typeref:struct:__anon6
+AstListAssign	./ast.h	/^} AstListAssign;$/;"	t	typeref:struct:__anon7
+AstListDef	./ast.h	/^} AstListDef;$/;"	t	typeref:struct:__anon5
+AstNode	./ast.h	/^typedef struct AstNode$/;"	s
+AstNode	./ast.h	/^} AstNode;$/;"	t	typeref:struct:AstNode
+AstReturn	./ast.h	/^} AstReturn;$/;"	t	typeref:struct:__anon14
+AstStatements	./ast.h	/^} AstStatements;$/;"	t	typeref:struct:__anon13
+AstType	./ast.h	/^} AstType;$/;"	t	typeref:enum:__anon1
+AstWhileLoop	./ast.h	/^} AstWhileLoop;$/;"	t	typeref:struct:__anon8
+BASE_COTABLE_SIZE	./compile.h	/^#define BASE_COTABLE_SIZE /;"	d
+BASE_INSTR_COUNT	./compile.h	/^#define BASE_INSTR_COUNT /;"	d
+BASE_SYMTABLE_SCALE	./compile.h	/^#define BASE_SYMTABLE_SCALE /;"	d
+BEGIN	./lexer.yy.c	/^#define BEGIN /;"	d	file:
+BINOP	./compile.h	/^    BINOP,$/;"	e	enum:__anon17
+BINOP_H	./binop.h	/^#define BINOP_H$/;"	d
+BREAK	./parser.tab.c	/^     BREAK = 270,$/;"	e	enum:yytokentype	file:
+BREAK	./parser.tab.h	/^     BREAK = 270,$/;"	e	enum:yytokentype
+BUILTIN_H	./builtin.h	/^#define BUILTIN_H$/;"	d
+BWAND	./parser.tab.c	/^     BWAND = 281,$/;"	e	enum:yytokentype	file:
+BWAND	./parser.tab.h	/^     BWAND = 281,$/;"	e	enum:yytokentype
+BWNOT	./parser.tab.c	/^     BWNOT = 303,$/;"	e	enum:yytokentype	file:
+BWNOT	./parser.tab.h	/^     BWNOT = 303,$/;"	e	enum:yytokentype
+BWOR	./parser.tab.c	/^     BWOR = 283,$/;"	e	enum:yytokentype	file:
+BWOR	./parser.tab.h	/^     BWOR = 283,$/;"	e	enum:yytokentype
+BWXOR	./parser.tab.c	/^     BWXOR = 282,$/;"	e	enum:yytokentype	file:
+BWXOR	./parser.tab.h	/^     BWXOR = 282,$/;"	e	enum:yytokentype
+CALL	./compile.h	/^    CALL,$/;"	e	enum:__anon17
+COL	./lexer.yy.c	/^static int COL = 1;$/;"	v	file:
+COMMA	./parser.tab.c	/^     COMMA = 264,$/;"	e	enum:yytokentype	file:
+COMMA	./parser.tab.h	/^     COMMA = 264,$/;"	e	enum:yytokentype
+COMMON_H	./common.h	/^#define COMMON_H$/;"	d
+COMPILE_H	./compile.h	/^#define COMPILE_H$/;"	d
+CONSTANT_H	./constant.h	/^#define CONSTANT_H$/;"	d
+CONTINUE	./parser.tab.c	/^     CONTINUE = 271,$/;"	e	enum:yytokentype	file:
+CONTINUE	./parser.tab.h	/^     CONTINUE = 271,$/;"	e	enum:yytokentype
+ConstantTable	./constant.h	/^} ConstantTable;$/;"	t	typeref:struct:cotable
+DEF	./parser.tab.c	/^     DEF = 276,$/;"	e	enum:yytokentype	file:
+DEF	./parser.tab.h	/^     DEF = 276,$/;"	e	enum:yytokentype
+DIVIDE	./parser.tab.c	/^     DIVIDE = 293,$/;"	e	enum:yytokentype	file:
+DIVIDE	./parser.tab.h	/^     DIVIDE = 293,$/;"	e	enum:yytokentype
+DO	./parser.tab.c	/^     DO = 268,$/;"	e	enum:yytokentype	file:
+DO	./parser.tab.h	/^     DO = 268,$/;"	e	enum:yytokentype
+DONE	./parser.tab.c	/^     DONE = 269,$/;"	e	enum:yytokentype	file:
+DONE	./parser.tab.h	/^     DONE = 269,$/;"	e	enum:yytokentype
+DUP	./compile.h	/^    DUP,$/;"	e	enum:__anon17
+ECHO	./lexer.yy.c	/^#define ECHO /;"	d	file:
+ELSE	./parser.tab.c	/^     ELSE = 274,$/;"	e	enum:yytokentype	file:
+ELSE	./parser.tab.h	/^     ELSE = 274,$/;"	e	enum:yytokentype
+END	./parser.tab.c	/^     END = 275,$/;"	e	enum:yytokentype	file:
+END	./parser.tab.h	/^     END = 275,$/;"	e	enum:yytokentype
+EOB_ACT_CONTINUE_SCAN	./lexer.yy.c	/^#define EOB_ACT_CONTINUE_SCAN /;"	d	file:
+EOB_ACT_END_OF_FILE	./lexer.yy.c	/^#define EOB_ACT_END_OF_FILE /;"	d	file:
+EOB_ACT_LAST_MATCH	./lexer.yy.c	/^#define EOB_ACT_LAST_MATCH /;"	d	file:
+EQUAL	./parser.tab.c	/^     EQUAL = 285,$/;"	e	enum:yytokentype	file:
+EQUAL	./parser.tab.h	/^     EQUAL = 285,$/;"	e	enum:yytokentype
+EVER	./interpret.c	/^#define EVER /;"	d	file:
+EXIT_SUCCESS	./parser.tab.c	/^#      define EXIT_SUCCESS /;"	d	file:
+EXIT_SUCCESS	./parser.tab.c	/^#    define EXIT_SUCCESS /;"	d	file:
+ExecContext	./env.h	/^typedef struct ExecContext$/;"	s
+ExecContext	./env.h	/^} ExecContext;$/;"	t	typeref:struct:ExecContext
+FLEXINT_H	./lexer.yy.c	/^#define FLEXINT_H$/;"	d	file:
+FLEX_BETA	./lexer.yy.c	/^#define FLEX_BETA$/;"	d	file:
+FLEX_SCANNER	./lexer.yy.c	/^#define FLEX_SCANNER$/;"	d	file:
+FLOAT	./parser.tab.c	/^     FLOAT = 259,$/;"	e	enum:yytokentype	file:
+FLOAT	./parser.tab.h	/^     FLOAT = 259,$/;"	e	enum:yytokentype
+FOR	./parser.tab.c	/^     FOR = 266,$/;"	e	enum:yytokentype	file:
+FOR	./parser.tab.h	/^     FOR = 266,$/;"	e	enum:yytokentype
+GTHAN	./parser.tab.c	/^     GTHAN = 287,$/;"	e	enum:yytokentype	file:
+GTHAN	./parser.tab.h	/^     GTHAN = 287,$/;"	e	enum:yytokentype
+GTHEQ	./parser.tab.c	/^     GTHEQ = 286,$/;"	e	enum:yytokentype	file:
+GTHEQ	./parser.tab.h	/^     GTHEQ = 286,$/;"	e	enum:yytokentype
+HALT	./compile.h	/^    HALT,$/;"	e	enum:__anon17
+ID	./parser.tab.c	/^     ID = 261,$/;"	e	enum:yytokentype	file:
+ID	./parser.tab.h	/^     ID = 261,$/;"	e	enum:yytokentype
+IF	./parser.tab.c	/^     IF = 272,$/;"	e	enum:yytokentype	file:
+IF	./parser.tab.h	/^     IF = 272,$/;"	e	enum:yytokentype
+IN	./parser.tab.c	/^     IN = 267,$/;"	e	enum:yytokentype	file:
+IN	./parser.tab.h	/^     IN = 267,$/;"	e	enum:yytokentype
+INITIAL	./lexer.yy.c	/^#define INITIAL /;"	d	file:
+INIT_LIST_SIZE	./object.h	/^#define INIT_LIST_SIZE /;"	d
+INT	./parser.tab.c	/^     INT = 258,$/;"	e	enum:yytokentype	file:
+INT	./parser.tab.h	/^     INT = 258,$/;"	e	enum:yytokentype
+INT16_MAX	./lexer.yy.c	/^#define INT16_MAX /;"	d	file:
+INT16_MIN	./lexer.yy.c	/^#define INT16_MIN /;"	d	file:
+INT32_MAX	./lexer.yy.c	/^#define INT32_MAX /;"	d	file:
+INT32_MIN	./lexer.yy.c	/^#define INT32_MIN /;"	d	file:
+INT8_MAX	./lexer.yy.c	/^#define INT8_MAX /;"	d	file:
+INT8_MIN	./lexer.yy.c	/^#define INT8_MIN /;"	d	file:
+INTERPRET_H	./interpret.h	/^#define INTERPRET_H$/;"	d
+ITERJUMP	./compile.h	/^    ITERJUMP$/;"	e	enum:__anon17
+Instruction	./compile.h	/^typedef uint16_t Instruction;$/;"	t
+JUMP	./compile.h	/^    JUMP,$/;"	e	enum:__anon17
+JUMPZ	./compile.h	/^    JUMPZ,$/;"	e	enum:__anon17
+LBRACK	./parser.tab.c	/^     LBRACK = 301,$/;"	e	enum:yytokentype	file:
+LBRACK	./parser.tab.h	/^     LBRACK = 301,$/;"	e	enum:yytokentype
+LGAND	./parser.tab.c	/^     LGAND = 279,$/;"	e	enum:yytokentype	file:
+LGAND	./parser.tab.h	/^     LGAND = 279,$/;"	e	enum:yytokentype
+LGNOT	./parser.tab.c	/^     LGNOT = 304,$/;"	e	enum:yytokentype	file:
+LGNOT	./parser.tab.h	/^     LGNOT = 304,$/;"	e	enum:yytokentype
+LGOR	./parser.tab.c	/^     LGOR = 280,$/;"	e	enum:yytokentype	file:
+LGOR	./parser.tab.h	/^     LGOR = 280,$/;"	e	enum:yytokentype
+LINE	./lexer.yy.c	/^static int LINE = 1;$/;"	v	file:
+LISTGET	./compile.h	/^    LISTGET,$/;"	e	enum:__anon17
+LISTPUT	./compile.h	/^    LISTPUT,$/;"	e	enum:__anon17
+LOADK	./compile.h	/^    LOADK,$/;"	e	enum:__anon17
+LOADS	./compile.h	/^    LOADS,$/;"	e	enum:__anon17
+LOOP_TYPE_FOR	./compile.h	/^#define LOOP_TYPE_FOR /;"	d
+LOOP_TYPE_WHILE	./compile.h	/^#define LOOP_TYPE_WHILE /;"	d
+LPAREN	./parser.tab.c	/^     LPAREN = 297,$/;"	e	enum:yytokentype	file:
+LPAREN	./parser.tab.h	/^     LPAREN = 297,$/;"	e	enum:yytokentype
+LSQUARE	./parser.tab.c	/^     LSQUARE = 299,$/;"	e	enum:yytokentype	file:
+LSQUARE	./parser.tab.h	/^     LSQUARE = 299,$/;"	e	enum:yytokentype
+LTHAN	./parser.tab.c	/^     LTHAN = 289,$/;"	e	enum:yytokentype	file:
+LTHAN	./parser.tab.h	/^     LTHAN = 289,$/;"	e	enum:yytokentype
+LTHEQ	./parser.tab.c	/^     LTHEQ = 288,$/;"	e	enum:yytokentype	file:
+LTHEQ	./parser.tab.h	/^     LTHEQ = 288,$/;"	e	enum:yytokentype
+LuciFileMode	./object.h	/^} LuciFileMode;$/;"	t	typeref:enum:__anon19
+LuciOType	./object.h	/^} LuciOType;$/;"	t	typeref:enum:__anon18
+LuciOVal	./object.h	/^} LuciOVal;$/;"	t	typeref:union:__anon20
+LuciObject	./object.h	/^typedef struct LuciObject$/;"	s
+LuciObject	./object.h	/^} LuciObject;$/;"	t	typeref:struct:LuciObject
+MINUS	./parser.tab.c	/^     MINUS = 290,$/;"	e	enum:yytokentype	file:
+MINUS	./parser.tab.h	/^     MINUS = 290,$/;"	e	enum:yytokentype
+MKITER	./compile.h	/^    MKITER,$/;"	e	enum:__anon17
+MKLIST	./compile.h	/^    MKLIST,$/;"	e	enum:__anon17
+MOD	./parser.tab.c	/^     MOD = 292,$/;"	e	enum:yytokentype	file:
+MOD	./parser.tab.h	/^     MOD = 292,$/;"	e	enum:yytokentype
+NBUCKETS	./symbol.c	/^static unsigned int NBUCKETS[N_BUCKET_OPTIONS] = {$/;"	v	file:
+NEWLINE	./parser.tab.c	/^     NEWLINE = 262,$/;"	e	enum:yytokentype	file:
+NEWLINE	./parser.tab.h	/^     NEWLINE = 262,$/;"	e	enum:yytokentype
+NOP	./compile.h	/^    NOP,$/;"	e	enum:__anon17
+NOTEQ	./parser.tab.c	/^     NOTEQ = 284,$/;"	e	enum:yytokentype	file:
+NOTEQ	./parser.tab.h	/^     NOTEQ = 284,$/;"	e	enum:yytokentype
+NTYPES	./ast.h	/^const char *NTYPES[20];$/;"	v
+N_BUCKET_OPTIONS	./symbol.c	/^enum { N_BUCKET_OPTIONS = 26 };$/;"	e	enum:__anon24	file:
+OBJECT_H	./object.h	/^#define OBJECT_H$/;"	d
+Opcode	./compile.h	/^} Opcode;$/;"	t	typeref:enum:__anon17
+PASS	./parser.tab.c	/^     PASS = 278,$/;"	e	enum:yytokentype	file:
+PASS	./parser.tab.h	/^     PASS = 278,$/;"	e	enum:yytokentype
+PLUS	./parser.tab.c	/^     PLUS = 291,$/;"	e	enum:yytokentype	file:
+PLUS	./parser.tab.h	/^     PLUS = 291,$/;"	e	enum:yytokentype
+POP	./compile.h	/^    POP,$/;"	e	enum:__anon17
+POPJUMP	./compile.h	/^    POPJUMP,$/;"	e	enum:__anon17
+POW	./parser.tab.c	/^     POW = 295,$/;"	e	enum:yytokentype	file:
+POW	./parser.tab.h	/^     POW = 295,$/;"	e	enum:yytokentype
+Program	./compile.h	/^} Program;$/;"	t	typeref:struct:_program
+RBRACK	./parser.tab.c	/^     RBRACK = 300,$/;"	e	enum:yytokentype	file:
+RBRACK	./parser.tab.h	/^     RBRACK = 300,$/;"	e	enum:yytokentype
+REJECT	./lexer.yy.c	/^#define REJECT /;"	d	file:
+RETURN	./parser.tab.c	/^     RETURN = 277,$/;"	e	enum:yytokentype	file:
+RETURN	./parser.tab.h	/^     RETURN = 277,$/;"	e	enum:yytokentype
+RPAREN	./parser.tab.c	/^     RPAREN = 296,$/;"	e	enum:yytokentype	file:
+RPAREN	./parser.tab.h	/^     RPAREN = 296,$/;"	e	enum:yytokentype
+RSQUARE	./parser.tab.c	/^     RSQUARE = 298,$/;"	e	enum:yytokentype	file:
+RSQUARE	./parser.tab.h	/^     RSQUARE = 298,$/;"	e	enum:yytokentype
+SEMICOLON	./parser.tab.c	/^     SEMICOLON = 263,$/;"	e	enum:yytokentype	file:
+SEMICOLON	./parser.tab.h	/^     SEMICOLON = 263,$/;"	e	enum:yytokentype
+STACKMAX	./stack.h	/^#define STACKMAX /;"	d
+STACK_H	./stack.h	/^#define STACK_H$/;"	d
+STORE	./compile.h	/^    STORE,$/;"	e	enum:__anon17
+STRING	./parser.tab.c	/^     STRING = 260,$/;"	e	enum:yytokentype	file:
+STRING	./parser.tab.h	/^     STRING = 260,$/;"	e	enum:yytokentype
+SYMBOL_H	./symbol.h	/^#define SYMBOL_H$/;"	d
+Stack	./stack.h	/^} Stack;$/;"	t	typeref:struct:_Stack
+Symbol	./symbol.h	/^} Symbol;$/;"	t	typeref:struct:symbol
+SymbolTable	./symbol.h	/^} SymbolTable;$/;"	t	typeref:struct:symtable
+THEN	./parser.tab.c	/^     THEN = 273,$/;"	e	enum:yytokentype	file:
+THEN	./parser.tab.h	/^     THEN = 273,$/;"	e	enum:yytokentype
+TIMES	./parser.tab.c	/^     TIMES = 294,$/;"	e	enum:yytokentype	file:
+TIMES	./parser.tab.h	/^     TIMES = 294,$/;"	e	enum:yytokentype
+TYPE_NAMES	./ast.c	/^const char *TYPE_NAMES[] = {$/;"	v
+UBWNOT	./parser.tab.c	/^     UBWNOT = 305,$/;"	e	enum:yytokentype	file:
+UBWNOT	./parser.tab.h	/^     UBWNOT = 305,$/;"	e	enum:yytokentype
+UINT16_MAX	./lexer.yy.c	/^#define UINT16_MAX /;"	d	file:
+UINT32_MAX	./lexer.yy.c	/^#define UINT32_MAX /;"	d	file:
+UINT8_MAX	./lexer.yy.c	/^#define UINT8_MAX /;"	d	file:
+ULGNOT	./parser.tab.c	/^     ULGNOT = 306,$/;"	e	enum:yytokentype	file:
+ULGNOT	./parser.tab.h	/^     ULGNOT = 306,$/;"	e	enum:yytokentype
+UMINUS	./parser.tab.c	/^     UMINUS = 307,$/;"	e	enum:yytokentype	file:
+UMINUS	./parser.tab.h	/^     UMINUS = 307,$/;"	e	enum:yytokentype
+UPLUS	./parser.tab.c	/^     UPLUS = 308$/;"	e	enum:yytokentype	file:
+UPLUS	./parser.tab.h	/^     UPLUS = 308$/;"	e	enum:yytokentype
+VERBOSE	./common.c	/^static int VERBOSE = 0;$/;"	v	file:
+WHILE	./parser.tab.c	/^     WHILE = 265,$/;"	e	enum:yytokentype	file:
+WHILE	./parser.tab.h	/^     WHILE = 265,$/;"	e	enum:yytokentype
+YYABORT	./parser.tab.c	/^#define YYABORT	/;"	d	file:
+YYACCEPT	./parser.tab.c	/^#define YYACCEPT	/;"	d	file:
+YYBACKUP	./parser.tab.c	/^#define YYBACKUP(/;"	d	file:
+YYBISON	./parser.tab.c	/^#define YYBISON /;"	d	file:
+YYBISON_VERSION	./parser.tab.c	/^#define YYBISON_VERSION /;"	d	file:
+YYCASE_	./parser.tab.c	/^# define YYCASE_(/;"	d	file:
+YYCASE_	./parser.tab.c	/^# undef YYCASE_$/;"	d	file:
+YYCOPY	./parser.tab.c	/^#   define YYCOPY(/;"	d	file:
+YYCOPY_NEEDED	./parser.tab.c	/^# define YYCOPY_NEEDED /;"	d	file:
+YYDEBUG	./parser.tab.c	/^# define YYDEBUG /;"	d	file:
+YYDEBUG	./parser.tab.c	/^#define YYDEBUG /;"	d	file:
+YYDEBUG	./parser.tab.h	/^# define YYDEBUG /;"	d
+YYDPRINTF	./parser.tab.c	/^# define YYDPRINTF(/;"	d	file:
+YYEMPTY	./parser.tab.c	/^#define YYEMPTY	/;"	d	file:
+YYEOF	./parser.tab.c	/^#define YYEOF	/;"	d	file:
+YYERRCODE	./parser.tab.c	/^#define YYERRCODE	/;"	d	file:
+YYERROR	./parser.tab.c	/^#define YYERROR	/;"	d	file:
+YYERROR_VERBOSE	./parser.tab.c	/^# define YYERROR_VERBOSE /;"	d	file:
+YYERROR_VERBOSE	./parser.tab.c	/^# undef YYERROR_VERBOSE$/;"	d	file:
+YYFAIL	./parser.tab.c	/^#define YYFAIL	/;"	d	file:
+YYFINAL	./parser.tab.c	/^#define YYFINAL /;"	d	file:
+YYFPRINTF	./parser.tab.c	/^#  define YYFPRINTF /;"	d	file:
+YYFREE	./parser.tab.c	/^#   define YYFREE /;"	d	file:
+YYID	./parser.tab.c	/^# define YYID(/;"	d	file:
+YYID	./parser.tab.c	/^YYID (int yyi)$/;"	f	file:
+YYINITDEPTH	./parser.tab.c	/^# define YYINITDEPTH /;"	d	file:
+YYLAST	./parser.tab.c	/^#define YYLAST /;"	d	file:
+YYLEX	./parser.tab.c	/^# define YYLEX /;"	d	file:
+YYLLOC_DEFAULT	./parser.tab.c	/^# define YYLLOC_DEFAULT(/;"	d	file:
+YYMALLOC	./parser.tab.c	/^#   define YYMALLOC /;"	d	file:
+YYMAXDEPTH	./parser.tab.c	/^# define YYMAXDEPTH /;"	d	file:
+YYMAXUTOK	./parser.tab.c	/^#define YYMAXUTOK /;"	d	file:
+YYNNTS	./parser.tab.c	/^#define YYNNTS /;"	d	file:
+YYNRULES	./parser.tab.c	/^#define YYNRULES /;"	d	file:
+YYNSTATES	./parser.tab.c	/^#define YYNSTATES /;"	d	file:
+YYNTOKENS	./parser.tab.c	/^#define YYNTOKENS /;"	d	file:
+YYPACT_NINF	./parser.tab.c	/^#define YYPACT_NINF /;"	d	file:
+YYPARSE_PARAM	./parser.tab.c	/^#define YYPARSE_PARAM /;"	d	file:
+YYPOPSTACK	./parser.tab.c	/^#define YYPOPSTACK(/;"	d	file:
+YYPULL	./parser.tab.c	/^#define YYPULL /;"	d	file:
+YYPURE	./parser.tab.c	/^#define YYPURE /;"	d	file:
+YYPUSH	./parser.tab.c	/^#define YYPUSH /;"	d	file:
+YYRECOVERING	./parser.tab.c	/^#define YYRECOVERING(/;"	d	file:
+YYRHSLOC	./parser.tab.c	/^#define YYRHSLOC(/;"	d	file:
+YYSIZE_MAXIMUM	./parser.tab.c	/^#define YYSIZE_MAXIMUM /;"	d	file:
+YYSIZE_T	./parser.tab.c	/^#  define YYSIZE_T /;"	d	file:
+YYSKELETON_NAME	./parser.tab.c	/^#define YYSKELETON_NAME /;"	d	file:
+YYSTACK_ALLOC	./parser.tab.c	/^#    define YYSTACK_ALLOC /;"	d	file:
+YYSTACK_ALLOC	./parser.tab.c	/^#  define YYSTACK_ALLOC /;"	d	file:
+YYSTACK_ALLOC_MAXIMUM	./parser.tab.c	/^#   define YYSTACK_ALLOC_MAXIMUM /;"	d	file:
+YYSTACK_BYTES	./parser.tab.c	/^# define YYSTACK_BYTES(/;"	d	file:
+YYSTACK_FREE	./parser.tab.c	/^#  define YYSTACK_FREE /;"	d	file:
+YYSTACK_FREE	./parser.tab.c	/^#  define YYSTACK_FREE(/;"	d	file:
+YYSTACK_GAP_MAXIMUM	./parser.tab.c	/^# define YYSTACK_GAP_MAXIMUM /;"	d	file:
+YYSTACK_RELOCATE	./parser.tab.c	/^# define YYSTACK_RELOCATE(/;"	d	file:
+YYSTATE	./lexer.yy.c	/^#define YYSTATE /;"	d	file:
+YYSTYPE	./parser.tab.c	/^typedef union YYSTYPE$/;"	u	file:
+YYSTYPE	./parser.tab.c	/^} YYSTYPE;$/;"	t	typeref:union:YYSTYPE	file:
+YYSTYPE	./parser.tab.h	/^typedef union YYSTYPE$/;"	u
+YYSTYPE	./parser.tab.h	/^} YYSTYPE;$/;"	t	typeref:union:YYSTYPE
+YYSTYPE_IS_DECLARED	./parser.tab.c	/^# define YYSTYPE_IS_DECLARED /;"	d	file:
+YYSTYPE_IS_DECLARED	./parser.tab.h	/^# define YYSTYPE_IS_DECLARED /;"	d
+YYSTYPE_IS_TRIVIAL	./parser.tab.c	/^# define YYSTYPE_IS_TRIVIAL /;"	d	file:
+YYSTYPE_IS_TRIVIAL	./parser.tab.h	/^# define YYSTYPE_IS_TRIVIAL /;"	d
+YYTABLES_NAME	./lexer.yy.c	/^#define YYTABLES_NAME /;"	d	file:
+YYTABLE_NINF	./parser.tab.c	/^#define YYTABLE_NINF /;"	d	file:
+YYTERROR	./parser.tab.c	/^#define YYTERROR	/;"	d	file:
+YYTOKENTYPE	./parser.tab.c	/^# define YYTOKENTYPE$/;"	d	file:
+YYTOKENTYPE	./parser.tab.h	/^# define YYTOKENTYPE$/;"	d
+YYTRANSLATE	./parser.tab.c	/^#define YYTRANSLATE(/;"	d	file:
+YYUNDEFTOK	./parser.tab.c	/^#define YYUNDEFTOK /;"	d	file:
+YYUSE	./parser.tab.c	/^# define YYUSE(/;"	d	file:
+YY_	./parser.tab.c	/^#   define YY_(/;"	d	file:
+YY_	./parser.tab.c	/^#  define YY_(/;"	d	file:
+YY_AT_BOL	./lexer.yy.c	/^#define YY_AT_BOL(/;"	d	file:
+YY_BREAK	./lexer.yy.c	/^#define YY_BREAK /;"	d	file:
+YY_BUFFER_EOF_PENDING	./lexer.yy.c	/^#define YY_BUFFER_EOF_PENDING /;"	d	file:
+YY_BUFFER_NEW	./lexer.yy.c	/^#define YY_BUFFER_NEW /;"	d	file:
+YY_BUFFER_NORMAL	./lexer.yy.c	/^#define YY_BUFFER_NORMAL /;"	d	file:
+YY_BUFFER_STATE	./lexer.yy.c	/^typedef struct yy_buffer_state *YY_BUFFER_STATE;$/;"	t	typeref:struct:yy_buffer_state	file:
+YY_BUF_SIZE	./lexer.yy.c	/^#define YY_BUF_SIZE /;"	d	file:
+YY_CHAR	./lexer.yy.c	/^typedef unsigned char YY_CHAR;$/;"	t	file:
+YY_CURRENT_BUFFER	./lexer.yy.c	/^#define YY_CURRENT_BUFFER /;"	d	file:
+YY_CURRENT_BUFFER_LVALUE	./lexer.yy.c	/^#define YY_CURRENT_BUFFER_LVALUE /;"	d	file:
+YY_DECL	./lexer.yy.c	/^#define YY_DECL /;"	d	file:
+YY_DECL_IS_OURS	./lexer.yy.c	/^#define YY_DECL_IS_OURS /;"	d	file:
+YY_DO_BEFORE_ACTION	./lexer.yy.c	/^#define YY_DO_BEFORE_ACTION /;"	d	file:
+YY_END_OF_BUFFER	./lexer.yy.c	/^#define YY_END_OF_BUFFER /;"	d	file:
+YY_END_OF_BUFFER_CHAR	./lexer.yy.c	/^#define YY_END_OF_BUFFER_CHAR /;"	d	file:
+YY_EXIT_FAILURE	./lexer.yy.c	/^#define YY_EXIT_FAILURE /;"	d	file:
+YY_EXTRA_TYPE	./lexer.yy.c	/^#define YY_EXTRA_TYPE /;"	d	file:
+YY_FATAL_ERROR	./lexer.yy.c	/^#define YY_FATAL_ERROR(/;"	d	file:
+YY_FLEX_MAJOR_VERSION	./lexer.yy.c	/^#define YY_FLEX_MAJOR_VERSION /;"	d	file:
+YY_FLEX_MINOR_VERSION	./lexer.yy.c	/^#define YY_FLEX_MINOR_VERSION /;"	d	file:
+YY_FLEX_SUBMINOR_VERSION	./lexer.yy.c	/^#define YY_FLEX_SUBMINOR_VERSION /;"	d	file:
+YY_FLUSH_BUFFER	./lexer.yy.c	/^#define YY_FLUSH_BUFFER /;"	d	file:
+YY_INPUT	./lexer.yy.c	/^#define YY_INPUT(/;"	d	file:
+YY_INT_ALIGNED	./lexer.yy.c	/^#define  YY_INT_ALIGNED /;"	d	file:
+YY_LESS_LINENO	./lexer.yy.c	/^    #define YY_LESS_LINENO(/;"	d	file:
+YY_LOCATION_PRINT	./parser.tab.c	/^# define YY_LOCATION_PRINT(/;"	d	file:
+YY_MORE_ADJ	./lexer.yy.c	/^#define YY_MORE_ADJ /;"	d	file:
+YY_NEW_FILE	./lexer.yy.c	/^#define YY_NEW_FILE /;"	d	file:
+YY_NULL	./lexer.yy.c	/^#define YY_NULL /;"	d	file:
+YY_NULL	./parser.tab.c	/^#   define YY_NULL /;"	d	file:
+YY_NUM_RULES	./lexer.yy.c	/^#define YY_NUM_RULES /;"	d	file:
+YY_READ_BUF_SIZE	./lexer.yy.c	/^#define YY_READ_BUF_SIZE /;"	d	file:
+YY_REDUCE_PRINT	./parser.tab.c	/^# define YY_REDUCE_PRINT(/;"	d	file:
+YY_RESTORE_YY_MORE_OFFSET	./lexer.yy.c	/^#define YY_RESTORE_YY_MORE_OFFSET$/;"	d	file:
+YY_RULE_SETUP	./lexer.yy.c	/^#define YY_RULE_SETUP /;"	d	file:
+YY_SC_TO_UI	./lexer.yy.c	/^#define YY_SC_TO_UI(/;"	d	file:
+YY_SKIP_YYWRAP	./lexer.yy.c	/^#define YY_SKIP_YYWRAP$/;"	d	file:
+YY_STACK_PRINT	./parser.tab.c	/^# define YY_STACK_PRINT(/;"	d	file:
+YY_START	./lexer.yy.c	/^#define YY_START /;"	d	file:
+YY_START_STACK_INCR	./lexer.yy.c	/^#define YY_START_STACK_INCR /;"	d	file:
+YY_STATE_BUF_SIZE	./lexer.yy.c	/^#define YY_STATE_BUF_SIZE /;"	d	file:
+YY_STATE_EOF	./lexer.yy.c	/^#define YY_STATE_EOF(/;"	d	file:
+YY_STRUCT_YY_BUFFER_STATE	./lexer.yy.c	/^#define YY_STRUCT_YY_BUFFER_STATE$/;"	d	file:
+YY_SYMBOL_PRINT	./parser.tab.c	/^# define YY_SYMBOL_PRINT(/;"	d	file:
+YY_TYPEDEF_YY_BUFFER_STATE	./lexer.yy.c	/^#define YY_TYPEDEF_YY_BUFFER_STATE$/;"	d	file:
+YY_TYPEDEF_YY_SIZE_T	./lexer.yy.c	/^#define YY_TYPEDEF_YY_SIZE_T$/;"	d	file:
+YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H	./parser.tab.c	/^# define YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H$/;"	d	file:
+YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H	./parser.tab.h	/^# define YY_USERS_NAEGELEJD_CODE_LUCI_SRC_PARSER_TAB_H$/;"	d
+YY_USER_ACTION	./lexer.yy.c	/^#define YY_USER_ACTION$/;"	d	file:
+YY_USE_CONST	./lexer.yy.c	/^#define YY_USE_CONST$/;"	d	file:
+_Stack	./stack.h	/^typedef struct _Stack {$/;"	s
+__STDC_LIMIT_MACROS	./lexer.yy.c	/^#define __STDC_LIMIT_MACROS /;"	d	file:
+_compile	./compile.c	/^static void _compile(AstNode *node, Program *prog)$/;"	f	file:
+_loop_jump	./compile.h	/^struct _loop_jump {$/;"	s
+_loop_list	./compile.h	/^struct _loop_list {$/;"	s
+_program	./compile.h	/^typedef struct _program {$/;"	s
+add	./binop.c	/^static LuciObject *add(LuciObject *left, LuciObject *right)$/;"	f	file:
+add_new_loop	./compile.c	/^static void add_new_loop(Program *prog, uint8_t loop_type)$/;"	f	file:
+add_symbol	./env.c	/^static Symbol *add_symbol (struct ExecContext *e, char const *name, int type)$/;"	f	file:
+addr	./compile.h	/^    uint32_t addr;$/;"	m	struct:_loop_jump
+alloc	./common.c	/^void *alloc(size_t size)$/;"	f
+alloca	./parser.tab.c	/^#    define alloca /;"	d	file:
+arglist	./ast.h	/^    struct AstNode *arglist;$/;"	m	struct:__anon11	typeref:struct:__anon11::AstNode
+assignment	./ast.h	/^        AstAssignment assignment;$/;"	m	union:AstNode::__anon15
+assignment	./parser.y	/^assignment:$/;"	l
+ast_assign_t	./ast.h	/^    ast_assign_t,$/;"	e	enum:__anon1
+ast_break_t	./ast.h	/^    ast_break_t,$/;"	e	enum:__anon1
+ast_call_t	./ast.h	/^    ast_call_t,$/;"	e	enum:__anon1
+ast_continue_t	./ast.h	/^    ast_continue_t,$/;"	e	enum:__anon1
+ast_expr_t	./ast.h	/^    ast_expr_t,$/;"	e	enum:__anon1
+ast_float_t	./ast.h	/^    ast_float_t,$/;"	e	enum:__anon1
+ast_for_t	./ast.h	/^    ast_for_t,$/;"	e	enum:__anon1
+ast_func_t	./ast.h	/^    ast_func_t,$/;"	e	enum:__anon1
+ast_id_t	./ast.h	/^    ast_id_t,$/;"	e	enum:__anon1
+ast_if_t	./ast.h	/^    ast_if_t,$/;"	e	enum:__anon1
+ast_integer_t	./ast.h	/^    ast_integer_t,$/;"	e	enum:__anon1
+ast_last_t	./ast.h	/^    ast_last_t$/;"	e	enum:__anon1
+ast_list_t	./ast.h	/^    ast_list_t,$/;"	e	enum:__anon1
+ast_listaccess_t	./ast.h	/^    ast_listaccess_t,$/;"	e	enum:__anon1
+ast_listassign_t	./ast.h	/^    ast_listassign_t,$/;"	e	enum:__anon1
+ast_pass_t	./ast.h	/^    ast_pass_t,$/;"	e	enum:__anon1
+ast_return_t	./ast.h	/^    ast_return_t,$/;"	e	enum:__anon1
+ast_stmnts_t	./ast.h	/^    ast_stmnts_t,$/;"	e	enum:__anon1
+ast_string_t	./ast.h	/^    ast_string_t,$/;"	e	enum:__anon1
+ast_while_t	./ast.h	/^    ast_while_t,$/;"	e	enum:__anon1
+back_patch_loop	./compile.c	/^static void back_patch_loop(Program *prog, uint32_t start, uint32_t end)$/;"	f	file:
+begin	./common.c	/^int begin(int verbose, int execute, int compile, int graph)$/;"	f
+breaks	./compile.h	/^    struct _loop_jump *breaks;$/;"	m	struct:_loop_list	typeref:struct:_loop_list::_loop_jump
+bscale	./symbol.h	/^    int bscale;     \/* Index into array of bucket size options (symbol.c) *\/$/;"	m	struct:symtable
+builtins	./builtin.c	/^const struct func_def builtins[] =$/;"	v	typeref:struct:func_def
+bwand	./binop.c	/^static LuciObject *bwand(LuciObject *left, LuciObject *right)$/;"	f	file:
+bwnot	./binop.c	/^static LuciObject *bwnot(LuciObject *left, LuciObject *right)$/;"	f	file:
+bwor	./binop.c	/^static LuciObject *bwor(LuciObject *left, LuciObject *right)$/;"	f	file:
+bwxor	./binop.c	/^static LuciObject *bwxor(LuciObject *left, LuciObject *right)$/;"	f	file:
+call	./ast.h	/^        AstFuncCall call;$/;"	m	union:AstNode::__anon15
+call	./parser.y	/^call:$/;"	l
+cleanup	./common.c	/^static void cleanup(void)$/;"	f	file:
+close_file	./builtin.c	/^static int close_file(FILE *fp)$/;"	f	file:
+collisions	./symbol.h	/^    int collisions; \/* Current # of collisions in hashtable *\/$/;"	m	struct:symtable
+column	./ast.h	/^    int column;$/;"	m	struct:AstNode
+comment	./lexer.yy.c	/^comment()$/;"	f
+compile_ast	./compile.c	/^Program * compile_ast(AstNode *root)$/;"	f
+cond	./ast.h	/^    struct AstNode *cond;$/;"	m	struct:__anon10	typeref:struct:__anon10::AstNode
+cond	./ast.h	/^    struct AstNode *cond;$/;"	m	struct:__anon8	typeref:struct:__anon8::AstNode
+constant_id	./constant.c	/^int constant_id(ConstantTable *cotable, LuciObject *const_obj)$/;"	f
+continues	./compile.h	/^    struct _loop_jump *continues;$/;"	m	struct:_loop_list	typeref:struct:_loop_list::_loop_jump
+copy_object	./object.c	/^LuciObject *copy_object(LuciObject *orig)$/;"	f
+cotable	./compile.h	/^    ConstantTable *cotable;$/;"	m	struct:_program
+cotable	./constant.h	/^typedef struct cotable$/;"	s
+cotable_delete	./constant.c	/^void cotable_delete(ConstantTable *cotable)$/;"	f
+cotable_get	./constant.c	/^LuciObject *cotable_get(ConstantTable *cotable, int id)$/;"	f
+cotable_new	./constant.c	/^ConstantTable *cotable_new(int size)$/;"	f
+count	./ast.h	/^    int count;$/;"	m	struct:__anon13
+count	./ast.h	/^    int count;$/;"	m	struct:__anon5
+count	./compile.h	/^    uint32_t count;$/;"	m	struct:_program
+count	./constant.h	/^    int count;      \/* Current # of objects in array *\/$/;"	m	struct:cotable
+count	./object.h	/^        int count;	\/* current number of items in list *\/$/;"	m	struct:__anon20::__anon22
+count	./symbol.h	/^    int count;      \/* Current # of allocated symbol\/object pairs *\/$/;"	m	struct:symtable
+create_context	./env.c	/^ExecContext *create_context(const char* name, ExecContext *parent)$/;"	f
+create_node	./ast.c	/^static AstNode *create_node(int type) {$/;"	f	file:
+create_object	./object.c	/^LuciObject *create_object(int type)$/;"	f
+current_loop	./compile.h	/^    struct _loop_list *current_loop;$/;"	m	struct:_program	typeref:struct:_program::_loop_list
+data	./ast.h	/^    } data;$/;"	m	struct:AstNode	typeref:union:AstNode::__anon15
+decref	./object.c	/^LuciObject *decref(LuciObject *orig)$/;"	f
+destroy	./object.c	/^void destroy(LuciObject *trash)$/;"	f
+destroy_context	./env.c	/^void destroy_context(ExecContext *e)$/;"	f
+destroy_symbol	./env.c	/^static int destroy_symbol(Symbol *s, int force)$/;"	f	file:
+destroy_tree	./ast.c	/^void destroy_tree(AstNode *root)$/;"	f
+die	./common.c	/^void die(const char* format, ... )$/;"	f
+dispatch_statement	./env.c	/^static LuciObject *dispatch_statement(ExecContext *e, AstNode *a)$/;"	f	file:
+divide	./binop.c	/^static LuciObject *divide(LuciObject *left, LuciObject *right)$/;"	f	file:
+djb2	./symbol.c	/^static uint32_t djb2(const char *str)$/;"	f	file:
+elstatements	./ast.h	/^    struct AstNode *elstatements;$/;"	m	struct:__anon10	typeref:struct:__anon10::AstNode
+empty_list	./parser.y	/^empty_list:$/;"	l
+eq	./binop.c	/^static LuciObject *eq(LuciObject *left, LuciObject *right)$/;"	f	file:
+eval	./interpret.c	/^void eval(Program *prog)$/;"	f
+evaluate_condition	./binop.c	/^static int evaluate_condition(LuciObject *cond)$/;"	f	file:
+exec_AST	./env.c	/^void exec_AST(struct ExecContext *e, struct AstNode *a)$/;"	f
+exec_assignment	./env.c	/^static LuciObject *exec_assignment(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_bin_expression	./env.c	/^static LuciObject *exec_bin_expression(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_break	./env.c	/^static LuciObject *exec_break(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_call	./env.c	/^static LuciObject *exec_call(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_continue	./env.c	/^static LuciObject *exec_continue(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_float_expression	./env.c	/^static LuciObject *exec_float_expression(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_for	./env.c	/^static LuciObject *exec_for(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_func_def	./env.c	/^static LuciObject *exec_func_def(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_id_expression	./env.c	/^static LuciObject *exec_id_expression(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_if	./env.c	/^static LuciObject *exec_if(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_int_expression	./env.c	/^static LuciObject *exec_int_expression(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_list	./env.c	/^static LuciObject *exec_list(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_list_assignment	./env.c	/^static LuciObject *exec_list_assignment(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_list_index	./env.c	/^static LuciObject *exec_list_index(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_lookup	./env.c	/^static LuciObject * (*exec_lookup[])(ExecContext *e, AstNode *a) =$/;"	v	file:
+exec_return	./env.c	/^static LuciObject *exec_return(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_statement	./env.c	/^static LuciObject *exec_statement(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+exec_string_expression	./env.c	/^static LuciObject *exec_string_expression(ExecContext *e, AstNode *a)$/;"	f	file:
+exec_while	./env.c	/^static LuciObject *exec_while(struct ExecContext *e, struct AstNode *a)$/;"	f	file:
+expr	./ast.h	/^    struct AstNode *expr;$/;"	m	struct:__anon14	typeref:struct:__anon14::AstNode
+expr	./parser.y	/^expr:$/;"	l
+expression	./ast.h	/^        AstExpression expression;$/;"	m	union:AstNode::__anon15
+f	./ast.h	/^        double f;$/;"	m	union:AstNode::__anon15
+f	./object.h	/^    double f;$/;"	m	union:__anon20
+f_append_m	./object.h	/^    f_append_m$/;"	e	enum:__anon19
+f_read_m	./object.h	/^    f_read_m,$/;"	e	enum:__anon19
+f_write_m	./object.h	/^    f_write_m,$/;"	e	enum:__anon19
+file	./object.h	/^    } file;$/;"	m	union:__anon20	typeref:struct:__anon20::__anon21
+find_symbol_by_name	./symbol.c	/^static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)$/;"	f	file:
+flex_int16_t	./lexer.yy.c	/^typedef int16_t flex_int16_t;$/;"	t	file:
+flex_int16_t	./lexer.yy.c	/^typedef short int flex_int16_t;$/;"	t	file:
+flex_int32_t	./lexer.yy.c	/^typedef int flex_int32_t;$/;"	t	file:
+flex_int32_t	./lexer.yy.c	/^typedef int32_t flex_int32_t;$/;"	t	file:
+flex_int8_t	./lexer.yy.c	/^typedef int8_t flex_int8_t;$/;"	t	file:
+flex_int8_t	./lexer.yy.c	/^typedef signed char flex_int8_t;$/;"	t	file:
+flex_uint16_t	./lexer.yy.c	/^typedef uint16_t flex_uint16_t;$/;"	t	file:
+flex_uint16_t	./lexer.yy.c	/^typedef unsigned short int flex_uint16_t;$/;"	t	file:
+flex_uint32_t	./lexer.yy.c	/^typedef uint32_t flex_uint32_t;$/;"	t	file:
+flex_uint32_t	./lexer.yy.c	/^typedef unsigned int flex_uint32_t;$/;"	t	file:
+flex_uint8_t	./lexer.yy.c	/^typedef uint8_t flex_uint8_t;$/;"	t	file:
+flex_uint8_t	./lexer.yy.c	/^typedef unsigned char flex_uint8_t; $/;"	t	file:
+float_v	./parser.tab.c	/^    double float_v;$/;"	m	union:YYSTYPE	file:
+float_v	./parser.tab.h	/^    double float_v;$/;"	m	union:YYSTYPE
+for_loop	./ast.h	/^        AstForLoop for_loop;$/;"	m	union:AstNode::__anon15
+for_loop	./parser.y	/^for_loop:$/;"	l
+func	./builtin.h	/^    struct LuciObject * (*func) (Stack *, int);$/;"	m	struct:func_def	typeref:struct:func_def::func
+func	./object.h	/^    struct LuciObject * (*func)(struct _Stack *, int);$/;"	m	union:__anon20	typeref:struct:__anon20::func
+func_def	./builtin.h	/^struct func_def$/;"	s
+func_def	./parser.y	/^func_def:$/;"	l
+funcdef	./ast.h	/^        AstFuncDef funcdef;$/;"	m	union:AstNode::__anon15
+funcname	./ast.h	/^    struct AstNode *funcname;$/;"	m	struct:__anon11	typeref:struct:__anon11::AstNode
+funcname	./ast.h	/^    struct AstNode *funcname;$/;"	m	struct:__anon12	typeref:struct:__anon12::AstNode
+get_file_mode	./builtin.c	/^static int get_file_mode(const char *req_mode)$/;"	f	file:
+get_last_col_num	./lexer.yy.c	/^int get_last_col_num(void)$/;"	f
+get_line_num	./lexer.yy.c	/^int get_line_num(void)$/;"	f
+get_symbol	./env.c	/^static Symbol *get_symbol (struct ExecContext *context, const char *name)$/;"	f	file:
+globals	./builtin.c	/^struct var_def globals[] =$/;"	v	typeref:struct:var_def
+gt	./binop.c	/^static LuciObject *gt(LuciObject *left, LuciObject *right)$/;"	f	file:
+gte	./binop.c	/^static LuciObject *gte(LuciObject *left, LuciObject *right)$/;"	f	file:
+hash_symbol	./symbol.c	/^static uint32_t hash_symbol(SymbolTable *symtable, const char *name)$/;"	f	file:
+hashfuncs	./symbol.c	/^static uint32_t (*hashfuncs[])(const char *str) = {$/;"	v	file:
+help	./main.c	/^static void help()$/;"	f	file:
+i	./ast.h	/^        long i;$/;"	m	union:AstNode::__anon15
+i	./object.h	/^    int i;$/;"	m	union:__anon20
+id	./ast.h	/^        AstID id;$/;"	m	union:AstNode::__anon15
+id	./parser.y	/^id:     ID                      { $$ = make_id_expr($1); }$/;"	l
+idx	./object.h	/^        uint32_t idx;$/;"	m	struct:__anon20::__anon23
+if_else	./ast.h	/^        AstIfElse if_else;$/;"	m	union:AstNode::__anon15
+if_else	./parser.y	/^if_else:$/;"	l
+ifstatements	./ast.h	/^    struct AstNode *ifstatements;$/;"	m	struct:__anon10	typeref:struct:__anon10::AstNode
+impl	./stack.h	/^    LuciObject *impl[STACKMAX];$/;"	m	struct:_Stack
+incr	./object.h	/^        uint32_t incr;$/;"	m	struct:__anon20::__anon23
+incref	./object.c	/^LuciObject *incref(LuciObject *orig)$/;"	f
+index	./ast.h	/^    struct AstNode *index;$/;"	m	struct:__anon6	typeref:struct:__anon6::AstNode
+index	./ast.h	/^    struct AstNode *index;$/;"	m	struct:__anon7	typeref:struct:__anon7::AstNode
+index	./symbol.h	/^    int index;$/;"	m	struct:symbol
+init_variables	./builtin.c	/^void init_variables(void)$/;"	f
+initialize_context	./env.c	/^void initialize_context(ExecContext *e)$/;"	f
+instruction_names	./compile.c	/^static char *instruction_names[] = {$/;"	v	file:
+instructions	./compile.h	/^    Instruction *instructions;$/;"	m	struct:_program
+int_v	./parser.tab.c	/^    long int_v;$/;"	m	union:YYSTYPE	file:
+int_v	./parser.tab.h	/^    long int_v;$/;"	m	union:YYSTYPE
+items	./ast.h	/^    struct AstNode **items;$/;"	m	struct:__anon5	typeref:struct:__anon5::AstNode
+items	./object.h	/^        struct LuciObject **items;$/;"	m	struct:__anon20::__anon22	typeref:struct:__anon20::__anon22::LuciObject
+iter	./ast.h	/^    char *iter;$/;"	m	struct:__anon9
+iterator	./object.h	/^    } iterator;$/;"	m	union:__anon20	typeref:struct:__anon20::__anon23
+iterator_next_object	./object.c	/^LuciObject *iterator_next_object(LuciObject *iter)$/;"	f
+left	./ast.h	/^    struct AstNode *left, *right;$/;"	m	struct:__anon3	typeref:struct:__anon3::AstNode
+lgand	./binop.c	/^static LuciObject *lgand(LuciObject *left, LuciObject *right)$/;"	f	file:
+lgnot	./binop.c	/^static LuciObject *lgnot(LuciObject *left, LuciObject *right)$/;"	f	file:
+lgor	./binop.c	/^static LuciObject *lgor(LuciObject *left, LuciObject *right)$/;"	f	file:
+lineno	./ast.h	/^    int lineno;$/;"	m	struct:AstNode
+list	./ast.h	/^        AstListDef list;$/;"	m	union:AstNode::__anon15
+list	./ast.h	/^    struct AstNode *list;$/;"	m	struct:__anon6	typeref:struct:__anon6::AstNode
+list	./ast.h	/^    struct AstNode *list;$/;"	m	struct:__anon7	typeref:struct:__anon7::AstNode
+list	./ast.h	/^    struct AstNode *list;$/;"	m	struct:__anon9	typeref:struct:__anon9::AstNode
+list	./object.h	/^        struct LuciObject *list;$/;"	m	struct:__anon20::__anon23	typeref:struct:__anon20::__anon23::LuciObject
+list	./object.h	/^    } list;$/;"	m	union:__anon20	typeref:struct:__anon20::__anon22
+list	./parser.y	/^list:$/;"	l
+list_access	./parser.y	/^list_access:$/;"	l
+list_append_object	./object.c	/^int list_append_object(LuciObject *list, LuciObject *item)$/;"	f
+list_assign	./parser.y	/^list_assign:$/;"	l
+list_get_object	./object.c	/^LuciObject *list_get_object(LuciObject *list, int index)$/;"	f
+list_index	./parser.y	/^list_index:$/;"	l
+list_items	./parser.y	/^list_items:$/;"	l
+list_set_object	./object.c	/^LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)$/;"	f
+listaccess	./ast.h	/^        AstListAccess listaccess;$/;"	m	union:AstNode::__anon15
+listassign	./ast.h	/^        AstListAssign listassign;$/;"	m	union:AstNode::__anon15
+loop_type	./compile.h	/^    uint8_t loop_type;      \/* possible types defined above *\/$/;"	m	struct:_loop_list
+lt	./binop.c	/^static LuciObject *lt(LuciObject *left, LuciObject *right)$/;"	f	file:
+lte	./binop.c	/^static LuciObject *lte(LuciObject *left, LuciObject *right)$/;"	f	file:
+luci_assert	./builtin.c	/^LuciObject *luci_assert(Stack *lstack, int c)$/;"	f
+luci_cast_float	./builtin.c	/^LuciObject *luci_cast_float(Stack *lstack, int c)$/;"	f
+luci_cast_int	./builtin.c	/^LuciObject *luci_cast_int(Stack *lstack, int c)$/;"	f
+luci_cast_str	./builtin.c	/^LuciObject *luci_cast_str(Stack *lstack, int c)$/;"	f
+luci_dir	./builtin.c	/^LuciObject *luci_dir(Stack *lstack, int c)$/;"	f
+luci_fclose	./builtin.c	/^LuciObject *luci_fclose(Stack *lstack, int c)$/;"	f
+luci_flines	./builtin.c	/^LuciObject *luci_flines(Stack *lstack, int c)$/;"	f
+luci_fopen	./builtin.c	/^LuciObject *luci_fopen(Stack *lstack, int c)$/;"	f
+luci_fread	./builtin.c	/^LuciObject *luci_fread(Stack *lstack, int c)$/;"	f
+luci_fwrite	./builtin.c	/^LuciObject *luci_fwrite(Stack *lstack, int c)$/;"	f
+luci_help	./builtin.c	/^LuciObject *luci_help(Stack *lstack, int c)$/;"	f
+luci_len	./builtin.c	/^LuciObject *luci_len(Stack *lstack, int c)$/;"	f
+luci_max	./builtin.c	/^LuciObject *luci_max(Stack *lstack, int c)$/;"	f
+luci_min	./builtin.c	/^LuciObject *luci_min(Stack *lstack, int c)$/;"	f
+luci_print	./builtin.c	/^LuciObject *luci_print(Stack *lstack, int c)$/;"	f
+luci_range	./builtin.c	/^LuciObject * luci_range(Stack *lstack, int c)$/;"	f
+luci_readline	./builtin.c	/^LuciObject *luci_readline(Stack *lstack, int c)$/;"	f
+luci_sum	./builtin.c	/^LuciObject * luci_sum(Stack *lstack, int c)$/;"	f
+luci_typeof	./builtin.c	/^LuciObject *luci_typeof(Stack *lstack, int c)$/;"	f
+main	./main.c	/^int main(int argc, char *argv[])$/;"	f
+make_assignment	./ast.c	/^AstNode *make_assignment(char *id, AstNode *right)$/;"	f
+make_binary_expr	./ast.c	/^AstNode *make_binary_expr(AstNode *left,$/;"	f
+make_break	./ast.c	/^AstNode *make_break()$/;"	f
+make_continue	./ast.c	/^AstNode *make_continue()$/;"	f
+make_float_constant	./ast.c	/^AstNode *make_float_constant(double val)$/;"	f
+make_for_loop	./ast.c	/^AstNode *make_for_loop(char *iter,$/;"	f
+make_func_call	./ast.c	/^AstNode *make_func_call(AstNode *name, AstNode *arglist)$/;"	f
+make_func_def	./ast.c	/^AstNode *make_func_def(AstNode *name, AstNode *param_list,$/;"	f
+make_id_expr	./ast.c	/^AstNode *make_id_expr(char *name)$/;"	f
+make_if_else	./ast.c	/^AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)$/;"	f
+make_int_constant	./ast.c	/^AstNode *make_int_constant(long val)$/;"	f
+make_list_access	./ast.c	/^AstNode *make_list_access(AstNode *list, AstNode *index)$/;"	f
+make_list_assignment	./ast.c	/^AstNode *make_list_assignment(AstNode *name,$/;"	f
+make_list_def	./ast.c	/^AstNode *make_list_def(AstNode *result, AstNode *to_append)$/;"	f
+make_pass	./ast.c	/^AstNode *make_pass()$/;"	f
+make_return	./ast.c	/^AstNode *make_return(AstNode *expr)$/;"	f
+make_statements	./ast.c	/^AstNode *make_statements(AstNode *list, AstNode *new)$/;"	f
+make_string_constant	./ast.c	/^AstNode *make_string_constant(char *val)$/;"	f
+make_while_loop	./ast.c	/^AstNode *make_while_loop(AstNode *cond, AstNode *statements)$/;"	f
+mod	./binop.c	/^static LuciObject *mod(LuciObject *left, LuciObject *right)$/;"	f	file:
+mode	./object.h	/^        LuciFileMode mode;$/;"	m	struct:__anon20::__anon21
+mul	./binop.c	/^static LuciObject *mul(LuciObject *left, LuciObject *right)$/;"	f	file:
+name	./ast.h	/^    char *name;$/;"	m	struct:__anon4
+name	./builtin.h	/^    const char *name;$/;"	m	struct:func_def
+name	./builtin.h	/^    const char *name;$/;"	m	struct:var_def
+name	./env.h	/^    char* name;$/;"	m	struct:ExecContext
+name	./symbol.h	/^    const char *name;$/;"	m	struct:symbol
+neq	./binop.c	/^static LuciObject *neq(LuciObject *left, LuciObject *right)$/;"	f	file:
+next	./compile.h	/^    struct _loop_jump *next;$/;"	m	struct:_loop_jump	typeref:struct:_loop_jump::_loop_jump
+next	./symbol.h	/^    struct symbol *next;$/;"	m	struct:symbol	typeref:struct:symbol::symbol
+node	./parser.tab.c	/^    struct AstNode *node;$/;"	m	union:YYSTYPE	typeref:struct:YYSTYPE::AstNode	file:
+node	./parser.tab.h	/^    struct AstNode *node;$/;"	m	union:YYSTYPE	typeref:struct:YYSTYPE::AstNode
+oaat	./symbol.c	/^static uint32_t oaat(const char *str)$/;"	f	file:
+obj_file_t	./object.h	/^    obj_file_t,$/;"	e	enum:__anon18
+obj_float_t	./object.h	/^    obj_float_t,$/;"	e	enum:__anon18
+obj_func_t	./object.h	/^    obj_func_t$/;"	e	enum:__anon18
+obj_int_t	./object.h	/^    obj_int_t,$/;"	e	enum:__anon18
+obj_iterator_t	./object.h	/^    obj_iterator_t,$/;"	e	enum:__anon18
+obj_list_t	./object.h	/^    obj_list_t,$/;"	e	enum:__anon18
+obj_str_t	./object.h	/^    obj_str_t,$/;"	e	enum:__anon18
+object	./builtin.h	/^    LuciObject *object;$/;"	m	struct:var_def
+objects	./constant.h	/^    LuciObject **objects;   \/* Constant object array *\/$/;"	m	struct:cotable
+objects	./symbol.h	/^    LuciObject **objects;   \/* Object array *\/$/;"	m	struct:symtable
+op	./ast.h	/^    int op;$/;"	m	struct:__anon3
+op_add_t	./common.h	/^    op_add_t,$/;"	e	enum:__anon16
+op_band_t	./common.h	/^    op_band_t,$/;"	e	enum:__anon16
+op_bnot_t	./common.h	/^    op_bnot_t$/;"	e	enum:__anon16
+op_bor_t	./common.h	/^    op_bor_t,$/;"	e	enum:__anon16
+op_bxor_t	./common.h	/^    op_bxor_t,$/;"	e	enum:__anon16
+op_div_t	./common.h	/^    op_div_t,$/;"	e	enum:__anon16
+op_eq_t	./common.h	/^    op_eq_t,$/;"	e	enum:__anon16
+op_gt_t	./common.h	/^    op_gt_t,$/;"	e	enum:__anon16
+op_gte_t	./common.h	/^    op_gte_t,$/;"	e	enum:__anon16
+op_land_t	./common.h	/^    op_land_t,$/;"	e	enum:__anon16
+op_lnot_t	./common.h	/^    op_lnot_t,$/;"	e	enum:__anon16
+op_lor_t	./common.h	/^    op_lor_t,$/;"	e	enum:__anon16
+op_lt_t	./common.h	/^    op_lt_t,$/;"	e	enum:__anon16
+op_lte_t	./common.h	/^    op_lte_t,$/;"	e	enum:__anon16
+op_mod_t	./common.h	/^    op_mod_t,$/;"	e	enum:__anon16
+op_mul_t	./common.h	/^    op_mul_t,$/;"	e	enum:__anon16
+op_neq_t	./common.h	/^    op_neq_t,$/;"	e	enum:__anon16
+op_pow_t	./common.h	/^    op_pow_t,$/;"	e	enum:__anon16
+op_sub_t	./common.h	/^    op_sub_t,$/;"	e	enum:__anon16
+op_type	./common.h	/^} op_type;$/;"	t	typeref:enum:__anon16
+param_list	./ast.h	/^    struct AstNode *param_list;$/;"	m	struct:__anon12	typeref:struct:__anon12::AstNode
+params	./parser.y	/^params:$/;"	l
+parent	./compile.h	/^    struct _loop_list *parent;$/;"	m	struct:_loop_list	typeref:struct:_loop_list::_loop_list
+parent	./env.h	/^    struct ExecContext *parent;$/;"	m	struct:ExecContext	typeref:struct:ExecContext::ExecContext
+power	./binop.c	/^static LuciObject *power(LuciObject *left, LuciObject *right)$/;"	f	file:
+print_ast_graph	./ast.c	/^int print_ast_graph(AstNode *root, int id)$/;"	f
+print_instructions	./compile.c	/^void print_instructions(Program *prog)$/;"	f
+print_object	./builtin.c	/^void print_object(LuciObject *in)$/;"	f
+prog	./common.c	/^static Program *prog = NULL;$/;"	v	file:
+program	./parser.y	/^program:$/;"	l
+program_delete	./compile.c	/^void program_delete(Program *prog)$/;"	f
+program_new	./compile.c	/^Program *program_new(void)$/;"	f
+ptr	./object.h	/^        FILE *ptr;$/;"	m	struct:__anon20::__anon21
+push_instr	./compile.c	/^static uint32_t push_instr(Program *prog, Opcode op, int arg)$/;"	f	file:
+put_instr	./compile.c	/^static uint32_t put_instr(Program *prog, uint32_t addr,$/;"	f	file:
+refcount	./object.h	/^    int refcount;$/;"	m	struct:LuciObject
+return	./parser.y	/^return:     RETURN expr     { $$ = make_return($2); };$/;"	l
+return_stmt	./ast.h	/^        AstReturn return_stmt;$/;"	m	union:AstNode::__anon15
+right	./ast.h	/^    struct AstNode *left, *right;$/;"	m	struct:__anon3	typeref:struct:__anon3::
+right	./ast.h	/^    struct AstNode *right;$/;"	m	struct:__anon4	typeref:struct:__anon4::AstNode
+right	./ast.h	/^    struct AstNode *right;$/;"	m	struct:__anon7	typeref:struct:__anon7::AstNode
+root_node	./common.c	/^static AstNode *root_node = NULL;$/;"	v	file:
+s	./ast.h	/^        char *s;$/;"	m	union:AstNode::__anon15
+s	./object.h	/^    char *s;$/;"	m	union:__anon20
+sdbm	./symbol.c	/^static uint32_t sdbm(const char *str)$/;"	f	file:
+short	./parser.tab.c	/^# undef short$/;"	d	file:
+size	./ast.h	/^    int size;$/;"	m	struct:__anon13
+size	./ast.h	/^    int size;$/;"	m	struct:__anon5
+size	./compile.h	/^    int size;$/;"	m	struct:_program
+size	./constant.h	/^    int size;       \/* Total object array allocated size *\/$/;"	m	struct:cotable
+size	./object.h	/^        int size;	\/* current count of allocated item pointers *\/$/;"	m	struct:__anon20::__anon22
+size	./object.h	/^        long size;	\/* in bytes *\/$/;"	m	struct:__anon20::__anon21
+size	./symbol.h	/^    int size;       \/* Total object array size *\/$/;"	m	struct:symtable
+solve_bin_expr	./binop.c	/^LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)$/;"	f
+solvers	./binop.c	/^LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {$/;"	v
+st_empty	./stack.c	/^int st_empty(Stack *S)$/;"	f
+st_full	./stack.c	/^int st_full(Stack *S)$/;"	f
+st_init	./stack.c	/^void st_init(Stack *S)$/;"	f
+st_peek	./stack.c	/^LuciObject *st_peek(Stack *S)$/;"	f
+st_pop	./stack.c	/^LuciObject *st_pop(Stack *S)$/;"	f
+st_print	./stack.c	/^void st_print(Stack *S)$/;"	f
+st_push	./stack.c	/^void st_push(Stack *S, LuciObject *obj)$/;"	f
+st_size	./stack.c	/^int st_size(Stack *S)$/;"	f
+statement	./parser.y	/^statement:$/;"	l
+statements	./ast.h	/^        AstStatements statements;$/;"	m	union:AstNode::__anon15
+statements	./ast.h	/^    struct AstNode ** statements;$/;"	m	struct:__anon13	typeref:struct:__anon13::AstNode
+statements	./ast.h	/^    struct AstNode *statements;$/;"	m	struct:__anon12	typeref:struct:__anon12::AstNode
+statements	./ast.h	/^    struct AstNode *statements;$/;"	m	struct:__anon8	typeref:struct:__anon8::AstNode
+statements	./ast.h	/^    struct AstNode *statements;$/;"	m	struct:__anon9	typeref:struct:__anon9::AstNode
+statements	./parser.y	/^statements:$/;"	l
+string_v	./parser.tab.c	/^    char *string_v;$/;"	m	union:YYSTYPE	file:
+string_v	./parser.tab.h	/^    char *string_v;$/;"	m	union:YYSTYPE
+sub	./binop.c	/^static LuciObject *sub(LuciObject *left, LuciObject *right)$/;"	f	file:
+sym_bfunc_t	./symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon25
+sym_bobj_t	./symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon25
+sym_ufunc_t	./symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon25
+sym_uobj_t	./symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	e	enum:symbol::__anon25
+symbol	./symbol.h	/^typedef struct symbol$/;"	s
+symbol_delete	./symbol.c	/^static void *symbol_delete(Symbol *del)$/;"	f	file:
+symbol_id	./symbol.c	/^int symbol_id(SymbolTable *symtable, const char *name)$/;"	f
+symbol_new	./symbol.c	/^static Symbol *symbol_new(const char *str, int index)$/;"	f	file:
+symbols	./symbol.h	/^    Symbol **symbols;   \/* Symbol array *\/$/;"	m	struct:symtable
+symtable	./compile.h	/^    SymbolTable *symtable;$/;"	m	struct:_program
+symtable	./env.h	/^    struct Symbol *symtable;$/;"	m	struct:ExecContext	typeref:struct:ExecContext::Symbol
+symtable	./symbol.h	/^typedef struct symtable$/;"	s
+symtable_delete	./symbol.c	/^void symtable_delete(SymbolTable *symtable)$/;"	f
+symtable_get	./symbol.c	/^LuciObject *symtable_get(SymbolTable *symtable, int id)$/;"	f
+symtable_insert	./symbol.c	/^static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)$/;"	f	file:
+symtable_new	./symbol.c	/^SymbolTable *symtable_new(int bucketscale)$/;"	f
+symtable_resize	./symbol.c	/^static SymbolTable *symtable_resize(SymbolTable *symtable, int bucketscale)$/;"	f	file:
+symtable_set	./symbol.c	/^void symtable_set(SymbolTable *symtable, LuciObject *obj, int id)$/;"	f
+top	./stack.h	/^    int top;$/;"	m	struct:_Stack
+type	./ast.h	/^    AstType type;$/;"	m	struct:AstNode
+type	./object.h	/^    LuciOType type;$/;"	m	struct:LuciObject
+type	./symbol.h	/^    enum { sym_bobj_t, sym_bfunc_t, sym_uobj_t, sym_ufunc_t } type;$/;"	m	struct:symbol	typeref:enum:symbol::__anon25
+types_match	./binop.c	/^static int types_match(LuciObject *left, LuciObject *right)$/;"	f	file:
+unput	./lexer.yy.c	/^#define unput(/;"	d	file:
+val	./ast.h	/^    char *val;$/;"	m	struct:__anon2
+value	./object.h	/^    LuciOVal value;$/;"	m	struct:LuciObject
+var_def	./builtin.h	/^struct var_def$/;"	s
+version_string	./main.c	/^static const char const * version_string = "Luci v0.2";$/;"	v	file:
+while_loop	./ast.h	/^        AstWhileLoop while_loop;$/;"	m	union:AstNode::__anon15
+while_loop	./parser.y	/^while_loop:$/;"	l
+yak	./common.c	/^void yak(const char *format, ... )$/;"	f
+yy_accept	./lexer.yy.c	/^static yyconst flex_int16_t yy_accept[113] =$/;"	v	file:
+yy_at_bol	./lexer.yy.c	/^	int yy_at_bol;$/;"	m	struct:yy_buffer_state	file:
+yy_base	./lexer.yy.c	/^static yyconst flex_int16_t yy_base[116] =$/;"	v	file:
+yy_bs_column	./lexer.yy.c	/^    int yy_bs_column; \/**< The column count. *\/$/;"	m	struct:yy_buffer_state	file:
+yy_bs_lineno	./lexer.yy.c	/^    int yy_bs_lineno; \/**< The line count. *\/$/;"	m	struct:yy_buffer_state	file:
+yy_buf_pos	./lexer.yy.c	/^	char *yy_buf_pos;		\/* current position in input buffer *\/$/;"	m	struct:yy_buffer_state	file:
+yy_buf_size	./lexer.yy.c	/^	yy_size_t yy_buf_size;$/;"	m	struct:yy_buffer_state	file:
+yy_buffer_stack	./lexer.yy.c	/^static YY_BUFFER_STATE * yy_buffer_stack = 0; \/**< Stack as an array. *\/$/;"	v	file:
+yy_buffer_stack_max	./lexer.yy.c	/^static size_t yy_buffer_stack_max = 0; \/**< capacity of stack. *\/$/;"	v	file:
+yy_buffer_stack_top	./lexer.yy.c	/^static size_t yy_buffer_stack_top = 0; \/**< index of top of stack. *\/$/;"	v	file:
+yy_buffer_state	./lexer.yy.c	/^struct yy_buffer_state$/;"	s	file:
+yy_buffer_status	./lexer.yy.c	/^	int yy_buffer_status;$/;"	m	struct:yy_buffer_state	file:
+yy_c_buf_p	./lexer.yy.c	/^static char *yy_c_buf_p = (char *) 0;$/;"	v	file:
+yy_ch_buf	./lexer.yy.c	/^	char *yy_ch_buf;		\/* input buffer *\/$/;"	m	struct:yy_buffer_state	file:
+yy_chk	./lexer.yy.c	/^static yyconst flex_int16_t yy_chk[177] =$/;"	v	file:
+yy_create_buffer	./lexer.yy.c	/^    YY_BUFFER_STATE yy_create_buffer  (FILE * file, int  size )$/;"	f
+yy_def	./lexer.yy.c	/^static yyconst flex_int16_t yy_def[116] =$/;"	v	file:
+yy_delete_buffer	./lexer.yy.c	/^    void yy_delete_buffer (YY_BUFFER_STATE  b )$/;"	f
+yy_did_buffer_switch_on_eof	./lexer.yy.c	/^static int yy_did_buffer_switch_on_eof;$/;"	v	file:
+yy_ec	./lexer.yy.c	/^static yyconst flex_int32_t yy_ec[256] =$/;"	v	file:
+yy_fatal_error	./lexer.yy.c	/^static void yy_fatal_error (yyconst char* msg )$/;"	f	file:
+yy_fill_buffer	./lexer.yy.c	/^	int yy_fill_buffer;$/;"	m	struct:yy_buffer_state	file:
+yy_flex_debug	./lexer.yy.c	/^int yy_flex_debug = 0;$/;"	v
+yy_flex_strlen	./lexer.yy.c	/^static int yy_flex_strlen (yyconst char * s )$/;"	f	file:
+yy_flex_strncpy	./lexer.yy.c	/^static void yy_flex_strncpy (char* s1, yyconst char * s2, int n )$/;"	f	file:
+yy_flush_buffer	./lexer.yy.c	/^    void yy_flush_buffer (YY_BUFFER_STATE  b )$/;"	f
+yy_get_next_buffer	./lexer.yy.c	/^static int yy_get_next_buffer (void)$/;"	f	file:
+yy_get_previous_state	./lexer.yy.c	/^    static yy_state_type yy_get_previous_state (void)$/;"	f	file:
+yy_hold_char	./lexer.yy.c	/^static char yy_hold_char;$/;"	v	file:
+yy_init	./lexer.yy.c	/^static int yy_init = 0;		\/* whether we need to initialize *\/$/;"	v	file:
+yy_init_buffer	./lexer.yy.c	/^    static void yy_init_buffer  (YY_BUFFER_STATE  b, FILE * file )$/;"	f	file:
+yy_init_globals	./lexer.yy.c	/^static int yy_init_globals (void)$/;"	f	file:
+yy_input_file	./lexer.yy.c	/^	FILE *yy_input_file;$/;"	m	struct:yy_buffer_state	file:
+yy_is_interactive	./lexer.yy.c	/^	int yy_is_interactive;$/;"	m	struct:yy_buffer_state	file:
+yy_is_our_buffer	./lexer.yy.c	/^	int yy_is_our_buffer;$/;"	m	struct:yy_buffer_state	file:
+yy_last_accepting_cpos	./lexer.yy.c	/^static char *yy_last_accepting_cpos;$/;"	v	file:
+yy_last_accepting_state	./lexer.yy.c	/^static yy_state_type yy_last_accepting_state;$/;"	v	file:
+yy_load_buffer_state	./lexer.yy.c	/^static void yy_load_buffer_state  (void)$/;"	f	file:
+yy_meta	./lexer.yy.c	/^static yyconst flex_int32_t yy_meta[48] =$/;"	v	file:
+yy_n_chars	./lexer.yy.c	/^	yy_size_t yy_n_chars;$/;"	m	struct:yy_buffer_state	file:
+yy_n_chars	./lexer.yy.c	/^static yy_size_t yy_n_chars;		\/* number of characters read into yy_ch_buf *\/$/;"	v	file:
+yy_new_buffer	./lexer.yy.c	/^#define yy_new_buffer /;"	d	file:
+yy_nxt	./lexer.yy.c	/^	flex_int32_t yy_nxt;$/;"	m	struct:yy_trans_info	file:
+yy_nxt	./lexer.yy.c	/^static yyconst flex_int16_t yy_nxt[177] =$/;"	v	file:
+yy_reduce_print	./parser.tab.c	/^yy_reduce_print (YYSTYPE *yyvsp, int yyrule)$/;"	f	file:
+yy_scan_buffer	./lexer.yy.c	/^YY_BUFFER_STATE yy_scan_buffer  (char * base, yy_size_t  size )$/;"	f
+yy_scan_bytes	./lexer.yy.c	/^YY_BUFFER_STATE yy_scan_bytes  (yyconst char * yybytes, yy_size_t  _yybytes_len )$/;"	f
+yy_scan_string	./lexer.yy.c	/^YY_BUFFER_STATE yy_scan_string (yyconst char * yystr )$/;"	f
+yy_set_bol	./lexer.yy.c	/^#define yy_set_bol(/;"	d	file:
+yy_set_interactive	./lexer.yy.c	/^#define yy_set_interactive(/;"	d	file:
+yy_size_t	./lexer.yy.c	/^typedef size_t yy_size_t;$/;"	t	file:
+yy_stack_print	./parser.tab.c	/^yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)$/;"	f	file:
+yy_start	./lexer.yy.c	/^static int yy_start = 0;	\/* start state number *\/$/;"	v	file:
+yy_state_type	./lexer.yy.c	/^typedef int yy_state_type;$/;"	t	file:
+yy_switch_to_buffer	./lexer.yy.c	/^    void yy_switch_to_buffer  (YY_BUFFER_STATE  new_buffer )$/;"	f
+yy_symbol_print	./parser.tab.c	/^yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)$/;"	f	file:
+yy_symbol_value_print	./parser.tab.c	/^yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)$/;"	f	file:
+yy_trans_info	./lexer.yy.c	/^struct yy_trans_info$/;"	s	file:
+yy_try_NUL_trans	./lexer.yy.c	/^    static yy_state_type yy_try_NUL_trans  (yy_state_type yy_current_state )$/;"	f	file:
+yy_verify	./lexer.yy.c	/^	flex_int32_t yy_verify;$/;"	m	struct:yy_trans_info	file:
+yyalloc	./lexer.yy.c	/^void *yyalloc (yy_size_t  size )$/;"	f
+yyalloc	./parser.tab.c	/^union yyalloc$/;"	u	file:
+yychar	./parser.tab.c	/^int yychar;$/;"	v
+yycheck	./parser.tab.c	/^static const yytype_int16 yycheck[] =$/;"	v	file:
+yyclearin	./parser.tab.c	/^#define yyclearin	/;"	d	file:
+yyconst	./lexer.yy.c	/^#define yyconst /;"	d	file:
+yyconst	./lexer.yy.c	/^#define yyconst$/;"	d	file:
+yydebug	./parser.tab.c	/^int yydebug;$/;"	v
+yydefact	./parser.tab.c	/^static const yytype_uint8 yydefact[] =$/;"	v	file:
+yydefgoto	./parser.tab.c	/^static const yytype_int8 yydefgoto[] =$/;"	v	file:
+yydestruct	./parser.tab.c	/^yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)$/;"	f	file:
+yyensure_buffer_stack	./lexer.yy.c	/^static void yyensure_buffer_stack (void)$/;"	f	file:
+yyerrok	./parser.tab.c	/^#define yyerrok	/;"	d	file:
+yyerror	./parser.tab.c	/^void yyerror(const char *msg)$/;"	f
+yyfree	./lexer.yy.c	/^void yyfree (void * ptr )$/;"	f
+yyget_debug	./lexer.yy.c	/^int yyget_debug  (void)$/;"	f
+yyget_in	./lexer.yy.c	/^FILE *yyget_in  (void)$/;"	f
+yyget_leng	./lexer.yy.c	/^yy_size_t yyget_leng  (void)$/;"	f
+yyget_lineno	./lexer.yy.c	/^int yyget_lineno  (void)$/;"	f
+yyget_out	./lexer.yy.c	/^FILE *yyget_out  (void)$/;"	f
+yyget_text	./lexer.yy.c	/^char *yyget_text  (void)$/;"	f
+yyin	./lexer.yy.c	/^FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;$/;"	v
+yyinput	./lexer.yy.c	/^    static int yyinput (void)$/;"	f	file:
+yyleng	./lexer.yy.c	/^yy_size_t yyleng;$/;"	v
+yyless	./lexer.yy.c	/^#define yyless(/;"	d	file:
+yyless	./lexer.yy.c	/^#undef yyless$/;"	d	file:
+yylex_destroy	./lexer.yy.c	/^int yylex_destroy  (void)$/;"	f
+yylineno	./lexer.yy.c	/^int yylineno = 1;$/;"	v
+yylval	./parser.tab.c	/^YYSTYPE yylval;$/;"	v
+yymore	./lexer.yy.c	/^#define yymore(/;"	d	file:
+yynerrs	./parser.tab.c	/^int yynerrs;$/;"	v
+yyout	./lexer.yy.c	/^FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;$/;"	v
+yypact	./parser.tab.c	/^static const yytype_int16 yypact[] =$/;"	v	file:
+yypact_value_is_default	./parser.tab.c	/^#define yypact_value_is_default(/;"	d	file:
+yyparse	./parser.tab.c	/^yyparse (void *YYPARSE_PARAM)$/;"	f
+yypgoto	./parser.tab.c	/^static const yytype_int8 yypgoto[] =$/;"	v	file:
+yypop_buffer_state	./lexer.yy.c	/^void yypop_buffer_state (void)$/;"	f
+yyprhs	./parser.tab.c	/^static const yytype_uint8 yyprhs[] =$/;"	v	file:
+yypush_buffer_state	./lexer.yy.c	/^void yypush_buffer_state (YY_BUFFER_STATE new_buffer )$/;"	f
+yyr1	./parser.tab.c	/^static const yytype_uint8 yyr1[] =$/;"	v	file:
+yyr2	./parser.tab.c	/^static const yytype_uint8 yyr2[] =$/;"	v	file:
+yyrealloc	./lexer.yy.c	/^void *yyrealloc  (void * ptr, yy_size_t  size )$/;"	f
+yyrestart	./lexer.yy.c	/^    void yyrestart  (FILE * input_file )$/;"	f
+yyrhs	./parser.tab.c	/^static const yytype_int8 yyrhs[] =$/;"	v	file:
+yyrline	./parser.tab.c	/^static const yytype_uint8 yyrline[] =$/;"	v	file:
+yyset_debug	./lexer.yy.c	/^void yyset_debug (int  bdebug )$/;"	f
+yyset_in	./lexer.yy.c	/^void yyset_in (FILE *  in_str )$/;"	f
+yyset_lineno	./lexer.yy.c	/^void yyset_lineno (int  line_number )$/;"	f
+yyset_out	./lexer.yy.c	/^void yyset_out (FILE *  out_str )$/;"	f
+yyss_alloc	./parser.tab.c	/^  yytype_int16 yyss_alloc;$/;"	m	union:yyalloc	file:
+yystos	./parser.tab.c	/^static const yytype_uint8 yystos[] =$/;"	v	file:
+yystpcpy	./parser.tab.c	/^#   define yystpcpy /;"	d	file:
+yystpcpy	./parser.tab.c	/^yystpcpy (char *yydest, const char *yysrc)$/;"	f	file:
+yystrlen	./parser.tab.c	/^#   define yystrlen /;"	d	file:
+yystrlen	./parser.tab.c	/^yystrlen (const char *yystr)$/;"	f	file:
+yystype	./parser.tab.c	/^# define yystype /;"	d	file:
+yystype	./parser.tab.h	/^# define yystype /;"	d
+yysyntax_error	./parser.tab.c	/^yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,$/;"	f	file:
+yytable	./parser.tab.c	/^static const yytype_uint8 yytable[] =$/;"	v	file:
+yytable_value_is_error	./parser.tab.c	/^#define yytable_value_is_error(/;"	d	file:
+yyterminate	./lexer.yy.c	/^#define yyterminate(/;"	d	file:
+yytext	./lexer.yy.c	/^char *yytext;$/;"	v
+yytext_ptr	./lexer.yy.c	/^#define yytext_ptr /;"	d	file:
+yytname	./parser.tab.c	/^static const char *const yytname[] =$/;"	v	file:
+yytnamerr	./parser.tab.c	/^yytnamerr (char *yyres, const char *yystr)$/;"	f	file:
+yytokentype	./parser.tab.c	/^   enum yytokentype {$/;"	g	file:
+yytokentype	./parser.tab.h	/^   enum yytokentype {$/;"	g
+yytoknum	./parser.tab.c	/^static const yytype_uint16 yytoknum[] =$/;"	v	file:
+yytranslate	./parser.tab.c	/^static const yytype_uint8 yytranslate[] =$/;"	v	file:
+yytype_int16	./parser.tab.c	/^typedef YYTYPE_INT16 yytype_int16;$/;"	t	file:
+yytype_int16	./parser.tab.c	/^typedef short int yytype_int16;$/;"	t	file:
+yytype_int8	./parser.tab.c	/^typedef YYTYPE_INT8 yytype_int8;$/;"	t	file:
+yytype_int8	./parser.tab.c	/^typedef short int yytype_int8;$/;"	t	file:
+yytype_int8	./parser.tab.c	/^typedef signed char yytype_int8;$/;"	t	file:
+yytype_uint16	./parser.tab.c	/^typedef YYTYPE_UINT16 yytype_uint16;$/;"	t	file:
+yytype_uint16	./parser.tab.c	/^typedef unsigned short int yytype_uint16;$/;"	t	file:
+yytype_uint8	./parser.tab.c	/^typedef YYTYPE_UINT8 yytype_uint8;$/;"	t	file:
+yytype_uint8	./parser.tab.c	/^typedef unsigned char yytype_uint8;$/;"	t	file:
+yyunput	./lexer.yy.c	/^    static void yyunput (int c, register char * yy_bp )$/;"	f	file:
+yyvs_alloc	./parser.tab.c	/^  YYSTYPE yyvs_alloc;$/;"	m	union:yyalloc	file:
+yywrap	./lexer.yy.c	/^#define yywrap(/;"	d	file:

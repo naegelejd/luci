@@ -45,6 +45,7 @@ void yyerror(const char *msg);
 %token BREAK CONTINUE
 %token IF THEN ELSE END
 %token DEF RETURN
+%token PASS
 
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
@@ -80,12 +81,13 @@ statement:
     |   for_loop            { $$ = $1; }
     |   if_else             { $$ = $1; }
     |   func_def            { $$ = $1; }
-    |   expr SEMICOLON               { $$ = $1; }
-    |   list_assign SEMICOLON        { $$ = $1; }
-    |   assignment SEMICOLON         { $$ = $1; }
-    |   return SEMICOLON             { $$ = $1; }
-    |   BREAK SEMICOLON              { $$ = make_break(); }
-    |   CONTINUE SEMICOLON           { $$ = make_continue(); }
+    |   expr SEMICOLON              { $$ = $1; }
+    |   list_assign SEMICOLON       { $$ = $1; }
+    |   assignment SEMICOLON        { $$ = $1; }
+    |   return SEMICOLON            { $$ = $1; }
+    |   BREAK SEMICOLON             { $$ = make_break(); }
+    |   CONTINUE SEMICOLON          { $$ = make_continue(); }
+    |   PASS SEMICOLON              { $$ = make_pass(); }
     ;
 
 assignment:

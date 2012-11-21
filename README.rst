@@ -2,14 +2,14 @@
 Luci
 ******
 
-Luci is a toy scripting language, implemented in C.
+Luci is a procedural, dynamically-typed toy scripting language, implemented in C.
 
-Luci's syntax is still a work in progress, but the overall
-theme is a mix of Python, Ruby and Perl.
+Luci's syntax resembles C and is still a work in progress.
 
 The implementation is slowly evolving into a bytecode-compiled,
-virtual machine interpreter model, from its original model, which
-walked an abstract syntax tree and 'executed' each node.
+virtual machine interpreter model. Its initial form consisted of
+an abstract syntax tree and a series of functions which walked the
+tree and 'executed' each node.
 
 Tools Needed to Build
 =======================
@@ -41,6 +41,8 @@ References
 TODO (version 0.2)
 ===================
 
+- Implement interactive mode (like Python's '>>>')
+- Serialize bytecode/symbols/constants (like Python's .pyc files)
 - Finalize syntax
 - Implement bytecode compiler
 
@@ -56,14 +58,13 @@ TODO (version 0.2)
 - Implement bytecode interpreter (VM)
 
   - Efficient object stack
-  - Change library-function API to use object stack (i.e. ``CALL #`` vs ``MKLIST #; CALL``
   - Fast instruction dispatch (gcc ``computed goto`` vs. ``switch-case``)
   - Proper function call/return handling (call stack)
 
 - Implement a memory manager optimized for allocating many small blocks
 
   This is more for the learning experience... I know it's difficult to
-  out-perform the GNU libc memory management implementation
+  out-perform the GNU libc malloc implementation
 
 - Possibly implement an API for creating libraries
 

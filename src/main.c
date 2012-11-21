@@ -12,28 +12,6 @@ extern FILE *yyin;
 static const char const * version_string = "Luci v0.2";
 
 
-static const char *options[] =
-{
-    "-h",
-    "-v",
-    "-c",
-    "-g",
-    "-V",
-    0
-};
-
-static int is_option(const char *arg)
-{
-    int i = 0;
-    while (options[i] != 0) {
-	if (strcmp(arg, options[i]) == 0) {
-	    return 1;
-	}
-	++i;
-    }
-    return 0;
-}
-
 static void help()
 {
     puts("Usage: luci [options] filename\n");
@@ -44,7 +22,6 @@ static void help()
     puts("    -c\t\tCompile the source to bytecode (dev)");
     printf("\n%s\n", version_string);
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -57,6 +34,7 @@ int main(int argc, char *argv[])
     char *infilename = NULL;
 
     if (argc < 2) {
+        /* interactive mode */
 	yyin = stdin;
     }
     else {
@@ -68,8 +46,9 @@ int main(int argc, char *argv[])
                 help();
                 goto finish;
             }
-            else if (strcmp(arg, "-v") == 0)
+            else if (strcmp(arg, "-v") == 0) {
 		verbose = 1;
+            }
             else if (strcmp(arg, "-c") == 0) {
                 compile = 1;
                 execute = 0;
@@ -82,21 +61,27 @@ int main(int argc, char *argv[])
 		fprintf(stdout, "%s\n", version_string);
                 goto finish;
 	    }
-            else if (i == (argc - 1))
+            else if (i == (argc - 1)) {
                 infilename = arg;
-            else
+            }
+            else {
                 die("Invalid options: %s\n", arg);
+            }
 	}
     }
 
-    if (infilename == NULL)
+    if (infilename == NULL) {
+        /* interactive mode */
         yyin = stdin;
-    else if (!(yyin = fopen(infilename, "r")))
+    }
+    else if (!(yyin = fopen(infilename, "r"))) {
         die("Can't read from file %s\n", infilename);
+    }
     yak("Reading from %s\n", infilename? infilename : "stdin");
 
-    if (!(begin(verbose, execute, compile, graph)))
+    if (!(begin(verbose, execute, compile, graph))) {
         return EXIT_FAILURE;
+    }
 
 finish:
         return EXIT_SUCCESS;

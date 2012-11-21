@@ -1,6 +1,9 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <stdio.h>  /* for FILE */
+#include <stdint.h>
+
 struct _Stack;
 
 /* initial allocated size of a new List */
@@ -13,6 +16,7 @@ typedef enum {
     obj_str_t,
     obj_file_t,
     obj_list_t,
+    obj_iterator_t,
     obj_func_t
 } LuciOType;
 
@@ -23,9 +27,9 @@ typedef enum {
 } LuciFileMode;
 
 typedef union {
-    int i_val;
-    double f_val;
-    char *s_val;
+    int i;
+    double f;
+    char *s;
     struct {
         FILE *ptr;
         long size;	/* in bytes */
@@ -36,6 +40,11 @@ typedef union {
         int count;	/* current number of items in list */
         int size;	/* current count of allocated item pointers */
     } list;
+    struct {
+        struct LuciObject *list;
+        uint32_t idx;
+        uint32_t incr;
+    } iterator;
     struct LuciObject * (*func)(struct _Stack *, int);
 } LuciOVal;
 
@@ -51,19 +60,20 @@ typedef struct LuciObject
 } LuciObject;
 
 /* creates and initializes a new LuciObject */
-struct LuciObject *create_object(int type);
+LuciObject *create_object(int type);
 
 /* increments the object's refcount and returns it */
-struct LuciObject *incref(struct LuciObject* orig);
+LuciObject *incref(LuciObject* orig);
 /* decrements the object's refcount and returns it
  * also potentially destroys object (refcount <= 0) */
-struct LuciObject *incref(struct LuciObject* orig);
+LuciObject *incref(LuciObject* orig);
 /* duplicates a LuciObject, creating a new one */
-struct LuciObject *copy_object(struct LuciObject* orig);
+LuciObject *copy_object(LuciObject* orig);
 /* destroys an object */
-void destroy(struct LuciObject *trash);
+void destroy(LuciObject *trash);
 
-int list_append_object(struct LuciObject *list, struct LuciObject *item);
+int list_append_object(LuciObject *list, LuciObject *item);
 LuciObject *list_get_object(LuciObject *list, int index);
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index);
+LuciObject *iterator_next_object(LuciObject *iterator);
 #endif

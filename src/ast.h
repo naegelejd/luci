@@ -12,7 +12,9 @@
 #define AST_STMNTS_SIZE 32
 
 typedef enum {
-    ast_constant_t,
+    ast_integer_t,
+    ast_float_t,
+    ast_string_t,
     ast_id_t,
     ast_expr_t,
     ast_listaccess_t,
@@ -28,29 +30,12 @@ typedef enum {
     ast_break_t,
     ast_continue_t,
     ast_return_t,
+    ast_pass_t,
     ast_last_t
 } AstType;
 
-/* for verbosity */
-const char *NTYPES[16];
 
 struct AstNode;
-
-typedef enum {
-    co_int_t,
-    co_float_t,
-    co_string_t
-} ConstantType;
-
-typedef struct
-{
-    ConstantType type;
-    union {
-        long i;
-        double f;
-        char *s;
-    } val;
-} AstConstant;
 
 typedef struct
 {
@@ -141,7 +126,9 @@ typedef struct AstNode
     int column;
 
     union {
-        AstConstant constant;
+        long i;
+        double f;
+        char *s;
         AstID id;
         AstExpression expression;
         AstListAccess listaccess;
@@ -178,6 +165,7 @@ AstNode *make_statements(AstNode *, AstNode *);
 AstNode *make_break();
 AstNode *make_continue();
 AstNode *make_return(AstNode *);
+AstNode *make_pass();
 
 int print_ast_graph(AstNode *root, int);
 

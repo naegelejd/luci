@@ -24,12 +24,14 @@ static Program *prog = NULL;
 static void cleanup(void)
 {
     /* if the Program is still allocated */
-    if (prog)
+    if (prog) {
         program_delete(prog);
+    }
 
     /* destroy the AST */
-    if (root_node)
+    if (root_node) {
         destroy_tree(root_node);
+    }
 }
 
 
@@ -42,15 +44,17 @@ int begin(int verbose, int execute, int compile, int graph)
     /* parse yyin and build and AST */
     yyparse(&root_node);
 
-    if (!root_node)
+    if (!root_node) {
         return EXIT_SUCCESS;
+    }
 
     /* Compile the AST */
     prog = compile_ast(root_node);
 
     /* Print the bytecode */
-    if (compile)
+    if (compile) {
         print_instructions(prog);
+    }
 
     /* Print a DOT graph representation */
     if (graph) {
@@ -61,8 +65,9 @@ int begin(int verbose, int execute, int compile, int graph)
     }
 
     /* Execute the bytecode */
-    if (execute)
+    if (execute) {
         eval(prog);
+    }
 
     cleanup();
 
@@ -73,8 +78,7 @@ int begin(int verbose, int execute, int compile, int graph)
 void *alloc(size_t size)
 {
     void *result = calloc(size, 1);
-    if (!result)
-    {
+    if (!result) {
 	die("alloc failed\n");
     }
     return result;
@@ -83,8 +87,7 @@ void *alloc(size_t size)
 /* AKA babble */
 void yak(const char *format, ... )
 {
-    if (VERBOSE)
-    {
+    if (VERBOSE) {
 	va_list arglist;
 
 	printf("INFO: ");

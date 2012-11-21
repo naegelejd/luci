@@ -11,7 +11,9 @@
 
 
 const char *TYPE_NAMES[] = {
-    "constant",
+    "int",
+    "float",
+    "string",
     "id",
     "expr",
     "list access",
@@ -26,7 +28,8 @@ const char *TYPE_NAMES[] = {
     "statements",
     "break",
     "continue",
-    "return"
+    "return",
+    "pass"
 };
 
 static AstNode *create_node(int type);
@@ -43,27 +46,24 @@ static AstNode *create_node(int type) {
 
 AstNode *make_int_constant(long val)
 {
-    AstNode *result = create_node(ast_constant_t);
-    result->data.constant.type = co_int_t;
-    result->data.constant.val.i = val;
+    AstNode *result = create_node(ast_integer_t);
+    result->data.i = val;
     yak("Made expression node from val %ld\n", val);
     return result;
 }
 
 AstNode *make_float_constant(double val)
 {
-    AstNode *result = create_node(ast_constant_t);
-    result->data.constant.type = co_float_t;
-    result->data.constant.val.f = val;
+    AstNode *result = create_node(ast_float_t);
+    result->data.f = val;
     yak("Made expression node from val %f\n", val);
     return result;
 }
 
 AstNode *make_string_constant(char *val)
 {
-    AstNode *result = create_node(ast_constant_t);
-    result->data.constant.type = co_string_t;
-    result->data.constant.val.s = val;
+    AstNode *result = create_node(ast_string_t);
+    result->data.s = val;
     yak("Made expression node from string %s\n", val);
     return result;
 }
@@ -238,6 +238,11 @@ AstNode *make_return(AstNode *expr)
     return ret;
 }
 
+AstNode *make_pass()
+{
+    return create_node(ast_pass_t);
+}
+
 
 int print_ast_graph(AstNode *root, int id)
 {
@@ -345,23 +350,17 @@ int print_ast_graph(AstNode *root, int id)
         case ast_id_t:
             printf("%d [label=\"ID: %s\"]\n", rID, root->data.id.val);
             break;
-        case ast_constant_t:
-            switch (root->data.constant.type) {
-                case co_string_t:
-                    printf("%d [label=\"string: %s\"]\n", rID,
-                            root->data.constant.val.s);
-                    break;
-                case co_int_t:
-                    printf("%d [label=\"int: %ld\"]\n", rID,
-                            root->data.constant.val.i);
-                    break;
-                case co_float_t:
-                    printf("%d [label=\"float: %g\"]\n", rID,
-                            root->data.constant.val.f);
-                    break;
-                default:
-                    die("Bad constant type\n");
-            }
+        case ast_string_t:
+            printf("%d [label=\"string: %s\"]\n", rID,
+                    root->data.s);
+            break;
+        case ast_float_t:
+            printf("%d [label=\"float: %g\"]\n", rID,
+                    root->data.f);
+            break;
+        case ast_integer_t:
+            printf("%d [label=\"int: %ld\"]\n", rID,
+                    root->data.i);
             break;
         default:
             break;
@@ -373,8 +372,7 @@ int print_ast_graph(AstNode *root, int id)
 void destroy_tree(AstNode *root)
 {
     /* don't free a NULL statement */
-    if (!root)
-        return;
+    if (!root) return;
 
     int i;
     switch (root->type)
@@ -436,9 +434,8 @@ void destroy_tree(AstNode *root)
         case ast_id_t:
             free(root->data.id.val);
             break;
-        case ast_constant_t:
-            if (root->data.constant.type == co_string_t)
-                free(root->data.constant.val.s);
+        case ast_string_t:
+            free(root->data.s);
             break;
         default:
             break;

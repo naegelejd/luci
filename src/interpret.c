@@ -12,7 +12,7 @@
 #include "constant.h"
 #include "stack.h"
 #include "compile.h"
-#include "functions.h"
+#include "binop.h"
 
 #define EVER ;;
 
@@ -66,7 +66,7 @@ void eval(Program *prog)
                 yak("DUP\n");
                 /* duplicate object on top of stack
                  * and push it back on */
-                x = copy_object(st_top(&lstack));
+                x = copy_object(st_peek(&lstack));
                 st_push(&lstack, x);
                 break;
 
@@ -124,10 +124,11 @@ void eval(Program *prog)
                 /* pop index */
                 y = st_pop(&lstack);
                 if (y->type != obj_int_t) {
-                    die("Invalid type in list access\n");
+                    die("Invalid list index type\n");
                 }
 
-                z = list_get_object(x, y->value.i_val);
+                /* get a copy of the obj in list at index */
+                z = list_get_object(x, y->value.i);
 
                 destroy(x);
                 destroy(y);
@@ -137,20 +138,29 @@ void eval(Program *prog)
             case LISTPUT:
                 yak("LISTPUT %d\n", a);
                 /* pop list */
-                z = st_pop(&lstack);
+                x = st_pop(&lstack);
                 /* pop index */
                 y = st_pop(&lstack);
                 /* pop right hand value */
-                x = st_pop(&lstack);
+                z = st_pop(&lstack);
 
                 if (y->type != obj_int_t) {
                     die("Invalid type in list assign\n");
                 }
-                i = y->value.i_val;
+                i = y->value.i;
                 destroy(y);
-                y = list_set_object(z, x, i);
+                y = list_set_object(x, z, i);
                 /* y is the old object */
                 destroy(y);
+                break;
+
+            case MKITER:
+                yak("MKITER\n");
+                x = create_object(obj_iterator_t);
+                y = st_pop(&lstack);
+                /* y should be a list */
+                x->value.iterator.list = y;
+                st_push(&lstack, x);
                 break;
 
             case JUMP:
@@ -158,12 +168,38 @@ void eval(Program *prog)
                 ip = a;
                 break;
 
+            case POPJUMP:
+                yak("POPJUMP %X\n", a);
+                x = st_pop(&lstack);
+                destroy(x);
+                ip = a;
+                break;
+
             case JUMPZ:
                 yak("JUMPZ %X\n", a);
                 x = st_pop(&lstack);
-                if (x->value.i_val == 0)
+                if (x->value.i == 0)
                     ip = a;
                 destroy(x);
+                break;
+
+            case ITERJUMP:
+                yak("ITERJUMP\n");
+                x = st_peek(&lstack);
+                /* get a COPY of the next object in the iterator's list */
+                y = iterator_next_object(x);
+                /* if the iterator returned NULL, jump to the
+                 * end of the for loop. Otherwise, push
+                 * iterator->next */
+                if (y == NULL) {
+                    //yak("Iterator finished\n");
+                    /* pop and destroy the iterator object */
+                    x = st_pop(&lstack);
+                    destroy(x);
+                    ip = a;
+                } else {
+                    st_push(&lstack, y);
+                }
                 break;
 
             case HALT:

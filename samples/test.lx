@@ -1,0 +1,35 @@
+i = 4;
+
+print("Start " + str(i));
+
+while (true) {
+    i = i - 1;
+    if (i) {
+        continue;
+    } else {
+        break;
+    }
+}
+
+print("Finish " + str(i));
+
+a = b = c = int("42");
+
+l = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+l[1] = l[4];    # this is the shift/reduce: (assignment or list_access?)
+
+for x in l {
+    print(x % 3 * pi);
+}
+
+x = len(l);
+for i in range(x) {
+    if i == 5 {
+        break;  /* this will POP the iterator, and JUMP to the end */
+    }
+    continue;   /* this will just JUMP to the beginning */
+}
+print("
+        ", i);
+

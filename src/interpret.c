@@ -22,10 +22,11 @@ void eval(Program *prog)
     Instruction instr = 0;
     int a;
 
-
     Stack lstack, lframe;
+    Stack framestack;
     st_init(&lstack);
     st_init(&lframe);
+    st_init(&framestack);
 
     int ip = 0;
     int i = 0;
@@ -50,6 +51,11 @@ void eval(Program *prog)
                 destroy(x);
                 break;
 
+            case PUSHNULL:
+                yak("PUSHNULL\n");
+                st_push(&lstack, NULL);
+                break;
+
             case LOADK:
                 yak("LOADK %d\n", a);
                 x = cotable_get(prog->cotable, a);
@@ -58,7 +64,13 @@ void eval(Program *prog)
 
             case LOADS:
                 yak("LOADS %d\n", a);
-                x = symtable_get(prog->symtable, a);
+                x = symtable_get(prog->locals, a);
+                st_push(&lstack, x);
+                break;
+
+            case LOADG:
+                yak("LOADG %d\n", a);
+                x = symtable_get(prog->globals, a);
                 st_push(&lstack, x);
                 break;
 
@@ -74,7 +86,7 @@ void eval(Program *prog)
                 yak("STORE %d\n", a);
                 /* pop object off of stack */
                 x = st_pop(&lstack);
-                symtable_set(prog->symtable, x, a);
+                symtable_set(prog->locals, x, a);
                 break;
 
             case BINOP:
@@ -89,22 +101,58 @@ void eval(Program *prog)
 
             case CALL:
                 yak("CALL %d\n", a);
-                x = st_pop(&lstack);    /* funcptr obj */
+                x = st_pop(&lstack);    /* function object */
 
-                for (i = 0; i < a; i++) {
-                    y = st_pop(&lstack);
-                    st_push(&lframe, y);
-                }
-                /* call func, passing frame and arg count */
-                z = x->value.func(&lframe, a);
-                st_push(&lstack, z);    /* always push return val */
-                /* flush stack frame */
-
-                while (!st_empty(&lframe)) {
-                    y = st_pop(&lframe);
-                    destroy(y);
+                if (x == NULL) {
+                    printf("eff\n");
                 }
 
+                if (x->type == obj_func_t) {
+                    /* save instruction pointer */
+                    prog->ip = ip;
+
+                    /* push a func frame object onto framestack */
+                    y = create_object(obj_func_t);
+                    y->value.func.frame = prog;
+                    y->value.func.deleter = program_delete;
+                    st_push(&framestack, y);
+
+                    /* enable new function frame */
+                    prog = x->value.func.frame;
+                    /* reset instruction pointer */
+                    ip = 0;
+
+                    /* carry on our merry way */
+                    break;
+                }
+                else if (x->type == obj_libfunc_t) {
+                    for (i = 0; i < a; i++) {
+                        y = st_pop(&lstack);
+                        st_push(&lframe, y);
+                    }
+                    /* call func, passing frame and arg count */
+                    z = x->value.libfunc(&lframe, a);
+                    st_push(&lstack, z);    /* always push return val */
+                    /* flush stack frame */
+
+                    while (!st_empty(&lframe)) {
+                        y = st_pop(&lframe);
+                        destroy(y);
+                    }
+                }
+                else {
+                    die("Can't call something that isn't a function\n");
+                }
+
+                break;
+
+            case RETURN:
+                yak("RETURN\n");
+                /* pop function stack frame */
+                x = st_pop(&framestack);
+                prog = (Program *)x->value.func.frame;
+                ip = prog->ip;
+                //destroy(x);
                 break;
 
             case MKLIST:

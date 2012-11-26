@@ -103,9 +103,9 @@ list_assign:
     ;
 
 func_def:
-        DEF id LPAREN empty_list RPAREN LBRACK statements RBRACK
+        DEF ID LPAREN empty_list RPAREN LBRACK statements RBRACK
             { $$ = make_func_def($2, $4, $7); }
-    |   DEF id LPAREN params RPAREN LBRACK statements RBRACK
+    |   DEF ID LPAREN params RPAREN LBRACK statements RBRACK
             { $$ = make_func_def($2, $4, $7); }
     ;
 

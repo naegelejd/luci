@@ -15,12 +15,15 @@
 typedef enum {
     NOP,
     POP,
+    PUSHNULL,
     LOADK,
     LOADS,
+    LOADG,
     DUP,
     STORE,
     BINOP,
     CALL,
+    RETURN,
     MKLIST,
     LISTGET,
     LISTPUT,
@@ -56,10 +59,11 @@ struct _loop_list {
 };
 
 typedef struct _program {
-    uint32_t count;
-    int size;
+    uint32_t ip;    /* (compilation) instr count. (interp) instr pointer */
+    uint32_t size;   /* size of array allocated for instructions */
     Instruction *instructions;
-    SymbolTable *symtable;
+    SymbolTable *locals;
+    SymbolTable *globals;
     ConstantTable *cotable;
     struct _loop_list *current_loop;
 } Program;
@@ -67,6 +71,7 @@ typedef struct _program {
 
 Program * compile_ast(AstNode *);
 Program * program_new(void);
+Program * program_init(Program *);
 void program_delete(Program *);
 void print_instructions(Program *prog);
 

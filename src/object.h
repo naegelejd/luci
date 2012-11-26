@@ -17,7 +17,8 @@ typedef enum {
     obj_file_t,
     obj_list_t,
     obj_iterator_t,
-    obj_func_t
+    obj_func_t,
+    obj_libfunc_t
 } LuciOType;
 
 typedef enum {
@@ -45,7 +46,11 @@ typedef union {
         uint32_t idx;
         uint32_t incr;
     } iterator;
-    struct LuciObject * (*func)(struct _Stack *, int);
+    struct {
+        void *frame;
+        void (*deleter)(void *);
+    } func;
+    struct LuciObject * (*libfunc)(struct _Stack *, int);
 } LuciOVal;
 
 /* LuciFunction is a type of function that returns a LuciObject * */

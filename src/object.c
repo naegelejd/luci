@@ -105,7 +105,11 @@ LuciObject *copy_object(LuciObject *orig)
             copy->value.iterator.incr = orig->value.iterator.incr;
             break;
         case obj_func_t:
-            copy->value.func = orig->value.func;
+            copy->value.func.frame = orig->value.func.frame;
+            copy->value.func.deleter = orig->value.func.deleter;
+            break;
+        case obj_libfunc_t:
+            copy->value.libfunc = orig->value.libfunc;
             break;
 	default:
 	    break;
@@ -152,6 +156,10 @@ void destroy(LuciObject *trash)
         case obj_iterator_t:
             /* destroy the list if possible */
             destroy(trash->value.iterator.list);
+            break;
+
+        case obj_func_t:
+            trash->value.func.deleter(trash->value.func.frame);
             break;
 
         default:

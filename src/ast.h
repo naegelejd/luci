@@ -104,7 +104,7 @@ typedef struct
 {
     struct AstNode *param_list;
     struct AstNode *statements;
-    struct AstNode *funcname;
+    char *funcname;
 } AstFuncDef;
 
 typedef struct
@@ -160,7 +160,7 @@ AstNode *make_while_loop(AstNode *, AstNode *);
 AstNode *make_for_loop(char *, AstNode *, AstNode *);
 AstNode *make_if_else(AstNode *, AstNode *, AstNode *);
 AstNode *make_func_call(AstNode *, AstNode *);
-AstNode *make_func_def(AstNode *, AstNode *, AstNode *);
+AstNode *make_func_def(char *, AstNode *, AstNode *);
 AstNode *make_statements(AstNode *, AstNode *);
 AstNode *make_break();
 AstNode *make_continue();

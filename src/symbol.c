@@ -10,11 +10,11 @@
 #include "object.h"
 #include "symbol.h"
 
-static Symbol *symbol_new(const char *, int);
+static Symbol *symbol_new(const char *, uint32_t);
 static void *symbol_delete(Symbol *);
 
 static SymbolTable *symtable_insert(SymbolTable *, Symbol *);
-static SymbolTable *symtable_resize(SymbolTable *, int);
+static SymbolTable *symtable_resize(SymbolTable *, uint32_t);
 static Symbol *find_symbol_by_name(SymbolTable *, const char *);
 
 static uint32_t hash_symbol(SymbolTable *, const char *);
@@ -87,7 +87,7 @@ static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
     return hashfuncs[0](name) % NBUCKETS[symtable->bscale];
 }
 
-static Symbol *symbol_new(const char *str, int index)
+static Symbol *symbol_new(const char *str, uint32_t index)
 {
     Symbol *new = malloc(sizeof(*new));
     new->name = str;
@@ -150,7 +150,7 @@ static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
     return symtable;
 }
 
-static SymbolTable *symtable_resize(SymbolTable *symtable, int bucketscale)
+static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
 {
     /* no shrink implementation defined */
     if (symtable->bscale >= bucketscale)
@@ -161,7 +161,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, int bucketscale)
 
     /* save the old attrs */
     Symbol **old_symbols = symtable->symbols;
-    int old_bscale = symtable->bscale;
+    uint32_t old_bscale = symtable->bscale;
 
     /* allocate new entry array and set bucket count */
     symtable->symbols = calloc(NBUCKETS[bucketscale],
@@ -192,7 +192,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, int bucketscale)
 /**
  * Allocates and returns a new symbol table.
  */
-SymbolTable *symtable_new(int bucketscale)
+SymbolTable *symtable_new(uint32_t bucketscale)
 {
     SymbolTable *symtable = calloc(1, sizeof(*symtable));
     if (!symtable)
@@ -278,23 +278,27 @@ static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)
 }
 
 /**
- * Creates new symbol if it doesn't already exist.
- * Returns the ID of the symbol.
+ * Returns the ID of the symbol
+ * if SYMCREATE flag is passed, a new symbol
+ * will be created if it doesn't already exist
  */
-int symbol_id(SymbolTable *symtable, const char *name)
+int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
 {
-    Symbol *new_symbol = NULL;
-    uint32_t hash;
+    Symbol *sym = NULL;
 
-    if (!symtable)
+    if (!symtable) {
         die("Symbol Table not allocated\n");
+    }
 
     /* Try to find symbol in table */
-    new_symbol = find_symbol_by_name(symtable, name);
+    sym = find_symbol_by_name(symtable, name);
     /* if found, return it's index (ID) */
-    if (new_symbol)
-        return new_symbol->index;
-
+    if (sym) {
+        return sym->index;
+    } else if (!(flags & SYMCREATE)) {
+        /* don't create symbol, return -1 */
+        return -1;
+    }
     /* otherwise, we need to create the symbol and insert it */
 
     /* Increase count of Symbol/Object pairs */
@@ -303,17 +307,19 @@ int symbol_id(SymbolTable *symtable, const char *name)
         symtable->size <<= 1;
         symtable->objects = realloc(symtable->objects,
                 symtable->size * sizeof(*(symtable->objects)));
-        if (!symtable->objects)
+        if (!symtable->objects) {
             die("Could not increase symbol table object array size\n");
+        }
         int i;
-        for (i = symtable->count; i < symtable->size; i++)
+        for (i = symtable->count; i < symtable->size; i++) {
             symtable->objects[i] = NULL;
+        }
     }
     /* create the new symbol */
-    new_symbol = symbol_new(name, symtable->count);
+    sym = symbol_new(name, symtable->count);
 
     /* insert the new symbol */
-    symtable_insert(symtable, new_symbol);
+    symtable_insert(symtable, sym);
 
     /* return symbol's ID (object array index) */
     return symtable->count++;
@@ -323,7 +329,7 @@ int symbol_id(SymbolTable *symtable, const char *name)
  * Replaces the object in the table pertaining to id
  * Returns old object if it exists
  */
-void symtable_set(SymbolTable *symtable, LuciObject *obj, int id)
+void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
 {
     LuciObject *old = NULL;
 
@@ -340,7 +346,7 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, int id)
 /**
  * Returns the object in the table pertaining to id
  */
-LuciObject *symtable_get(SymbolTable *symtable, int id)
+LuciObject *symtable_get(SymbolTable *symtable, uint32_t id)
 {
     if ((id < 0) || (id >= symtable->count))
         die("Symbol id out of bounds\n");

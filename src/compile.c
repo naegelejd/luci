@@ -16,8 +16,10 @@
 static void _compile(AstNode *, Program *);
 static uint32_t push_instr(Program *, Opcode, int);
 static uint32_t put_instr(Program *, uint32_t, Opcode, int);
+
 static void add_new_loop(Program *prog, uint8_t loop_type);
 static void back_patch_loop(Program *prog, uint32_t start, uint32_t end);
+
 
 /**
  * Public entry point for compilation.
@@ -27,30 +29,32 @@ static void back_patch_loop(Program *prog, uint32_t start, uint32_t end);
  */
 Program * compile_ast(AstNode *root)
 {
-    if (!root)
+    int i, id;
+    LuciObject *o;
+
+    if (!root) {
         die("Nothing to compile\n");
+    }
 
     Program *prog = program_new();
 
     /* Add builtin symbols to symbol table */
-    int i, id;
-    LuciObject *o;
     extern struct func_def builtins[];  /* defined in builtins.c */
 
     for (i = 0; builtins[i].name != 0; i++) {
         /* create object for builtin function */
-        o = create_object(obj_func_t);
-        o->value.func = builtins[i].func;
+        o = create_object(obj_libfunc_t);
+        o->value.libfunc = builtins[i].func;
         /* add the symbol and function object to the symbol table */
-        id = symbol_id(prog->symtable, builtins[i].name);
-        symtable_set(prog->symtable, o, id);
+        id = symtable_id(prog->locals, builtins[i].name, SYMCREATE);
+        symtable_set(prog->locals, o, id);
     }
 
     init_variables();
     extern struct var_def globals[];
     for (i = 0; globals[i].name != 0; i++) {
-        id = symbol_id(prog->symtable, globals[i].name);
-        symtable_set(prog->symtable, globals[i].object, id);
+        id = symtable_id(prog->locals, globals[i].name, SYMCREATE);
+        symtable_set(prog->locals, globals[i].object, id);
     }
 
     /* compile the AST */
@@ -65,12 +69,12 @@ Program * compile_ast(AstNode *root)
 Program *program_new(void)
 {
     Program *prog = alloc(sizeof(*prog));
-    prog->count = 0;
+    prog->ip = 0;
     prog->size = BASE_INSTR_COUNT;
     prog->instructions = alloc(prog->size *
             sizeof(*prog->instructions));
 
-    prog->symtable = symtable_new(BASE_SYMTABLE_SCALE);
+    prog->locals = symtable_new(BASE_SYMTABLE_SCALE);
     prog->cotable = cotable_new(BASE_COTABLE_SIZE);
 
     prog->current_loop = NULL;
@@ -84,7 +88,7 @@ void program_delete(Program *prog)
     int i = 0;
     Instruction *instructions = prog->instructions;
     free(prog->instructions);
-    symtable_delete(prog->symtable);
+    symtable_delete(prog->locals);
     cotable_delete(prog->cotable);
     free(prog);
 }
@@ -100,15 +104,15 @@ static uint32_t push_instr(Program *prog, Opcode op, int arg)
         die("Instruction list not allocated. Can't add instruction\n");
 
     /* Reallocate the program's instruction list if necessary */
-    if (prog->count + 1 > prog->size) {
+    if (prog->ip + 1 > prog->size) {
         prog->size <<= 1;
         prog->instructions = realloc(prog->instructions,
                 prog->size * sizeof(*(prog->instructions)));
     }
 
-    count = put_instr(prog, prog->count, op, arg);
-    old_addr = prog->count;
-    prog->count += count;
+    count = put_instr(prog, prog->ip, op, arg);
+    old_addr = prog->ip;
+    prog->ip += count;
 
     return old_addr;
 }
@@ -116,7 +120,7 @@ static uint32_t push_instr(Program *prog, Opcode op, int arg)
 static uint32_t put_instr(Program *prog, uint32_t addr,
         Opcode op, int arg) {
 
-    if (addr < 0 || addr > prog->count)
+    if (addr < 0 || addr > prog->ip)
         die("Address out of bounds\n");
 
     Instruction instr = (op << 11);
@@ -195,9 +199,26 @@ static void _compile(AstNode *node, Program *prog)
     switch (node->type)
     {
         case ast_stmnts_t:
+        {
+            /* compile all statements in 2 passes :/
+             * 1. put all function names in symbol table
+             * 2. compile all else
+             */
             for (i = 0; i < node->data.statements.count; i++) {
                 tmp = node->data.statements.statements[i];
+
+                if (tmp->type == ast_func_t) {
+                    /* stuff function definition names into symbol table */
+                    a = symtable_id(prog->locals,
+                            tmp->data.funcdef.funcname, SYMCREATE);
+                }
+            }
+
+            for (i = 0; i < node->data.statements.count; i++) {
+                tmp = node->data.statements.statements[i];
+                /* compile the statements */
                 _compile(tmp, prog);
+
                 /* statements that leave a value on the stack (i.e.
                  * expressions lacking an assignment, or void function
                  * calls) need a post-POP statement */
@@ -208,12 +229,46 @@ static void _compile(AstNode *node, Program *prog)
                 }
             }
             break;
+        }
 
         case ast_func_t:
-            _compile(node->data.funcdef.param_list, prog);
-            _compile(node->data.funcdef.statements, prog);
-            _compile(node->data.funcdef.funcname, prog);
+        {
+            printf("Compiling function\n");
+            AstNode *params = node->data.funcdef.param_list;
+            AstNode *id_string = NULL;
+
+            /* Create new frame for function scope */
+            Program *function = program_new();
+            /* create globals table for new frame */
+            function->globals = prog->locals;
+
+            for (i = 0; i < params->data.list.count; i++) {
+                id_string = params->data.list.items[i];
+                /* add arg symbol to symbol table */
+                a = symtable_id(function->locals, id_string->data.s, SYMCREATE);
+                push_instr(function, STORE, a);
+            }
+            _compile(node->data.funcdef.statements, function);
+
+            /* add a RETURN to end of function if necessary */
+            if (function->instructions[function->ip - 1] != RETURN) {
+                push_instr(function, PUSHNULL, 0);
+                push_instr(function, RETURN, 0);
+            }
+
+            /* create function object */
+            obj = create_object(obj_func_t);
+            obj->value.func.frame = function;
+            obj->value.func.deleter = program_delete;
+            /* store function object in symbol table */
+            a = symtable_id(prog->locals,
+                    node->data.funcdef.funcname, SYMCREATE);
+            symtable_set(prog->locals, obj, a);
+
+            print_instructions(function);
+
             break;
+        }
 
         case ast_list_t:
             /* compile list items in reverse order */
@@ -228,7 +283,7 @@ static void _compile(AstNode *node, Program *prog)
         case ast_while_t:
             add_new_loop(prog, LOOP_TYPE_WHILE);
             /* store addr of start of while */
-            addr1 = prog->count;
+            addr1 = prog->ip;
             /* compile test expression */
             _compile(node->data.while_loop.cond, prog);
             /* push a bogus jump instr */
@@ -238,9 +293,9 @@ static void _compile(AstNode *node, Program *prog)
             /* add a jump to beginning of while loop */
             push_instr(prog, JUMP, addr1);
             /* change bogus instr to conditional jump */
-            put_instr(prog, addr2, JUMPZ, prog->count);
+            put_instr(prog, addr2, JUMPZ, prog->ip);
 
-            back_patch_loop(prog, addr1, prog->count);
+            back_patch_loop(prog, addr1, prog->ip);
             break;
 
         case ast_for_t:
@@ -250,20 +305,20 @@ static void _compile(AstNode *node, Program *prog)
             /* Make Iterator */
             push_instr(prog, MKITER, 0);
             /* store addr of start of for-loop */
-            addr1 = prog->count;
+            addr1 = prog->ip;
             /* push bogus jump for getting iterator->next */
             addr2 = push_instr(prog, JUMP, -1);
             /* store iterator output in symbol */
-            a = symbol_id(prog->symtable, node->data.for_loop.iter);
+            a = symtable_id(prog->locals, node->data.for_loop.iter, SYMCREATE);
             push_instr(prog, STORE, a);
             /* compile body of for-loop */
             _compile(node->data.for_loop.statements, prog);
             /* add jump to beginning of for-loop */
             push_instr(prog, JUMP, addr1);
             /* change bogus jump to a JUMPI (get iter->next or jump) */
-            put_instr(prog, addr2, ITERJUMP, prog->count);
+            put_instr(prog, addr2, ITERJUMP, prog->ip);
 
-            back_patch_loop(prog, addr1, prog->count);
+            back_patch_loop(prog, addr1, prog->ip);
             break;
 
         case ast_if_t:
@@ -278,15 +333,15 @@ static void _compile(AstNode *node, Program *prog)
                 /* add bogus instruction number 2 */
                 addr2 = push_instr(prog, JUMP, -1);
                 /* change bogus instr 1 to a conditional jump */
-                put_instr(prog, addr1, JUMPZ, prog->count);
+                put_instr(prog, addr1, JUMPZ, prog->ip);
                 /* compile FALSE statements */
                 _compile(node->data.if_else.elstatements, prog);
                 /* change bogus instr 2 to a jump */
-                put_instr(prog, addr2, JUMP, prog->count);
+                put_instr(prog, addr2, JUMP, prog->ip);
             }
             else {
                 /* change bogus instr 1 to a conditional jump */
-                put_instr(prog, addr1, JUMPZ, prog->count);
+                put_instr(prog, addr1, JUMPZ, prog->ip);
             }
             break;
 
@@ -303,14 +358,14 @@ static void _compile(AstNode *node, Program *prog)
             while (tmp->data.assignment.right->type == ast_assign_t) {
                 push_instr(prog, DUP, 0);
                 /* get id of left-hand symbol */
-                a = symbol_id(prog->symtable, tmp->data.assignment.name);
+                a = symtable_id(prog->locals, tmp->data.assignment.name, SYMCREATE);
                 /* add a STORE instruction */
                 push_instr(prog, STORE, a);
 
                 tmp = tmp->data.assignment.right;
             }
             /* get id of final left-hand symbol */
-            a = symbol_id(prog->symtable, tmp->data.assignment.name);
+            a = symtable_id(prog->locals, tmp->data.assignment.name, SYMCREATE);
             /* add final STORE instruction */
             push_instr(prog, STORE, a);
             break;
@@ -351,9 +406,18 @@ static void _compile(AstNode *node, Program *prog)
             break;
 
         case ast_id_t:
-            a = symbol_id(prog->symtable, node->data.id.val);
-            push_instr(prog, LOADS, a);
-            /* yak("LOADS %s\n", node->data.id.val); */
+            a = symtable_id(prog->locals, node->data.id.val, SYMFIND);
+            if (a < 0) {
+                a = symtable_id(prog->globals, node->data.id.val, SYMFIND);
+                if (a < 0) {
+                    die("%s undefined.\n", node->data.id.val);
+                }
+                /* else */
+                push_instr(prog, LOADG, a);
+            } else {
+                push_instr(prog, LOADS, a);
+            }
+
             break;
 
         case ast_string_t:
@@ -378,6 +442,15 @@ static void _compile(AstNode *node, Program *prog)
             a = constant_id(prog->cotable, obj);
             push_instr(prog, LOADK, a);
             /* yak("LOADK %ld\n", constant.val.i); */
+            break;
+
+        case ast_return_t:
+            if (node->data.return_stmt.expr == NULL) {
+                push_instr(prog, PUSHNULL, 0);
+            } else {
+                _compile(node->data.return_stmt.expr, prog);
+            }
+            push_instr(prog, RETURN, 0);
             break;
 
         case ast_break_t:
@@ -435,16 +508,18 @@ static void _compile(AstNode *node, Program *prog)
     return;
 }
 
-
 static char *instruction_names[] = {
     "NOP",
     "POP",
+    "PUSHNULL",
     "LOADK",
     "LOADS",
+    "LOADG",
     "DUP",
     "STORE",
     "BINOP",
     "CALL",
+    "RETURN",
     "MKLIST",
     "LISTGET",
     "LISTPUT",
@@ -465,7 +540,7 @@ void print_instructions(Program *prog)
     int i, a, instr;
     const char *name = NULL;
 
-    for (i = 0; i < prog->count; i ++) {
+    for (i = 0; i < prog->ip; i ++) {
         a = prog->instructions[i] & 0x7FF;
         instr = prog->instructions[i] >> 11;
 

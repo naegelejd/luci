@@ -181,14 +181,14 @@ AstNode *make_func_call(AstNode *name, AstNode *arglist)
     return result;
 }
 
-AstNode *make_func_def(AstNode *name, AstNode *param_list,
+AstNode *make_func_def(char *name, AstNode *param_list,
         AstNode *statements)
 {
     AstNode *result = create_node(ast_func_t);
     result->data.funcdef.funcname = name;
     result->data.funcdef.param_list = param_list;
     result->data.funcdef.statements = statements;
-    yak("Made function definition node with name\n", name);
+    yak("Made function definition node with name %s\n", name);
     return result;
 }
 
@@ -266,9 +266,10 @@ int print_ast_graph(AstNode *root, int id)
             }
             break;
         case ast_func_t:
-            printf("%d [label=\"func def\"]\n", rID);
-            printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.funcdef.funcname, id);
+            printf("%d [label=\"func def: %s\"]\n", rID,
+                    root->data.funcdef.funcname);
+            //printf("%d -> %d\n", rID, ++id);
+            //id = print_ast_graph(root->data.funcdef.funcname, id);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.funcdef.param_list, id);
             printf("%d -> %d\n", rID, ++id);
@@ -385,7 +386,7 @@ void destroy_tree(AstNode *root)
             free(root->data.statements.statements);
             break;
         case ast_func_t:
-            destroy_tree(root->data.funcdef.funcname);
+            free(root->data.funcdef.funcname);
             destroy_tree(root->data.funcdef.param_list);
             destroy_tree(root->data.funcdef.statements);
             break;

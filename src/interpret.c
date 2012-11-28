@@ -58,19 +58,19 @@ void eval(Program *prog)
 
             case LOADK:
                 yak("LOADK %d\n", a);
-                x = cotable_get(prog->cotable, a);
+                x = cotable_get(prog->ctable, a);
                 st_push(&lstack, x);
                 break;
 
             case LOADS:
                 yak("LOADS %d\n", a);
-                x = symtable_get(prog->locals, a);
+                x = symtable_get(prog->ltable, a);
                 st_push(&lstack, x);
                 break;
 
             case LOADG:
                 yak("LOADG %d\n", a);
-                x = symtable_get(prog->globals, a);
+                x = symtable_get(prog->gtable, a);
                 st_push(&lstack, x);
                 break;
 
@@ -86,7 +86,7 @@ void eval(Program *prog)
                 yak("STORE %d\n", a);
                 /* pop object off of stack */
                 x = st_pop(&lstack);
-                symtable_set(prog->locals, x, a);
+                symtable_set(prog->ltable, x, a);
                 break;
 
             case BINOP:

@@ -46,27 +46,45 @@ typedef uint16_t Instruction;
 #define LOOP_TYPE_FOR   1
 
 
-struct _loop_jump {
+struct loop_jump {
     uint32_t addr;
-    struct _loop_jump *next;
+    struct loop_jump *next;
 };
 
-struct _loop_list {
+struct loop_list {
     uint8_t loop_type;      /* possible types defined above */
-    struct _loop_jump *breaks;
-    struct _loop_jump *continues;
-    struct _loop_list *parent;
+    struct loop_jump *breaks;
+    struct loop_jump *continues;
+    struct loop_list *parent;
 };
 
 typedef struct _program {
     uint32_t ip;    /* (compilation) instr count. (interp) instr pointer */
     uint32_t size;   /* size of array allocated for instructions */
     Instruction *instructions;
-    SymbolTable *locals;
-    SymbolTable *globals;
-    ConstantTable *cotable;
-    struct _loop_list *current_loop;
+    SymbolTable *ltable;
+    SymbolTable *gtable;
+    ConstantTable *ctable;
+    struct loop_list *current_loop;
 } Program;
+
+typedef struct _frame {
+    uint32_t ip;
+    Instruction *instructions;
+    LuciObject *locals;
+    LuciObject *globals;
+    LuciObject *constants;
+} Frame;
+
+typedef struct _compile_state {
+    uint32_t instr_count;
+    uint32_t instr_alloc;
+    Instruction *instructions;
+    struct loop_list *current_loop;
+    SymbolTable *ltable;
+    SymbolTable *gtable;
+    ConstantTable *ctable;
+} CompileState;
 
 
 Program * compile_ast(AstNode *);

@@ -2,7 +2,9 @@
  * See Copyright Notice in luci.h
  */
 
-#include "stdlib.h"
+#include <stdlib.h>
+#include <string.h>
+
 #include "common.h"
 #include "object.h"
 #include "constant.h"
@@ -14,6 +16,7 @@ ConstantTable *cotable_new(int size)
     cotable->count = 0;
     cotable->size = size;
     cotable->objects = alloc(cotable->size * sizeof(*cotable->objects));
+    cotable->owns_objects = 1;
     return cotable;
 }
 
@@ -22,23 +25,26 @@ ConstantTable *cotable_new(int size)
  */
 void cotable_delete(ConstantTable *cotable)
 {
-    int i;
-    /* destroy all constant objects */
-    for (i = 0; i < cotable->count; i ++)
-        destroy(cotable->objects[i]);
-    free(cotable->objects);
-    cotable->objects = NULL;
+    /* only deallocate objects array if cotable still has ownership */
+    if (cotable->owns_objects > 0) {
+        /* destroy all constant objects */
+        int i;
+        for (i = 0; i < cotable->count; i ++)
+            destroy(cotable->objects[i]);
+        free(cotable->objects);
+        cotable->objects = NULL;
+    }
     free(cotable);
     cotable = NULL;
 
-    return ;
+    return;
 }
 
 /**
  * Returns the ID of the constant value
  * Inserts object into table if it is not already present
  */
-int constant_id(ConstantTable *cotable, LuciObject *const_obj)
+uint32_t constant_id(ConstantTable *cotable, LuciObject *const_obj)
 {
     if (const_obj == NULL)
         die("Can't index a NULL constant\n");
@@ -54,14 +60,13 @@ int constant_id(ConstantTable *cotable, LuciObject *const_obj)
     return cotable->count++;
 }
 
-/**
- * Returns a COPY of the constant object
- */
-LuciObject *cotable_get(ConstantTable *cotable, int id)
+LuciObject **cotable_get_objects(ConstantTable *cotable)
 {
-    if ((id < 0) || (id >= cotable->count))
-        die("Constant id out of bounds\n");
+    if (!cotable) {
+        return NULL;
+    }
 
-    /* return a copy of the constant */
-    return copy_object(cotable->objects[id]);
+    cotable->owns_objects = 0;
+
+    return cotable->objects;
 }

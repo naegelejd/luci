@@ -3,7 +3,6 @@
  */
 
 #include <stdio.h>
-#include "object.h"
 #include "stack.h"
 
 void st_init(Stack *S)
@@ -11,17 +10,17 @@ void st_init(Stack *S)
     S->top = 0;
 }
 
-void st_push(Stack *S, LuciObject *obj)
+void st_push(Stack *S, void *obj)
 {
     S->impl[(S->top)++] = obj;
 }
 
-LuciObject *st_pop(Stack *S)
+void *st_pop(Stack *S)
 {
     return (S->impl[--(S->top)]);
 }
 
-LuciObject *st_peek(Stack *S)
+void *st_peek(Stack *S)
 {
     return (S->impl[S->top - 1]);
 }

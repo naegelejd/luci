@@ -8,15 +8,13 @@
 #include "common.h"
 #include "object.h"
 #include "interpret.h"
-#include "symbol.h"
-#include "constant.h"
 #include "stack.h"
 #include "compile.h"
 #include "binop.h"
 
 #define EVER ;;
 
-void eval(Program *prog)
+void eval(Frame *frame)
 {
     LuciObject *x = NULL, *y = NULL, *z = NULL;
     Instruction instr = 0;
@@ -32,10 +30,10 @@ void eval(Program *prog)
     int i = 0;
 
     for(EVER) {
-        instr = prog->instructions[ip++];
+        instr = frame->instructions[ip++];
         if (instr >> 11 >= JUMP) {
             /* read next instruction to build jmp address */
-            a = ((0x7FF & instr) << 16) + prog->instructions[ip++];
+            a = ((0x7FF & instr) << 16) + frame->instructions[ip++];
         } else {
             a = instr & 0x7FF;
         }
@@ -58,19 +56,22 @@ void eval(Program *prog)
 
             case LOADK:
                 yak("LOADK %d\n", a);
-                x = cotable_get(prog->ctable, a);
+                x = copy_object(frame->constants[a]);
                 st_push(&lstack, x);
                 break;
 
             case LOADS:
                 yak("LOADS %d\n", a);
-                x = symtable_get(prog->ltable, a);
+                x = frame->locals[a];
                 st_push(&lstack, x);
                 break;
 
             case LOADG:
                 yak("LOADG %d\n", a);
-                x = symtable_get(prog->gtable, a);
+                x = frame->globals[a];
+                if (x == NULL) {
+                    die("Global is NULL\n");
+                }
                 st_push(&lstack, x);
                 break;
 
@@ -86,7 +87,11 @@ void eval(Program *prog)
                 yak("STORE %d\n", a);
                 /* pop object off of stack */
                 x = st_pop(&lstack);
-                symtable_set(prog->ltable, x, a);
+                if (frame->locals[a]) {
+                    decref(frame->locals[a]);
+                }
+                frame->locals[a] = x;
+                incref(x);
                 break;
 
             case BINOP:
@@ -109,16 +114,14 @@ void eval(Program *prog)
 
                 if (x->type == obj_func_t) {
                     /* save instruction pointer */
-                    prog->ip = ip;
+                    frame->ip = ip;
 
                     /* push a func frame object onto framestack */
-                    y = create_object(obj_func_t);
-                    y->value.func.frame = prog;
-                    y->value.func.deleter = program_delete;
-                    st_push(&framestack, y);
+                    st_push(&framestack, frame);
 
                     /* enable new function frame */
-                    prog = x->value.func.frame;
+                    frame = x->value.func.frame;
+
                     /* reset instruction pointer */
                     ip = 0;
 
@@ -148,11 +151,12 @@ void eval(Program *prog)
 
             case RETURN:
                 yak("RETURN\n");
-                /* pop function stack frame */
-                x = st_pop(&framestack);
-                prog = (Program *)x->value.func.frame;
-                ip = prog->ip;
-                //destroy(x);
+                /* pop function stack frame and replace active frame */
+                frame = st_pop(&framestack);
+                /* restore saved instruction pointer */
+                ip = frame->ip;
+                /* delete previously active frame */
+                /* TODO... */
                 break;
 
             case MKLIST:

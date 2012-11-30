@@ -5,20 +5,17 @@
 #ifndef STACK_H
 #define STACK_H
 
-/* include LuciObject definition */
-#include "object.h"
-
 #define STACKMAX    64
 
 typedef struct _Stack {
-    LuciObject *impl[STACKMAX];
+    void *impl[STACKMAX];
     int top;
 } Stack;
 
 void st_init(Stack *);
-void st_push(Stack *, LuciObject *);
-LuciObject *st_pop(Stack *);
-LuciObject *st_peek(Stack *);
+void st_push(Stack *, void *);
+void *st_pop(Stack *);
+void *st_peek(Stack *);
 int st_size(Stack *);
 int st_full(Stack *);
 int st_empty(Stack *);

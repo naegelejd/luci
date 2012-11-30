@@ -27,6 +27,7 @@ typedef struct symbol
 
 typedef struct symtable
 {
+    uint8_t owns_objects; /* boolean. Affects deallocation of Table */
     uint32_t count;      /* Current # of allocated symbol/object pairs */
     uint32_t bscale;     /* Index into array of bucket size options (symbol.c) */
     uint32_t collisions; /* Current # of collisions in hashtable */
@@ -42,6 +43,7 @@ SymbolTable *symtable_new(uint32_t);
 void symtable_delete(SymbolTable *);
 int symtable_id(SymbolTable *, const char *, uint8_t flags);
 void symtable_set(SymbolTable *, LuciObject *, uint32_t);
-LuciObject * symtable_get(SymbolTable *, uint32_t);
+
+LuciObject **symtable_get_objects(SymbolTable *);
 
 #endif

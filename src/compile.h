@@ -70,27 +70,32 @@ typedef struct _program {
 
 typedef struct _frame {
     uint32_t ip;
+    uint16_t nlocals;
+    uint16_t nconstants;
     Instruction *instructions;
-    LuciObject *locals;
-    LuciObject *globals;
-    LuciObject *constants;
+    LuciObject **locals;
+    LuciObject **globals;
+    LuciObject **constants;
 } Frame;
 
 typedef struct _compile_state {
     uint32_t instr_count;
     uint32_t instr_alloc;
     Instruction *instructions;
-    struct loop_list *current_loop;
     SymbolTable *ltable;
     SymbolTable *gtable;
     ConstantTable *ctable;
+    struct loop_list *current_loop;
 } CompileState;
 
 
-Program * compile_ast(AstNode *);
-Program * program_new(void);
-Program * program_init(Program *);
-void program_delete(Program *);
-void print_instructions(Program *prog);
+CompileState * CompileState_new(void);
+CompileState * CompileState_init(CompileState *);
+void CompileState_delete(CompileState *);
+
+CompileState * compile_ast(AstNode *);
+void print_instructions(CompileState *);
+
+Frame * Frame_from_CompileState(CompileState *);
 
 #endif

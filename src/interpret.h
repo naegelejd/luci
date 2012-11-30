@@ -7,6 +7,6 @@
 
 #include "compile.h"
 
-void eval (Program *prog);
+void eval (Frame *);
 
 #endif

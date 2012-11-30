@@ -214,6 +214,10 @@ SymbolTable *symtable_new(uint32_t bucketscale)
     symtable->objects = calloc(symtable->size, sizeof(*(symtable->objects)));
     if (!symtable->objects)
         die("Error allocating symtable objects array\n");
+
+    /* Set bit which identifies that this table owns the objects array */
+    symtable->owns_objects = 1;
+
     yak("Allocated symbol table objects array\n");
 
     return symtable;
@@ -239,17 +243,21 @@ void symtable_delete(SymbolTable *symtable)
             symbol_delete(prev);
         }
     }
-    /* deallocate all objects in table */
-    for (i = 0; i < symtable->count; i ++) {
-        if (symtable->objects[i]) {
-            decref(symtable->objects[i]);
+
+    /* only deallocate objects if the table still owns the array */
+    if (symtable->owns_objects > 0) {
+        /* deallocate all objects in table */
+        for (i = 0; i < symtable->count; i ++) {
+            if (symtable->objects[i]) {
+                decref(symtable->objects[i]);
+            }
         }
+        free(symtable->objects);
+        symtable->objects = NULL;
     }
 
     free(symtable->symbols);
     symtable->symbols = NULL;
-    free(symtable->objects);
-    symtable->objects = NULL;
     free(symtable);
     symtable = NULL;
 
@@ -343,13 +351,14 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
     incref(obj);
 }
 
-/**
- * Returns the object in the table pertaining to id
- */
-LuciObject *symtable_get(SymbolTable *symtable, uint32_t id)
+LuciObject **symtable_get_objects(SymbolTable *symtable)
 {
-    if ((id < 0) || (id >= symtable->count))
-        die("Symbol id out of bounds\n");
+    if (!symtable) {
+        return NULL;
+    }
 
-    return symtable->objects[id];
+    symtable->owns_objects = 0;
+
+    return symtable->objects;
 }
+

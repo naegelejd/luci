@@ -4,6 +4,10 @@
 #include "common.h"
 #include "object.h"
 
+/* temporary */
+#include "compile.h" /* for destroying function object FOR NOW */
+
+
 LuciObject *create_object(int type)
 {
     LuciObject *ret = alloc(sizeof(*ret));
@@ -126,6 +130,7 @@ void destroy(LuciObject *trash)
 
     if (trash->refcount > 0) {
         /* Attempts to destroy a referenced obj are ignored */
+        yak("Rejecting destruction of object (refcount %d)\n", trash->refcount);
         return;
     }
 
@@ -159,7 +164,7 @@ void destroy(LuciObject *trash)
             break;
 
         case obj_func_t:
-            trash->value.func.deleter(trash->value.func.frame);
+            Frame_delete(trash->value.func.frame);
             break;
 
         default:

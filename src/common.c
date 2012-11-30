@@ -19,13 +19,19 @@ extern yydebug();
 static int VERBOSE = 0;
 
 static AstNode *root_node = NULL;
-static Program *prog = NULL;
+static CompileState *cs = NULL;
+static Frame *gf = NULL;
 
 static void cleanup(void)
 {
-    /* if the Program is still allocated */
-    if (prog) {
-        program_delete(prog);
+    /* If global compile state still exists */
+    if (cs) {
+        CompileState_delete(cs);
+    }
+
+    /* If global Frame still exists */
+    if (gf) {
+        Frame_delete(gf);
     }
 
     /* destroy the AST */
@@ -49,11 +55,11 @@ int begin(int verbose, int execute, int compile, int graph)
     }
 
     /* Compile the AST */
-    prog = compile_ast(root_node);
+    cs = compile_ast(root_node);
 
     /* Print the bytecode */
     if (compile) {
-        print_instructions(prog);
+        print_instructions(cs);
     }
 
     /* Print a DOT graph representation */
@@ -66,7 +72,8 @@ int begin(int verbose, int execute, int compile, int graph)
 
     /* Execute the bytecode */
     if (execute) {
-        eval(prog);
+        gf = Frame_from_CompileState(cs);
+        eval(gf);
     }
 
     cleanup();

@@ -1,7 +1,8 @@
-print("started calling functions");
-
-def say_hello(to, whom) {
-    print(to, whom);
+def say_hello(to, from) {
+    msg1 = "To: " + to;
+    msg2 = "From: " + from;
+    print(msg1);
+    print(msg2);
 }
 
 def this_can_see_globals() {
@@ -13,10 +14,26 @@ def but_locals_take_precedence(something) {
     return e;
 }
 
-say_hello("Hello", "World");
+def sum(a, b) {
+    return a + b;
+}
+
+def foo(a, b, c) {
+    print(a, b, c);
+}
+
+def area(r) {
+    return pi * r ** 2;
+}
+
+
+say_hello("Joe", "Chelsea");
 print(this_can_see_globals());
-say_hello("Goodbye", "Joe");
+print(e, but_locals_take_precedence(3.14));
 
-print(e, but_locals_take_precedence(3.14), e);
+print(sum(42, 57));
 
-print("finished calling functions");
+foo(1, 2, 3);
+foo("hi", "bye", "seeya");
+
+print(area(2));

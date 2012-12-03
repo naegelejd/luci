@@ -4,7 +4,6 @@
 #include <stdio.h>  /* for FILE */
 #include <stdint.h>
 
-struct _Stack;
 
 /* initial allocated size of a new List */
 #define INIT_LIST_SIZE 32
@@ -50,7 +49,7 @@ typedef union {
         void *frame;
         void (*deleter)(void *);
     } func;
-    struct LuciObject * (*libfunc)(struct _Stack *, int);
+    struct LuciObject * (*libfunc)(struct LuciObject **, int);
 } LuciOVal;
 
 /* LuciFunction is a type of function that returns a LuciObject * */

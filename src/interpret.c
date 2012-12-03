@@ -16,19 +16,23 @@
 
 void eval(Frame *frame)
 {
-    LuciObject *x = NULL, *y = NULL, *z = NULL;
+    LuciObject* x = NULL, *y = NULL, *z = NULL;
+    LuciObject* lfargs[MAX_LIBFUNC_ARGS];
     Instruction instr = 0;
-    int a;
-
-    Stack lstack, lframe;
-    Stack framestack;
+    Stack lstack, framestack;
     st_init(&lstack);
-    st_init(&lframe);
     st_init(&framestack);
 
+    int a;
     int ip = 0;
     int i = 0;
 
+    for (i = 0; i < MAX_LIBFUNC_ARGS; i++) {
+        lfargs[i] = NULL;
+    }
+    i = 0;
+
+    /* Begin interpreting instructions */
     for(EVER) {
         instr = frame->instructions[ip++];
         if (instr >> 11 >= JUMP) {
@@ -108,10 +112,7 @@ void eval(Frame *frame)
                 yak("CALL %d\n", a);
                 x = st_pop(&lstack);    /* function object */
 
-                if (x == NULL) {
-                    printf("eff\n");
-                }
-
+                /* setup user-defined function */
                 if (x->type == obj_func_t) {
                     /* save instruction pointer */
                     frame->ip = ip;
@@ -119,8 +120,24 @@ void eval(Frame *frame)
                     /* push a func frame object onto framestack */
                     st_push(&framestack, frame);
 
-                    /* enable new function frame */
-                    frame = x->value.func.frame;
+                    /* activate a copy of the function frame */
+                    frame = Frame_copy(x->value.func.frame);
+
+                    /* check that the # of arguments equals the # of parameters */
+                    if (frame->nparams > a) {
+                        die("Missing arguments to function.\n");
+                    } else if (frame->nparams < a) {
+                        die("Too many arguments to function.\n");
+                    }
+
+                    /* pop arguments and push COPIES into locals */
+                    for (i = 0; i < a; i++) {
+                        y = st_pop(&lstack);
+                        z = copy_object(y);
+                        incref(z);
+                        frame->locals[i] = z;
+                        destroy(y);
+                    }
 
                     /* reset instruction pointer */
                     ip = 0;
@@ -128,20 +145,31 @@ void eval(Frame *frame)
                     /* carry on our merry way */
                     break;
                 }
+
+                /* call library function */
                 else if (x->type == obj_libfunc_t) {
+                    if (a >= MAX_LIBFUNC_ARGS) {
+                        die("Too many arguments to function.\n");
+                    }
+
+                    /* pop args and push into args array */
                     for (i = 0; i < a; i++) {
                         y = st_pop(&lstack);
-                        st_push(&lframe, y);
-                    }
-                    /* call func, passing frame and arg count */
-                    z = x->value.libfunc(&lframe, a);
-                    st_push(&lstack, z);    /* always push return val */
-                    /* flush stack frame */
-
-                    while (!st_empty(&lframe)) {
-                        y = st_pop(&lframe);
+                        lfargs[i] = copy_object(y);
                         destroy(y);
                     }
+
+                    /* call func, passing args array and arg count */
+                    z = x->value.libfunc(lfargs, a);
+                    st_push(&lstack, z);    /* always push return val */
+
+                    /* cleanup libfunction arguments */
+                    for (i = 0; i < a; i++) {
+                        //printf("arg %d type = %d\n", i, lfargs[i]->type);
+                        decref(lfargs[i]);
+                        lfargs[i] = NULL;
+                    }
+
                 }
                 else {
                     die("Can't call something that isn't a function\n");
@@ -151,12 +179,20 @@ void eval(Frame *frame)
 
             case RETURN:
                 yak("RETURN\n");
+
+                /* if the function is returning a local variable, we need
+                 * to copy it and push it back on the stack */
+                x = st_pop(&lstack);
+                y = copy_object(x);
+                destroy(x);
+                st_push(&lstack, y);
+
+                /* delete previously active frame (and locals) */
+                Frame_delete_copy(frame);
                 /* pop function stack frame and replace active frame */
                 frame = st_pop(&framestack);
                 /* restore saved instruction pointer */
                 ip = frame->ip;
-                /* delete previously active frame */
-                /* TODO... */
                 break;
 
             case MKLIST:

@@ -2,12 +2,11 @@
 #define BUILTIN_H
 
 #include "object.h"
-#include "stack.h"
 
 struct func_def
 {
     const char *name;
-    struct LuciObject * (*func) (Stack *, int);
+    struct LuciObject * (*func) (LuciObject **, int);
 };
 
 struct var_def
@@ -19,29 +18,29 @@ struct var_def
 /* populates the array of var_def structs with valid LuciObjects */
 void init_variables(void);
 
-LuciObject *luci_help(Stack *, int);
-LuciObject *luci_dir(Stack *, int);
-LuciObject *luci_print(Stack *, int);
-LuciObject *luci_readline(Stack *, int);
-LuciObject *luci_typeof(Stack *, int);
-LuciObject *luci_assert(Stack *, int);
+LuciObject *luci_help(LuciObject **, int);
+LuciObject *luci_dir(LuciObject **, int);
+LuciObject *luci_print(LuciObject **, int);
+LuciObject *luci_readline(LuciObject **, int);
+LuciObject *luci_typeof(LuciObject **, int);
+LuciObject *luci_assert(LuciObject **, int);
 
-LuciObject *luci_cast_int(Stack *, int);
-LuciObject *luci_cast_float(Stack *, int);
-LuciObject *luci_cast_str(Stack *, int);
+LuciObject *luci_cast_int(LuciObject **, int);
+LuciObject *luci_cast_float(LuciObject **, int);
+LuciObject *luci_cast_str(LuciObject **, int);
 
-LuciObject *luci_fopen(Stack *, int);
-LuciObject *luci_fclose(Stack *, int);
-LuciObject *luci_fread(Stack *, int);
-LuciObject *luci_fwrite(Stack *, int);
-LuciObject *luci_flines(Stack *, int);
+LuciObject *luci_fopen(LuciObject **, int);
+LuciObject *luci_fclose(LuciObject **, int);
+LuciObject *luci_fread(LuciObject **, int);
+LuciObject *luci_fwrite(LuciObject **, int);
+LuciObject *luci_flines(LuciObject **, int);
 
-LuciObject *luci_range(Stack *, int);
-LuciObject *luci_sum(Stack *, int);
-LuciObject *luci_len(Stack *, int);
-LuciObject *luci_max(Stack *, int);
-LuciObject *luci_min(Stack *, int);
+LuciObject *luci_range(LuciObject **, int);
+LuciObject *luci_sum(LuciObject **, int);
+LuciObject *luci_len(LuciObject **, int);
+LuciObject *luci_max(LuciObject **, int);
+LuciObject *luci_min(LuciObject **, int);
 
-LuciObject *get_list_node(LuciObject *list, int index);
+//LuciObject *get_list_node(LuciObject *list, int index);
 
 #endif

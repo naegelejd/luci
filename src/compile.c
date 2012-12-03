@@ -242,7 +242,7 @@ static void compile_func_call(AstNode *node, CompileState *cs)
 
 static void compile_func_def(AstNode *node, CompileState *cs)
 {
-    int i, a;
+    int i, a, nparams;
     AstNode *params = node->data.funcdef.param_list;
     AstNode *id_string = NULL;
     LuciObject *obj = NULL;
@@ -253,11 +253,13 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     /* create globals table for new frame */
     func_cs->gtable = cs->ltable;
 
-    for (i = 0; i < params->data.list.count; i++) {
+    nparams = params->data.list.count;
+    /* add each parameter to symbol table */
+    for (i = 0; i < nparams; i++) {
         id_string = params->data.list.items[i];
         /* add arg symbol to symbol table */
         a = symtable_id(func_cs->ltable, id_string->data.s, SYMCREATE);
-        push_instr(func_cs, STORE, a);
+        //push_instr(func_cs, STORE, a);
     }
     compile(node->data.funcdef.statements, func_cs);
 
@@ -269,12 +271,18 @@ static void compile_func_def(AstNode *node, CompileState *cs)
 
     /* create function object */
     obj = create_object(obj_func_t);
-    obj->value.func.frame = Frame_from_CompileState(func_cs);
-    obj->value.func.deleter = free;
+    obj->value.func.frame = Frame_from_CompileState(func_cs, nparams);
+    //obj->value.func.deleter = free;
 
     if (obj == NULL) {
         puts("NULL\n");
     }
+
+    /*
+    printf("#### %s %d ####\n", node->data.funcdef.funcname, a);
+    print_instructions(func_cs);
+    puts("############");
+    */
 
     /* Clean up CompileState created to compile this function */
     CompileState_delete(func_cs);
@@ -282,12 +290,6 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     /* store function object in symbol table */
     a = symtable_id(cs->ltable, node->data.funcdef.funcname, SYMCREATE);
     symtable_set(cs->ltable, obj, a);
-
-    /*
-    printf("#### %s %d ####\n", node->data.funcdef.funcname, a);
-    print_instructions(func_cs);
-    puts("############");
-    */
 }
 
 
@@ -479,6 +481,62 @@ CompileState * compile_ast(AstNode *root)
     return cs;
 }
 
+Frame *Frame_copy(Frame *f)
+{
+    int i;
+    Frame *copy = NULL;
+    LuciObject **locals = NULL;
+
+    if (f == NULL) {
+        die("Can't copy NULL frame\n");
+    }
+
+    copy = alloc(sizeof(*copy));
+
+    copy->nparams = f->nparams;
+    copy->nlocals = f->nlocals;
+    copy->nconstants = f->nconstants;
+    copy->ip = f->ip;
+    copy->ninstrs = f->ninstrs;
+    copy->instructions = f->instructions;
+    copy->globals = f->globals;
+    copy->constants = f->constants;
+
+    yak("Copying frame:\nnparams: %d\nnlocals: %d\nnconstants: %d\n",
+            copy->nparams, copy->nlocals, copy->nconstants);
+
+    /* Copy the frame's local variable array */
+    locals = alloc(copy->nlocals * sizeof(*locals));
+    for (i = 0; i < copy->nlocals; i++) {
+        if (f->locals[i]) {
+            /* copy the object */
+            locals[i] = copy_object(f->locals[i]);
+            /* copy the refcount. this is important because objects
+             * that have a refcount > 1 should not be deleted on calls
+             * to "destroy(obj)"
+             */
+            locals[i]->refcount = f->locals[i]->refcount;
+        }
+    }
+    copy->locals = locals;
+
+    return copy;
+}
+
+void Frame_delete_copy(Frame *f)
+{
+    int i;
+
+    if (f == NULL) {
+        die("Can't delete a NULL copied frame\n");
+    }
+
+    for (i = 0; i < f->nlocals; i++) {
+        decref(f->locals[i]);
+    }
+    free(f->locals);
+    free(f);
+}
 
 void Frame_delete(Frame *f)
 {
@@ -506,11 +564,13 @@ void Frame_delete(Frame *f)
     free(f);
 }
 
-Frame *Frame_from_CompileState(CompileState *cs)
+Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
 {
     Frame *f = alloc(sizeof(*f));
 
     f->ip = 0;
+    f->nparams = nparams;
+    f->ninstrs = cs->instr_count;
     f->instructions = cs->instructions;
     /* get locals object array and size of array */
     if (cs->ltable) {

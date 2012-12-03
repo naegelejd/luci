@@ -75,12 +75,17 @@ LuciObject *decref(LuciObject *orig)
 
 LuciObject *copy_object(LuciObject *orig)
 {
-    if (!orig)
+    int i;
+    LuciObject *copy = NULL;
+
+    if (!orig) {
 	return NULL;
+    }
 
     /* create the initial copy with only its type specified */
-    LuciObject *copy = create_object(orig->type);
-    int i;
+    /* copy will have a refcount of 0 */
+    copy = create_object(orig->type);
+
     switch(orig->type)
     {
 	case obj_int_t:

@@ -6,7 +6,6 @@
 #include "common.h"
 #include "object.h"
 #include "builtin.h"
-#include "stack.h"
 
 static int close_file(FILE *fp)
 {
@@ -88,7 +87,7 @@ const struct func_def builtins[] = {
     0, 0
 };
 
-LuciObject *luci_help(Stack *lstack, int c)
+LuciObject *luci_help(LuciObject **args, int c)
 {
     int width = 32;
 
@@ -117,7 +116,7 @@ LuciObject *luci_help(Stack *lstack, int c)
 }
 
 /* HACK: iterates over root ExecContext's symbol table */
-LuciObject *luci_dir(Stack *lstack, int c)
+LuciObject *luci_dir(LuciObject **args, int c)
 {
     /* this is a terrible way of printing all vars in the global
        namespace but it works for now.
@@ -169,12 +168,12 @@ void print_object(LuciObject *in)
     }
 }
 
-LuciObject *luci_print(Stack *lstack, int c)
+LuciObject *luci_print(LuciObject **args, int c)
 {
     int i;
     LuciObject *item = NULL;
     for (i = 0; i < c; i++) {
-	item = st_pop(lstack);
+	item = args[i];
 	print_object(item);
 	printf(" ");
     }
@@ -183,7 +182,7 @@ LuciObject *luci_print(Stack *lstack, int c)
     return NULL;
 }
 
-LuciObject *luci_readline(Stack *lstack, int c)
+LuciObject *luci_readline(LuciObject **args, int c)
 {
     size_t lenmax = 64, len = 0;
     int ch;
@@ -194,7 +193,7 @@ LuciObject *luci_readline(Stack *lstack, int c)
 	read_from = stdin;
     }
     else {
-	LuciObject *item = st_pop(lstack);
+	LuciObject *item = args[0];
 	if (item && (item->type == obj_file_t)) {
 	    yak("readline from file\n");
 	    read_from = item->value.file.ptr;
@@ -247,7 +246,7 @@ LuciObject *luci_readline(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_typeof(Stack *lstack, int c)
+LuciObject *luci_typeof(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing parameter to type()\n");
@@ -257,7 +256,7 @@ LuciObject *luci_typeof(Stack *lstack, int c)
     LuciObject *ret = create_object(obj_str_t);
 
     /* grab the first parameter from the param list */
-    LuciObject *item = st_pop(lstack);
+    LuciObject *item = args[0];
     if (!item) {
 	which = "None";
     }
@@ -289,13 +288,13 @@ LuciObject *luci_typeof(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_assert(Stack *lstack, int c)
+LuciObject *luci_assert(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing condition parameter to assert()\n");
     }
 
-    LuciObject *item = st_pop(lstack);
+    LuciObject *item = args[0];
 
     switch(item->type)
     {
@@ -317,13 +316,13 @@ LuciObject *luci_assert(Stack *lstack, int c)
     return NULL;
 }
 
-LuciObject *luci_cast_int(Stack *lstack, int c)
+LuciObject *luci_cast_int(LuciObject **args, int c)
 {
     LuciObject *ret = NULL;
     if (c < 1) {
 	die("Missing parameter to int()\n");
     }
-    LuciObject *item = st_pop(lstack);
+    LuciObject *item = args[0];
 
     if (!item) {
 	die("Can't cast NULL to int\n");
@@ -349,13 +348,13 @@ LuciObject *luci_cast_int(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_cast_float(Stack *lstack, int c)
+LuciObject *luci_cast_float(LuciObject **args, int c)
 {
     LuciObject *ret = NULL;
     if (c < 1) {
 	die("Missing parameter to int()\n");
     }
-    LuciObject *item = st_pop(lstack);
+    LuciObject *item = args[0];
 
     if (!item) {
 	die("Can't cast NULL to int\n");
@@ -382,14 +381,14 @@ LuciObject *luci_cast_float(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_cast_str(Stack *lstack, int c)
+LuciObject *luci_cast_str(LuciObject **args, int c)
 {
     LuciObject *ret = NULL;
     if (c < 1) {
 	die("Missing parameter to str()\n");
     }
     /* grab the first parameter from the param list */
-    LuciObject *item = st_pop(lstack);
+    LuciObject *item = args[0];
 
     /* allocate our return string object */
     ret = create_object(obj_str_t);
@@ -433,7 +432,7 @@ static int get_file_mode(const char *req_mode)
     }
 }
 
-LuciObject *luci_fopen(Stack *lstack, int c)
+LuciObject *luci_fopen(LuciObject **args, int c)
 {
     char *filename;
     char *req_mode;
@@ -444,11 +443,11 @@ LuciObject *luci_fopen(Stack *lstack, int c)
 	die("Missing parameter to open()\n");
     }
 
-    LuciObject *fname_obj = st_pop(lstack);
+    LuciObject *fname_obj = args[0];
     if (fname_obj->type != obj_str_t) {
 	die("Parameter 1 to open must be a string\n");
     }
-    LuciObject *mode_obj = st_pop(lstack);
+    LuciObject *mode_obj = args[1];
     if (mode_obj->type != obj_str_t) {
 	die("Parameter 2 to open must be a string\n");
     }
@@ -494,13 +493,13 @@ LuciObject *luci_fopen(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_fclose(Stack *lstack, int c)
+LuciObject *luci_fclose(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing parameter to close()\n");
     }
 
-    LuciObject *fobj = st_pop(lstack);
+    LuciObject *fobj = args[0];
 
     if (!(fobj->type == obj_file_t)) {
 	die("Not a file object\n");
@@ -516,13 +515,13 @@ LuciObject *luci_fclose(Stack *lstack, int c)
     return NULL;
 }
 
-LuciObject *luci_fread(Stack *lstack, int c)
+LuciObject *luci_fread(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing parameter to read()\n");
     }
 
-    LuciObject *fobj = st_pop(lstack);
+    LuciObject *fobj = args[0];
 
     if (!(fobj->type == obj_file_t)) {
 	die("Not a file object\n");
@@ -548,20 +547,20 @@ LuciObject *luci_fread(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_fwrite(Stack *lstack, int c)
+LuciObject *luci_fwrite(LuciObject **args, int c)
 {
     if (c < 2) {
 	die("Missing parameter to write()\n");
     }
 
     /* grab the FILE parameter */
-    LuciObject *fobj = st_pop(lstack);
+    LuciObject *fobj = args[0];
     if (!fobj || (fobj->type != obj_file_t)) {
 	die("Not a file object\n");
     }
 
     /* grab string parameter */
-    LuciObject *text_obj = st_pop(lstack);
+    LuciObject *text_obj = args[1];
     if (!text_obj || (text_obj->type != obj_str_t) ) {
 	die("Not a string\n");
     }
@@ -575,19 +574,19 @@ LuciObject *luci_fwrite(Stack *lstack, int c)
     return NULL;
 }
 
-LuciObject *luci_flines(Stack *lstack, int c)
+LuciObject *luci_flines(LuciObject **args, int c)
 {
     LuciObject *list = create_object(obj_list_t);
-    LuciObject *line = luci_readline(lstack, c);
+    LuciObject *line = luci_readline(args, c);
     while (line) {
 	list_append_object(list, line);
-	line = luci_readline(lstack, c);
+	line = luci_readline(args, c);
     }
 
     return list;
 }
 
-LuciObject * luci_range(Stack *lstack, int c)
+LuciObject * luci_range(LuciObject **args, int c)
 {
     int start, end, incr;
     LuciObject *first, *second, *third;
@@ -596,20 +595,20 @@ LuciObject * luci_range(Stack *lstack, int c)
 	die("Missing parameter to range()\n");
     }
 
-    first = st_pop(lstack);
+    first = args[0];
     if (first->type != obj_int_t) {
 	die("First parameter to range must be integer\n");
     }
 
     if (c > 1) {
-	second = st_pop(lstack);
+	second = args[1];
 	if (second->type != obj_int_t) {
 	    die("Second parameter to range must be integer\n");
 	}
 	start = first->value.i;
 	end = second->value.i;
 	if (c > 2) {
-	    third = st_pop(lstack);
+	    third = args[3];
 	    if (third->type != obj_int_t) {
 		die("Third parameter to range must be integer\n");
 	    }
@@ -658,13 +657,13 @@ LuciObject * luci_range(Stack *lstack, int c)
     return list;
 }
 
-LuciObject * luci_sum(Stack *lstack, int c)
+LuciObject * luci_sum(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing parameter to sum()\n");
     }
 
-    LuciObject *list = st_pop(lstack);
+    LuciObject *list = args[0];
 
     if (!list || (list->type != obj_list_t)) {
 	die("Must specify a list to calculate sum\n");
@@ -704,13 +703,13 @@ LuciObject * luci_sum(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_len(Stack *lstack, int c)
+LuciObject *luci_len(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing parameter to len()\n");
     }
 
-    LuciObject *list = st_pop(lstack);
+    LuciObject *list = args[0];
 
     if (!list || (list->type != obj_list_t)) {
 	die("Must specify a list to calculate len\n");
@@ -721,13 +720,13 @@ LuciObject *luci_len(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_max(Stack *lstack, int c)
+LuciObject *luci_max(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing parameter to max()\n");
     }
 
-    LuciObject *list = st_pop(lstack);
+    LuciObject *list = args[0];
 
     if (!list || (list->type != obj_list_t)) {
 	die("Must specify a list to calculate max\n");
@@ -770,13 +769,13 @@ LuciObject *luci_max(Stack *lstack, int c)
     return ret;
 }
 
-LuciObject *luci_min(Stack *lstack, int c)
+LuciObject *luci_min(LuciObject **args, int c)
 {
     if (c < 1) {
 	die("Missing parameter to min()\n");
     }
 
-    LuciObject *list = st_pop(lstack);
+    LuciObject *list = args[0];
 
     if (!list || (list->type != obj_list_t)) {
 	die("Must specify a list to calculate min\n");

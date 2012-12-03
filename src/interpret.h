@@ -7,6 +7,8 @@
 
 #include "compile.h"
 
+#define MAX_LIBFUNC_ARGS 256
+
 void eval (Frame *);
 
 #endif

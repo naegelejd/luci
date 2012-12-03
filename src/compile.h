@@ -69,9 +69,11 @@ typedef struct _program {
 } Program;
 
 typedef struct _frame {
-    uint32_t ip;
+    uint16_t nparams;
     uint16_t nlocals;
     uint16_t nconstants;
+    uint32_t ip;
+    uint32_t ninstrs;
     Instruction *instructions;
     LuciObject **locals;
     LuciObject **globals;
@@ -96,6 +98,9 @@ void CompileState_delete(CompileState *);
 CompileState * compile_ast(AstNode *);
 void print_instructions(CompileState *);
 
-Frame * Frame_from_CompileState(CompileState *);
+Frame * Frame_from_CompileState(CompileState *, uint16_t);
+void Frame_delete(Frame *);
+Frame * Frame_copy(Frame *);
+void Frame_delete_copy(Frame *);
 
 #endif

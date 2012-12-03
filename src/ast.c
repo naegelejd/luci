@@ -438,6 +438,8 @@ void destroy_tree(AstNode *root)
         case ast_string_t:
             free(root->data.s);
             break;
+        case ast_return_t:
+            destroy_tree(root->data.return_stmt.expr);
         default:
             break;
     }

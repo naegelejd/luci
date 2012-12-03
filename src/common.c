@@ -72,7 +72,7 @@ int begin(int verbose, int execute, int compile, int graph)
 
     /* Execute the bytecode */
     if (execute) {
-        gf = Frame_from_CompileState(cs);
+        gf = Frame_from_CompileState(cs, 0);
         eval(gf);
     }
 

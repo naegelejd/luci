@@ -109,7 +109,9 @@ func_def:
             { $$ = make_func_def($2, $4, $7); }
     ;
 
-return:     RETURN expr     { $$ = make_return($2); };
+return:     RETURN expr     { $$ = make_return($2); }
+    |       RETURN          { $$ = make_return(NULL); }
+    ;
 
 params:
         ID      { $$ = make_list_def(NULL, make_string_constant($1)); }

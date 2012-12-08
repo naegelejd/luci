@@ -3,6 +3,8 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+
+#include "luci.h"
 #include "common.h"
 #include "object.h"
 #include "builtin.h"
@@ -189,13 +191,13 @@ LuciObject *luci_readline(LuciObject **args, int c)
     FILE *read_from = NULL;
 
     if (c < 1) {
-	yak("readline from stdin\n");
+	LUCI_DEBUG("%s\n", "readline from stdin");
 	read_from = stdin;
     }
     else {
 	LuciObject *item = args[0];
 	if (item && (item->type == obj_file_t)) {
-	    yak("readline from file\n");
+	    LUCI_DEBUG("%s\n", "readline from file");
 	    read_from = item->value.file.ptr;
 	}
 	else {
@@ -222,7 +224,7 @@ LuciObject *luci_readline(LuciObject **args, int c)
 
     if (ch == EOF) {
 	free(input);
-	yak("readline at EOF, returning NULL\n");
+	LUCI_DEBUG("%s\n", "readline at EOF, returning NULL");
 	return NULL;
     }
 
@@ -241,7 +243,7 @@ LuciObject *luci_readline(LuciObject **args, int c)
     /* destroy the input buffer */
     free(input);
 
-    yak("Read line\n", ret->value.s);
+    LUCI_DEBUG("Read line\n", ret->value.s);
 
     return ret;
 }
@@ -411,7 +413,7 @@ LuciObject *luci_cast_str(LuciObject **args, int c)
 	default:
 	    break;
     }
-    yak("str() returning %s\n", ret->value.s);
+    LUCI_DEBUG("str() returning %s\n", ret->value.s);
 
     return ret;
 }
@@ -457,7 +459,7 @@ LuciObject *luci_fopen(LuciObject **args, int c)
 
     mode = get_file_mode(req_mode);
     if (mode < 0) {
-	die("Invalid file open mode: %d\n", mode);
+	die("%s\n", "Invalid mode to open()");
     }
 
     /*
@@ -487,7 +489,7 @@ LuciObject *luci_fopen(LuciObject **args, int c)
     ret->value.file.mode = mode;
     ret->value.file.size = file_length;
 
-    yak("Opened file %s of size %ld bytes with mode %s.\n",
+    LUCI_DEBUG("Opened file %s of size %ld bytes with mode %s.\n",
 	    filename, file_length, req_mode);
 
     return ret;
@@ -510,7 +512,7 @@ LuciObject *luci_fclose(LuciObject **args, int c)
     }
     /* else, probably already closed (it's NULL) */
 
-    yak("Closed file object.\n");
+    LUCI_DEBUG("%s\n", "Closed file object.");
 
     return NULL;
 }
@@ -651,7 +653,7 @@ LuciObject * luci_range(LuciObject **args, int c)
 	    item->value.i = i;
 	}
 	list_append_object(list, item);
-	/*yak("Adding new list item to list\n");*/
+	/*LUCI_DEBUG("%s\n", "Adding new list item to list");*/
     }
 
     return list;

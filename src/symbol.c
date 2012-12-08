@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+
+#include "luci.h"
 #include "common.h"
 #include "object.h"
 #include "symbol.h"
@@ -156,7 +158,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
     if (symtable->bscale >= bucketscale)
         return symtable;
 
-    yak("Resizing symtable from %d to %d\n",
+    LUCI_DEBUG("Resizing symtable from %d to %d\n",
             NBUCKETS[symtable->bscale], NBUCKETS[bucketscale]);
 
     /* save the old attrs */
@@ -197,7 +199,7 @@ SymbolTable *symtable_new(uint32_t bucketscale)
     SymbolTable *symtable = calloc(1, sizeof(*symtable));
     if (!symtable)
         die("Error allocating symbol table\n");
-    yak("Allocated symbol table\n");
+    LUCI_DEBUG("%s\n", "Allocated symbol table");
 
     if (bucketscale < 0 || bucketscale >= N_BUCKET_OPTIONS)
         die("Symbol Table scale out of bounds\n");
@@ -207,7 +209,7 @@ SymbolTable *symtable_new(uint32_t bucketscale)
             sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
         die("Error allocating symtable symbols array\n");
-    yak("Allocated symbol table symbols array\n");
+    LUCI_DEBUG("%s\n", "Allocated symbol table symbols array");
 
     /* make Symbol Table object array size = bucket count / 4 */
     symtable->size = NBUCKETS[bucketscale] >> 2;
@@ -218,7 +220,7 @@ SymbolTable *symtable_new(uint32_t bucketscale)
     /* Set bit which identifies that this table owns the objects array */
     symtable->owns_objects = 1;
 
-    yak("Allocated symbol table objects array\n");
+    LUCI_DEBUG("%s\n", "Allocated symbol table objects array");
 
     return symtable;
 }

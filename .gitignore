@@ -43,4 +43,5 @@ build/*
 obj/
 doc/
 trash/
+junk/
 

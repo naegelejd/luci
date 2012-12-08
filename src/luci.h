@@ -21,3 +21,14 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
+
+#ifdef DEBUG
+ #define LUCI_DEBUG(fmt, ...) \
+    do { \
+        fprintf(stderr, "%s:%d:%s(): " fmt, \
+                __FILE__, __LINE__, __func__, __VA_ARGS__); \
+    } while (0)
+#else
+ #define LUCI_DEBUG(fmt, ...)
+#endif
+

@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "luci.h"
+
+
 /* from parser */
 extern FILE *yyin;
 
@@ -19,7 +22,8 @@ static void help()
     puts("    -h\t\tShow help and exit");
     puts("    -v\t\tVerbose mode");
     puts("    -g\t\tPrint a Graphviz dot spec for the parsed AST");
-    puts("    -c\t\tCompile the source to bytecode (dev)");
+    puts("    -c\t\tCompile the source to a .lxc file");
+    puts("    -p\t\tShow the compiled bytecode source");
     printf("\n%s\n", version_string);
 }
 
@@ -29,6 +33,7 @@ int main(int argc, char *argv[])
     int verbose = 0;
     int execute = 1;
     int compile = 0;
+    int show = 0;
     int graph = 0;
 
     char *infilename = NULL;
@@ -51,6 +56,10 @@ int main(int argc, char *argv[])
             }
             else if (strcmp(arg, "-c") == 0) {
                 compile = 1;
+                execute = 0;
+            }
+            else if (strcmp(arg, "-c") == 0) {
+                show = 1;
                 execute = 0;
             }
             else if (strcmp(arg, "-g") == 0) {
@@ -77,13 +86,12 @@ int main(int argc, char *argv[])
     else if (!(yyin = fopen(infilename, "r"))) {
         die("Can't read from file %s\n", infilename);
     }
-    yak("Reading from %s\n", infilename? infilename : "stdin");
+    LUCI_DEBUG("Reading from %s\n", infilename? infilename : "stdin");
 
-    if (!(begin(verbose, execute, compile, graph))) {
+    if (!(begin(verbose, execute, compile, show, graph))) {
         return EXIT_FAILURE;
     }
 
 finish:
         return EXIT_SUCCESS;
 }
-

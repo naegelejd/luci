@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "luci.h"
 #include "common.h"
 #include "object.h"
 #include "compile.h"
@@ -311,7 +313,7 @@ static void compile_statements(AstNode *node, CompileState *cs)
         if (tmp->type == ast_func_t) {
             /* stuff function definition names into symbol table */
             int a = symtable_id(cs->ltable, tmp->data.funcdef.funcname, SYMCREATE);
-            yak("Stuff symbol %s (%d)\n", tmp->data.funcdef.funcname, a);
+            LUCI_DEBUG("Stuff symbol %s (%d)\n", tmp->data.funcdef.funcname, a);
         }
     }
 
@@ -502,7 +504,7 @@ Frame *Frame_copy(Frame *f)
     copy->globals = f->globals;
     copy->constants = f->constants;
 
-    yak("Copying frame:\nnparams: %d\nnlocals: %d\nnconstants: %d\n",
+    LUCI_DEBUG("Copying frame:\nnparams: %d\nnlocals: %d\nnconstants: %d\n",
             copy->nparams, copy->nlocals, copy->nconstants);
 
     /* Copy the frame's local variable array */
@@ -700,6 +702,15 @@ static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end)
     free(cur_loop);
     cs->current_loop = parent_loop;
 }
+
+char* serialize_program(Frame *globalframe)
+{
+    int i;
+    for (i = 0; i < globalframe->nlocals; i++) {
+        //print_object(globalframe->locals[i]);
+    }
+}
+
 static char *instruction_names[] = {
     "NOP",
     "POP",
@@ -727,18 +738,18 @@ static char *instruction_names[] = {
  * Prints string representations of each instruction in the CompileState.
  * Used for debugging (or fun)
  */
-void print_instructions(CompileState *cs)
+void print_instructions(Frame *f)
 {
     int i, a, instr;
     const char *name = NULL;
 
-    for (i = 0; i < cs->instr_count; i ++) {
-        a = cs->instructions[i] & 0x7FF;
-        instr = cs->instructions[i] >> 11;
+    for (i = 0; i < f->ninstrs; i ++) {
+        a = f->instructions[i] & 0x7FF;
+        instr = f->instructions[i] >> 11;
 
         /* rip out another instr if extended */
         if (instr >= JUMP) {
-            a = cs->instructions[i + 1] + (a << 16);
+            a = f->instructions[i + 1] + (a << 16);
         }
         printf("%03x: %s 0x%x\n", i, instruction_names[instr], a);
         /* increment 'i' if we just printed an extended instruction */

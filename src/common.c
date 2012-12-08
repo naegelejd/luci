@@ -16,8 +16,6 @@
 extern yyparse();
 extern yydebug();
 
-static int VERBOSE = 0;
-
 static AstNode *root_node = NULL;
 static CompileState *cs = NULL;
 static Frame *gf = NULL;
@@ -41,9 +39,8 @@ static void cleanup(void)
 }
 
 
-int begin(int verbose, int execute, int compile, int graph)
+int begin(int verbose, int execute, int compile, int show, int graph)
 {
-    VERBOSE = verbose;
 
     /*yydebug(1);*/
 
@@ -56,27 +53,36 @@ int begin(int verbose, int execute, int compile, int graph)
 
     /* Compile the AST */
     cs = compile_ast(root_node);
+    gf = Frame_from_CompileState(cs, 0);
 
-    /* Print the bytecode */
     if (compile) {
-        print_instructions(cs);
+        /* Serialize program */
+        serialize_program(gf);
     }
 
-    /* Print a DOT graph representation */
+    if (show) {
+        /* Print the bytecode */
+        print_instructions(gf);
+    }
+
     if (graph) {
+        /* Print a DOT graph representation */
         puts("digraph hierarchy {");
         puts("node [color=Green,fontcolor=Blue]");
         print_ast_graph(root_node, 0);
         puts("}");
     }
 
-    /* Execute the bytecode */
     if (execute) {
-        gf = Frame_from_CompileState(cs, 0);
+        /* Execute the bytecode */
         eval(gf);
     }
 
-    cleanup();
+    CompileState_delete(cs);
+
+    Frame_delete(gf);
+
+    destroy_tree(root_node);
 
     return 1;
 }
@@ -91,23 +97,11 @@ void *alloc(size_t size)
     return result;
 }
 
-/* AKA babble */
-void yak(const char *format, ... )
-{
-    if (VERBOSE) {
-	va_list arglist;
-
-	printf("INFO: ");
-
-	va_start(arglist, format);
-	vprintf(format, arglist);
-	va_end(arglist);
-    }
-}
-
 void die(const char* format, ... )
 {
     va_list arglist;
+
+    fflush(stdout);
 
     fprintf(stderr, "Fatal Error: ");
 
@@ -115,6 +109,6 @@ void die(const char* format, ... )
     vfprintf(stderr, format, arglist);
     va_end (arglist);
 
-    cleanup();
+    //cleanup();
     exit(1);
 }

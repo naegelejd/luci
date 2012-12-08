@@ -1,8 +1,4 @@
 Hello, World!
-Hello, World!
-Hello, World!
-Goodbye!
-Hello, World!
 Goodbye!
 Hello, World!
 Goodbye!

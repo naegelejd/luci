@@ -1,0 +1,36 @@
+#
+# Fast doubling Fibonacci algorithm
+# 2012, Joseph Naegele
+#
+# Direct port of Nayuki Minase's python implemenation
+# http://nayuki.eigenstate.org/page/fast-fibonacci-algorithms
+#
+
+def fib(n) {
+    if (n < 0) {
+        print("Negative numbers not supported");
+        return;
+    }
+    return _fib(n)[0];
+}
+
+def _fib(n) {
+    if (n == 0) {
+        return [0, 1];
+    }
+    else {
+        l = _fib(n / 2);
+        c = l[0] * (2 * l[1] - l[0]);
+        d = l[1] * l[1] + l[0] * l[0];
+        if (n % 2 == 0) {
+            return [c, d];
+        }
+        else {
+            return [d, c + d];
+        }
+    }
+}
+
+print(fib(9));
+print(fib(15));
+print(fib(23));

@@ -4,6 +4,8 @@
 #include "common.h"
 #include "binop.h"
 
+#define TYPES_MATCH(left, right) ( (left)->type == (right)->type )
+
 /* Forward declarations */
 static LuciObject *add(LuciObject *left, LuciObject *right);
 static LuciObject *sub(LuciObject *left, LuciObject *right);
@@ -25,7 +27,6 @@ static LuciObject *bwxor(LuciObject *left, LuciObject *right);
 static LuciObject *bwor(LuciObject *left, LuciObject *right);
 static LuciObject *bwand(LuciObject *left, LuciObject *right);
 
-static int types_match(LuciObject *left, LuciObject *right);
 static int evaluate_condition(LuciObject *);
 
 LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {
@@ -49,14 +50,6 @@ LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {
     bwand,
     bwnot
 };
-
-static int types_match(LuciObject *left, LuciObject *right)
-{
-    if (left && right)
-	return (left->type == right->type);
-    else
-	return 0;
-}
 
 /*
    Evaluates a conditional statement, returning an integer
@@ -93,21 +86,23 @@ static int evaluate_condition(LuciObject *cond)
 
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 {
+    if (!left || !right) {
+        /* uh oh */
+        /* return NULL; */
+        die("%s\n", "NULL object in binary expression dispatcher");
+    }
+
     if (left->type == obj_float_t && right->type == obj_int_t) {
-	/* maybe bzero it ? */
 	int i = right->value.i;
 	right->value.i = 0;
 	right->type = obj_float_t;
 	right->value.f = (float)i;
-    }
-    else if (right->type == obj_float_t && left->type == obj_int_t) {
+    } else if (right->type == obj_float_t && left->type == obj_int_t) {
 	int i = left->value.i;
 	left->value.i = 0;
 	left->type = obj_float_t;
 	left->value.f = (float)i;
-    }
-    else if (!types_match(left, right))
-    {
+    } else if (!TYPES_MATCH(left, right)) {
 	die("Type mismatch in expression\n");
     }
     LuciObject *result = NULL;

@@ -1,16 +1,7 @@
-v = 0;
-x = 2;
-y = 3;
+v = 42;
 
-while (v < 10) {
-    x = x ** 2;
-    y = 11 + y;
-    v = v+ 1;
-}
-
-print(v);
-print(str("hello"));
-#print(str(v));
-
-# this will throw a Fatal Error, but no memory should leak
+# this will throw a Fatal Error during compilation
 print(wtf);
+
+# this will throw a Fatal Error during interpretation
+print(len(v));

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "luci.h"
 #include "common.h"
 #include "object.h"
 
@@ -39,7 +41,7 @@ LuciObject *create_object(int type)
 	default:
 	    break;
     }
-    yak("Creating obj @ %lu with type %d\n",
+    LUCI_DEBUG("Creating obj @ %lu with type %d\n",
             (unsigned long) ret, ret->type);
     return ret;
 }
@@ -129,13 +131,13 @@ LuciObject *copy_object(LuciObject *orig)
 void destroy(LuciObject *trash)
 {
     if (!trash) {
-        yak("Destroying a NULL object...\n");
+        LUCI_DEBUG("%s\n", "Destroying a NULL object...");
         return;
     }
 
     if (trash->refcount > 0) {
         /* Attempts to destroy a referenced obj are ignored */
-        yak("Rejecting destruction of object (refcount %d)\n", trash->refcount);
+        LUCI_DEBUG("Rejecting destruction of object (refcount %d)\n", trash->refcount);
         return;
     }
 
@@ -145,13 +147,13 @@ void destroy(LuciObject *trash)
         case obj_file_t:
             if (trash->value.file.ptr) {
                 /* TODO: method of closing only open files */
-                /* yak("Closing file object\n"); */
+                /* LUCI_DEBUG("%s\n", "Closing file object"); */
                 /* close_file(trash->value.file.ptr); */
             }
             break;
 
         case obj_str_t:
-            yak("Freeing string %s\n", trash->value.s);
+            LUCI_DEBUG("Freeing string %s\n", trash->value.s);
             free(trash->value.s);
             trash->value.s = NULL;
             break;
@@ -175,7 +177,7 @@ void destroy(LuciObject *trash)
         default:
             break;
     }
-    yak("Destroying obj @ %lu with type %d\n",
+    LUCI_DEBUG("Destroying obj @ %lu with type %d\n",
             (unsigned long) trash, trash->type);
 
     /* destroy the LuciObject itself */
@@ -195,7 +197,7 @@ int list_append_object(LuciObject *list, LuciObject *item)
 	/* realloc the list array */
 	list->value.list.items = realloc(list->value.list.items,
 		list->value.list.size * sizeof(*list->value.list.items));
-	yak("Reallocated space for list\n");
+	LUCI_DEBUG("%s\n", "Reallocated space for list");
     }
     /* increment count after appending object */
     list->value.list.items[list->value.list.count ++] = item;

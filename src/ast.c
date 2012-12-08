@@ -6,6 +6,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
+#include "luci.h"
 #include "ast.h"
 #include "common.h"
 
@@ -48,7 +49,7 @@ AstNode *make_int_constant(long val)
 {
     AstNode *result = create_node(ast_integer_t);
     result->data.i = val;
-    yak("Made expression node from val %ld\n", val);
+    LUCI_DEBUG("Made expression node from val %ld\n", val);
     return result;
 }
 
@@ -56,7 +57,7 @@ AstNode *make_float_constant(double val)
 {
     AstNode *result = create_node(ast_float_t);
     result->data.f = val;
-    yak("Made expression node from val %f\n", val);
+    LUCI_DEBUG("Made expression node from val %f\n", val);
     return result;
 }
 
@@ -64,7 +65,7 @@ AstNode *make_string_constant(char *val)
 {
     AstNode *result = create_node(ast_string_t);
     result->data.s = val;
-    yak("Made expression node from string %s\n", val);
+    LUCI_DEBUG("Made expression node from string %s\n", val);
     return result;
 }
 
@@ -72,7 +73,7 @@ AstNode *make_id_expr(char *name)
 {
     AstNode *result = create_node(ast_id_t);
     result->data.id.val = name;
-    yak("Made expression node from id %s\n", name);
+    LUCI_DEBUG("Made expression node from id %s\n", name);
     return result;
 }
 
@@ -83,7 +84,7 @@ AstNode *make_binary_expr(AstNode *left,
     result->data.expression.left = left;
     result->data.expression.right = right;
     result->data.expression.op = op;
-    yak("Made binary expression node with op %d\n", op);
+    LUCI_DEBUG("Made binary expression node with op %d\n", op);
     return result;
 }
 
@@ -92,7 +93,7 @@ AstNode *make_list_access(AstNode *list, AstNode *index)
     AstNode *result = create_node(ast_listaccess_t);
     result->data.listaccess.list = list;
     result->data.listaccess.index = index;
-    yak("Made list access reference\n");
+    LUCI_DEBUG("%s\n", "Made list access reference");
     return result;
 }
 
@@ -103,7 +104,7 @@ AstNode *make_list_assignment(AstNode *name,
     result->data.listassign.list = name;
     result->data.listassign.index = index;
     result->data.listassign.right = right;
-    yak("Made list assignment node\n");
+    LUCI_DEBUG("%s\n", "Made list assignment node");
     return result;
 }
 
@@ -135,7 +136,7 @@ AstNode *make_assignment(char *id, AstNode *right)
     AstNode *result = create_node(ast_assign_t);
     result->data.assignment.name = id;
     result->data.assignment.right = right;
-    yak("Made assignment node to\n", id);
+    LUCI_DEBUG("Made assignment node to\n", id);
     return result;
 }
 
@@ -144,7 +145,7 @@ AstNode *make_while_loop(AstNode *cond, AstNode *statements)
     AstNode *result = create_node(ast_while_t);
     result->data.while_loop.cond = cond;
     result->data.while_loop.statements = statements;
-    yak("Made while node containing %d stmts\n",
+    LUCI_DEBUG("Made while node containing %d stmts\n",
             statements->data.statements.count);
     return result;
 }
@@ -156,7 +157,7 @@ AstNode *make_for_loop(char *iter,
     result->data.for_loop.iter = iter;
     result->data.for_loop.list = list;
     result->data.for_loop.statements = statements;
-    yak("Made for node containing %d stmts\n",
+    LUCI_DEBUG("Made for node containing %d stmts\n",
             statements->data.statements.count);
     return result;
 }
@@ -168,7 +169,7 @@ AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)
     result->data.if_else.ifstatements = block1;
     result->data.if_else.elstatements = block2;
 
-    yak("Made if-else node\n");
+    LUCI_DEBUG("%s\n", "Made if-else node");
     return result;
 }
 
@@ -177,7 +178,7 @@ AstNode *make_func_call(AstNode *name, AstNode *arglist)
     AstNode *result = create_node(ast_call_t);
     result->data.call.funcname = name;
     result->data.call.arglist = arglist;
-    yak("Made call node with name\n");
+    LUCI_DEBUG("%s\n", "Made call node with name");
     return result;
 }
 
@@ -188,7 +189,7 @@ AstNode *make_func_def(char *name, AstNode *param_list,
     result->data.funcdef.funcname = name;
     result->data.funcdef.param_list = param_list;
     result->data.funcdef.statements = statements;
-    yak("Made function definition node with name %s\n", name);
+    LUCI_DEBUG("Made function definition node with name %s\n", name);
     return result;
 }
 
@@ -216,7 +217,7 @@ AstNode *make_statements(AstNode *list, AstNode *new)
         }
         list->data.statements.statements[list->data.statements.count - 1] =
                 new;
-        yak("Added a new statement\n");
+        LUCI_DEBUG("%s\n", "Added a new statement");
     }
     return list;
 }
@@ -444,7 +445,7 @@ void destroy_tree(AstNode *root)
             break;
     }
     /* for all nodes */
-    yak("Deleting %s\n", TYPE_NAMES[root->type]);
+    LUCI_DEBUG("Deleting %s\n", TYPE_NAMES[root->type]);
     free(root);
     return;
 }

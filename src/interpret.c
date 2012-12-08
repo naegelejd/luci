@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "luci.h"
 #include "common.h"
 #include "object.h"
 #include "interpret.h"
@@ -16,13 +18,15 @@
 
 void eval(Frame *frame)
 {
-    LuciObject* x = NULL, *y = NULL, *z = NULL;
-    LuciObject* lfargs[MAX_LIBFUNC_ARGS];
-    Instruction instr = 0;
     Stack lstack, framestack;
     st_init(&lstack);
     st_init(&framestack);
 
+    LuciObject* lfargs[MAX_LIBFUNC_ARGS];
+    LuciObject *x = NULL;
+    LuciObject *y = NULL;
+    LuciObject *z = NULL;
+    Instruction instr = 0;
     int a;
     int ip = 0;
     int i = 0;
@@ -44,34 +48,34 @@ void eval(Frame *frame)
         switch (instr >> 11) {
 
             case NOP:
-                yak("NOP\n");
+                LUCI_DEBUG("%s\n", "NOP");
                 break;
 
             case POP:
-                yak("POP\n");
+                LUCI_DEBUG("%s\n", "POP");
                 x = st_pop(&lstack);
                 destroy(x);
                 break;
 
             case PUSHNULL:
-                yak("PUSHNULL\n");
+                LUCI_DEBUG("%s\n", "PUSHNULL");
                 st_push(&lstack, NULL);
                 break;
 
             case LOADK:
-                yak("LOADK %d\n", a);
+                LUCI_DEBUG("LOADK %d\n", a);
                 x = copy_object(frame->constants[a]);
                 st_push(&lstack, x);
                 break;
 
             case LOADS:
-                yak("LOADS %d\n", a);
+                LUCI_DEBUG("LOADS %d\n", a);
                 x = frame->locals[a];
                 st_push(&lstack, x);
                 break;
 
             case LOADG:
-                yak("LOADG %d\n", a);
+                LUCI_DEBUG("LOADG %d\n", a);
                 x = frame->globals[a];
                 if (x == NULL) {
                     die("Global is NULL\n");
@@ -80,7 +84,7 @@ void eval(Frame *frame)
                 break;
 
             case DUP:
-                yak("DUP\n");
+                LUCI_DEBUG("%s\n", "DUP");
                 /* duplicate object on top of stack
                  * and push it back on */
                 x = copy_object(st_peek(&lstack));
@@ -88,7 +92,7 @@ void eval(Frame *frame)
                 break;
 
             case STORE:
-                yak("STORE %d\n", a);
+                LUCI_DEBUG("STORE %d\n", a);
                 /* pop object off of stack */
                 x = st_pop(&lstack);
                 if (frame->locals[a]) {
@@ -99,7 +103,7 @@ void eval(Frame *frame)
                 break;
 
             case BINOP:
-                yak("BINOP %d\n", a);
+                LUCI_DEBUG("BINOP %d\n", a);
                 y = st_pop(&lstack);
                 x = st_pop(&lstack);
                 z = solve_bin_expr(x, y, a);
@@ -109,7 +113,7 @@ void eval(Frame *frame)
                 break;
 
             case CALL:
-                yak("CALL %d\n", a);
+                LUCI_DEBUG("CALL %d\n", a);
                 x = st_pop(&lstack);    /* function object */
 
                 /* setup user-defined function */
@@ -153,7 +157,8 @@ void eval(Frame *frame)
                     }
 
                     /* pop args and push into args array */
-                    for (i = 0; i < a; i++) {
+                    /* must happen in reverse */
+                    for (i = a - 1; i >= 0; i--) {
                         y = st_pop(&lstack);
                         lfargs[i] = copy_object(y);
                         destroy(y);
@@ -178,7 +183,7 @@ void eval(Frame *frame)
                 break;
 
             case RETURN:
-                yak("RETURN\n");
+                LUCI_DEBUG("%s\n", "RETURN");
 
                 /* if the function is returning a local variable, we need
                  * to copy it and push it back on the stack */
@@ -196,7 +201,7 @@ void eval(Frame *frame)
                 break;
 
             case MKLIST:
-                yak("MKLIST %d\n", a);
+                LUCI_DEBUG("MKLIST %d\n", a);
                 x = create_object(obj_list_t);
                 for (i = 0; i < a; i ++) {
                     y = st_pop(&lstack);
@@ -206,7 +211,7 @@ void eval(Frame *frame)
                 break;
 
             case LISTGET:
-                yak("LISTGET\n");
+                LUCI_DEBUG("%s\n", "LISTGET");
                 /* pop list */
                 x = st_pop(&lstack);
                 /* pop index */
@@ -224,7 +229,7 @@ void eval(Frame *frame)
                 break;
 
             case LISTPUT:
-                yak("LISTPUT %d\n", a);
+                LUCI_DEBUG("LISTPUT %d\n", a);
                 /* pop list */
                 x = st_pop(&lstack);
                 /* pop index */
@@ -243,7 +248,7 @@ void eval(Frame *frame)
                 break;
 
             case MKITER:
-                yak("MKITER\n");
+                LUCI_DEBUG("%s\n", "MKITER");
                 x = create_object(obj_iterator_t);
                 y = st_pop(&lstack);
                 /* y should be a list */
@@ -252,19 +257,19 @@ void eval(Frame *frame)
                 break;
 
             case JUMP:
-                yak("JUMP %X\n", a);
+                LUCI_DEBUG("JUMP %X\n", a);
                 ip = a;
                 break;
 
             case POPJUMP:
-                yak("POPJUMP %X\n", a);
+                LUCI_DEBUG("POPJUMP %X\n", a);
                 x = st_pop(&lstack);
                 destroy(x);
                 ip = a;
                 break;
 
             case JUMPZ:
-                yak("JUMPZ %X\n", a);
+                LUCI_DEBUG("JUMPZ %X\n", a);
                 x = st_pop(&lstack);
                 if (x->value.i == 0)
                     ip = a;
@@ -272,7 +277,7 @@ void eval(Frame *frame)
                 break;
 
             case ITERJUMP:
-                yak("ITERJUMP\n");
+                LUCI_DEBUG("%s\n", "ITERJUMP");
                 x = st_peek(&lstack);
                 /* get a COPY of the next object in the iterator's list */
                 y = iterator_next_object(x);
@@ -280,7 +285,6 @@ void eval(Frame *frame)
                  * end of the for loop. Otherwise, push
                  * iterator->next */
                 if (y == NULL) {
-                    //yak("Iterator finished\n");
                     /* pop and destroy the iterator object */
                     x = st_pop(&lstack);
                     destroy(x);
@@ -291,7 +295,7 @@ void eval(Frame *frame)
                 break;
 
             case HALT:
-                yak("HALT\n");
+                LUCI_DEBUG("%s\n", "HALT");
                 goto done_eval;
                 break;
 
@@ -302,6 +306,13 @@ void eval(Frame *frame)
     }
 
 done_eval:;
+
+    /* Since only one call stack and one object stack
+     * are ever allocated, I don't think these necessarily
+     * need freed at runtime-end
+     */
+    st_destroy(&lstack);
+    st_destroy(&framestack);
 
     return;
 }

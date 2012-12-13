@@ -41,6 +41,8 @@ References
 TODO (version 0.2)
 ===================
 
+- Add support for both empty strings and escape characters
+- Track symbol names throughout compilation (useful when printing bytecode)
 - Implement interactive mode (like Python's '>>>')
 - Serialize bytecode/symbols/constants (like Python's .pyc files)
 - Finalize syntax
@@ -61,10 +63,9 @@ TODO (version 0.2)
   - Fast instruction dispatch (gcc ``computed goto`` vs. ``switch-case``)
   - Proper function call/return handling (call stack)
 
-- Implement a memory manager optimized for allocating many small blocks
-
-  This is more for the learning experience... I know it's difficult to
-  out-perform the GNU libc malloc implementation
+- Implement a memory manager optimized for allocating many small blocks.
+  This heavily relies on a permanent design decision for Luci's
+  types (objects) implementation (Fixed-size (union) or variable (Python)).
 
 - Possibly implement an API for creating libraries
 

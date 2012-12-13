@@ -3,7 +3,8 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include "common.h"
+
+#include "luci.h"
 #include "stack.h"
 
 #define STACK_INIT_HEIGHT   128

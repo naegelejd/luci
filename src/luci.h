@@ -21,14 +21,39 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
+#ifndef LUCI_LUCI_H
+#define LUCI_LUCI_H
+
+#include <stdlib.h>
 
 #ifdef DEBUG
- #define LUCI_DEBUG(fmt, ...) \
+
+#define LUCI_DEBUG(fmt, ...) \
     do { \
         fprintf(stderr, "%s:%d:%s(): " fmt, \
                 __FILE__, __LINE__, __func__, __VA_ARGS__); \
     } while (0)
-#else
- #define LUCI_DEBUG(fmt, ...)
-#endif
 
+#define DIE(fmt, ...) \
+    do { \
+        fprintf(stderr, "FATAL: %s:%d:%s(): " fmt, \
+                __FILE__, __LINE__, __func__, __VA_ARGS__); \
+        exit(1); \
+    } while (0)
+
+#else   /* DEBUG */
+
+#define LUCI_DEBUG(fmt, ...)
+
+#define DIE(fmt, ...) \
+    do { \
+        fprintf(stderr, "FATAL: " fmt, __VA_ARGS__); \
+        exit(1); \
+    } while (0)
+
+#endif  /* DEBUG */
+
+/* Defined in lmalloc.c !! */
+void *alloc(size_t size);
+
+#endif /* LUCI_LUCI_H */

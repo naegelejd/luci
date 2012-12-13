@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef BUILTIN_H
 #define BUILTIN_H
 
@@ -6,7 +10,7 @@
 struct func_def
 {
     const char *name;
-    struct LuciObject * (*func) (LuciObject **, int);
+    LuciObject * (*func) (LuciObject **, unsigned int);
 };
 
 struct var_def
@@ -18,28 +22,31 @@ struct var_def
 /* populates the array of var_def structs with valid LuciObjects */
 void init_variables(void);
 
-LuciObject *luci_help(LuciObject **, int);
-LuciObject *luci_dir(LuciObject **, int);
-LuciObject *luci_print(LuciObject **, int);
-LuciObject *luci_readline(LuciObject **, int);
-LuciObject *luci_typeof(LuciObject **, int);
-LuciObject *luci_assert(LuciObject **, int);
+/* used by print. useful in debugging */
+void print_object(LuciObject *);
 
-LuciObject *luci_cast_int(LuciObject **, int);
-LuciObject *luci_cast_float(LuciObject **, int);
-LuciObject *luci_cast_str(LuciObject **, int);
+LuciObject *luci_help(LuciObject **, unsigned int);
+LuciObject *luci_dir(LuciObject **, unsigned int);
+LuciObject *luci_print(LuciObject **, unsigned int);
+LuciObject *luci_readline(LuciObject **, unsigned int);
+LuciObject *luci_typeof(LuciObject **, unsigned int);
+LuciObject *luci_assert(LuciObject **, unsigned int);
 
-LuciObject *luci_fopen(LuciObject **, int);
-LuciObject *luci_fclose(LuciObject **, int);
-LuciObject *luci_fread(LuciObject **, int);
-LuciObject *luci_fwrite(LuciObject **, int);
-LuciObject *luci_flines(LuciObject **, int);
+LuciObject *luci_cast_int(LuciObject **, unsigned int);
+LuciObject *luci_cast_float(LuciObject **, unsigned int);
+LuciObject *luci_cast_str(LuciObject **, unsigned int);
 
-LuciObject *luci_range(LuciObject **, int);
-LuciObject *luci_sum(LuciObject **, int);
-LuciObject *luci_len(LuciObject **, int);
-LuciObject *luci_max(LuciObject **, int);
-LuciObject *luci_min(LuciObject **, int);
+LuciObject *luci_fopen(LuciObject **, unsigned int);
+LuciObject *luci_fclose(LuciObject **, unsigned int);
+LuciObject *luci_fread(LuciObject **, unsigned int);
+LuciObject *luci_fwrite(LuciObject **, unsigned int);
+LuciObject *luci_flines(LuciObject **, unsigned int);
+
+LuciObject *luci_range(LuciObject **, unsigned int);
+LuciObject *luci_sum(LuciObject **, unsigned int);
+LuciObject *luci_len(LuciObject **, unsigned int);
+LuciObject *luci_max(LuciObject **, unsigned int);
+LuciObject *luci_min(LuciObject **, unsigned int);
 
 //LuciObject *get_list_node(LuciObject *list, int index);
 

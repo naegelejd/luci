@@ -7,8 +7,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "common.h"
+
+#include "luci.h"
 #include "ast.h"
+#include "binop.h"
 
 #define YYDEBUG 1
 
@@ -228,7 +230,7 @@ expr:
 
 void yyerror(const char *msg)
 {
-    die("(Syntax) %s @ line #%d, col #%d\n",
+    DIE("(Syntax) %s @ line #%d, col #%d\n",
             msg, get_line_num(), get_last_col_num());
 }
 

@@ -1,0 +1,56 @@
+# Integers
+print(1);
+print(42);
+print(-7321);
+
+print(1 + 1);
+print(42+42);
+print(-56 + 21);
+print(-687 + -983);
+
+print(3 - 2);
+print(147 - 68);
+print(2 - 1111);
+print(-67 - 78);
+print(-123 - -98380);
+
+print(2 * 7);
+print(123 * 31);
+print(-65 * 23);
+print(-32 * -31);
+
+print(520 / 5);
+print(7 / 3);
+print(67 / -6);
+print(-78 / 4);
+print(-88 / -11);
+
+print(2 ** 2);
+print(42 ** 4);
+print(81 ** -3);
+print(-5 ** 3);
+
+print(45 % 4);
+print(21 % -2);
+print(-32 % 7);
+print(-99 % -37);
+
+
+
+# Floats
+print(1.0);
+print(42.314);
+
+print(1.0 + 2.3);
+print(42.65+98.435);
+
+print(5.7 - 2.1);
+
+
+# Strings
+print("Hello World");
+print("Goodbye");
+
+print("str1" + "str2");
+print("" + "str2");
+print("str1" + "");

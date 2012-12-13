@@ -1,3 +1,7 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
 #ifndef OBJECT_H
 #define OBJECT_H
 
@@ -18,49 +22,68 @@ typedef enum {
     obj_iterator_t,
     obj_func_t,
     obj_libfunc_t
-} LuciOType;
+} LuciObjType;
 
-typedef enum {
-    f_read_m,
-    f_write_m,
-    f_append_m
-} LuciFileMode;
+/* Object Types */
+typedef long LuciIntObj;
 
-typedef union {
-    int i;
-    double f;
-    char *s;
-    struct {
-        FILE *ptr;
-        long size;	/* in bytes */
-        LuciFileMode mode;
-    } file;
-    struct {
-        struct LuciObject **items;
-        int count;	/* current number of items in list */
-        int size;	/* current count of allocated item pointers */
-    } list;
-    struct {
-        struct LuciObject *list;
-        uint32_t idx;
-        uint32_t incr;
-    } iterator;
-    struct {
-        void *frame;
-        void (*deleter)(void *);
-    } func;
-    struct LuciObject * (*libfunc)(struct LuciObject **, int);
-} LuciOVal;
+typedef double LuciFloatObj;
 
-/* LuciFunction is a type of function that returns a LuciObject * */
-/* typedef struct LuciObject * (*LuciFunction) (struct LuciObject *); */
+typedef struct _LuciString {
+    long len;
+    char * s;
+} LuciStringObj;
+
+typedef struct _LuciFile {
+    enum { f_read_m, f_write_m, f_append_m } mode;
+    long size; /* in bytes */
+    FILE * ptr;
+} LuciFileObj;
+
+typedef struct _LuciList {
+    unsigned int count;	/* current number of items in list */
+    unsigned int size;	/* current count of allocated items */
+    struct _LuciObject **items;
+} LuciListObj;
+
+typedef struct _LuciMap {
+    unsigned int count;	/* current number of key/value pairs */
+    unsigned int size;	/* current count of allocated pairs*/
+    struct _LuciObject **keys;
+    struct _LuciObject **values;
+} LuciMapObj;
+
+typedef struct _LuciIterator {
+    unsigned int idx;
+    unsigned int step;
+    struct _LuciObject *list;
+} LuciIteratorObj;
+
+typedef struct _LuciFunction {
+    void *frame;
+    void (*deleter)(void *);
+} LuciFunctionObj;
+
+/* Library function */
+typedef struct _LuciObject * (*LuciLibFuncObj)(struct _LuciObject **, unsigned int);
+
+typedef union _LuciImpl {
+    LuciIntObj           i;
+    LuciFloatObj         f;
+    LuciStringObj        string;
+    LuciFileObj          file;
+    LuciListObj          list;
+    LuciIteratorObj      iterator;
+    LuciFunctionObj      func;
+    LuciLibFuncObj       libfunc;
+} LuciObjImpl;
 
 /* Generic Object which allows for dynamic typing */
-typedef struct LuciObject
+typedef struct _LuciObject
 {
-    LuciOType type;
+    LuciObjType type;
     int refcount;
-    LuciOVal value;
+    LuciObjImpl value;
 } LuciObject;
 
 /* creates and initializes a new LuciObject */

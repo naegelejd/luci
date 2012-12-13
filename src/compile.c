@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "luci.h"
-#include "common.h"
 #include "object.h"
 #include "compile.h"
 #include "ast.h"
@@ -55,7 +54,8 @@ static void compile_string_constant(AstNode *node, CompileState *cs)
     LuciObject *obj;
 
     obj = create_object(obj_str_t);
-    obj->value.s = strndup(node->data.s, strlen(node->data.s));
+    obj->value.string.s = strdup(node->data.s);
+    obj->value.string.len = strlen(node->data.s);
     a = constant_id(cs->ctable, obj);
     push_instr(cs, LOADK, a);
 }
@@ -68,7 +68,7 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
     if (a < 0) {
         a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
         if (a < 0) {
-            die("%s undefined.\n", node->data.id.val);
+            DIE("%s undefined.\n", node->data.id.val);
         }
         /* else */
         push_instr(cs, LOADG, a);
@@ -253,6 +253,9 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     CompileState *func_cs = CompileState_new();
 
     /* create globals table for new frame */
+    /* !NOTE: in order to support nested function definitions,
+     * this globals table needs to include BOTH the parent function's
+     * locals table and globals table */
     func_cs->gtable = cs->ltable;
 
     nparams = params->data.list.count;
@@ -350,7 +353,7 @@ static void compile_break(AstNode *node, CompileState *cs)
     struct loop_jump *ptr;
 
     if (!cs->current_loop) {
-        die("'break' @ line %d not inside a loop\n", node->lineno);
+        DIE("%s", "'break' @ line %d not inside a loop\n", node->lineno);
     }
     ptr = cs->current_loop->breaks;
     /* push a bogus JUMP instr to be backpatched later */
@@ -374,7 +377,7 @@ static void compile_continue(AstNode *node, CompileState *cs)
     struct loop_jump *jmp = alloc(sizeof(*jmp));
     struct loop_jump *ptr;
     if (!cs->current_loop) {
-        die("'continue' @ line %d not inside a loop\n", node->lineno);
+        DIE("%s", "'continue' @ line %d not inside a loop\n", node->lineno);
     }
     ptr = cs->current_loop->continues;
     /* push a bogus JUMP instr to be backpatched later */
@@ -450,7 +453,7 @@ CompileState * compile_ast(AstNode *root)
     CompileState *cs;
 
     if (!root) {
-        die("Nothing to compile\n");
+        DIE("%s", "Nothing to compile\n");
     }
 
     cs = CompileState_new();
@@ -490,7 +493,7 @@ Frame *Frame_copy(Frame *f)
     LuciObject **locals = NULL;
 
     if (f == NULL) {
-        die("Can't copy NULL frame\n");
+        DIE("%s", "Can't copy NULL frame\n");
     }
 
     copy = alloc(sizeof(*copy));
@@ -530,7 +533,7 @@ void Frame_delete_copy(Frame *f)
     int i;
 
     if (f == NULL) {
-        die("Can't delete a NULL copied frame\n");
+        DIE("%s", "Can't delete a NULL copied frame\n");
     }
 
     for (i = 0; i < f->nlocals; i++) {
@@ -621,9 +624,9 @@ static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
     uint32_t old_addr;
 
     if (!cs)
-        die("CompileState not allocated. Can't add instruction\n");
+        DIE("%s", "CompileState not allocated. Can't add instruction\n");
     if (!(cs->instructions))
-        die("Instruction list not allocated. Can't add instruction\n");
+        DIE("%s", "Instruction list not allocated. Can't add instruction\n");
 
     /* Reallocate the CompileState's instruction list if necessary */
     if (cs->instr_count + 1 > cs->instr_alloc) {
@@ -643,7 +646,7 @@ static uint32_t put_instr(CompileState *cs, uint32_t addr,
         Opcode op, int arg) {
 
     if (addr < 0 || addr > cs->instr_count)
-        die("Address out of bounds\n");
+        DIE("%s", "Address out of bounds\n");
 
     Instruction instr = (op << 11);
     if (op >= JUMP) {

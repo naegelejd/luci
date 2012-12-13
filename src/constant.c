@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
+#include "luci.h"
 #include "object.h"
 #include "constant.h"
 
@@ -47,7 +47,7 @@ void cotable_delete(ConstantTable *cotable)
 uint32_t constant_id(ConstantTable *cotable, LuciObject *const_obj)
 {
     if (const_obj == NULL)
-        die("Can't index a NULL constant\n");
+        DIE("%s", "Can't index a NULL constant\n");
 
     if (cotable->count > cotable->size) {
         cotable->size <<= 1;

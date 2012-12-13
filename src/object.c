@@ -3,8 +3,8 @@
 #include <assert.h>
 
 #include "luci.h"
-#include "common.h"
 #include "object.h"
+#include "lmalloc.h"
 
 /* temporary */
 #include "compile.h" /* for destroying function object FOR NOW */
@@ -12,13 +12,14 @@
 
 LuciObject *create_object(int type)
 {
-    LuciObject *ret = alloc(sizeof(*ret));
+    LuciObject *ret = lmalloc(sizeof(*ret));
     ret->type = type;
     ret->refcount = 0;
     switch(type)
     {
 	case obj_str_t:
-	    ret->value.s = NULL;
+	    ret->value.string.s = NULL;
+            ret->value.string.len = 0;
 	    break;
 
 	case obj_file_t:
@@ -35,7 +36,7 @@ LuciObject *create_object(int type)
         case obj_iterator_t:
             ret->value.iterator.list = NULL;
             ret->value.iterator.idx = 0;
-            ret->value.iterator.incr = 1; /* important */
+            ret->value.iterator.step = 1; /* important */
             break;
 
 	default:
@@ -50,7 +51,7 @@ LuciObject *incref(LuciObject *orig)
 {
     if (!orig)
         return NULL;
-        /*die("Attempt to incref NULL\n"); */
+        /*DIE("%s", "Attempt to incref NULL\n"); */
 
     orig->refcount ++;
 
@@ -62,7 +63,7 @@ LuciObject *decref(LuciObject *orig)
     if (!orig)
         return NULL;
         /*
-        die("Attempt to decref NULL\n");
+        DIE("%s", "Attempt to decref NULL\n");
         */
 
     orig->refcount --;
@@ -97,8 +98,9 @@ LuciObject *copy_object(LuciObject *orig)
 	    copy->value.f = orig->value.f;
 	    break;
 	case obj_str_t:
-	    copy->value.s = alloc(strlen(orig->value.s) + 1);
-	    strcpy(copy->value.s, orig->value.s);
+	    copy->value.string.s = alloc(orig->value.string.len + 1);
+	    strcpy(copy->value.string.s, orig->value.string.s);
+            copy->value.string.len = orig->value.string.len;
 	    break;
 	case obj_file_t:
 	    copy->value.file.ptr = orig->value.file.ptr;
@@ -113,7 +115,7 @@ LuciObject *copy_object(LuciObject *orig)
         case obj_iterator_t:
             copy->value.iterator.list = orig->value.iterator.list;
             copy->value.iterator.idx = orig->value.iterator.idx;
-            copy->value.iterator.incr = orig->value.iterator.incr;
+            copy->value.iterator.step = orig->value.iterator.step;
             break;
         case obj_func_t:
             copy->value.func.frame = orig->value.func.frame;
@@ -153,9 +155,9 @@ void destroy(LuciObject *trash)
             break;
 
         case obj_str_t:
-            LUCI_DEBUG("Freeing string %s\n", trash->value.s);
-            free(trash->value.s);
-            trash->value.s = NULL;
+            LUCI_DEBUG("Freeing string %s\n", trash->value.string.s);
+            free(trash->value.string.s);
+            trash->value.string.s = NULL;
             break;
 
         case obj_list_t:
@@ -181,14 +183,14 @@ void destroy(LuciObject *trash)
             (unsigned long) trash, trash->type);
 
     /* destroy the LuciObject itself */
-    free(trash);
+    lfree(trash);
     trash = NULL;
 }
 
 int list_append_object(LuciObject *list, LuciObject *item)
 {
     if (!list || (list->type != obj_list_t)) {
-	die("Can't append item to non-list object\n");
+	DIE("%s", "Can't append item to non-list object\n");
     }
     assert(list->type == obj_list_t);
 
@@ -210,7 +212,7 @@ int list_append_object(LuciObject *list, LuciObject *item)
 LuciObject *list_get_object(LuciObject *list, int index)
 {
     if (!list || (list->type != obj_list_t)) {
-	die("Can't iterate over non-list object\n");
+	DIE("%s", "Can't iterate over non-list object\n");
     }
     assert(list->type == obj_list_t);
 
@@ -220,7 +222,7 @@ LuciObject *list_get_object(LuciObject *list, int index)
     }
 
     if (index >= list->value.list.count) {
-	die("List index out of bounds\n");
+	DIE("%s", "List index out of bounds\n");
 	/* return NULL; */
     }
     return copy_object(list->value.list.items[index]);
@@ -229,7 +231,7 @@ LuciObject *list_get_object(LuciObject *list, int index)
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
 {
     if (!item) {
-	die("Can't set list item to NULL\n");
+	DIE("%s", "Can't set list item to NULL\n");
     }
     assert(list->type == obj_list_t);
 
@@ -248,7 +250,7 @@ LuciObject *iterator_next_object(LuciObject *iter)
     uint32_t idx;
 
     if (!iter) {
-        die("Can't get next from NULL iter\n");
+        DIE("%s", "Can't get next from NULL iter\n");
     }
     assert(iter->type == obj_iterator_t);
 
@@ -258,7 +260,7 @@ LuciObject *iterator_next_object(LuciObject *iter)
     if (iter->value.iterator.idx >= list->value.list.count) {
         return NULL;
     } else {
-        iter->value.iterator.idx += iter->value.iterator.incr;
+        iter->value.iterator.idx += iter->value.iterator.step;
         return copy_object(list->value.list.items[idx]);
     }
 }

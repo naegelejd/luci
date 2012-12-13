@@ -10,7 +10,6 @@
 #include "ast.h"        /* for AstNode */
 #include "symbol.h"     /* for Symbol Table */
 #include "constant.h"   /* for Constant Table */
-#include "common.h"     /* for LuciObject */
 
 typedef enum {
     NOP,

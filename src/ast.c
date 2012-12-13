@@ -6,9 +6,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <assert.h>
+
 #include "luci.h"
 #include "ast.h"
-#include "common.h"
 
 
 const char *TYPE_NAMES[] = {

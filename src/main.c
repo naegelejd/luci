@@ -7,12 +7,23 @@
 #include <string.h>
 
 #include "luci.h"
+#include "ast.h"
+#include "compile.h"
+#include "interpret.h"
 
+#define EXECUTE     1
+#define SHOW_INSTR  2
+#define GRAPH_AST   4
+#define SERIALIZE   8
 
 /* from parser */
 extern FILE *yyin;
+extern yyparse();
+extern yydebug();
 
 static const char const * version_string = "Luci v0.2";
+
+int luci_main(unsigned short options);
 
 
 static void help()
@@ -21,21 +32,28 @@ static void help()
     puts("Options:");
     puts("    -h\t\tShow help and exit");
     puts("    -v\t\tVerbose mode");
+    puts("    -n\t\tDo not execute source");
     puts("    -g\t\tPrint a Graphviz dot spec for the parsed AST");
-    puts("    -c\t\tCompile the source to a .lxc file");
     puts("    -p\t\tShow the compiled bytecode source");
+    puts("    -c\t\tCompile the source to a .lxc file");
     printf("\n%s\n", version_string);
+
+    puts("\nSizes:");
+    printf("%ld (%s)\n", sizeof(LuciIntObj), "i");
+    printf("%ld (%s)\n", sizeof(LuciFloatObj), "f");
+    printf("%ld (%s)\n", sizeof(LuciStringObj), "string");
+    printf("%ld (%s)\n", sizeof(LuciFileObj), "file");
+    printf("%ld (%s)\n", sizeof(LuciListObj), "list");
+    printf("%ld (%s)\n", sizeof(LuciMapObj), "map");
+    printf("%ld (%s)\n", sizeof(LuciIteratorObj), "iterator");
+    printf("%ld (%s)\n", sizeof(LuciFunctionObj), "func");
+    printf("%ld (%s)\n", sizeof(LuciLibFuncObj), "libfunc");
 }
 
 int main(int argc, char *argv[])
 {
     /* initialize options */
-    int verbose = 0;
-    int execute = 1;
-    int compile = 0;
-    int show = 0;
-    int graph = 0;
-
+    unsigned short options = EXECUTE;
     char *infilename = NULL;
 
     if (argc < 2) {
@@ -51,30 +69,27 @@ int main(int argc, char *argv[])
                 help();
                 goto finish;
             }
-            else if (strcmp(arg, "-v") == 0) {
-		verbose = 1;
-            }
-            else if (strcmp(arg, "-c") == 0) {
-                compile = 1;
-                execute = 0;
-            }
-            else if (strcmp(arg, "-c") == 0) {
-                show = 1;
-                execute = 0;
-            }
-            else if (strcmp(arg, "-g") == 0) {
-                graph = 1;
-                execute = 0;
-            }
             else if (strcmp(arg, "-V") == 0) {
 		fprintf(stdout, "%s\n", version_string);
                 goto finish;
 	    }
+            else if (strcmp(arg, "-g") == 0) {
+                options |= GRAPH_AST;
+            }
+            else if (strcmp(arg, "-p") == 0) {
+                options |= SHOW_INSTR;
+            }
+            else if (strcmp(arg, "-c") == 0) {
+                options |= SERIALIZE;
+            }
+            else if (strcmp(arg, "-n") == 0) {
+                options &= ~EXECUTE;
+            }
             else if (i == (argc - 1)) {
                 infilename = arg;
             }
             else {
-                die("Invalid options: %s\n", arg);
+                DIE("Invalid option: %s\n", arg);
             }
 	}
     }
@@ -84,14 +99,74 @@ int main(int argc, char *argv[])
         yyin = stdin;
     }
     else if (!(yyin = fopen(infilename, "r"))) {
-        die("Can't read from file %s\n", infilename);
+        DIE("Can't read from file %s\n", infilename);
     }
     LUCI_DEBUG("Reading from %s\n", infilename? infilename : "stdin");
 
-    if (!(begin(verbose, execute, compile, show, graph))) {
-        return EXIT_FAILURE;
-    }
+    return luci_main(options);
 
 finish:
         return EXIT_SUCCESS;
 }
+
+int luci_main(unsigned short options)
+{
+
+    AstNode *root_node = NULL;
+    CompileState *cs = NULL;
+    Frame *gf = NULL;
+
+    /*yydebug(1);*/
+
+    lmalloc_init();
+
+    /* parse yyin and build and AST */
+    yyparse(&root_node);
+
+    if (!root_node) {
+        /* empty program */
+        return EXIT_SUCCESS;
+    }
+
+    if (options & GRAPH_AST) {
+        /* Print a DOT graph representation */
+        puts("digraph hierarchy {");
+        puts("node [color=Green,fontcolor=Blue]");
+        print_ast_graph(root_node, 0);
+        puts("}");
+
+        /* break early if finished */
+        if (options == GRAPH_AST) {
+            goto cleanup;
+        }
+    }
+
+    /* Compile the AST */
+    cs = compile_ast(root_node);
+    gf = Frame_from_CompileState(cs, 0);
+
+    if (options & SERIALIZE) {
+        /* Serialize program */
+        serialize_program(gf);
+    }
+
+    if (options & SHOW_INSTR) {
+        /* Print the bytecode */
+        print_instructions(gf);
+    }
+
+    if (options & EXECUTE) {
+        /* Execute the bytecode */
+        eval(gf);
+    }
+
+cleanup:
+    CompileState_delete(cs);
+    Frame_delete(gf);
+    destroy_tree(root_node);
+
+    lmalloc_finalize();
+
+    return EXIT_SUCCESS;
+}
+

@@ -1,7 +1,12 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
+
+#include "luci.h"
 #include "object.h"
-#include "common.h"
 #include "binop.h"
 
 #define TYPES_MATCH(left, right) ( (left)->type == (right)->type )
@@ -70,7 +75,7 @@ static int evaluate_condition(LuciObject *cond)
 	    huh = (int)cond->value.f;
 	    break;
 	case obj_str_t:
-	    huh = strlen(cond->value.s);
+	    huh = cond->value.string.len;
 	    break;
 	case obj_list_t:
 	    huh = cond->value.list.count;
@@ -89,7 +94,7 @@ LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
     if (!left || !right) {
         /* uh oh */
         /* return NULL; */
-        die("%s\n", "NULL object in binary expression dispatcher");
+        DIE("%s\n", "NULL object in binary expression dispatcher");
     }
 
     if (left->type == obj_float_t && right->type == obj_int_t) {
@@ -103,7 +108,7 @@ LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 	left->type = obj_float_t;
 	left->value.f = (float)i;
     } else if (!TYPES_MATCH(left, right)) {
-	die("Type mismatch in expression\n");
+	DIE("%s", "Type mismatch in expression\n");
     }
     LuciObject *result = NULL;
     result = solvers[op](left, right);
@@ -122,10 +127,11 @@ static LuciObject *add(LuciObject *left, LuciObject *right)
 	    ret->value.f = left->value.f + right->value.f;
 	    break;
 	case obj_str_t:
-	    ret->value.s = alloc(strlen(left->value.s) +
-		    strlen(right->value.s) + 1);
-	    strcpy(ret->value.s, left->value.s);
-	    strcat(ret->value.s, right->value.s);
+	    ret->value.string.s = alloc(left->value.string.len +
+		    right->value.string.len + 1);
+	    strcpy(ret->value.string.s, left->value.string.s);
+	    strcat(ret->value.string.s, right->value.string.s);
+            ret->value.string.len = strlen(ret->value.string.s);
 	    break;
 	default:
 	    break;
@@ -178,13 +184,13 @@ static LuciObject *divide(LuciObject *left, LuciObject *right)
     LuciObject *ret;
 
     /* this could probably be replace by a generic right->value.f
-       since both the float and int obj->value structs are aligned
+       since both the float and int obj->value.string.structs are aligned
     */
     if ((right->type == obj_int_t && right->value.i == 0) ||
 	(right->type == obj_float_t && right->value.f == 0.0)) {
 	    /* memory leak */
 	    /* exit(1); */
-	    die("Divide by zero error\n");
+	    DIE("%s", "Divide by zero error\n");
     }
 
     switch (left->type)
@@ -256,7 +262,7 @@ static LuciObject *eq(LuciObject *left, LuciObject *right)
 	    r = (left->value.f == right->value.f);
 	    break;
 	case obj_str_t:
-	    r = !(strcmp(left->value.s, right->value.s));
+	    r = !(strcmp(left->value.string.s, right->value.string.s));
 	    break;
 	case obj_file_t:
 	    r = (left->value.file.ptr == right->value.file.ptr);

@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include "luci.h"
-#include "common.h"
 #include "object.h"
 #include "interpret.h"
 #include "stack.h"
@@ -78,7 +77,7 @@ void eval(Frame *frame)
                 LUCI_DEBUG("LOADG %d\n", a);
                 x = frame->globals[a];
                 if (x == NULL) {
-                    die("Global is NULL\n");
+                    DIE("%s", "Global is NULL\n");
                 }
                 st_push(&lstack, x);
                 break;
@@ -129,9 +128,9 @@ void eval(Frame *frame)
 
                     /* check that the # of arguments equals the # of parameters */
                     if (frame->nparams > a) {
-                        die("Missing arguments to function.\n");
+                        DIE("%s", "Missing arguments to function.\n");
                     } else if (frame->nparams < a) {
-                        die("Too many arguments to function.\n");
+                        DIE("%s", "Too many arguments to function.\n");
                     }
 
                     /* pop arguments and push COPIES into locals */
@@ -153,7 +152,7 @@ void eval(Frame *frame)
                 /* call library function */
                 else if (x->type == obj_libfunc_t) {
                     if (a >= MAX_LIBFUNC_ARGS) {
-                        die("Too many arguments to function.\n");
+                        DIE("%s", "Too many arguments to function.\n");
                     }
 
                     /* pop args and push into args array */
@@ -177,7 +176,7 @@ void eval(Frame *frame)
 
                 }
                 else {
-                    die("Can't call something that isn't a function\n");
+                    DIE("%s", "Can't call something that isn't a function\n");
                 }
 
                 break;
@@ -217,7 +216,7 @@ void eval(Frame *frame)
                 /* pop index */
                 y = st_pop(&lstack);
                 if (y->type != obj_int_t) {
-                    die("Invalid list index type\n");
+                    DIE("%s", "Invalid list index type\n");
                 }
 
                 /* get a copy of the obj in list at index */
@@ -238,7 +237,7 @@ void eval(Frame *frame)
                 z = st_pop(&lstack);
 
                 if (y->type != obj_int_t) {
-                    die("Invalid type in list assign\n");
+                    DIE("%s", "Invalid type in list assign\n");
                 }
                 i = y->value.i;
                 destroy(y);
@@ -300,7 +299,7 @@ void eval(Frame *frame)
                 break;
 
             default:
-                die("Invalid opcode: %d\n", instr >> 11);
+                DIE("Invalid opcode: %d\n", instr >> 11);
                 break;
         }
     }

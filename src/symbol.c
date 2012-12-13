@@ -8,7 +8,6 @@
 #include <stdio.h>
 
 #include "luci.h"
-#include "common.h"
 #include "object.h"
 #include "symbol.h"
 
@@ -91,7 +90,7 @@ static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
 
 static Symbol *symbol_new(const char *str, uint32_t index)
 {
-    Symbol *new = malloc(sizeof(*new));
+    Symbol *new = alloc(sizeof(*new));
     new->name = str;
     new->index = index;
     new->next = NULL;
@@ -169,7 +168,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
     symtable->symbols = calloc(NBUCKETS[bucketscale],
             sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
-        die("Error allocating new, larger symtable entry array\n");
+        DIE("%s", "Error allocating new, larger symtable entry array\n");
     symtable->bscale = bucketscale;
 
     Symbol *cur = NULL, *prev = NULL;
@@ -198,24 +197,24 @@ SymbolTable *symtable_new(uint32_t bucketscale)
 {
     SymbolTable *symtable = calloc(1, sizeof(*symtable));
     if (!symtable)
-        die("Error allocating symbol table\n");
+        DIE("%s", "Error allocating symbol table\n");
     LUCI_DEBUG("%s\n", "Allocated symbol table");
 
     if (bucketscale < 0 || bucketscale >= N_BUCKET_OPTIONS)
-        die("Symbol Table scale out of bounds\n");
+        DIE("%s", "Symbol Table scale out of bounds\n");
     symtable->bscale = bucketscale;
 
     symtable->symbols = calloc(NBUCKETS[bucketscale],
             sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
-        die("Error allocating symtable symbols array\n");
+        DIE("%s", "Error allocating symtable symbols array\n");
     LUCI_DEBUG("%s\n", "Allocated symbol table symbols array");
 
     /* make Symbol Table object array size = bucket count / 4 */
     symtable->size = NBUCKETS[bucketscale] >> 2;
     symtable->objects = calloc(symtable->size, sizeof(*(symtable->objects)));
     if (!symtable->objects)
-        die("Error allocating symtable objects array\n");
+        DIE("%s", "Error allocating symtable objects array\n");
 
     /* Set bit which identifies that this table owns the objects array */
     symtable->owns_objects = 1;
@@ -297,7 +296,7 @@ int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
     Symbol *sym = NULL;
 
     if (!symtable) {
-        die("Symbol Table not allocated\n");
+        DIE("%s", "Symbol Table not allocated\n");
     }
 
     /* Try to find symbol in table */
@@ -318,7 +317,7 @@ int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
         symtable->objects = realloc(symtable->objects,
                 symtable->size * sizeof(*(symtable->objects)));
         if (!symtable->objects) {
-            die("Could not increase symbol table object array size\n");
+            DIE("%s", "Could not increase symbol table object array size\n");
         }
         int i;
         for (i = symtable->count; i < symtable->size; i++) {
@@ -344,7 +343,7 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
     LuciObject *old = NULL;
 
     if ((id < 0) || (id >= symtable->count))
-        die("Symbol id out of bounds\n");
+        DIE("%s", "Symbol id out of bounds\n");
 
     /* Decref any existing object */
     if (symtable->objects[id])

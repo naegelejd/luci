@@ -15,7 +15,7 @@ add_executable(
     ${BISON_myparser_OUTPUTS}
     ${FLEX_myscanner_OUTPUTS}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/lmalloc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/gc.c
     ${CMAKE_CURRENT_SOURCE_DIR}/stack.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ast.c
     ${CMAKE_CURRENT_SOURCE_DIR}/object.c

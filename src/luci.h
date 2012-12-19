@@ -53,7 +53,7 @@
 
 #endif  /* DEBUG */
 
-/* Defined in lmalloc.c !! */
+/* Defined in gc.c !! */
 void *alloc(size_t size);
 
 #endif /* LUCI_LUCI_H */

@@ -21,7 +21,7 @@ int get_last_col_num(void);
 INTEGER     [0-9]+
 FLOAT       [0-9]+\.[0-9]*|\.[0-9]+
 WORD        [a-zA-Z_][a-zA-Z_0-9]*
-STRING      \"[^\"]+\"
+STRING      \"[^\"]+\"|\"\"
 WS          [ \t\f\r]+
 
 %%
@@ -44,8 +44,7 @@ WS          [ \t\f\r]+
 "pass"          { COL += yyleng; return PASS; }
 
 {STRING}        {
-                    yylval.string_v = strndup(yytext + 1,
-                            strlen(yytext) - 2);
+                    yylval.string_v = strndup(yytext + 1, strlen(yytext) - 2);
                     COL += yyleng;
                     return STRING;
                 }

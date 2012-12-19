@@ -21,19 +21,6 @@ static struct chunk_hdr *free_head;
 static int coalesce(struct chunk_hdr *ptr);
 
 
-/*
- * Allocates and zeros memory for all
- * non-LuciObject requests.
- */
-void *alloc(size_t size)
-{
-    void *result = calloc(size, 1);
-    if (!result) {
-	DIE("%s", "alloc failed\n");
-    }
-    return result;
-}
-
 
 /************************************************************
  * Simple malloc implementation for fixed-size LuciObjects  *

@@ -37,3 +37,17 @@ foo(1, 2, 3);
 foo("hi", "bye", "seeya");
 
 print(area(2));
+
+# Functions are first-class objects:
+print("Hello World");
+puts = print;
+puts("Hello World");
+
+def average(l) {
+    return sum(l) / len(l);
+}
+
+l = range(10);
+print(average(l));
+mean = average;
+print(mean(l));

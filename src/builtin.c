@@ -176,11 +176,12 @@ void print_object(LuciObject *in)
 LuciObject *luci_print(LuciObject **args, unsigned int c)
 {
     int i;
-    LuciObject *item = NULL;
-    for (i = 0; i < c; i++) {
-	item = args[i];
-	print_object(item);
+    if (c > 0) {
+        print_object(args[0]);
+    }
+    for (i = 1; i < c; i++) {
 	printf(" ");
+	print_object(args[i]);
     }
     printf("\n");
 
@@ -660,7 +661,6 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 	    item->value.i = i;
 	}
 	list_append_object(list, item);
-	printf("%s\n", "Adding new list item to list");
 	/*LUCI_DEBUG("%s\n", "Adding new list item to list");*/
     }
 

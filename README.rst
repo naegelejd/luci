@@ -53,7 +53,7 @@ TODO (version 0.2)
   - Backpatch instructions faster (currently function call for each)
   - Cleanly store loop state for backpatching ``BREAK`` and ``CONTINUE``
   - Implement efficient symbol table (hash)
-  - Implement useful constant table
+  - Implement useful constant table (hash constants... currently storing duplicates)
   - Design function prototypes
   - Bytecode optimizations
 
@@ -66,6 +66,10 @@ TODO (version 0.2)
 - Implement a memory manager optimized for allocating many small blocks.
   This heavily relies on a permanent design decision for Luci's
   types (objects) implementation (Fixed-size (union) or variable (Python)).
+
+- Potentially integrate a garbage collector in the memory manager.
+  This would eliminate the need to store reference counts for each
+  object.
 
 - Possibly implement an API for creating libraries
 
@@ -103,32 +107,10 @@ statements, i.e. ``break``, ``continue``, ``return``.
 #. Implement user-defined functions (barely)
 #. Track line numbers in abstract syntax tree for more helpful Runtime Error messages.
 
-Syntax Ideas
-=============
+Syntax
+========
 
--  function definitions::
+Luci's syntax heavily resembles that of the language C.
 
-      identifier(param1, param2, etc.) {
 
-      }
-
-      identifier(arg1, arg2, etc)
-
--  conditional blocks::
-
-      if (condition) {
-
-      } else {
-
-      }
-
--  list range::
-
-      0..9, 0..42..3    (ruby)
-
-   or::
-
-      range(10), range(0, 42, 3)    (python)
-
--  some kind of block comments, not just single line ``#...`` comments
 

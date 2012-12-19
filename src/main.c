@@ -118,7 +118,7 @@ int luci_main(unsigned short options)
 
     /*yydebug(1);*/
 
-    lmalloc_init();
+    gc_init();
 
     /* parse yyin and build and AST */
     yyparse(&root_node);
@@ -165,7 +165,7 @@ cleanup:
     Frame_delete(gf);
     destroy_tree(root_node);
 
-    lmalloc_finalize();
+    gc_finalize();
 
     return EXIT_SUCCESS;
 }

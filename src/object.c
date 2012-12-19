@@ -4,7 +4,7 @@
 
 #include "luci.h"
 #include "object.h"
-#include "lmalloc.h"
+#include "gc.h"
 
 /* temporary */
 #include "compile.h" /* for destroying function object FOR NOW */
@@ -12,7 +12,7 @@
 
 LuciObject *create_object(int type)
 {
-    LuciObject *ret = lmalloc(sizeof(*ret));
+    LuciObject *ret = gc_malloc(sizeof(*ret));
     ret->type = type;
     ret->refcount = 0;
     switch(type)
@@ -183,7 +183,7 @@ void destroy(LuciObject *trash)
             (unsigned long) trash, trash->type);
 
     /* destroy the LuciObject itself */
-    lfree(trash);
+    gc_free(trash);
     trash = NULL;
 }
 

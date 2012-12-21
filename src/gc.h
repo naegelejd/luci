@@ -15,12 +15,12 @@
 /* the number of uint64 flags must be (POOL_SIZE / 8 / 64)
  * because the smallest allocation is 8 bytes */
 //#define NUM_FLAGS 8
-#define NUM_FLAGS 12
+#define NUM_FLAGS 24
 
 
 struct gc_pool {
     char pool[POOL_SIZE];
-    uint64_t free_flags[NUM_FLAGS];
+    uint32_t used_flags[NUM_FLAGS];
 };
 
 struct gc_arena {

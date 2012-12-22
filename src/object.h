@@ -24,78 +24,96 @@ typedef enum {
     obj_libfunc_t
 } LuciObjType;
 
-/* Object Types */
-typedef long LuciIntObj;
+/* Generic Object which allows for dynamic typing */
+typedef struct _LuciObject
+{
+    LuciObjType type;
+    int refcount;
+} LuciObject;
 
-typedef double LuciFloatObj;
+
+/* Object Types */
+typedef struct _LuciIntObj
+{
+    LuciObject base;
+    long i;
+} LuciIntObj;
+
+typedef struct _LuciFloatObj
+{
+    LuciObject base;
+    double f;
+} LuciFloatObj;
 
 typedef struct _LuciString {
+    LuciObject base;
     long len;
     char * s;
 } LuciStringObj;
 
 typedef struct _LuciFile {
+    LuciObject base;
     enum { f_read_m, f_write_m, f_append_m } mode;
     long size; /* in bytes */
     FILE * ptr;
 } LuciFileObj;
 
 typedef struct _LuciList {
+    LuciObject base;
     unsigned int count;	/* current number of items in list */
     unsigned int size;	/* current count of allocated items */
-    struct _LuciObject **items;
+    LuciObject **items;
 } LuciListObj;
 
 typedef struct _LuciMap {
+    LuciObject base;
     unsigned int count;	/* current number of key/value pairs */
     unsigned int size;	/* current count of allocated pairs*/
-    struct _LuciObject **keys;
-    struct _LuciObject **values;
+    LuciObject **keys;
+    LuciObject **values;
 } LuciMapObj;
 
 typedef struct _LuciIterator {
+    LuciObject base;
     unsigned int idx;
     unsigned int step;
-    struct _LuciObject *list;
+    LuciObject *list;
 } LuciIteratorObj;
 
 typedef struct _LuciFunction {
+    LuciObject base;
     void *frame;
-    void (*deleter)(void *);
 } LuciFunctionObj;
 
 /* Library function */
-typedef struct _LuciObject * (*LuciLibFuncObj)(struct _LuciObject **, unsigned int);
+typedef struct _LuciLibFunc {
+    LuciObject base;
+    LuciObject * (*func)(LuciObject **, unsigned int);
+} LuciLibFuncObj;
 
-typedef union _LuciImpl {
-    LuciIntObj           i;
-    LuciFloatObj         f;
-    LuciStringObj        string;
-    LuciFileObj          file;
-    LuciListObj          list;
-    LuciIteratorObj      iterator;
-    LuciFunctionObj      func;
-    LuciLibFuncObj       libfunc;
-} LuciObjImpl;
 
-/* Generic Object which allows for dynamic typing */
-typedef struct _LuciObject
-{
-    LuciObjType type;
-    int refcount;
-    LuciObjImpl value;
-} LuciObject;
+LuciObject *LuciInt_new(long l);
+LuciObject *LuciFloat_new(double d);
+LuciObject *LuciString_new(char *s);
+LuciObject *LuciFile_new(FILE *fp, long size, int mode);
+LuciObject *LuciList_new();
+LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
+LuciObject *LuciFunction_new(void *frame);
+LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
 
 /* creates and initializes a new LuciObject */
-LuciObject *create_object(int type);
+// LuciObject *create_object(int type);
 
 /* increments the object's refcount and returns it */
 LuciObject *incref(LuciObject* orig);
+
 /* decrements the object's refcount and returns it
  * also potentially destroys object (refcount <= 0) */
-LuciObject *incref(LuciObject* orig);
+LuciObject *decref(LuciObject* orig);
+
 /* duplicates a LuciObject, creating a new one */
 LuciObject *copy_object(LuciObject* orig);
+
 /* destroys an object */
 void destroy(LuciObject *trash);
 

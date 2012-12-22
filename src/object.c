@@ -9,7 +9,98 @@
 /* temporary */
 #include "compile.h" /* for destroying function object FOR NOW */
 
+#define REFCOUNT(o) (((LuciObject *)o)->refcount)
+#define TYPEOF(o)   (((LuciObject *)o)->type)
 
+
+/* LuciIntObj */
+LuciObject *LuciInt_new(long l)
+{
+    LuciIntObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_int_t;
+    o->i = l;
+    return (LuciObject *)o;
+}
+
+/* LuciFloatObj */
+LuciObject *LuciFloat_new(double d)
+{
+    LuciFloatObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_float_t;
+    o->f = d;
+    return (LuciObject *)o;
+}
+
+/* LuciStringObj */
+LuciObject *LuciString_new(char *s)
+{
+    LuciStringObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_str_t;
+    o->s = strdup(s);
+    o->len = strlen(o->s);
+    return (LuciObject *)o;
+}
+
+/* LuciFileObj */
+LuciObject *LuciFile_new(FILE *fp, long size, int mode)
+{
+    LuciFileObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_file_t;
+    o->ptr = fp;
+    o->mode = mode;
+    o->size = size;
+    return (LuciObject *)o;
+}
+
+/* LuciListObj */
+LuciObject *LuciList_new()
+{
+    LuciListObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_list_t;
+    o->count = 0;
+    o->size = INIT_LIST_SIZE;
+    o->items = alloc(o->size * sizeof(*o->items));
+    return (LuciObject *)o;
+}
+
+/* LuciIteratorObj */
+LuciObject *LuciIterator_new(LuciObject *list, unsigned int step)
+{
+    LuciIteratorObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_iterator_t;
+    o->idx = 0;
+    o->step = step;
+    o->list = list;
+    return (LuciObject *)o;
+}
+
+/* LuciFunctionObj */
+LuciObject *LuciFunction_new(void *frame)
+{
+    LuciFunctionObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_func_t;
+    o->frame = frame;
+    return (LuciObject *)o;
+}
+
+/* LuciLibFunc */
+LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int))
+{
+    LuciLibFuncObj *o = gc_malloc(sizeof(*o));
+    REFCOUNT(o) = 0;
+    TYPEOF(o) = obj_libfunc_t;
+    o->func = func;
+    return (LuciObject *)o;
+}
+
+/*
 LuciObject *create_object(int type)
 {
     LuciObject *ret = gc_malloc(sizeof(*ret));
@@ -36,7 +127,7 @@ LuciObject *create_object(int type)
         case obj_iterator_t:
             ret->value.iterator.list = NULL;
             ret->value.iterator.idx = 0;
-            ret->value.iterator.step = 1; /* important */
+            ret->value.iterator.step = 1;
             break;
 
 	default:
@@ -46,6 +137,7 @@ LuciObject *create_object(int type)
             (unsigned long) ret, ret->type);
     return ret;
 }
+*/
 
 LuciObject *incref(LuciObject *orig)
 {
@@ -79,55 +171,56 @@ LuciObject *decref(LuciObject *orig)
 LuciObject *copy_object(LuciObject *orig)
 {
     int i;
-    LuciObject *copy = NULL;
 
     if (!orig) {
 	return NULL;
     }
 
-    /* create the initial copy with only its type specified */
-    /* copy will have a refcount of 0 */
-    copy = create_object(orig->type);
-
     switch(orig->type)
     {
 	case obj_int_t:
-	    copy->value.i = orig->value.i;
+            return LuciInt_new(((LuciIntObj *)orig)->i);
 	    break;
 	case obj_float_t:
-	    copy->value.f = orig->value.f;
+            return LuciFloat_new(((LuciFloatObj *)orig)->f);
 	    break;
 	case obj_str_t:
-	    copy->value.string.s = alloc(orig->value.string.len + 1);
-	    strcpy(copy->value.string.s, orig->value.string.s);
-            copy->value.string.len = orig->value.string.len;
+            return LuciString_new(((LuciStringObj *)orig)->s);
 	    break;
-	case obj_file_t:
-	    copy->value.file.ptr = orig->value.file.ptr;
-	    copy->value.file.size = orig->value.file.size;
-	    copy->value.file.mode = orig->value.file.mode;
+        case obj_file_t:
+        {
+            LuciFileObj *fileobj = (LuciFileObj *)orig;
+            return LuciFile_new(fileobj->ptr, fileobj->size, fileobj->mode);
 	    break;
+        }
 	case obj_list_t:
-	    for (i = 0; i < orig->value.list.count; i++) {
+        {
+            // TODO: FIX THIS WHOLE COPY
+            LuciListObj *listobj = (LuciListObj *)orig;
+            LuciObject *copy = LuciList_new();
+
+	    for (i = 0; i < listobj->count; i++) {
 		list_append_object(copy, list_get_object(orig, i));
 	    }
+            return copy;
 	    break;
+        }
         case obj_iterator_t:
-            copy->value.iterator.list = orig->value.iterator.list;
-            copy->value.iterator.idx = orig->value.iterator.idx;
-            copy->value.iterator.step = orig->value.iterator.step;
+        {
+            LuciIteratorObj *iterobj = (LuciIteratorObj *)orig;
+            return LuciIterator_new(iterobj->list, iterobj->step);
             break;
+        }
         case obj_func_t:
-            copy->value.func.frame = orig->value.func.frame;
-            copy->value.func.deleter = orig->value.func.deleter;
+            return LuciFunction_new(((LuciFunctionObj *)orig)->frame);
             break;
         case obj_libfunc_t:
-            copy->value.libfunc = orig->value.libfunc;
+            return LuciLibFunc_new(((LuciLibFuncObj *)orig)->func);
             break;
 	default:
+            return NULL;
 	    break;
     }
-    return copy;
 }
 
 void destroy(LuciObject *trash)
@@ -147,7 +240,7 @@ void destroy(LuciObject *trash)
     switch(trash->type) {
 
         case obj_file_t:
-            if (trash->value.file.ptr) {
+            if (((LuciFileObj *)trash)->ptr) {
                 /* TODO: method of closing only open files */
                 /* LUCI_DEBUG("%s\n", "Closing file object"); */
                 /* close_file(trash->value.file.ptr); */
@@ -155,25 +248,28 @@ void destroy(LuciObject *trash)
             break;
 
         case obj_str_t:
-            LUCI_DEBUG("Freeing string %s\n", trash->value.string.s);
-            free(trash->value.string.s);
-            trash->value.string.s = NULL;
+            LUCI_DEBUG("Freeing string %s\n", ((LuciStringObj *)trash)->s);
+            free(((LuciStringObj *)trash)->s);
+            ((LuciStringObj *)trash)->s = NULL;
             break;
 
         case obj_list_t:
-            for (i = 0; i < trash->value.list.count; i++) {
-                destroy(trash->value.list.items[i]);
+        {
+            LuciListObj *listobj = (LuciListObj *)trash;
+            for (i = 0; i < listobj->count; i++) {
+                destroy(listobj->items[i]);
             }
-            free(trash->value.list.items);
+            free(listobj->items);
             break;
+        }
 
         case obj_iterator_t:
             /* destroy the list if possible */
-            destroy(trash->value.iterator.list);
+            destroy(((LuciIteratorObj *)trash)->list);
             break;
 
         case obj_func_t:
-            Frame_delete(trash->value.func.frame);
+            Frame_delete(((LuciFunctionObj *)trash)->frame);
             break;
 
         default:
@@ -189,20 +285,23 @@ void destroy(LuciObject *trash)
 
 int list_append_object(LuciObject *list, LuciObject *item)
 {
+    LuciListObj *listobj = NULL;
+
     if (!list || (list->type != obj_list_t)) {
 	DIE("%s", "Can't append item to non-list object\n");
     }
-    assert(list->type == obj_list_t);
 
-    if (list->value.list.count > list->value.list.size) {
-	list->value.list.size = list->value.list.size << 1;
+    listobj = (LuciListObj *)list;
+
+    if (listobj->count > listobj->size) {
+	listobj->size = listobj->size << 1;
 	/* realloc the list array */
-	list->value.list.items = realloc(list->value.list.items,
-		list->value.list.size * sizeof(*list->value.list.items));
+	listobj->items = realloc(listobj->items,
+		listobj->size * sizeof(*listobj->items));
 	LUCI_DEBUG("%s\n", "Reallocated space for list");
     }
     /* increment count after appending object */
-    list->value.list.items[list->value.list.count ++] = item;
+    listobj->items[listobj->count ++] = item;
     return 1;
 }
 
@@ -211,57 +310,68 @@ int list_append_object(LuciObject *list, LuciObject *item)
  */
 LuciObject *list_get_object(LuciObject *list, int index)
 {
+    LuciListObj *listobj = NULL;
+
     if (!list || (list->type != obj_list_t)) {
 	DIE("%s", "Can't iterate over non-list object\n");
     }
-    assert(list->type == obj_list_t);
+
+    listobj = (LuciListObj *)list;
 
     /* convert negative indices to a index starting from list end */
     while (index < 0) {
-	index = list->value.list.count - abs(index);
+	index = listobj->count - abs(index);
     }
 
-    if (index >= list->value.list.count) {
+    if (index >= listobj->count) {
 	DIE("%s", "List index out of bounds\n");
 	/* return NULL; */
     }
-    return copy_object(list->value.list.items[index]);
+    return copy_object(listobj->items[index]);
 }
 
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
 {
+    LuciListObj *listobj = NULL;
+
+    if (!list || (list->type != obj_list_t)) {
+	DIE("%s", "Can't iterate over non-list object\n");
+    }
     if (!item) {
 	DIE("%s", "Can't set list item to NULL\n");
     }
-    assert(list->type == obj_list_t);
+
+    listobj = (LuciListObj *)list;
 
     while (index < 0) {
-	index = list->value.list.count = abs(index);
+	index = listobj->count = abs(index);
     }
     /* list_get_object will take care of any more error handling */
     LuciObject *old = list_get_object(list, index);
-    list->value.list.items[index] = item;
+    listobj->items[index] = item;
     return old;
 }
 
-LuciObject *iterator_next_object(LuciObject *iter)
+LuciObject *iterator_next_object(LuciObject *iterator)
 {
-    LuciObject *list;
+    LuciIteratorObj *iter;
+    LuciListObj *list;
     uint32_t idx;
 
-    if (!iter) {
-        DIE("%s", "Can't get next from NULL iter\n");
+    if (!iterator || (iterator->type != obj_iterator_t)) {
+        DIE("%s", "Can't get next from non-iterator object\n");
     }
-    assert(iter->type == obj_iterator_t);
 
-    idx = iter->value.iterator.idx;
-    list = iter->value.iterator.list;
+    iter = (LuciIteratorObj *)iterator;
 
-    if (iter->value.iterator.idx >= list->value.list.count) {
+    idx = iter->idx;
+    list = (LuciListObj *)iter->list;
+
+    if (iter->idx >= list->count) {
         return NULL;
     } else {
-        iter->value.iterator.idx += iter->value.iterator.step;
-        return copy_object(list->value.list.items[idx]);
+        iter->idx += iter->step;
+        return copy_object(list->items[idx]);
     }
 }
 

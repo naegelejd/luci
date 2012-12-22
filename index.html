@@ -28,9 +28,9 @@
         </ul>
       </header>
       <section>
-        <hr><p>Luci</p>
+        <h2>Luci</h2>
 
-<hr><p>Luci is a procedural, dynamically-typed toy scripting language, implemented in C.</p>
+<p>Luci is a procedural, dynamically-typed toy scripting language, implemented in C.</p>
 
 <p>Luci's syntax resembles C and is still a work in progress.</p>
 
@@ -39,43 +39,31 @@ virtual machine interpreter model. Its initial form consisted of
 an abstract syntax tree and a series of functions which walked the
 tree and 'executed' each node.</p>
 
-<h1>Tools Needed to Build</h1>
+<h3>Syntax</h3>
+
+<p>Luci's syntax heavily resembles that of the language C.</p>
+
+<h3>Tools Needed to Build</h3>
 
 <ul>
-<li>
-<code>flex (lex)</code>_</li>
-<li>
-<code>bison (yacc)</code>_</li>
+<li><a href="http://flex.sourceforge.net/">flex (lex)</a></li>
+<li><a href="http://www.gnu.org/software/bison/">bison (yacc)</a></li>
 <li>a decent C compiler (gcc)</li>
-</ul><p>.. _flex (lex): <a href="http://flex.sourceforge.net/">http://flex.sourceforge.net/</a>
-.. _bison (yacc): <a href="http://www.gnu.org/software/bison/">http://www.gnu.org/software/bison/</a></p>
-
-<h1>References</h1>
+</ul><h3>References</h3>
 
 <ul>
-<li>
-<code>Immensely helpful</code>_</li>
-<li>
-<code>Just as useful</code>_</li>
-<li>
-<code>One of my questions</code>_</li>
-<li>
-<code>Implementation of Lua (PDF)</code>_</li>
-<li>
-<code>Interpreter implementation options</code>_</li>
-<li>
-<code>Python's Innards</code>_</li>
-</ul><p>.. _Immensely helpful: <a href="http://stackoverflow.com/a/2644949">http://stackoverflow.com/a/2644949</a>
-.. _Just as useful: <a href="http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/">http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/</a>
-.. _One of my questions: <a href="http://stackoverflow.com/q/13094001/1689220">http://stackoverflow.com/q/13094001/1689220</a>
-.. _Implementation of Lua (PDF): <a href="http://www.lua.org/doc/jucs05.pdf">www.lua.org/doc/jucs05.pdf</a>
-.. _Interpreter implementation options: <a href="http://realityforge.org/code/virtual-machines/2011/05/19/interpreters.html">http://realityforge.org/code/virtual-machines/2011/05/19/interpreters.html</a>
-.. _Python's Innards: <a href="http://tech.blog.aknin.name/2010/04/02/pythons-innards-introduction/">http://tech.blog.aknin.name/2010/04/02/pythons-innards-introduction/</a></p>
-
-<h1>TODO (version 0.2)</h1>
+<li><a href="http://stackoverflow.com/a/2644949">Immensely helpful</a></li>
+<li><a href="http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/">Just as useful</a></li>
+<li><a href="http://stackoverflow.com/q/13094001/1689220">One of my questions</a></li>
+<li><a href="http://www.lua.org/doc/jucs05.pdf">Implementation of Lua (PDF)</a></li>
+<li><a href="http://realityforge.org/code/virtual-machines/2011/05/19/interpreters.html">Interpreter implementation options</a></li>
+<li><a href="http://tech.blog.aknin.name/2010/04/02/pythons-innards-introduction/">Python's Innards</a></li>
+</ul><h3>TODO (version 0.2)</h3>
 
 <ul>
-<li>Implement interactive mode (like Python's '&gt;&gt;&gt;')</li>
+<li>Add support for both empty strings and escape characters</li>
+<li>Track symbol names throughout compilation (useful when printing bytecode)</li>
+<li>Implement interactive mode (like Python's <code>&gt;&gt;&gt;</code>)</li>
 <li>Serialize bytecode/symbols/constants (like Python's .pyc files)</li>
 <li>Finalize syntax</li>
 <li>
@@ -88,7 +76,7 @@ tree and 'executed' each node.</p>
 <li>Cleanly store loop state for backpatching <code>BREAK</code> and <code>CONTINUE</code>
 </li>
 <li>Implement efficient symbol table (hash)</li>
-<li>Implement useful constant table</li>
+<li>Implement useful constant table (hash constants... currently storing duplicates)</li>
 <li>Design function prototypes</li>
 <li>Bytecode optimizations</li>
 </ul>
@@ -98,98 +86,51 @@ tree and 'executed' each node.</p>
 
 <ul>
 <li>Efficient object stack</li>
-<li>Fast instruction dispatch (gcc <code>computed goto</code> vs. <code>switch-case</code>)</li>
+<li>Fast instruction dispatch (gcc <em>computed goto</em> vs. <em>switch-case</em>)</li>
 <li>Proper function call/return handling (call stack)</li>
 </ul>
 </li>
-<li>
-<p>Implement a memory manager optimized for allocating many small blocks</p>
-
-<p>This is more for the learning experience... I know it's difficult to
-out-perform the GNU libc malloc implementation</p>
-</li>
+<li><p>Implement a memory manager optimized for allocating many small blocks.
+This heavily relies on a permanent design decision for Luci's
+types (objects) implementation (Fixed-size (union) or variable (Python)).</p></li>
+<li><p>Potentially integrate a garbage collector in the memory manager.
+This would eliminate the need to store reference counts for each
+object.</p></li>
 <li><p>Possibly implement an API for creating libraries</p></li>
-</ul><h1>Completed in version 0.1</h1>
+</ul><h3>Completed in version 0.1</h3>
 
 <p>The following features were completed in Luci v0.1.
 Luci v0.1 simply walked the abstract syntax tree and,
 for each node, executed analogous expressions in C, i.e.
-for each <code>if-else</code> node, a C function in the AST walking
+for each <em>if-else</em> node, a C function in the AST walking
 code would recursively evaluate the conditional expression,
-then if it was "true", evaluate the <code>if-statements</code> node,
-otherwise it would evaluate the <code>else-statements</code> node.</p>
+then if it was <code>true</code>, evaluate the <em>if-statements</em> node,
+otherwise it would evaluate the <em>else-statements</em> node.</p>
 
 <p>This version is now obsolete, as the implementation
 was inefficient and did not allow for nested control flow
 statements, i.e. <code>break</code>, <code>continue</code>, <code>return</code>.</p>
 
-<h1>. Implement all unary/binary operations offered by the C++ standard</h1>
-
-<p>(with proper operator precedence for each)</p>
-
-<h1>. Implement Integer, Double, and String types</h1>
-
-<h1>. Implement a While loop construct</h1>
-
-<h1>. Implement error recover (made a single exit point <code>die()</code>), which has global</h1>
-
-<p>access to the root ASTNode and root ExecEnviron</p>
-
-<h1>. Implement if/else conditional blocks. Decided against 'else if', which simplifies parser.</h1>
-
-<h1>. Implement multi-parameter functions</h1>
-
-<h1>. Implement a FILE * luci type, with open(), close(), read(), write() functions</h1>
-
-<h1>. Create list types (syntax/parse), rename 'parameter' AST nodes since they're lists</h1>
-
-<h1>. Implement For loops</h1>
-
-<h1>. Re-work allocation/deallocation of LuciObjects to incorporate</h1>
-
-<p>reference counts.</p>
-
-<h1>. Rewrite list implementation to use dynamic array of pointers (rather than singly-linked</h1>
-
-<p>list. The singly-linked list was far less convenient since I'm using lists to implement
-   function parameters.</p>
-
-<h1>. Implement user-defined functions (barely)</h1>
-
-<h1>. Track line numbers in abstract syntax tree for more helpful Runtime Error messages.</h1>
-
-<h1>Syntax Ideas</h1>
-
-<ul>
-<li>
-<p>function definitions::</p>
-
-<p>identifier(param1, param2, etc.) {</p>
-
-<p>}</p>
-
-<p>identifier(arg1, arg2, etc)</p>
-</li>
-<li>
-<p>conditional blocks::</p>
-
-<p>if (condition) {</p>
-
-<p>} else {</p>
-
-<p>}</p>
-</li>
-<li>
-<p>list range::</p>
-
-<p>0..9, 0..42..3    (ruby)</p>
-
-<p>or::</p>
-
-<p>range(10), range(0, 42, 3)    (python)</p>
-</li>
-<li><p>some kind of block comments, not just single line <code>#...</code> comments</p></li>
-</ul>
+<ol>
+<li>Implement all unary/binary operations offered by the C++ standard
+(with proper operator precedence for each)</li>
+<li>Implement Integer, Double, and String types</li>
+<li>Implement a While loop construct</li>
+<li>Implement error recover (made a single exit point <code>die()</code>), which has global
+access to the root ASTNode and root ExecEnviron</li>
+<li>Implement if/else conditional blocks. Decided against 'else if', which simplifies parser.</li>
+<li>Implement multi-parameter functions</li>
+<li>Implement a FILE * luci type, with open(), close(), read(), write() functions</li>
+<li>Create list types (syntax/parse), rename 'parameter' AST nodes since they're lists</li>
+<li>Implement For loops</li>
+<li>Re-work allocation/deallocation of LuciObjects to incorporate
+reference counts.</li>
+<li>Rewrite list implementation to use dynamic array of pointers (rather than singly-linked
+list. The singly-linked list was far less convenient since I'm using lists to implement
+function parameters.</li>
+<li>Implement user-defined functions (barely)</li>
+<li>Track line numbers in abstract syntax tree for more helpful Runtime Error messages.</li>
+</ol>
       </section>
       <footer>
         <p>This project is maintained by <a href="https://github.com/naegelejd">naegelejd</a></p>

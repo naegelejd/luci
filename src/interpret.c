@@ -124,7 +124,7 @@ void eval(Frame *frame)
                     st_push(&framestack, frame);
 
                     /* activate a copy of the function frame */
-                    frame = Frame_copy(x->value.func.frame);
+                    frame = Frame_copy(((LuciFunctionObj *)x)->frame);
 
                     /* check that the # of arguments equals the # of parameters */
                     if (frame->nparams > a) {
@@ -164,7 +164,7 @@ void eval(Frame *frame)
                     }
 
                     /* call func, passing args array and arg count */
-                    z = x->value.libfunc(lfargs, a);
+                    z = ((LuciLibFuncObj *)x)->func(lfargs, a);
                     st_push(&lstack, z);    /* always push return val */
 
                     /* cleanup libfunction arguments */
@@ -201,7 +201,7 @@ void eval(Frame *frame)
 
             case MKLIST:
                 LUCI_DEBUG("MKLIST %d\n", a);
-                x = create_object(obj_list_t);
+                x = LuciList_new();
                 for (i = 0; i < a; i ++) {
                     y = st_pop(&lstack);
                     list_append_object(x, y);
@@ -220,7 +220,7 @@ void eval(Frame *frame)
                 }
 
                 /* get a copy of the obj in list at index */
-                z = list_get_object(x, y->value.i);
+                z = list_get_object(x, ((LuciIntObj *)y)->i);
 
                 destroy(x);
                 destroy(y);
@@ -239,7 +239,7 @@ void eval(Frame *frame)
                 if (y->type != obj_int_t) {
                     DIE("%s", "Invalid type in list assign\n");
                 }
-                i = y->value.i;
+                i = ((LuciIntObj *)y)->i;
                 destroy(y);
                 y = list_set_object(x, z, i);
                 /* y is the old object */
@@ -248,10 +248,9 @@ void eval(Frame *frame)
 
             case MKITER:
                 LUCI_DEBUG("%s\n", "MKITER");
-                x = create_object(obj_iterator_t);
-                y = st_pop(&lstack);
                 /* y should be a list */
-                x->value.iterator.list = y;
+                y = st_pop(&lstack);
+                x = LuciIterator_new(y, 1);
                 st_push(&lstack, x);
                 break;
 
@@ -270,7 +269,7 @@ void eval(Frame *frame)
             case JUMPZ:
                 LUCI_DEBUG("JUMPZ %X\n", a);
                 x = st_pop(&lstack);
-                if (x->value.i == 0)
+                if (((LuciIntObj *)x)->i == 0)
                     ip = a;
                 destroy(x);
                 break;

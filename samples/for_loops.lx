@@ -22,12 +22,12 @@ for i in l {
 
 print(l);
 
-f = open("samples/wild.lx", "r");
+f = open("samples/nested.lx", "r");
 line = readline(f);
 print(line);
 close(f);
 
-f = open("samples/wild.lx", "r");
+f = open("samples/nested.lx", "r");
 lines = readlines(f);
 
 for l in lines {

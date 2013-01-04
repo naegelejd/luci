@@ -92,6 +92,18 @@ typedef struct _LuciLibFunc {
 } LuciLibFuncObj;
 
 
+#define REFCOUNT(o) (((LuciObject *)(o))->refcount)
+#define TYPEOF(o)   (((LuciObject *)(o))->type)
+
+#define TYPES_MATCH(left, right) ( TYPEOF(left) == TYPEOF(right) )
+
+#define AS_INT(o)   ((LuciIntObj *)(o))
+#define AS_FLOAT(o) ((LuciFloatObj *)(o))
+#define AS_STRING(o) ((LuciStringObj *)(o))
+#define AS_LIST(o) ((LuciListObj *)(o))
+#define AS_FILE(o) ((LuciFileObj *)(o))
+
+
 LuciObject *LuciInt_new(long l);
 LuciObject *LuciFloat_new(double d);
 LuciObject *LuciString_new(char *s);
@@ -121,4 +133,5 @@ int list_append_object(LuciObject *list, LuciObject *item);
 LuciObject *list_get_object(LuciObject *list, int index);
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index);
 LuciObject *iterator_next_object(LuciObject *iterator);
+
 #endif

@@ -29,8 +29,7 @@ static void compile_int_constant(AstNode *node, CompileState *cs)
     int a;
     LuciObject *obj;
 
-    obj = create_object(obj_int_t);
-    obj->value.i = node->data.i;
+    obj = LuciInt_new(node->data.i);
     a = constant_id(cs->ctable, obj);
     push_instr(cs, LOADK, a);
 }
@@ -41,8 +40,7 @@ static void compile_float_constant(AstNode *node, CompileState *cs)
     int a;
     LuciObject *obj;
 
-    obj = create_object(obj_float_t);
-    obj->value.f = node->data.f;
+    obj = LuciFloat_new(node->data.f);
     a = constant_id(cs->ctable, obj);
     push_instr(cs, LOADK, a);
 }
@@ -53,9 +51,10 @@ static void compile_string_constant(AstNode *node, CompileState *cs)
     int a;
     LuciObject *obj;
 
-    obj = create_object(obj_str_t);
-    obj->value.string.s = strdup(node->data.s);
-    obj->value.string.len = strlen(node->data.s);
+    /* TODO: Free original string from AST Node since it's
+     * copied on object creation?
+     * */
+    obj = LuciString_new(strdup(node->data.s));
     a = constant_id(cs->ctable, obj);
     push_instr(cs, LOADK, a);
 }
@@ -275,8 +274,9 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     }
 
     /* create function object */
-    obj = create_object(obj_func_t);
-    obj->value.func.frame = Frame_from_CompileState(func_cs, nparams);
+    obj = LuciFunction_new(Frame_from_CompileState(func_cs, nparams));
+    //obj = create_object(obj_func_t);
+    //obj->value.func.frame = Frame_from_CompileState(func_cs, nparams);
     //obj->value.func.deleter = free;
 
     if (obj == NULL) {
@@ -463,8 +463,9 @@ CompileState * compile_ast(AstNode *root)
 
     for (i = 0; builtins[i].name != 0; i++) {
         /* create object for builtin function */
-        obj = create_object(obj_libfunc_t);
-        obj->value.libfunc = builtins[i].func;
+        obj = LuciLibFunc_new(builtins[i].func);
+        //obj = create_object(obj_libfunc_t);
+        //obj->value.libfunc = builtins[i].func;
         /* add the symbol and function object to the symbol table */
         id = symtable_id(cs->ltable, builtins[i].name, SYMCREATE);
         symtable_set(cs->ltable, obj, id);

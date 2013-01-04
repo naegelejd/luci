@@ -27,6 +27,9 @@ add_executable(
     ${CMAKE_CURRENT_SOURCE_DIR}/builtin.c
 )
 
+# link only against math library
+target_link_libraries(${LUCI} m)
+
 install(TARGETS ${LUCI} DESTINATION bin)
 
 find_package(DOXYGEN)

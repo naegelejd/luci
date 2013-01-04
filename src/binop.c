@@ -9,9 +9,9 @@
 #include "object.h"
 #include "binop.h"
 
-#define TYPES_MATCH(left, right) ( (left)->type == (right)->type )
 
 /* Forward declarations */
+/*
 static LuciObject *add(LuciObject *left, LuciObject *right);
 static LuciObject *sub(LuciObject *left, LuciObject *right);
 static LuciObject *mul(LuciObject *left, LuciObject *right);
@@ -24,6 +24,7 @@ static LuciObject *lt(LuciObject *left, LuciObject *right);
 static LuciObject *gt(LuciObject *left, LuciObject *right);
 static LuciObject *lte(LuciObject *left, LuciObject *right);
 static LuciObject *gte(LuciObject *left, LuciObject *right);
+
 static LuciObject *lgnot(LuciObject *left, LuciObject *right);
 static LuciObject *lgor(LuciObject *left, LuciObject *right);
 static LuciObject *lgand(LuciObject *left, LuciObject *right);
@@ -31,8 +32,6 @@ static LuciObject *bwnot(LuciObject *left, LuciObject *right);
 static LuciObject *bwxor(LuciObject *left, LuciObject *right);
 static LuciObject *bwor(LuciObject *left, LuciObject *right);
 static LuciObject *bwand(LuciObject *left, LuciObject *right);
-
-static int evaluate_condition(LuciObject *);
 
 LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {
     add,
@@ -55,6 +54,8 @@ LuciObject * (*solvers[])(LuciObject *left, LuciObject *right) = {
     bwand,
     bwnot
 };
+*/
+
 
 /*
    Evaluates a conditional statement, returning an integer
@@ -69,52 +70,238 @@ static int evaluate_condition(LuciObject *cond)
     switch (cond->type)
     {
 	case obj_int_t:
-	    huh = cond->value.i;
+	    huh = AS_INT(cond)->i;
 	    break;
 	case obj_float_t:
-	    huh = (int)cond->value.f;
+	    huh = (int)AS_FLOAT(cond)->f;
 	    break;
 	case obj_str_t:
-	    huh = cond->value.string.len;
+	    huh = AS_STRING(cond)->len;
 	    break;
 	case obj_list_t:
-	    huh = cond->value.list.count;
-	    break;
-	case obj_file_t:
-	    huh = 1;
+	    huh = AS_LIST(cond)->count;
 	    break;
 	default:
-	    huh = 0;
+	    huh = 1;
     }
     return huh;
 }
 
+long int_op(long l, long r, int op)
+{
+    switch (op) {
+        case op_add_t:
+            return l + r;
+            break;
+
+        case op_sub_t:
+            return l - r;
+            break;
+
+        case op_mul_t:
+            return l * r;
+            break;
+
+        case op_div_t:
+            if (r == 0L) {
+                DIE("%s\n", "Divide by zero");
+            }
+            return l / r;
+
+        case op_mod_t:
+            if (r == 0L) {
+                DIE("%s\n", "Divide by zero");
+            }
+            return l % r;
+
+        case op_pow_t:
+            return pow(l, r);
+            break;
+
+        case op_eq_t:
+            return l == r;
+            break;
+
+        case op_neq_t:
+            return l != r;
+            break;
+
+        case op_lt_t:
+            return l < r;
+            break;
+
+        case op_gt_t:
+            return l > r;
+            break;
+
+        case op_lte_t:
+            return l <= r;
+            break;
+
+        case op_gte_t:
+            return l >= r;
+            break;
+
+        case op_lor_t:
+            return l || r;
+            break;
+
+        case op_land_t:
+            return l && r;
+            break;
+
+        case op_lnot_t:
+            return !r;
+            break;
+
+        case op_bxor_t:
+            return l ^ r;
+            break;
+
+        case op_bor_t:
+            return l | r;
+            break;
+
+        case op_band_t:
+            return l & r;
+            break;
+
+        case op_bnot_t:
+            return ~r;
+            break;
+
+        default:
+            DIE("%s\n", "Invalid operand to type int");
+    }
+}
+
+double float_op(double l, double r, int op)
+{
+    switch (op) {
+        case op_add_t:
+            return l + r;
+            break;
+
+        case op_sub_t:
+            return l - r;
+            break;
+
+        case op_mul_t:
+            return l * r;
+            break;
+
+        case op_div_t:
+            if (r == 0.0L) {
+                DIE("%s\n", "Divide by zero");
+            }
+            return l / r;
+
+        case op_pow_t:
+            return pow(l, r);
+            break;
+
+        case op_eq_t:
+            return l == r;
+            break;
+
+        case op_neq_t:
+            return l != r;
+            break;
+
+        case op_lt_t:
+            return l < r;
+            break;
+
+        case op_gt_t:
+            return l > r;
+            break;
+
+        case op_lte_t:
+            return l <= r;
+            break;
+
+        case op_gte_t:
+            return l >= r;
+            break;
+
+        default:
+            DIE("%s\n", "Invalid operand to type float");
+    }
+}
+
+char *string_op(LuciStringObj *l, LuciStringObj *r, int op)
+{
+    switch (op) {
+        case op_add_t:
+        {
+	    char *s = alloc(l->len + r->len + 1);
+	    strcpy(s, l->s);
+	    strcat(s, r->s);
+            return s;
+        } break;
+
+        default:
+            DIE("%s\n", "Invalid operand to type float");
+    }
+}
+
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
 {
+    LuciObject *result = NULL;
+
     if (!left || !right) {
         /* uh oh */
         /* return NULL; */
         DIE("%s\n", "NULL object in binary expression dispatcher");
     }
 
-    if (left->type == obj_float_t && right->type == obj_int_t) {
-	int i = right->value.i;
-	right->value.i = 0;
-	right->type = obj_float_t;
-	right->value.f = (float)i;
-    } else if (right->type == obj_float_t && left->type == obj_int_t) {
-	int i = left->value.i;
-	left->value.i = 0;
-	left->type = obj_float_t;
-	left->value.f = (float)i;
-    } else if (!TYPES_MATCH(left, right)) {
-	DIE("%s", "Type mismatch in expression\n");
+    if (!TYPES_MATCH(left, right)) {
+        if (TYPEOF(left) == obj_float_t && TYPEOF(right) == obj_int_t) {
+            double f = float_op(AS_FLOAT(left)->f,
+                    (double)(AS_INT(right)->i), op);
+            result = LuciFloat_new(f);
+            return result;
+        }
+        else if (TYPEOF(right) == obj_float_t && TYPEOF(left) == obj_int_t) {
+            double f = float_op(AS_FLOAT(right)->f,
+                    (double)(AS_INT(left)->i), op);
+            result = LuciFloat_new(f);
+            return result;
+        } else {
+            DIE("%s", "Type mismatch in expression\n");
+        }
     }
-    LuciObject *result = NULL;
-    result = solvers[op](left, right);
-    return result;
+    else {
+        /* left and right are of same types */
+        switch (TYPEOF(left)) {
+            case obj_int_t:
+            {
+                long i = int_op(AS_INT(left)->i, AS_INT(right)->i, op);
+                result = LuciInt_new(i);
+                return result;
+            } break;
+
+            case obj_float_t:
+            {
+                double f = float_op(AS_FLOAT(left)->f, AS_FLOAT(right)->f, op);
+                result = LuciFloat_new(f);
+                return result;
+            } break;
+
+            case obj_str_t:
+            {
+                char *s = string_op(AS_STRING(left), AS_STRING(right), op);
+                result = LuciString_new(s);
+                return result;
+            } break;
+            default:
+                DIE("%s\n", "Invalid type to binary operand");
+                break;
+        }
+    }
 }
 
+/*
 static LuciObject *add(LuciObject *left, LuciObject *right)
 {
     LuciObject *ret = create_object(left->type);
@@ -183,13 +370,8 @@ static LuciObject *divide(LuciObject *left, LuciObject *right)
 {
     LuciObject *ret;
 
-    /* this could probably be replace by a generic right->value.f
-       since both the float and int obj->value.string.structs are aligned
-    */
     if ((right->type == obj_int_t && right->value.i == 0) ||
 	(right->type == obj_float_t && right->value.f == 0.0)) {
-	    /* memory leak */
-	    /* exit(1); */
 	    DIE("%s", "Divide by zero error\n");
     }
 
@@ -349,7 +531,7 @@ static LuciObject *lgnot(LuciObject *left, LuciObject *right)
 	    break;
 	case obj_float_t:
 	    ret = create_object(obj_float_t);
-	    ret->value.f = !left->value.f;
+	    ret->value.f = !right->value.f;
 	    break;
 	default:
 	    ret = NULL;
@@ -464,3 +646,4 @@ static LuciObject *bwand(LuciObject *left, LuciObject *right)
     }
     return ret;
 }
+*/

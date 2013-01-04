@@ -1,0 +1,12 @@
+print(range(5));
+print(range(0, 5));
+print(range(5, 0));
+
+print(range(0, 5, 1));
+print(range(0, 5, -1));
+
+print(range(5, 0, 1));
+print(range(5, 0, -1));
+
+print(range(0, 11, 2));
+print(range(11, 0, -2));

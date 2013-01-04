@@ -9,9 +9,6 @@
 /* temporary */
 #include "compile.h" /* for destroying function object FOR NOW */
 
-#define REFCOUNT(o) (((LuciObject *)o)->refcount)
-#define TYPEOF(o)   (((LuciObject *)o)->type)
-
 
 /* LuciIntObj */
 LuciObject *LuciInt_new(long l)
@@ -39,7 +36,8 @@ LuciObject *LuciString_new(char *s)
     LuciStringObj *o = gc_malloc(sizeof(*o));
     REFCOUNT(o) = 0;
     TYPEOF(o) = obj_str_t;
-    o->s = strdup(s);
+    //o->s = strdup(s);
+    o->s = s;
     o->len = strlen(o->s);
     return (LuciObject *)o;
 }
@@ -185,7 +183,8 @@ LuciObject *copy_object(LuciObject *orig)
             return LuciFloat_new(((LuciFloatObj *)orig)->f);
 	    break;
 	case obj_str_t:
-            return LuciString_new(((LuciStringObj *)orig)->s);
+            /* duplicate string first */
+            return LuciString_new(strdup(((LuciStringObj *)orig)->s));
 	    break;
         case obj_file_t:
         {

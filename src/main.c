@@ -39,8 +39,8 @@ static void help()
     printf("\n%s\n", version_string);
 
     puts("\nSizes:");
-    printf("%ld (%s)\n", sizeof(LuciIntObj), "i");
-    printf("%ld (%s)\n", sizeof(LuciFloatObj), "f");
+    printf("%ld (%s)\n", sizeof(LuciIntObj), "int");
+    printf("%ld (%s)\n", sizeof(LuciFloatObj), "float");
     printf("%ld (%s)\n", sizeof(LuciStringObj), "string");
     printf("%ld (%s)\n", sizeof(LuciFileObj), "file");
     printf("%ld (%s)\n", sizeof(LuciListObj), "list");
@@ -137,7 +137,7 @@ int luci_main(unsigned short options)
 
         /* break early if finished */
         if (options == GRAPH_AST) {
-            goto cleanup;
+            goto cleanup_tree;
         }
     }
 
@@ -163,6 +163,7 @@ int luci_main(unsigned short options)
 cleanup:
     CompileState_delete(cs);
     Frame_delete(gf);
+cleanup_tree:
     destroy_tree(root_node);
 
     gc_finalize();

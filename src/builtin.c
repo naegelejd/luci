@@ -36,34 +36,23 @@ struct var_def globals[] =
 void init_variables(void)
 {
     /* stdout */
-    LuciObject *luci_stdout = create_object(obj_file_t);
-    luci_stdout->value.file.ptr = stdout;
-    luci_stdout->value.file.size = 0;
-    luci_stdout->value.file.mode = f_append_m;
+    LuciObject *luci_stdout = LuciFile_new(stdout, 0, f_append_m);
     globals[0].object = luci_stdout;
 
     /* stderr */
-    LuciObject *luci_stderr = create_object(obj_file_t);
-    luci_stdout->value.file.ptr = stderr;
-    luci_stdout->value.file.size = 0;
-    luci_stdout->value.file.mode = f_append_m;
+    LuciObject *luci_stderr = LuciFile_new(stderr, 0, f_append_m);
     globals[1].object = luci_stderr;
 
     /* stdin */
-    LuciObject *luci_stdin = create_object(obj_file_t);
-    luci_stdout->value.file.ptr = stdin;
-    luci_stdout->value.file.size = 0;
-    luci_stdout->value.file.mode = f_read_m;
+    LuciObject *luci_stdin = LuciFile_new(stdin, 0, f_read_m);
     globals[2].object = luci_stdin;
 
     /* e */
-    LuciObject *luci_e = create_object(obj_float_t);
-    luci_e->value.f = M_E;
+    LuciObject *luci_e = LuciFloat_new(M_E);
     globals[3].object = luci_e;
 
     /* pi */
-    LuciObject *luci_pi = create_object(obj_float_t);
-    luci_pi->value.f = M_PI;
+    LuciObject *luci_pi = LuciFloat_new(M_PI);
     globals[4].object = luci_pi;
 }
 
@@ -151,17 +140,17 @@ void print_object(LuciObject *in)
     switch (in->type)
     {
 	case obj_int_t:
-	    printf("%ld", in->value.i);
+	    printf("%ld", AS_INT(in)->i);
 	    break;
 	case obj_float_t:
-	    printf("%f", in->value.f);
+	    printf("%f", AS_FLOAT(in)->f);
 	    break;
 	case obj_str_t:
-	    printf("%s", in->value.string.s);
+	    printf("%s", AS_STRING(in)->s);
 	    break;
 	case obj_list_t:
 	    printf("[");
-	    for (i = 0; i < in->value.list.count; i++) {
+	    for (i = 0; i < AS_LIST(in)->count; i++) {
 		item = list_get_object(in, i);
 		print_object(item);
 		printf(", ");
@@ -193,6 +182,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
     size_t lenmax = 64, len = 0;
     int ch;
     FILE *read_from = NULL;
+    char *input;
 
     if (c < 1) {
 	LUCI_DEBUG("%s\n", "readline from stdin");
@@ -202,14 +192,14 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 	LuciObject *item = args[0];
 	if (item && (item->type == obj_file_t)) {
 	    LUCI_DEBUG("%s\n", "readline from file");
-	    read_from = item->value.file.ptr;
+	    read_from = AS_FILE(item)->ptr;
 	}
 	else {
 	    DIE("%s", "Can't readline from non-file object\n");
 	}
     }
 
-    char *input = alloc(lenmax * sizeof(char));
+    input = alloc(lenmax * sizeof(char));
     if (input == NULL) {
 	DIE("%s", "Failed to allocate buffer for reading stdin\n");
     }
@@ -234,32 +224,24 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 
     /* overwrite the newline or EOF char with a NUL terminator */
     input[--len] = '\0';
-
-    /* this might be bad practice? */
-    /* I'm malloc'ing and copying the input char[] in case
-       the size of the input buffer is far larger than it needs to be?
-    */
-    LuciObject *ret = create_object(obj_str_t);
-    ret->value.string.s = alloc((len + 1)* sizeof(char));
-    strncpy(ret->value.string.s, input, len);
-    ret->value.string.s[len] = '\0';
+    LuciObject *ret = LuciString_new(input);
 
     /* destroy the input buffer */
     free(input);
 
-    LUCI_DEBUG("Read line\n", ret->value.string.s);
+    LUCI_DEBUG("Read line\n", AS_STRING(ret)->s);
 
     return ret;
 }
 
 LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 {
+    char *which;
+    LuciObject *ret = NULL;
+
     if (c < 1) {
 	DIE("%s", "Missing parameter to type()\n");
     }
-
-    char *which;
-    LuciObject *ret = create_object(obj_str_t);
 
     /* grab the first parameter from the param list */
     LuciObject *item = args[0];
@@ -288,11 +270,8 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 		which = "None";
 	}
     }
-    int len = strlen(which);
-    ret->value.string.s = alloc(len + 1);
-    ret->value.string.len = len;
-    strcpy(ret->value.string.s, which);
 
+    ret = LuciString_new(strdup(which));
     return ret;
 }
 
@@ -307,16 +286,16 @@ LuciObject *luci_assert(LuciObject **args, unsigned int c)
     switch(item->type)
     {
 	case obj_int_t:
-	    assert(item->value.i);
+	    assert(AS_INT(item)->i);
 	    break;
 	case obj_float_t:
-	    assert((int)item->value.f);
+	    assert((int)AS_FLOAT(item)->f);
 	    break;
 	case obj_str_t:
-	    assert(strcmp("", item->value.string.s) != 0);
+	    assert(strcmp("", AS_STRING(item)->s) != 0);
 	    break;
 	case obj_list_t:
-	    assert(item->value.list.count); /* assert that it isn't empty? */
+	    assert(AS_LIST(item)->count); /* assert that it isn't empty? */
 	    break;
 	default:
 	    ;
@@ -335,21 +314,24 @@ LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
     if (!item) {
 	DIE("%s", "Can't cast NULL to int\n");
     }
-    ret = create_object(obj_int_t);
-    int scanned = 0;
+
     switch (item->type) {
 	case obj_int_t:
-	    ret->value.i = item->value.i;
+            ret = LuciInt_new(AS_INT(item)->i);
 	    break;
 	case obj_float_t:
-	    ret->value.i = (int)item->value.f;
+            ret = LuciInt_new((long)AS_FLOAT(item)->f);
 	    break;
 	case obj_str_t:
-	    scanned = sscanf(item->value.string.s, "%ld", &(ret->value.i));
+        {
+            long i;
+	    int scanned = sscanf(AS_STRING(item)->s, "%ld", &i);
 	    if (scanned <= 0 || scanned == EOF) {
 		DIE("%s", "Could not cast to int\n");
 	    }
+            ret = LuciInt_new(i);
 	    break;
+        }
 	default:
 	    DIE("%s", "Could not cast to int\n");
     }
@@ -367,21 +349,24 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
     if (!item) {
 	DIE("%s", "Can't cast NULL to int\n");
     }
-    ret = create_object(obj_float_t);
-    int scanned = 0;
+
     switch (item->type) {
 	case obj_int_t:
-	    ret->value.f = (double)item->value.i;
+            ret = LuciFloat_new((double)AS_INT(item)->i);
 	    break;
 	case obj_float_t:
-	    ret->value.f = item->value.f;
+            ret = LuciFloat_new(AS_FLOAT(item)->f);
 	    break;
 	case obj_str_t:
-	    scanned = sscanf(item->value.string.s, "%f", (float *)&(ret->value.f));
+        {
+            double f;
+	    int scanned = sscanf(AS_STRING(item)->s, "%f", (float *)&f);
 	    if (scanned <= 0 || scanned == EOF) {
 		DIE("%s", "Could not cast to float\n");
 	    }
+            ret = LuciFloat_new(f);
 	    break;
+        }
 	default:
 	    DIE("%s", "Could not cast to float\n");
     }
@@ -392,37 +377,37 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
 LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
 {
     LuciObject *ret = NULL;
+    char *s = NULL;
+
     if (c < 1) {
 	DIE("%s", "Missing parameter to str()\n");
     }
     /* grab the first parameter from the param list */
     LuciObject *item = args[0];
 
-    /* allocate our return string object */
-    ret = create_object(obj_str_t);
     switch (item->type)
     {
 	case obj_int_t:
-	    ret->value.string.s = alloc(32);
-	    sprintf(ret->value.string.s, "%ld", item->value.i);
-	    /* ret->value.string.s[16] = '\0'; */
-            ret->value.string.len = strlen(ret->value.string.s);
+	    s = alloc(32);
+	    sprintf(s, "%ld", AS_INT(item)->i);
+	    /* ret->s[16] = '\0'; */
+            ret = LuciString_new(s);
 	    break;
 	case obj_float_t:
-	    ret->value.string.s = alloc(32);
-	    sprintf(ret->value.string.s, "%f", (float)item->value.f);
-	    /* ret->value.string.s[16] = '\0'; */
-            ret->value.string.len = strlen(ret->value.string.s);
+	    s = alloc(32);
+	    sprintf(s, "%f", (float)AS_FLOAT(item)->f);
+	    /* AS_STRING(ret)->s[16] = '\0'; */
+            ret = LuciString_new(s);
 	    break;
 	case obj_str_t:
-	    ret->value.string.s = alloc(item->value.string.len + 1);
-	    strcpy(ret->value.string.s, item->value.string.s);
-            ret->value.string.len = item->value.string.len;
+	    s = alloc(AS_STRING(item)->len + 1);
+	    strcpy(s, AS_STRING(item)->s);
+            ret = LuciString_new(s);
 	    break;
 	default:
 	    break;
     }
-    LUCI_DEBUG("str() returning %s\n", ret->value.string.s);
+    LUCI_DEBUG("str() returning %s\n", AS_STRING(ret)->s);
 
     return ret;
 }
@@ -463,8 +448,8 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
 	DIE("%s", "Parameter 2 to open must be a string\n");
     }
 
-    filename = fname_obj->value.string.s;
-    req_mode = mode_obj->value.string.s;
+    filename = AS_STRING(fname_obj)->s;
+    req_mode = AS_STRING(mode_obj)->s;
 
     mode = get_file_mode(req_mode);
     if (mode < 0) {
@@ -493,10 +478,7 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
 	DIE("Could not open file %s\n", filename);
     }
 
-    LuciObject *ret = create_object(obj_file_t);
-    ret->value.file.ptr = file;
-    ret->value.file.mode = mode;
-    ret->value.file.size = file_length;
+    LuciObject *ret = LuciFile_new(file, file_length, mode);
 
     LUCI_DEBUG("Opened file %s of size %ld bytes with mode %s.\n",
 	    filename, file_length, req_mode);
@@ -516,8 +498,8 @@ LuciObject *luci_fclose(LuciObject **args, unsigned int c)
 	DIE("%s", "Not a file object\n");
     }
 
-    if (fobj->value.file.ptr) {
-	close_file(fobj->value.file.ptr);
+    if (AS_FILE(fobj)->ptr) {
+	close_file(AS_FILE(fobj)->ptr);
     }
     /* else, probably already closed (it's NULL) */
 
@@ -538,22 +520,21 @@ LuciObject *luci_fread(LuciObject **args, unsigned int c)
 	DIE("%s", "Not a file object\n");
     }
 
-    if (fobj->value.file.mode != f_read_m) {
-	DIE("%s", "Can't open file. It is opened for writing.\n");
+    if (AS_FILE(fobj)->mode != f_read_m) {
+	DIE("%s", "Can't open  It is opened for writing.\n");
     }
 
     /* seek to file start, we're gonna read the whole thing */
-    /* fseek(fobj->value.file.ptr, 0, SEEK_SET); */
+    /* fseek(fobj->ptr, 0, SEEK_SET); */
 
-    long len = fobj->value.file.size;
+    long len = AS_FILE(fobj)->size;
     char *read = alloc(len + 1);
-    fread(read, sizeof(char), len, fobj->value.file.ptr);
+    fread(read, sizeof(char), len, AS_FILE(fobj)->ptr);
     read[len] = '\0';
 
-    /* fseek(fobj->value.file.ptr, 0, SEEK_SET); */
+    /* fseek(fobj->ptr, 0, SEEK_SET); */
 
-    LuciObject *ret = create_object(obj_str_t);
-    ret->value.string.s = read;
+    LuciObject *ret = LuciString_new(read);
 
     return ret;
 }
@@ -575,19 +556,19 @@ LuciObject *luci_fwrite(LuciObject **args, unsigned int c)
     if (!text_obj || (text_obj->type != obj_str_t) ) {
 	DIE("%s", "Not a string\n");
     }
-    char *text = text_obj->value.string.s;
+    char *text = AS_STRING(text_obj)->s;
 
-    if (fobj->value.file.mode == f_read_m) {
-	DIE("%s", "Can't write to file. It is opened for reading.\n");
+    if (AS_FILE(fobj)->mode == f_read_m) {
+	DIE("%s", "Can't write to  It is opened for reading.\n");
     }
 
-    fwrite(text, sizeof(char), strlen(text), fobj->value.file.ptr);
+    fwrite(text, sizeof(char), strlen(text), AS_FILE(fobj)->ptr);
     return NULL;
 }
 
 LuciObject *luci_flines(LuciObject **args, unsigned int c)
 {
-    LuciObject *list = create_object(obj_list_t);
+    LuciObject *list = LuciList_new();
     LuciObject *line = luci_readline(args, c);
     while (line) {
 	list_append_object(list, line);
@@ -616,52 +597,52 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 	if (second->type != obj_int_t) {
 	    DIE("%s", "Second parameter to range must be integer\n");
 	}
-	start = first->value.i;
-	end = second->value.i;
+	start = AS_INT(first)->i;
+	end = AS_INT(second)->i;
+
 	if (c > 2) {
+            /* Ternary range(X, Y, Z) call */
 	    third = args[2];
 	    if (third->type != obj_int_t) {
 		DIE("%s", "Third parameter to range must be integer\n");
 	    }
-	    incr = third->value.i;
+	    incr = AS_INT(third)->i;
 	}
 	else {
 	    incr = 1;
 	}
     }
     else {
+        /* Basic range(X) call, increment by 1 starting from 0 */
 	start = 0;
-	end = first->value.i;
+	end = AS_INT(first)->i;
 	incr = 1;
     }
 
-    if (((end < start) && (incr > 0)) || ((end > start) && (incr < 0))){
-	DIE("%s", "Invalid incrementor for requested range\n");
-    }
-
-    int decreasing = 0;
-    /* reverse our range and incr if we're generating a range including negatives */
-    if (end < start) {
-	end = -end;
-	start = -start;
-	incr = -incr;
-    }
-
     /* Build a list of integers from start to end, incrementing by incr */
-    LuciObject *item, *list = create_object(obj_list_t);
+    LuciObject *item, *list = LuciList_new();
     int i;
-    for (i = start; i <= end - incr; i += incr)
-    {
-	/* create the Object */
-	item = create_object(obj_int_t);
-	if (decreasing) {
-	    item->value.i = -i;
-	}
-	else {
-	    item->value.i = i;
-	}
-	list_append_object(list, item);
-	/*LUCI_DEBUG("%s\n", "Adding new list item to list");*/
+    if (incr < 0) {
+        if (start <= end) {
+            /* return empty list if idiotically requested */
+            return list;
+        }
+
+        for (i = start; i > end; i += incr) {
+            item = LuciInt_new(i);
+            list_append_object(list, item);
+        }
+    }
+    else {
+        if (start >= end) {
+            /* return empty list if idiotically requested */
+            return list;
+        }
+
+        for (i = start; i < end; i += incr) {
+            item = LuciInt_new(i);
+            list_append_object(list, item);
+        }
     }
 
     return list;
@@ -682,18 +663,18 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
     LuciObject *item;
     double sum = 0;
     int i, found_float = 0;
-    for (i = 0; i < list->value.list.count; i ++) {
+    for (i = 0; i < AS_LIST(list)->count; i ++) {
 	item = list_get_object(list, i);
 	if (!item) {
 	    DIE("%s", "Can't calulate sum of list containing NULL value\n");
 	}
 	switch (item->type) {
 	    case obj_int_t:
-		sum += (double)item->value.i;
+		sum += (double)AS_INT(item)->i;
 		break;
 	    case obj_float_t:
 		found_float = 1;
-		sum += (item->value.f);
+		sum += AS_FLOAT(item)->f;
 		break;
 	    default:
 		DIE("%s", "Can't calculate sum of list containing non-numeric value\n");
@@ -702,12 +683,10 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
 
     LuciObject *ret;
     if (!found_float) {
-	ret = create_object(obj_int_t);
-	ret->value.i = (long)sum;
+	ret = LuciInt_new((long)sum);
     }
     else {
-	ret = create_object(obj_float_t);
-	ret->value.f = sum;
+	ret = LuciFloat_new(sum);
     }
 
     return ret;
@@ -725,8 +704,7 @@ LuciObject *luci_len(LuciObject **args, unsigned int c)
 	DIE("%s", "Must specify a list to calculate len\n");
     }
 
-    LuciObject *ret = create_object(obj_int_t);
-    ret->value.i = list->value.list.count;
+    LuciObject *ret = LuciInt_new(AS_LIST(list)->count);
     return ret;
 }
 
@@ -745,21 +723,21 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
     LuciObject *item;
     double max = 0;
     int i, found_float = 0;
-    for (i = 0; i < list->value.list.count; i ++) {
+    for (i = 0; i < AS_LIST(list)->count; i ++) {
 	item = list_get_object(list, i);
 	if (!item) {
 	    DIE("%s", "Can't calulate max of list containing NULL value\n");
 	}
 	switch (item->type) {
 	    case obj_int_t:
-		if ( (double)item->value.i > max) {
-		    max = (double)item->value.i;
+		if ( (double)AS_INT(item)->i > max) {
+		    max = (double)AS_INT(item)->i;
 		}
 		break;
 	    case obj_float_t:
 		found_float = 1;
-		if (item->value.f > max) {
-		    max = item->value.f;
+		if (AS_FLOAT(item)->f > max) {
+		    max = AS_FLOAT(item)->f;
 		}
 		break;
 	    default:
@@ -769,12 +747,10 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
 
     LuciObject *ret;
     if (!found_float) {
-	ret = create_object(obj_int_t);
-	ret->value.i = (long)max;
+	ret = LuciInt_new((long)max);
     }
     else {
-	ret = create_object(obj_float_t);
-	ret->value.f = max;
+	ret = LuciFloat_new(max);
     }
     return ret;
 }
@@ -795,7 +771,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
     double min = 0;
     int i, found_float = 0;
 
-    for (i = 0; i < list->value.list.count; i ++) {
+    for (i = 0; i < AS_LIST(list)->count; i ++) {
 	item = list_get_object(list, i);
 	if (!item) {
 	    DIE("%s", "Can't calulate max of list containing NULL value\n");
@@ -803,19 +779,19 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
 	switch (item->type) {
 	    case obj_int_t:
 		if (i == 0) {
-		    min = (double)item->value.i;
+		    min = (double)AS_INT(item)->i;
 		}
-		else if ( (double)item->value.i < min) {
-		    min = (double)item->value.i;
+		else if ( (double)AS_INT(item)->i < min) {
+		    min = (double)AS_INT(item)->i;
 		}
 		break;
 	    case obj_float_t:
 		found_float = 1;
 		if (i == 0) {
-		    min = item->value.f;
+		    min = AS_FLOAT(item)->f;
 		}
-		else if (item->value.f < min) {
-		    min = item->value.f;
+		else if (AS_FLOAT(item)->f < min) {
+		    min = AS_FLOAT(item)->f;
 		}
 		break;
 	    default:
@@ -825,12 +801,10 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
 
     LuciObject *ret;
     if (!found_float) {
-	ret = create_object(obj_int_t);
-	ret->value.i = (long)min;
+	ret = LuciInt_new((long)min);
     }
     else {
-	ret = create_object(obj_float_t);
-	ret->value.f = min;
+	ret = LuciFloat_new(min);
     }
     return ret;
 }

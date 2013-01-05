@@ -95,6 +95,8 @@ typedef struct _LuciLibFunc {
 #define REFCOUNT(o) (((LuciObject *)(o))->refcount)
 #define TYPEOF(o)   (((LuciObject *)(o))->type)
 
+#define INCREF(o)   (((LuciObject *)(o))->refcount++)
+
 #define TYPES_MATCH(left, right) ( TYPEOF(left) == TYPEOF(right) )
 
 #define AS_INT(o)   ((LuciIntObj *)(o))
@@ -113,12 +115,6 @@ LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
 
-/* creates and initializes a new LuciObject */
-// LuciObject *create_object(int type);
-
-/* increments the object's refcount and returns it */
-LuciObject *incref(LuciObject* orig);
-
 /* decrements the object's refcount and returns it
  * also potentially destroys object (refcount <= 0) */
 LuciObject *decref(LuciObject* orig);
@@ -127,7 +123,7 @@ LuciObject *decref(LuciObject* orig);
 LuciObject *copy_object(LuciObject* orig);
 
 /* destroys an object */
-void destroy(LuciObject *trash);
+//void destroy(LuciObject *trash);
 
 int list_append_object(LuciObject *list, LuciObject *item);
 LuciObject *list_get_object(LuciObject *list, int index);

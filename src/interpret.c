@@ -44,6 +44,7 @@ void eval(Frame *frame)
         } else {
             a = instr & 0x7FF;
         }
+
         switch (instr >> 11) {
 
             case NOP:
@@ -53,7 +54,6 @@ void eval(Frame *frame)
             case POP:
                 LUCI_DEBUG("%s\n", "POP");
                 x = st_pop(&lstack);
-                destroy(x);
                 break;
 
             case PUSHNULL:
@@ -63,8 +63,7 @@ void eval(Frame *frame)
 
             case LOADK:
                 LUCI_DEBUG("LOADK %d\n", a);
-                x = copy_object(frame->constants[a]);
-                st_push(&lstack, x);
+                st_push(&lstack, frame->constants[a]);
                 break;
 
             case LOADS:
@@ -94,11 +93,15 @@ void eval(Frame *frame)
                 LUCI_DEBUG("STORE %d\n", a);
                 /* pop object off of stack */
                 x = st_pop(&lstack);
+
+                /* decref an existing object pointed to by this symbol */
                 if (frame->locals[a]) {
                     decref(frame->locals[a]);
                 }
+
+                /* store and incref the new object */
                 frame->locals[a] = x;
-                incref(x);
+                INCREF(x);
                 break;
 
             case BINOP:
@@ -106,8 +109,6 @@ void eval(Frame *frame)
                 y = st_pop(&lstack);
                 x = st_pop(&lstack);
                 z = solve_bin_expr(x, y, a);
-                destroy(x);
-                destroy(y);
                 st_push(&lstack, z);
                 break;
 
@@ -137,9 +138,8 @@ void eval(Frame *frame)
                     for (i = 0; i < a; i++) {
                         y = st_pop(&lstack);
                         z = copy_object(y);
-                        incref(z);
+                        //INCREF(z);
                         frame->locals[i] = z;
-                        destroy(y);
                     }
 
                     /* reset instruction pointer */
@@ -160,7 +160,6 @@ void eval(Frame *frame)
                     for (i = a - 1; i >= 0; i--) {
                         y = st_pop(&lstack);
                         lfargs[i] = copy_object(y);
-                        destroy(y);
                     }
 
                     /* call func, passing args array and arg count */
@@ -184,14 +183,11 @@ void eval(Frame *frame)
             case RETURN:
                 LUCI_DEBUG("%s\n", "RETURN");
 
-                /* if the function is returning a local variable, we need
-                 * to copy it and push it back on the stack */
-                x = st_pop(&lstack);
-                y = copy_object(x);
-                destroy(x);
-                st_push(&lstack, y);
+                /* incref the return value at the top of the stack
+                 * so it doesn't get lost(deleted) during function cleanup */
+                INCREF(st_peek(&lstack));
 
-                /* delete previously active frame (and locals) */
+                /* delete previously active frame (and all its locals) */
                 Frame_delete_copy(frame);
                 /* pop function stack frame and replace active frame */
                 frame = st_pop(&framestack);
@@ -221,9 +217,6 @@ void eval(Frame *frame)
 
                 /* get a copy of the obj in list at index */
                 z = list_get_object(x, ((LuciIntObj *)y)->i);
-
-                destroy(x);
-                destroy(y);
                 st_push(&lstack, z);
                 break;
 
@@ -240,10 +233,11 @@ void eval(Frame *frame)
                     DIE("%s", "Invalid type in list assign\n");
                 }
                 i = ((LuciIntObj *)y)->i;
-                destroy(y);
+
+                /* re-use 'y' to obtain a pointer to the old object at index i */
                 y = list_set_object(x, z, i);
-                /* y is the old object */
-                destroy(y);
+                /* decref the old object from index i */
+                decref(y);
                 break;
 
             case MKITER:
@@ -262,16 +256,15 @@ void eval(Frame *frame)
             case POPJUMP:
                 LUCI_DEBUG("POPJUMP %X\n", a);
                 x = st_pop(&lstack);
-                destroy(x);
                 ip = a;
                 break;
 
             case JUMPZ:
                 LUCI_DEBUG("JUMPZ %X\n", a);
                 x = st_pop(&lstack);
-                if (((LuciIntObj *)x)->i == 0)
+                if (((LuciIntObj *)x)->i == 0) {
                     ip = a;
-                destroy(x);
+                }
                 break;
 
             case ITERJUMP:
@@ -280,12 +273,11 @@ void eval(Frame *frame)
                 /* get a COPY of the next object in the iterator's list */
                 y = iterator_next_object(x);
                 /* if the iterator returned NULL, jump to the
-                 * end of the for loop. Otherwise, push
-                 * iterator->next */
+                 * end of the for loop. Otherwise, push iterator->next */
                 if (y == NULL) {
                     /* pop and destroy the iterator object */
                     x = st_pop(&lstack);
-                    destroy(x);
+                    decref(x);
                     ip = a;
                 } else {
                     st_push(&lstack, y);

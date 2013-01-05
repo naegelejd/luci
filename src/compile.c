@@ -562,7 +562,7 @@ void Frame_delete(Frame *f)
         int i;
         for (i = 0; i < f->nconstants; i++) {
             /* need to force destruction */
-            destroy(f->constants[i]);
+            decref(f->constants[i]);
         }
         free(f->constants);
     }

@@ -137,17 +137,6 @@ LuciObject *create_object(int type)
 }
 */
 
-LuciObject *incref(LuciObject *orig)
-{
-    if (!orig)
-        return NULL;
-        /*DIE("%s", "Attempt to incref NULL\n"); */
-
-    orig->refcount ++;
-
-    return orig;
-}
-
 LuciObject *decref(LuciObject *orig)
 {
     if (!orig)
@@ -159,7 +148,7 @@ LuciObject *decref(LuciObject *orig)
     orig->refcount --;
 
     if (orig->refcount < 1) {
-        destroy(orig);
+        //destroy(orig);
         return NULL;
     }
 
@@ -221,6 +210,7 @@ LuciObject *copy_object(LuciObject *orig)
 	    break;
     }
 }
+
 
 void destroy(LuciObject *trash)
 {

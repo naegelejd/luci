@@ -349,7 +349,7 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
     if (symtable->objects[id])
         decref(symtable->objects[id]);
     symtable->objects[id] = obj;
-    incref(obj);
+    INCREF(obj);
 }
 
 LuciObject **symtable_get_objects(SymbolTable *symtable)

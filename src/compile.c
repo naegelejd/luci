@@ -65,12 +65,13 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
     int a;
     a = symtable_id(cs->ltable, node->data.id.val, SYMFIND);
     if (a < 0) {
-        a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
-        if (a < 0) {
+        /* if no global symbol table or symbol not in global table */
+        if (!cs->gtable ||
+                ((symtable_id(cs->gtable, node->data.id.val, SYMFIND)) < 0)) {
             DIE("%s undefined.\n", node->data.id.val);
+        } else {
+            push_instr(cs, LOADG, a);
         }
-        /* else */
-        push_instr(cs, LOADG, a);
     } else {
         push_instr(cs, LOADS, a);
     }
@@ -446,36 +447,45 @@ static void compile(AstNode *node, CompileState *cs)
  * Allocates a CompileState struct and passes it to
  * the AST walker/compiler.
  */
-CompileState * compile_ast(AstNode *root)
+CompileState * compile_ast(CompileState *cs, AstNode *root)
 {
     int i, id;
     LuciObject *obj;
-    CompileState *cs;
 
     if (!root) {
         DIE("%s", "Nothing to compile\n");
     }
 
-    cs = CompileState_new();
+    /* if we're compiling an AST from scratch, create a new
+     * CompileState to pass around
+     */
+    if (cs == NULL) {
+        cs = CompileState_new();
+        /* Add builtin symbols to symbol table */
+        extern struct func_def builtins[];  /* defined in builtins.c */
 
-    /* Add builtin symbols to symbol table */
-    extern struct func_def builtins[];  /* defined in builtins.c */
+        for (i = 0; builtins[i].name != 0; i++) {
+            /* create object for builtin function */
+            obj = LuciLibFunc_new(builtins[i].func);
+            //obj = create_object(obj_libfunc_t);
+            //obj->value.libfunc = builtins[i].func;
+            /* add the symbol and function object to the symbol table */
+            id = symtable_id(cs->ltable, builtins[i].name, SYMCREATE);
+            symtable_set(cs->ltable, obj, id);
+        }
 
-    for (i = 0; builtins[i].name != 0; i++) {
-        /* create object for builtin function */
-        obj = LuciLibFunc_new(builtins[i].func);
-        //obj = create_object(obj_libfunc_t);
-        //obj->value.libfunc = builtins[i].func;
-        /* add the symbol and function object to the symbol table */
-        id = symtable_id(cs->ltable, builtins[i].name, SYMCREATE);
-        symtable_set(cs->ltable, obj, id);
+        init_variables();
+        extern struct var_def globals[];
+        for (i = 0; globals[i].name != 0; i++) {
+            id = symtable_id(cs->ltable, globals[i].name, SYMCREATE);
+            symtable_set(cs->ltable, globals[i].object, id);
+        }
     }
-
-    init_variables();
-    extern struct var_def globals[];
-    for (i = 0; globals[i].name != 0; i++) {
-        id = symtable_id(cs->ltable, globals[i].name, SYMCREATE);
-        symtable_set(cs->ltable, globals[i].object, id);
+    /* otherwise, cleanup the old instructions but maintain the symbol table
+     * and so on
+     */
+    else {
+        cs = CompileState_refresh(cs);
     }
 
     /* compile the AST */
@@ -570,6 +580,14 @@ void Frame_delete(Frame *f)
     free(f);
 }
 
+void Frame_delete_interactive(Frame *f)
+{
+    free(f->instructions);
+    //free(f->locals);
+    //free(f->constants);
+    free(f);
+}
+
 Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
 {
     Frame *f = alloc(sizeof(*f));
@@ -617,6 +635,22 @@ void CompileState_delete(CompileState *cs)
     symtable_delete(cs->ltable);
     cotable_delete(cs->ctable);
     free(cs);
+}
+
+/** Deletes CompileState's instructions but maintains
+ * its symbol and constant tables
+ */
+CompileState *CompileState_refresh(CompileState *cs)
+{
+    /* set up new instructions pointer */
+    cs->instr_count = 0;
+    cs->instr_alloc = BASE_INSTR_COUNT;
+    cs->instructions = alloc(cs->instr_alloc *
+            sizeof(*cs->instructions));
+
+    cs->current_loop = NULL;
+
+    return cs;
 }
 
 static uint32_t push_instr(CompileState *cs, Opcode op, int arg)

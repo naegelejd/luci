@@ -90,15 +90,17 @@ typedef struct _compile_state {
 } CompileState;
 
 
-CompileState * compile_ast(AstNode *);
+CompileState * compile_ast(CompileState *, AstNode *);
 CompileState * CompileState_new(void);
 CompileState * CompileState_init(CompileState *);
+CompileState * CompileState_refresh(CompileState *);
 void CompileState_delete(CompileState *);
 
 Frame * Frame_from_CompileState(CompileState *, uint16_t);
 void Frame_delete(Frame *);
 Frame * Frame_copy(Frame *);
 void Frame_delete_copy(Frame *);
+void Frame_delete_interactive(Frame *f);
 
 void print_instructions(Frame *);
 

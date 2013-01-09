@@ -13,6 +13,13 @@
 #include "compile.h"
 #include "binop.h"
 
+#ifdef __GNUC__
+#define DISPATCH goto *dispatch_table[instructions[pc++]]
+#else
+#define DISPATCH break
+#endif
+
+
 #define EVER ;;
 
 void eval(Frame *frame)

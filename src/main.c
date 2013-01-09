@@ -11,19 +11,21 @@
 #include "compile.h"
 #include "interpret.h"
 
-#define EXECUTE     1
-#define SHOW_INSTR  2
-#define GRAPH_AST   4
-#define SERIALIZE   8
+#define INTERACTIVE 1
+#define EXECUTE     2
+#define SHOW_INSTR  4
+#define GRAPH_AST   8
+#define SERIALIZE   16
 
 /* from parser */
 extern FILE *yyin;
 extern yyparse();
-extern yydebug();
+extern int yydebug;
 
 static const char const * version_string = "Luci v0.2";
 
-int luci_main(unsigned short options);
+int luci_main(int argc, char *argv[]);
+void luci_interactive(void);
 
 
 static void help()
@@ -50,17 +52,23 @@ static void help()
     printf("%ld (%s)\n", sizeof(LuciLibFuncObj), "libfunc");
 }
 
-int main(int argc, char *argv[])
+int luci_main(int argc, char *argv[])
 {
     /* initialize options */
-    unsigned short options = EXECUTE;
+    unsigned short options = 0;
     char *infilename = NULL;
+
+    AstNode *root_node = NULL;
+    CompileState *cs = NULL;
+    Frame *gf = NULL;
 
     if (argc < 2) {
         /* interactive mode */
 	yyin = stdin;
+        options = INTERACTIVE;
     }
     else {
+        options = EXECUTE;
 	int i;
 	char *arg;
 	for (i = 1; i < argc; i++) {
@@ -97,27 +105,19 @@ int main(int argc, char *argv[])
     if (infilename == NULL) {
         /* interactive mode */
         yyin = stdin;
+        options = INTERACTIVE;
     }
     else if (!(yyin = fopen(infilename, "r"))) {
         DIE("Can't read from file %s\n", infilename);
     }
     LUCI_DEBUG("Reading from %s\n", infilename? infilename : "stdin");
 
-    return luci_main(options);
-
-finish:
+    if (options == INTERACTIVE) {
+        luci_interactive();
         return EXIT_SUCCESS;
-}
+    }
 
-int luci_main(unsigned short options)
-{
-
-    AstNode *root_node = NULL;
-    CompileState *cs = NULL;
-    Frame *gf = NULL;
-
-    /*yydebug(1);*/
-
+    /* initialize LuciObject garbage collector */
     gc_init();
 
     /* parse yyin and build and AST */
@@ -142,7 +142,7 @@ int luci_main(unsigned short options)
     }
 
     /* Compile the AST */
-    cs = compile_ast(root_node);
+    cs = compile_ast(NULL, root_node);
     gf = Frame_from_CompileState(cs, 0);
 
     if (options & SERIALIZE) {
@@ -165,9 +165,70 @@ cleanup:
     Frame_delete(gf);
 cleanup_tree:
     destroy_tree(root_node);
-
     gc_finalize();
 
+finish:
     return EXIT_SUCCESS;
+}
+
+
+extern void luci_start_interactive(void);
+
+void luci_interactive(void)
+{
+    AstNode *root_node = NULL;
+    CompileState *cs = NULL;
+    Frame *gf = NULL;
+
+    printf("\nWelcome to Interactive %s\n\n", version_string);
+
+    /* initialize LuciObject garbage collector */
+    gc_init();
+
+    while (1) {
+        /* set up interactive prompt */
+        luci_start_interactive();
+
+        /* parse yyin and build and AST */
+        yyparse(&root_node);
+
+        if (!root_node) {
+            printf("Goodbye\n");
+            goto end_interactive;
+        }
+
+        /* Compile the AST */
+        cs = compile_ast(cs, root_node);
+        gf = Frame_from_CompileState(cs, 0);
+
+        /* print a spacing between input/output */
+        fprintf(stdout, "%s", "  \n\n");
+
+        /* Execute the bytecode */
+        eval(gf);
+
+        /* print one more line of spacing */
+        fprintf(stdout, "%s", "\n");
+
+        /* clean up frame's memory */
+        Frame_delete_interactive(gf);
+        /* clean up AST memory */
+        destroy_tree(root_node);
+        root_node = NULL;
+
+        /* remove the EOF flag */
+        clearerr(yyin);
+        /* restart the token scanner */
+        yyrestart(yyin);
+    }
+
+end_interactive:
+    CompileState_delete(cs);
+    gc_finalize();
+}
+
+int main(int argc, char *argv[])
+{
+    return luci_main(argc, argv);
 }
 

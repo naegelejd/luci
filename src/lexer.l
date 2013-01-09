@@ -3,6 +3,7 @@
  */
 
 %option noyywrap
+/* %option debug */
 
 %{
 
@@ -10,9 +11,13 @@
 #include "parser.tab.h"
 
 
-static int LINE = 1;
-static int COL = 1;
+static int line = 1;
+static int col = 1;
+static int interactive = 0;
 
+void luci_start_interactive(void);
+void newline(void);
+void comment(void);
 int get_line_num(void);
 int get_last_col_num(void);
 
@@ -28,111 +33,131 @@ WS          [ \t\f\r]+
 
 "/*"            { comment(); }
 
-"while"         { COL += yyleng; return WHILE; }
-"for"           { COL += yyleng; return FOR; }
-"in"            { COL += yyleng; return IN; }
-"do"            { COL += yyleng; return DO; }
-"done"          { COL += yyleng; return DONE; }
-"if"            { COL += yyleng; return IF; }
-"then"          { COL += yyleng; return THEN; }
-"else"          { COL += yyleng; return ELSE; }
-"end"           { COL += yyleng; return END; }
-"def"           { COL += yyleng; return DEF; }
-"break"         { COL += yyleng; return BREAK; }
-"continue"      { COL += yyleng; return CONTINUE; }
-"return"        { COL += yyleng; return RETURN; }
-"pass"          { COL += yyleng; return PASS; }
+"while"         { col += yyleng; return WHILE; }
+"for"           { col += yyleng; return FOR; }
+"in"            { col += yyleng; return IN; }
+"do"            { col += yyleng; return DO; }
+"done"          { col += yyleng; return DONE; }
+"if"            { col += yyleng; return IF; }
+"then"          { col += yyleng; return THEN; }
+"else"          { col += yyleng; return ELSE; }
+"end"           { col += yyleng; return END; }
+"def"           { col += yyleng; return DEF; }
+"break"         { col += yyleng; return BREAK; }
+"continue"      { col += yyleng; return CONTINUE; }
+"return"        { col += yyleng; return RETURN; }
+"pass"          { col += yyleng; return PASS; }
 
 {STRING}        {
                     yylval.string_v = strndup(yytext + 1, strlen(yytext) - 2);
-                    COL += yyleng;
+                    col += yyleng;
                     return STRING;
                 }
 {FLOAT}         {
                     yylval.float_v = atof(yytext);
-                    COL += yyleng;
+                    col += yyleng;
                     return FLOAT;
                 }
 {INTEGER}       {
                     yylval.int_v = atoi(yytext);
-                    COL += yyleng;
+                    col += yyleng;
                     return INT;
                 }
 "true"          {
                     yylval.int_v = 1;
-                    COL += yyleng;
+                    col += yyleng;
                     return INT;
                 }
 "false"         {
                     yylval.int_v = 0;
-                    COL += yyleng;
+                    col += yyleng;
                     return INT;
                 }
 {WORD}          { yylval.string_v = strdup(yytext);
-                    COL += yyleng;
+                    col += yyleng;
                     return ID;
                 }
 
-^\n|{WS}+\n     { LINE++; COL = 1; /* ignore empty lines */ }
-\n              { LINE++; COL = 1; }
-#.*\n           { LINE++; COL = 1; /* ignore one-line comments */ }
-{WS}+           { COL += yyleng; } /* ignore whitespace/semicolon */
+^\n|{WS}+\n     { newline(); /* ignore empty lines */ }
+\n              { newline(); /* ignore empty lines */ }
+#.*\n           { newline(); /* ignore one-line comments */ }
+{WS}+           { col += yyleng; } /* ignore whitespace/semicolon */
 
-"{"     { COL += 1; return LBRACK; }
-"}"     { COL += 1; return RBRACK; }
-";"     { COL += 1; return SEMICOLON; }
-","     { COL += 1; return COMMA; }
-"["     { COL += 1; return LSQUARE; }
-"]"     { COL += 1; return RSQUARE; }
+"{"     { col++; return LBRACK; }
+"}"     { col++; return RBRACK; }
+";"     { col++; return SEMICOLON; }
+","     { col++; return COMMA; }
+"["     { col++; return LSQUARE; }
+"]"     { col++; return RSQUARE; }
 
-"-"     { COL += 1; return MINUS; }
-"+"     { COL += 1; return PLUS; }
-"**"    { COL += 2; return POW; }
-"*"     { COL += 1; return TIMES; }
-"/"     { COL += 1; return DIVIDE; }
-"%"     { COL += 1; return MOD; }
+"-"     { col++; return MINUS; }
+"+"     { col++; return PLUS; }
+"**"    { col += 2; return POW; }
+"*"     { col++; return TIMES; }
+"/"     { col++; return DIVIDE; }
+"%"     { col++; return MOD; }
 
-"<="    { COL += 2; return LTHEQ; }
-">="    { COL += 2; return GTHEQ; }
-"=="    { COL += 2; return EQUAL; }
-"!="    { COL += 2; return NOTEQ; }
-"<"     { COL += 1; return LTHAN; }
-">"     { COL += 1; return GTHAN; }
+"<="    { col += 2; return LTHEQ; }
+">="    { col += 2; return GTHEQ; }
+"=="    { col += 2; return EQUAL; }
+"!="    { col += 2; return NOTEQ; }
+"<"     { col++; return LTHAN; }
+">"     { col++; return GTHAN; }
 
-"!"     { COL += 1; return LGNOT; }
-"||"    { COL += 2; return LGOR; }
-"&&"    { COL += 2; return LGAND; }
+"!"     { col++; return LGNOT; }
+"||"    { col += 2; return LGOR; }
+"&&"    { col += 2; return LGAND; }
 
-"("     { COL += 1; return LPAREN; }
-")"     { COL += 1; return RPAREN; }
-"="     { COL += 1; return ASSIGN; }
+"("     { col++; return LPAREN; }
+")"     { col++; return RPAREN; }
+"="     { col++; return ASSIGN; }
 
-"^"     { COL += 1; return BWXOR; }
-"|"     { COL += 1; return BWOR; }
-"&"     { COL += 1; return BWAND; }
-"~"     { COL += 1; return BWNOT; }
+"^"     { col++; return BWXOR; }
+"|"     { col++; return BWOR; }
+"&"     { col++; return BWAND; }
+"~"     { col++; return BWNOT; }
 
-.       { COL += yyleng; /* ignore invalid chars */ }
+"$ "    { ECHO; }
 
-<<EOF>>     {
-                yy_delete_buffer(YY_CURRENT_BUFFER);
-                yyterminate();
-            }
+.       { col += yyleng; /* ignore invalid chars */ }
+
+<<EOF>> {
+            yyterminate();
+        }
 
 
 %%
 
+
+void luci_start_interactive(void)
+{
+    interactive = 1;
+    yy_set_interactive(1);
+    putc('$', stdout);
+    putc(' ', stdout);
+}
+
+void newline(void)
+{
+    line++;
+    col = 1;
+    if (interactive) {
+        unput(' ');
+        unput('$');
+    }
+}
+
 int get_line_num(void)
 {
-    return LINE;
+    return line;
 }
 
 int get_last_col_num(void)
 {
-    return COL - yyleng;
+    return col - yyleng;
 }
 
-comment()
+void comment(void)
 {
     char c, c1;
 

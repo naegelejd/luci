@@ -88,10 +88,10 @@ static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
     return hashfuncs[0](name) % NBUCKETS[symtable->bscale];
 }
 
-static Symbol *symbol_new(const char *str, uint32_t index)
+static Symbol *symbol_new(const char *name, uint32_t index)
 {
     Symbol *new = alloc(sizeof(*new));
-    new->name = str;
+    new->name = strdup(name);   /* copy the symbol string */
     new->index = index;
     new->next = NULL;
     return new;
@@ -100,18 +100,10 @@ static Symbol *symbol_new(const char *str, uint32_t index)
 static void *symbol_delete(Symbol *del)
 {
     if (del) {
-        /*
-         * The original creator of the 'char *'
-         * which the symbol represents should
-         * cleanup the memory allocated for
-         * the 'char *'
-         */
-        /*
         if (del->name) {
             free((char *)del->name);
             del->name = NULL;
         }
-        */
         free(del);
         del = NULL;
     }
@@ -301,7 +293,7 @@ int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
 
     /* Try to find symbol in table */
     sym = find_symbol_by_name(symtable, name);
-    /* if found, return it's index (ID) */
+
     if (sym) {
         return sym->index;
     } else if (!(flags & SYMCREATE)) {

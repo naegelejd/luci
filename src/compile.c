@@ -65,9 +65,8 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
     int a;
     a = symtable_id(cs->ltable, node->data.id.val, SYMFIND);
     if (a < 0) {
-        /* if no global symbol table or symbol not in global table */
-        if (!cs->gtable ||
-                ((symtable_id(cs->gtable, node->data.id.val, SYMFIND)) < 0)) {
+        a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
+        if (a < 0) {
             DIE("%s undefined.\n", node->data.id.val);
         } else {
             push_instr(cs, LOADG, a);
@@ -780,6 +779,7 @@ void print_instructions(Frame *f)
 {
     int i, a, instr;
     const char *name = NULL;
+    LuciObject *obj;
 
     for (i = 0; i < f->ninstrs; i ++) {
         a = f->instructions[i] & 0x7FF;
@@ -792,5 +792,13 @@ void print_instructions(Frame *f)
         printf("%03x: %s 0x%x\n", i, instruction_names[instr], a);
         /* increment 'i' if we just printed an extended instruction */
         i += (instr >= JUMP) ? 1 : 0;
+    }
+
+    for (i = 0; i < f->nlocals; i ++) {
+        obj = f->locals[i];
+        if (obj && (TYPEOF(f->locals[i]) == obj_func_t)) {
+            printf("Symbol 0x%X:\n", i);
+            print_instructions(AS_FUNCTION(f->locals[i])->frame);
+        }
     }
 }

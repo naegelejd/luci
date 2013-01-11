@@ -104,6 +104,7 @@ typedef struct _LuciLibFunc {
 #define AS_STRING(o) ((LuciStringObj *)(o))
 #define AS_LIST(o) ((LuciListObj *)(o))
 #define AS_FILE(o) ((LuciFileObj *)(o))
+#define AS_FUNCTION(o) ((LuciFunctionObj *)(o))
 
 
 LuciObject *LuciInt_new(long l);

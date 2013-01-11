@@ -135,6 +135,8 @@ void luci_start_interactive(void)
     yy_set_interactive(1);
     putc('$', stdout);
     putc(' ', stdout);
+    line = 1;
+    col = 1;
 }
 
 void newline(void)

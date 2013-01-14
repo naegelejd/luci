@@ -6,7 +6,7 @@
 #define AST_H
 
 /* the initial size of the array which represents a list of expressions */
-#define AST_LIST_SIZE 32
+#define AST_CONTAINER_SIZE 32
 
 /* the initial size of the array which holds pointers to statement nodes */
 #define AST_STMNTS_SIZE 32
@@ -17,9 +17,11 @@ typedef enum {
     ast_string_t,
     ast_id_t,
     ast_expr_t,
-    ast_listaccess_t,
-    ast_listassign_t,
-    ast_list_t,
+    ast_contaccess_t,
+    ast_contassign_t,
+    ast_mapdef_t,
+    ast_mapkeyval_t,
+    ast_listdef_t,
     ast_assign_t,
     ast_while_t,
     ast_for_t,
@@ -58,21 +60,34 @@ typedef struct
 {
     int count;
     int size;
+    struct AstNode **pairs;
+} AstMapDef;
+
+typedef struct
+{
+    struct AstNode *key;
+    struct AstNode *val;
+} AstMapKeyVal;
+
+typedef struct
+{
+    int count;
+    int size;
     struct AstNode **items;
 } AstListDef;
 
 typedef struct
 {
-    struct AstNode *list;
+    struct AstNode *container;
     struct AstNode *index;
-} AstListAccess;
+} AstContainerAccess;
 
 typedef struct
 {
-    struct AstNode *list;
+    struct AstNode *container;
     struct AstNode *index;
     struct AstNode *right;
-} AstListAssign;
+} AstContainerAssign;
 
 typedef struct
 {
@@ -131,9 +146,11 @@ typedef struct AstNode
         char *s;
         AstID id;
         AstExpression expression;
-        AstListAccess listaccess;
-        AstListAssign listassign;
-        AstListDef list;
+        AstContainerAccess contaccess;
+        AstContainerAssign contassign;
+        AstMapDef mapdef;
+        AstMapKeyVal mapkeyval;
+        AstListDef listdef;
         AstAssignment assignment;
         AstWhileLoop while_loop;
         AstForLoop for_loop;
@@ -152,9 +169,11 @@ AstNode *make_float_constant(double);
 AstNode *make_string_constant(char *);
 AstNode *make_id_expr(char *);
 AstNode *make_binary_expr(AstNode *, AstNode *, int op);
-AstNode *make_list_access(AstNode *, AstNode *);
-AstNode *make_list_assignment(AstNode *, AstNode *, AstNode *);
+AstNode *make_container_access(AstNode *, AstNode *);
+AstNode *make_container_assignment(AstNode *, AstNode *, AstNode *);
 AstNode *make_list_def(AstNode *, AstNode *);
+AstNode *make_map_def(AstNode *, AstNode *);
+AstNode *make_map_keyval(AstNode *, AstNode *);
 AstNode *make_assignment(char *, AstNode *);
 AstNode *make_while_loop(AstNode *, AstNode *);
 AstNode *make_for_loop(char *, AstNode *, AstNode *);

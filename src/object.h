@@ -11,6 +11,8 @@
 
 /* initial allocated size of a new List */
 #define INIT_LIST_SIZE 32
+#define INIT_MAP_SIZE 8
+
 
 /* Types of LuciObjects */
 typedef enum {
@@ -19,6 +21,7 @@ typedef enum {
     obj_str_t,
     obj_file_t,
     obj_list_t,
+    obj_map_t,
     obj_iterator_t,
     obj_func_t,
     obj_libfunc_t
@@ -70,7 +73,7 @@ typedef struct _LuciMap {
     unsigned int count;	/* current number of key/value pairs */
     unsigned int size;	/* current count of allocated pairs*/
     LuciObject **keys;
-    LuciObject **values;
+    LuciObject **vals;
 } LuciMapObj;
 
 typedef struct _LuciIterator {
@@ -96,6 +99,7 @@ typedef struct _LuciLibFunc {
 #define TYPEOF(o)   (((LuciObject *)(o))->type)
 
 #define INCREF(o)   (((LuciObject *)(o))->refcount++)
+#define DECREF(o)   (((LuciObject *)(o))->refcount--)
 
 #define TYPES_MATCH(left, right) ( TYPEOF(left) == TYPEOF(right) )
 
@@ -112,6 +116,7 @@ LuciObject *LuciFloat_new(double d);
 LuciObject *LuciString_new(char *s);
 LuciObject *LuciFile_new(FILE *fp, long size, int mode);
 LuciObject *LuciList_new();
+LuciObject *LuciMap_new();
 LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
@@ -125,6 +130,9 @@ LuciObject *copy_object(LuciObject* orig);
 
 /* destroys an object */
 //void destroy(LuciObject *trash);
+
+LuciObject *map_get_object(LuciObject *map, LuciObject *key);
+LuciObject *map_set_object(LuciObject *map, LuciObject *key, LuciObject *val);
 
 int list_append_object(LuciObject *list, LuciObject *item);
 LuciObject *list_get_object(LuciObject *list, int index);

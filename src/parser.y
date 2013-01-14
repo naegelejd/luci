@@ -35,14 +35,16 @@ void yyerror(const char *msg);
 %type <node> expr id call assignment
 %type <node> while_loop for_loop if_else
 %type <node> func_def params return
-%type <node> empty_list list_items list_index list_access list_assign list
+%type <node> empty_map map_items map_keyval map
+%type <node> empty_list list_items list
+%type <node> container_index container_access container_assign
 %type <node> program
 
 %token <int_v> INT
 %token <float_v> FLOAT
 %token <string_v> STRING ID
 
-%token NEWLINE SEMICOLON COMMA
+%token NEWLINE COLON SEMICOLON COMMA
 %token WHILE FOR IN DO DONE
 %token BREAK CONTINUE
 %token IF THEN ELSE END
@@ -84,7 +86,7 @@ statement:
     |   if_else             { $$ = $1; }
     |   func_def            { $$ = $1; }
     |   expr SEMICOLON              { $$ = $1; }
-    |   list_assign SEMICOLON       { $$ = $1; }
+    |   container_assign SEMICOLON  { $$ = $1; }
     |   assignment SEMICOLON        { $$ = $1; }
     |   return SEMICOLON            { $$ = $1; }
     |   BREAK SEMICOLON             { $$ = make_break(); }
@@ -99,9 +101,9 @@ assignment:
                 { $$ = make_assignment($1, $3); }
     ;
 
-list_assign:
-        id list_index ASSIGN expr
-                { $$ = make_list_assignment($1, $2, $4); }
+container_assign:
+        id container_index ASSIGN expr
+                { $$ = make_container_assignment($1, $2, $4); }
     ;
 
 func_def:
@@ -128,6 +130,24 @@ call:
                 { $$ = make_func_call($1, $3); }
     ;
 
+map:
+        LBRACK empty_map RBRACK     { $$ = $2; }
+    |   LBRACK map_items RBRACK     { $$ = $2; }
+    ;
+
+empty_map:
+        /* nothing */        { $$ = make_map_def(NULL, NULL); }
+    ;
+
+map_items:
+        map_keyval                     { $$ = make_map_def(NULL, $1); }
+    |   map_items COMMA map_keyval     { $$ = make_map_def($1, $3); }
+    ;
+
+map_keyval:
+        expr COLON expr             { $$ = make_map_keyval($1, $3); }
+    ;
+
 list:
         LSQUARE empty_list RSQUARE      { $$ = $2; }
     |   LSQUARE list_items RSQUARE      { $$ = $2; }
@@ -138,16 +158,16 @@ empty_list:
     ;
 
 list_items:
-        expr        { $$ = make_list_def(NULL, $1); }
+        expr                    { $$ = make_list_def(NULL, $1); }
     |   list_items COMMA expr   { $$ = make_list_def($1, $3); }
     ;
 
-list_access:
-        expr list_index { $$ = make_list_access($1, $2); };
+container_access:
+        expr container_index { $$ = make_container_access($1, $2); };
 
-list_index:
+container_index:
         LSQUARE expr RSQUARE
-                { $$ = $2; /* make_list_index($1, $3); */ };
+                { $$ = $2; };
 
 while_loop:
         WHILE expr LBRACK statements RBRACK
@@ -221,7 +241,8 @@ expr:
                         make_int_constant(0), $2, op_sub_t);
                 }
     |   LPAREN expr RPAREN      { $$ = $2; }
-    |   list_access             { $$ = $1; }
+    |   container_access             { $$ = $1; }
+    |   map                     { $$ = $1; }
     |   list                    { $$ = $1; }
     |   call                    { $$ = $1; }
     ;

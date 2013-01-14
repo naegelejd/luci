@@ -87,20 +87,41 @@ static void compile_binary_expr(AstNode *node, CompileState *cs)
 }
 
 
-static void compile_list_access(AstNode *node, CompileState *cs)
+static void compile_container_access(AstNode *node, CompileState *cs)
 {
-    compile(node->data.listaccess.index, cs);
-    compile(node->data.listaccess.list, cs);
-    push_instr(cs, LISTGET, 0);
+    compile(node->data.contaccess.index, cs);
+    compile(node->data.contaccess.container, cs);
+    push_instr(cs, CGET, 0);
 }
 
 
-static void compile_list_assignment(AstNode *node, CompileState *cs)
+static void compile_container_assignment(AstNode *node, CompileState *cs)
 {
-    compile(node->data.listassign.right, cs);
-    compile(node->data.listassign.index, cs);
-    compile(node->data.listassign.list, cs);
-    push_instr(cs, LISTPUT, 0);
+    compile(node->data.contassign.right, cs);
+    compile(node->data.contassign.index, cs);
+    compile(node->data.contassign.container, cs);
+    push_instr(cs, CPUT, 0);
+}
+
+static void compile_map_def(AstNode *node, CompileState *cs)
+{
+    int i;
+    printf("Compiling map definition\n");
+
+    /* Compile map key-value pairs in reverse order */
+    for (i = node->data.mapdef.count - 1; i >= 0; i--) {
+        /* compile each pair */
+        compile(node->data.mapdef.pairs[i], cs);
+    }
+    /* add MKMAP instruction for # of k-v pairs */
+    push_instr(cs, MKMAP, node->data.mapdef.count);
+}
+
+static void compile_map_keyval(AstNode *node, CompileState *cs)
+{
+    printf("Compiling map key-value pair\n");
+    compile(node->data.mapkeyval.key, cs);
+    compile(node->data.mapkeyval.val, cs);
 }
 
 
@@ -108,12 +129,12 @@ static void compile_list_def(AstNode *node, CompileState *cs)
 {
     int i;
     /* compile list items in reverse order */
-    for (i = node->data.list.count - 1; i >= 0; i--) {
+    for (i = node->data.listdef.count - 1; i >= 0; i--) {
         /* compile each list member */
-        compile(node->data.list.items[i], cs);
+        compile(node->data.listdef.items[i], cs);
     }
     /* add MKLIST instruction for # of list items */
-    push_instr(cs, MKLIST, node->data.list.count);
+    push_instr(cs, MKLIST, node->data.listdef.count);
 }
 
 
@@ -231,13 +252,13 @@ static void compile_func_call(AstNode *node, CompileState *cs)
     int i;
     /* compile arglist, which pushes each arg onto stack */
     AstNode *tmp = node->data.call.arglist;
-    for (i = 0; i < tmp->data.list.count; i++) {
-        compile(tmp->data.list.items[i], cs);
+    for (i = 0; i < tmp->data.listdef.count; i++) {
+        compile(tmp->data.listdef.items[i], cs);
     }
     /* compile funcname, which pushes symbol value onto stack */
     compile(node->data.call.funcname, cs);
     /* add CALL instr, specifying # of args */
-    push_instr(cs, CALL, tmp->data.list.count);
+    push_instr(cs, CALL, tmp->data.listdef.count);
 }
 
 
@@ -257,10 +278,10 @@ static void compile_func_def(AstNode *node, CompileState *cs)
      * locals table and globals table */
     func_cs->gtable = cs->ltable;
 
-    nparams = params->data.list.count;
+    nparams = params->data.listdef.count;
     /* add each parameter to symbol table */
     for (i = 0; i < nparams; i++) {
-        id_string = params->data.list.items[i];
+        id_string = params->data.listdef.items[i];
         /* add arg symbol to symbol table */
         a = symtable_id(func_cs->ltable, id_string->data.s, SYMCREATE);
         //push_instr(func_cs, STORE, a);
@@ -377,7 +398,7 @@ static void compile_continue(AstNode *node, CompileState *cs)
     struct loop_jump *jmp = alloc(sizeof(*jmp));
     struct loop_jump *ptr;
     if (!cs->current_loop) {
-        DIE("%s", "'continue' @ line %d not inside a loop\n", node->lineno);
+        DIE("'continue' @ line %d not inside a loop\n", node->lineno);
     }
     ptr = cs->current_loop->continues;
     /* push a bogus JUMP instr to be backpatched later */
@@ -418,8 +439,10 @@ static void (*compilers[])(AstNode *, CompileState *) = {
     compile_string_constant,
     compile_id_expr,
     compile_binary_expr,
-    compile_list_access,
-    compile_list_assignment,
+    compile_container_access,
+    compile_container_assignment,
+    compile_map_def,
+    compile_map_keyval,
     compile_list_def,
     compile_assignment,
     compile_while_loop,
@@ -760,9 +783,10 @@ static char *instruction_names[] = {
     "BINOP",
     "CALL",
     "RETURN",
+    "MKMAP",
     "MKLIST",
-    "LISTGET",
-    "LISTPUT",
+    "CGET",
+    "CPUT",
     "MKITER",
     "HALT",
     /* here begins extended length instructions */

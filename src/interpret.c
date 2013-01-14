@@ -246,6 +246,20 @@ void eval(Frame *frame)
             ip = frame->ip;
         DISPATCH(NEXT_OPCODE);
 
+        HANDLE(MKMAP)
+            LUCI_DEBUG("MKMAP %d\n", a);
+            x = LuciMap_new();
+            for (i = 0; i < a; i ++) {
+                /* first item is the value */
+                y = st_pop(&lstack);
+                /* then the key */
+                z = st_pop(&lstack);
+                /* add the key & value to the map */
+                map_set_object(x, z, y);
+            }
+            st_push(&lstack, x);
+        DISPATCH(NEXT_OPCODE);
+
         HANDLE(MKLIST)
             LUCI_DEBUG("MKLIST %d\n", a);
             x = LuciList_new();
@@ -256,39 +270,85 @@ void eval(Frame *frame)
             st_push(&lstack, x);
         DISPATCH(NEXT_OPCODE);
 
-        HANDLE(LISTGET)
-            LUCI_DEBUG("%s\n", "LISTGET");
-            /* pop list */
+        HANDLE(CGET)
+        {
+            LUCI_DEBUG("%s\n", "CGET");
+            /* pop container */
             x = st_pop(&lstack);
-            /* pop index */
-            y = st_pop(&lstack);
-            if (y->type != obj_int_t) {
-                DIE("%s", "Invalid list index type\n");
-            }
 
-            /* get a copy of the obj in list at index */
-            z = list_get_object(x, ((LuciIntObj *)y)->i);
-            st_push(&lstack, z);
+            /* determine if container is list or map */
+            switch (TYPEOF(x)) {
+
+            case obj_list_t:
+            {
+                /* pop index */
+                y = st_pop(&lstack);
+                if (y->type != obj_int_t) {
+                    DIE("%s", "Invalid list index type\n");
+                }
+
+                /* get a copy of the obj in list at index */
+                z = list_get_object(x, ((LuciIntObj *)y)->i);
+                st_push(&lstack, z);
+            } break;
+
+            case obj_map_t:
+            {
+                /* pop key */
+                y = st_pop(&lstack);
+                /* get the val for key 'y' */
+                z = map_get_object(x, y);
+                st_push(&lstack, z);
+            } break;
+
+            default:
+                DIE("%s\n", "Cannot store value in a non-container object");
+            }
+        }
         DISPATCH(NEXT_OPCODE);
 
-        HANDLE(LISTPUT)
-            LUCI_DEBUG("LISTPUT %d\n", a);
-            /* pop list */
+        HANDLE(CPUT)
+        {
+            LUCI_DEBUG("CPUT %d\n", a);
+            /* pop container */
             x = st_pop(&lstack);
-            /* pop index */
-            y = st_pop(&lstack);
-            /* pop right hand value */
-            z = st_pop(&lstack);
 
-            if (y->type != obj_int_t) {
-                DIE("%s", "Invalid type in list assign\n");
+            /* determine if container is list or map */
+            switch (TYPEOF(x)) {
+
+            case obj_list_t:
+            {
+                /* pop index */
+                y = st_pop(&lstack);
+                /* pop right hand value */
+                z = st_pop(&lstack);
+
+                if (y->type != obj_int_t) {
+                    DIE("%s", "Invalid type in list assign\n");
+                }
+                /* re-use 'y' to obtain a pointer to the old object at index i */
+                y = list_set_object(x, z, ((LuciIntObj *)y)->i);
+                /* decref the old object from index i */
+                decref(y);
+            } break;
+
+            case obj_map_t:
+            {
+                /* pop key */
+                y = st_pop(&lstack);
+                /* pop right hand value */
+                z = st_pop(&lstack);
+
+                /* re-use 'y' to obtain a pointer to the old val */
+                y = map_set_object(x, y, z);
+                /* decref the old val */
+                decref(y);
+            } break;
+
+            default:
+                DIE("%s\n", "Cannot store value in a non-container object");
             }
-            i = ((LuciIntObj *)y)->i;
-
-            /* re-use 'y' to obtain a pointer to the old object at index i */
-            y = list_set_object(x, z, i);
-            /* decref the old object from index i */
-            decref(y);
+        }
         DISPATCH(NEXT_OPCODE);
 
         HANDLE(MKITER)

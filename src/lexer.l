@@ -86,6 +86,7 @@ WS          [ \t\f\r]+
 "{"     { col++; return LBRACK; }
 "}"     { col++; return RBRACK; }
 ";"     { col++; return SEMICOLON; }
+":"     { col++; return COLON; }
 ","     { col++; return COMMA; }
 "["     { col++; return LSQUARE; }
 "]"     { col++; return RSQUARE; }

@@ -17,8 +17,10 @@ const char *TYPE_NAMES[] = {
     "string",
     "id",
     "expr",
-    "list access",
-    "list assignment",
+    "container access",
+    "container assignment",
+    "map definition",
+    "map key-value pair",
     "list definition",
     "assignment",
     "while loop",
@@ -88,45 +90,74 @@ AstNode *make_binary_expr(AstNode *left,
     return result;
 }
 
-AstNode *make_list_access(AstNode *list, AstNode *index)
+AstNode *make_container_access(AstNode *container, AstNode *index)
 {
-    AstNode *result = create_node(ast_listaccess_t);
-    result->data.listaccess.list = list;
-    result->data.listaccess.index = index;
-    LUCI_DEBUG("%s\n", "Made list access reference");
+    AstNode *result = create_node(ast_contaccess_t);
+    result->data.contaccess.container = container;
+    result->data.contaccess.index = index;
+    LUCI_DEBUG("%s\n", "Made continer access reference");
     return result;
 }
 
-AstNode *make_list_assignment(AstNode *name,
+AstNode *make_container_assignment(AstNode *name,
         AstNode *index, AstNode *right)
 {
-    AstNode *result = create_node(ast_listassign_t);
-    result->data.listassign.list = name;
-    result->data.listassign.index = index;
-    result->data.listassign.right = right;
-    LUCI_DEBUG("%s\n", "Made list assignment node");
+    AstNode *result = create_node(ast_contassign_t);
+    result->data.contassign.container = name;
+    result->data.contassign.index = index;
+    result->data.contassign.right = right;
+    LUCI_DEBUG("%s\n", "Made container assignment node");
+    return result;
+}
+
+AstNode *make_map_def(AstNode *result, AstNode *to_append)
+{
+    if (!result) {
+        result = create_node(ast_mapdef_t);
+        result->data.mapdef.size = AST_CONTAINER_SIZE;
+        result->data.mapdef.pairs = alloc(result->data.mapdef.size *
+                sizeof(*result->data.mapdef.pairs));
+        result->data.mapdef.count = 0;
+    }
+    /* checking for a NULL 'to_append' allows for empty list creation */
+    if (to_append) {
+        assert(result->type == ast_mapdef_t);
+        if (++(result->data.mapdef.count) > result->data.mapdef.size) {
+            result->data.mapdef.size = result->data.mapdef.size << 1;
+            result->data.mapdef.pairs = realloc(result->data.mapdef.pairs,
+                result->data.mapdef.size * sizeof(*result->data.mapdef.pairs));
+        }
+        result->data.mapdef.pairs[result->data.mapdef.count - 1] = to_append;
+    }
+    return result;
+}
+
+AstNode *make_map_keyval(AstNode *key, AstNode *val)
+{
+    AstNode *result = create_node(ast_mapkeyval_t);
+    result->data.mapkeyval.key = key;
+    result->data.mapkeyval.val = val;
     return result;
 }
 
 AstNode *make_list_def(AstNode *result, AstNode *to_append)
 {
-    if (!result)
-    {
-        result = create_node(ast_list_t);
-        result->data.list.size = AST_LIST_SIZE;
-        result->data.list.items = alloc(result->data.list.size *
-                sizeof(*result->data.list.items));
-        result->data.list.count = 0;
+    if (!result) {
+        result = create_node(ast_listdef_t);
+        result->data.listdef.size = AST_CONTAINER_SIZE;
+        result->data.listdef.items = alloc(result->data.listdef.size *
+                sizeof(*result->data.listdef.items));
+        result->data.listdef.count = 0;
     }
     /* checking for a NULL 'to_append' allows for empty list creation */
     if (to_append) {
-        assert(result->type == ast_list_t);
-        if (++(result->data.list.count) > result->data.list.size) {
-            result->data.list.size = result->data.list.size << 1;
-            result->data.list.items = realloc(result->data.list.items,
-                result->data.list.size * sizeof(*result->data.list.items));
+        assert(result->type == ast_listdef_t);
+        if (++(result->data.listdef.count) > result->data.listdef.size) {
+            result->data.listdef.size = result->data.listdef.size << 1;
+            result->data.listdef.items = realloc(result->data.listdef.items,
+                result->data.listdef.size * sizeof(*result->data.listdef.items));
         }
-        result->data.list.items[result->data.list.count - 1] = to_append;
+        result->data.listdef.items[result->data.listdef.count - 1] = to_append;
     }
     return result;
 }
@@ -276,12 +307,12 @@ int print_ast_graph(AstNode *root, int id)
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.funcdef.statements, id);
             break;
-        case ast_list_t:
+        case ast_listdef_t:
             printf("%d [label=\"list\"]\n", rID);
-            for (i = 0; i < root->data.list.count; i++)
+            for (i = 0; i < root->data.listdef.count; i++)
             {
                 printf("%d -> %d\n", rID, ++id);
-                id = print_ast_graph(root->data.list.items[i], id);
+                id = print_ast_graph(root->data.listdef.items[i], id);
             }
             break;
         case ast_while_t:
@@ -319,28 +350,28 @@ int print_ast_graph(AstNode *root, int id)
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.call.funcname, id);
             args = root->data.call.arglist;
-            assert(args->type == ast_list_t);
-            for (i = 0; i < args->data.list.count; i++)
+            assert(args->type == ast_listdef_t);
+            for (i = 0; i < args->data.listdef.count; i++)
             {
                 printf("%d -> %d\n", rID, ++id);
-                id = print_ast_graph(args->data.list.items[i], id);
+                id = print_ast_graph(args->data.listdef.items[i], id);
             }
             break;
-        case ast_listaccess_t:
-            printf("%d [label=\"listaccess\"]\n", rID);
+        case ast_contaccess_t:
+            printf("%d [label=\"contaccess\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listaccess.list, id);
+            id = print_ast_graph(root->data.contaccess.container, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listaccess.index, id);
+            id = print_ast_graph(root->data.contaccess.index, id);
             break;
-        case ast_listassign_t:
-            printf("%d [label=\"listassign\"]\n", rID);
+        case ast_contassign_t:
+            printf("%d [label=\"contassign\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listassign.list, id);
+            id = print_ast_graph(root->data.contassign.container, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listassign.index, id);
+            id = print_ast_graph(root->data.contassign.index, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.listassign.right, id);
+            id = print_ast_graph(root->data.contassign.right, id);
             break;
         case ast_expr_t:
             printf("%d [label=\"expression\"]\n", rID);
@@ -391,12 +422,12 @@ void destroy_tree(AstNode *root)
             destroy_tree(root->data.funcdef.param_list);
             destroy_tree(root->data.funcdef.statements);
             break;
-        case ast_list_t:
-            for (i = 0; i < root->data.list.count; i++)
+        case ast_listdef_t:
+            for (i = 0; i < root->data.listdef.count; i++)
             {
-                destroy_tree(root->data.list.items[i]);
+                destroy_tree(root->data.listdef.items[i]);
             }
-            free(root->data.list.items);
+            free(root->data.listdef.items);
             break;
         case ast_while_t:
             destroy_tree(root->data.while_loop.cond);
@@ -420,14 +451,14 @@ void destroy_tree(AstNode *root)
             destroy_tree(root->data.call.arglist);
             destroy_tree(root->data.call.funcname);
             break;
-        case ast_listaccess_t:
-            destroy_tree(root->data.listaccess.list);
-            destroy_tree(root->data.listaccess.index);
+        case ast_contaccess_t:
+            destroy_tree(root->data.contaccess.container);
+            destroy_tree(root->data.contaccess.index);
             break;
-        case ast_listassign_t:
-            destroy_tree(root->data.listassign.index);
-            destroy_tree(root->data.listassign.right);
-            destroy_tree(root->data.listassign.list);
+        case ast_contassign_t:
+            destroy_tree(root->data.contassign.index);
+            destroy_tree(root->data.contassign.right);
+            destroy_tree(root->data.contassign.container);
             break;
         case ast_expr_t:
             destroy_tree(root->data.expression.left);

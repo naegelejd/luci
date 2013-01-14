@@ -23,9 +23,10 @@ typedef enum {
     BINOP,
     CALL,
     RETURN,
+    MKMAP,
     MKLIST,
-    LISTGET,
-    LISTPUT,
+    CGET,
+    CPUT,
     MKITER,
     HALT,
     /* here begins extended length instructions */

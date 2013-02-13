@@ -105,4 +105,6 @@ void Frame_delete_interactive(Frame *f);
 
 void print_instructions(Frame *);
 
+char * serialize_program(Frame *);
+
 #endif

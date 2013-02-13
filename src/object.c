@@ -285,6 +285,56 @@ void destroy(LuciObject *trash)
     trash = NULL;
 }
 
+/*
+ * djb2 (hash(i) = hash(i - 1) * 33 + str[i])
+ */
+unsigned int string_hash_0(LuciObject *s)
+{
+    char *str = AS_STRING(s)->s;
+
+    unsigned int h = 5381;
+    int c;
+
+    while ((c = *str++))
+        h = ((h << 5) + h) + c;
+        /* h = ((h << 5 - h)) + c;  // h * 31 + c */
+    return h;
+}
+
+/*
+ * sdbm (hash(i) = hash(i - 1) * 65599 + str[i])
+ */
+unsigned int string_hash_1(LuciObject *s)
+{
+    char *str = AS_STRING(s)->s;
+
+    unsigned int h = 0;
+    int c;
+    while ((c = *str++))
+        h = c + (h << 6) + (h << 16) - h;
+    return h;
+}
+
+/*
+ * One-at-a-time (Bob Jenkins)
+ */
+unsigned int string_hash_2(LuciObject *s)
+{
+    char *str = AS_STRING(s)->s;
+
+    unsigned int h = 0;
+    int c;
+    while ((c = *str++)) {
+        h += c;
+        h += h << 10;
+        h ^= h >> 6;
+    }
+    h += h << 3;
+    h ^= h >> 11;
+    h += h << 15;
+    return h;
+}
+
 LuciObject *map_get_object(LuciObject *map, LuciObject *key)
 {
     return NULL;

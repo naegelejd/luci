@@ -25,12 +25,12 @@ static int close_file(FILE *fp)
 
 struct var_def globals[] =
 {
-    "stdout", 0,
-    "stderr", 0,
-    "stdin", 0,
-    "e", 0,
-    "pi", 0,
-    0, 0
+    {"stdout", 0},
+    {"stderr", 0},
+    {"stdin", 0},
+    {"e", 0},
+    {"pi", 0},
+    {0, 0}
 };
 
 void init_variables(void)
@@ -58,27 +58,27 @@ void init_variables(void)
 
 
 const struct func_def builtins[] = {
-    "help", luci_help,
-    "dir", luci_dir,
-    "print",  luci_print,
-    "input", luci_readline,
-    "readline", luci_readline,
-    "type",  luci_typeof,
-    "assert", luci_assert,
-    "str", luci_cast_str,
-    "int", luci_cast_int,
-    "float", luci_cast_float,
-    "open", luci_fopen,
-    "close", luci_fclose,
-    "read", luci_fread,
-    "write", luci_fwrite,
-    "readlines", luci_flines,
-    "range", luci_range,
-    "sum", luci_sum,
-    "len", luci_len,
-    "max", luci_max,
-    "min", luci_min,
-    0, 0
+    {"help", luci_help},
+    {"dir", luci_dir},
+    {"print",  luci_print},
+    {"input", luci_readline},
+    {"readline", luci_readline},
+    {"type",  luci_typeof},
+    {"assert", luci_assert},
+    {"str", luci_cast_str},
+    {"int", luci_cast_int},
+    {"float", luci_cast_float},
+    {"open", luci_fopen},
+    {"close", luci_fclose},
+    {"read", luci_fread},
+    {"write", luci_fwrite},
+    {"readlines", luci_flines},
+    {"range", luci_range},
+    {"sum", luci_sum},
+    {"len", luci_len},
+    {"max", luci_max},
+    {"min", luci_min},
+    {0, 0}
 };
 
 LuciObject *luci_help(LuciObject **args, unsigned int c)

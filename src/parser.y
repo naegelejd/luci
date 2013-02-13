@@ -18,6 +18,13 @@
 
 void yyerror(const char *msg);
 
+/* defined in lexer.l */
+extern int get_line_num(void);
+extern int get_last_col_num(void);
+
+/* defined in generated lexer */
+extern int yylex();
+
 %}
 
 %error-verbose

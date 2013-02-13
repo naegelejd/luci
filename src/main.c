@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "luci.h"
+#include "gc.h"
 #include "ast.h"
 #include "compile.h"
 #include "interpret.h"
@@ -17,12 +18,15 @@
 #define GRAPH_AST   8
 #define SERIALIZE   16
 
+/* from scanner */
+extern void yyrestart();
 /* from parser */
 extern FILE *yyin;
-extern yyparse();
+extern int yyparse();
 extern int yydebug;
 
-static const char const * version_string = "Luci v0.2";
+
+static const char * const version_string = "Luci v0.2";
 
 int luci_main(int argc, char *argv[]);
 void luci_interactive(void);

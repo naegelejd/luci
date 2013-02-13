@@ -25,7 +25,7 @@ static void gc_pool_delete(struct gc_pool *);
  */
 int gc_init(void)
 {
-    int i, j;
+    int i;
 
     /* initialize each arena identifying it as empty */
     for (i = 0; i < ARENA_COUNT; i++) {
@@ -160,7 +160,6 @@ int gc_finalize()
 
 static struct gc_pool * gc_pool_new(void)
 {
-    int i;
     /* calloc so that both the blocks returned to the user are
      * zero'd, as well as the flags used to identify used/free blocks */
     struct gc_pool *p = calloc(1, sizeof(*p));

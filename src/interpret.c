@@ -42,7 +42,7 @@ void eval(Frame *frame)
 /* Using __GNUC__ for now, which is always defined by GCC */
 #ifdef __GNUC__
 
-#include "dispatch.h";  /* include static jump table */
+#include "dispatch.h"  /* include static jump table */
 
 #define INTERP_INIT()   DISPATCH(NEXT_OPCODE)
 #define SWITCH(instr)
@@ -75,10 +75,10 @@ void eval(Frame *frame)
     st_init(&framestack);
 
     LuciObject* lfargs[MAX_LIBFUNC_ARGS];
-    LuciObject *x = NULL;
-    LuciObject *y = NULL;
-    LuciObject *z = NULL;
-    Instruction instr = 0;
+    register LuciObject *x = NULL;
+    register LuciObject *y = NULL;
+    register LuciObject *z = NULL;
+    //Instruction instr = 0;
     int a;
     int ip = 0;
     int i = 0;

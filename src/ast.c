@@ -10,6 +10,9 @@
 #include "luci.h"
 #include "ast.h"
 
+/* defined in lexer.l */
+extern int get_line_num();
+extern int get_last_col_num();
 
 const char *TYPE_NAMES[] = {
     "int",

@@ -131,6 +131,10 @@ LuciObject *copy_object(LuciObject* orig);
 /* destroys an object */
 //void destroy(LuciObject *trash);
 
+unsigned int string_hash_0(LuciObject *s);
+unsigned int string_hash_1(LuciObject *s);
+unsigned int string_hash_2(LuciObject *s);
+
 LuciObject *map_get_object(LuciObject *map, LuciObject *key);
 LuciObject *map_set_object(LuciObject *map, LuciObject *key, LuciObject *val);
 

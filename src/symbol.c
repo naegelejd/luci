@@ -12,16 +12,13 @@
 #include "symbol.h"
 
 static Symbol *symbol_new(const char *, uint32_t);
-static void *symbol_delete(Symbol *);
+static void symbol_delete(Symbol *);
 
 static SymbolTable *symtable_insert(SymbolTable *, Symbol *);
 static SymbolTable *symtable_resize(SymbolTable *, uint32_t);
 static Symbol *find_symbol_by_name(SymbolTable *, const char *);
 
 static uint32_t hash_symbol(SymbolTable *, const char *);
-static uint32_t djb2(const char *);
-static uint32_t sdbm(const char *);
-static uint32_t oaat(const char *);
 
 /* http://planetmath.org/GoodHashTablePrimes.html */
 enum { N_BUCKET_OPTIONS = 26 };
@@ -33,59 +30,16 @@ static unsigned int NBUCKETS[N_BUCKET_OPTIONS] = {
     805306457, 1610612741, 0
 };
 
-/*
- * hash(i) = hash(i - 1) * 33 + str[i]
- */
-static uint32_t djb2(const char *str)
+/* djb2 algorithm */
+static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
 {
     uint32_t h = 5381;
     int c;
 
-    while (c = *str++)
+    while ((c = *name++))
         h = ((h << 5) + h) + c;
         /* h = ((h << 5 - h)) + c;  // h * 31 + c */
-    return h;
-}
-
-/*
- * hash(i) = hash(i - 1) * 65599 + str[i]
- */
-static uint32_t sdbm(const char *str)
-{
-    uint32_t h = 0;
-    int c;
-    while (c = *str++)
-        h = c + (h << 6) + (h << 16) - h;
-    return h;
-}
-
-/*
- * One-at-a-time (Bob Jenkins)
- */
-static uint32_t oaat(const char *str)
-{
-    uint32_t h = 0;
-    int c;
-    while (c = *str++) {
-        h += c;
-        h += h << 10;
-        h ^= h >> 6;
-    }
-    h += h << 3;
-    h ^= h >> 11;
-    h += h << 15;
-    return h;
-}
-
-static uint32_t (*hashfuncs[])(const char *str) = {
-    djb2,
-    sdbm,
-    oaat,
-};
-
-static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
-{
-    return hashfuncs[0](name) % NBUCKETS[symtable->bscale];
+    return h % NBUCKETS[symtable->bscale];
 }
 
 static Symbol *symbol_new(const char *name, uint32_t index)
@@ -97,7 +51,7 @@ static Symbol *symbol_new(const char *name, uint32_t index)
     return new;
 }
 
-static void *symbol_delete(Symbol *del)
+static void symbol_delete(Symbol *del)
 {
     if (del) {
         if (del->name) {
@@ -130,7 +84,7 @@ static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
     /* if bucket is empty, stuff new symbol into it */
     if (!cur) {
         symtable->symbols[hash] = new_symbol;
-        return;
+        return symtable;
     }
     /* walk through linked list */
     while (cur) {
@@ -163,13 +117,11 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
         DIE("%s", "Error allocating new, larger symtable entry array\n");
     symtable->bscale = bucketscale;
 
-    Symbol *cur = NULL, *prev = NULL;
-    Symbol *inserted = NULL;
+    Symbol *cur = NULL;
     int i = 0;
     for (i = 0; i < NBUCKETS[old_bscale]; i ++) {
         cur = old_symbols[i];
         while (cur) {
-            prev = cur;
             /* re-insert symbol into new hash table */
             symtable_insert(symtable, cur);
             /* TODO: copy symbol payload to new symbol location */
@@ -192,7 +144,7 @@ SymbolTable *symtable_new(uint32_t bucketscale)
         DIE("%s", "Error allocating symbol table\n");
     LUCI_DEBUG("%s\n", "Allocated symbol table");
 
-    if (bucketscale < 0 || bucketscale >= N_BUCKET_OPTIONS)
+    if (bucketscale >= N_BUCKET_OPTIONS)
         DIE("%s", "Symbol Table scale out of bounds\n");
     symtable->bscale = bucketscale;
 
@@ -260,7 +212,7 @@ void symtable_delete(SymbolTable *symtable)
 
 static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)
 {
-    Symbol *cur = NULL, *prev = NULL;
+    Symbol *cur = NULL;
     /* Compute hash and bound it by the table's # of buckets */
     uint32_t hash = hash_symbol(symtable, name);
 
@@ -332,9 +284,7 @@ int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
  */
 void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
 {
-    LuciObject *old = NULL;
-
-    if ((id < 0) || (id >= symtable->count))
+    if (id >= symtable->count)
         DIE("%s", "Symbol id out of bounds\n");
 
     /* Decref any existing object */

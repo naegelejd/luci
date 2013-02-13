@@ -374,7 +374,7 @@ static void compile_break(AstNode *node, CompileState *cs)
     struct loop_jump *ptr;
 
     if (!cs->current_loop) {
-        DIE("%s", "'break' @ line %d not inside a loop\n", node->lineno);
+        DIE("'break' @ line %d not inside a loop\n", node->lineno);
     }
     ptr = cs->current_loop->breaks;
     /* push a bogus JUMP instr to be backpatched later */
@@ -702,7 +702,8 @@ static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
 static uint32_t put_instr(CompileState *cs, uint32_t addr,
         Opcode op, int arg) {
 
-    if (addr < 0 || addr > cs->instr_count)
+    /* if (addr < 0) ... addr is unsigned */
+    if (addr > cs->instr_count)
         DIE("%s", "Address out of bounds\n");
 
     Instruction instr = (op << 11);
@@ -769,6 +770,7 @@ char* serialize_program(Frame *globalframe)
     for (i = 0; i < globalframe->nlocals; i++) {
         //print_object(globalframe->locals[i]);
     }
+    return NULL;
 }
 
 static char *instruction_names[] = {

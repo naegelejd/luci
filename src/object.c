@@ -66,19 +66,6 @@ LuciObject *LuciList_new()
     return (LuciObject *)o;
 }
 
-/* LuciMapObj */
-LuciObject *LuciMap_new()
-{
-    LuciMapObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
-    TYPEOF(o) = obj_map_t;
-    o->count = 0;
-    o->size = INIT_MAP_SIZE;
-    o->keys = alloc(o->size * sizeof(*o->keys));
-    o->vals = alloc(o->size * sizeof(*o->vals));
-    return (LuciObject *)o;
-}
-
 /* LuciIteratorObj */
 LuciObject *LuciIterator_new(LuciObject *list, unsigned int step)
 {
@@ -265,6 +252,22 @@ void destroy(LuciObject *trash)
             break;
         }
 
+        case obj_map_t:
+        {
+            LuciMapObj *mapobj = (LuciMapObj *)trash;
+            for (i = 0; i < mapobj->size; i++) {
+                if (mapobj->keys[i]) {
+                    destroy(mapobj->keys[i]);
+                }
+                if (mapobj->vals[i]) {
+                    destroy(mapobj->vals[i]);
+                }
+            }
+            free(mapobj->keys);
+            free(mapobj->vals);
+            break;
+        }
+
         case obj_iterator_t:
             /* destroy the list if possible */
             destroy(((LuciIteratorObj *)trash)->list);
@@ -333,16 +336,6 @@ unsigned int string_hash_2(LuciObject *s)
     h ^= h >> 11;
     h += h << 15;
     return h;
-}
-
-LuciObject *map_get_object(LuciObject *map, LuciObject *key)
-{
-    return NULL;
-}
-
-LuciObject *map_set_object(LuciObject *map, LuciObject *key, LuciObject *val)
-{
-    return NULL;
 }
 
 int list_append_object(LuciObject *list, LuciObject *item)

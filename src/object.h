@@ -70,6 +70,8 @@ typedef struct _LuciList {
 
 typedef struct _LuciMap {
     LuciObject base;
+    unsigned int size_idx;
+    unsigned int collisions;
     unsigned int count;	/* current number of key/value pairs */
     unsigned int size;	/* current count of allocated pairs*/
     LuciObject **keys;
@@ -103,12 +105,13 @@ typedef struct _LuciLibFunc {
 
 #define TYPES_MATCH(left, right) ( TYPEOF(left) == TYPEOF(right) )
 
-#define AS_INT(o)   ((LuciIntObj *)(o))
-#define AS_FLOAT(o) ((LuciFloatObj *)(o))
-#define AS_STRING(o) ((LuciStringObj *)(o))
-#define AS_LIST(o) ((LuciListObj *)(o))
-#define AS_FILE(o) ((LuciFileObj *)(o))
-#define AS_FUNCTION(o) ((LuciFunctionObj *)(o))
+#define AS_INT(o)       ((LuciIntObj *)(o))
+#define AS_FLOAT(o)     ((LuciFloatObj *)(o))
+#define AS_STRING(o)    ((LuciStringObj *)(o))
+#define AS_LIST(o)      ((LuciListObj *)(o))
+#define AS_MAP(o)       ((LuciMapObj *)(o))
+#define AS_FILE(o)      ((LuciFileObj *)(o))
+#define AS_FUNCTION(o)  ((LuciFunctionObj *)(o))
 
 
 LuciObject *LuciInt_new(long l);
@@ -116,7 +119,6 @@ LuciObject *LuciFloat_new(double d);
 LuciObject *LuciString_new(char *s);
 LuciObject *LuciFile_new(FILE *fp, long size, int mode);
 LuciObject *LuciList_new();
-LuciObject *LuciMap_new();
 LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
@@ -134,9 +136,6 @@ LuciObject *copy_object(LuciObject* orig);
 unsigned int string_hash_0(LuciObject *s);
 unsigned int string_hash_1(LuciObject *s);
 unsigned int string_hash_2(LuciObject *s);
-
-LuciObject *map_get_object(LuciObject *map, LuciObject *key);
-LuciObject *map_set_object(LuciObject *map, LuciObject *key, LuciObject *val);
 
 int list_append_object(LuciObject *list, LuciObject *item);
 LuciObject *list_get_object(LuciObject *list, int index);

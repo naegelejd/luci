@@ -8,6 +8,7 @@
 
 #include "luci.h"
 #include "object.h"
+#include "map.h"
 #include "interpret.h"
 #include "stack.h"
 #include "compile.h"
@@ -255,7 +256,7 @@ void eval(Frame *frame)
                 /* then the key */
                 z = st_pop(&lstack);
                 /* add the key & value to the map */
-                map_set_object(x, z, y);
+                map_set(x, z, y);
             }
             st_push(&lstack, x);
         DISPATCH(NEXT_OPCODE);
@@ -297,7 +298,7 @@ void eval(Frame *frame)
                 /* pop key */
                 y = st_pop(&lstack);
                 /* get the val for key 'y' */
-                z = map_get_object(x, y);
+                z = map_get(x, y);
                 st_push(&lstack, z);
             } break;
 
@@ -340,7 +341,7 @@ void eval(Frame *frame)
                 z = st_pop(&lstack);
 
                 /* re-use 'y' to obtain a pointer to the old val */
-                y = map_set_object(x, y, z);
+                y = map_set(x, y, z);
                 /* decref the old val */
                 decref(y);
             } break;

@@ -42,8 +42,8 @@ extern int yylex();
 %type <node> expr id call assignment
 %type <node> while_loop for_loop if_else
 %type <node> func_def params return
-%type <node> empty_map map_items map_keyval map
-%type <node> empty_list list_items list
+%type <node> map_items map_keyval map
+%type <node> list_items list
 %type <node> container_index container_access container_assign
 %type <node> program
 
@@ -114,9 +114,7 @@ container_assign:
     ;
 
 func_def:
-        DEF ID LPAREN empty_list RPAREN LBRACK statements RBRACK
-            { $$ = make_func_def($2, $4, $7); }
-    |   DEF ID LPAREN params RPAREN LBRACK statements RBRACK
+        DEF ID LPAREN params RPAREN LBRACK statements RBRACK
             { $$ = make_func_def($2, $4, $7); }
     ;
 
@@ -125,29 +123,26 @@ return:     RETURN expr     { $$ = make_return($2); }
     ;
 
 params:
-        ID      { $$ = make_list_def(NULL, make_string_constant($1)); }
+        /* nothing */   { $$ = make_list_def(NULL, NULL); }
+    |   ID      { $$ = make_list_def(NULL, make_string_constant($1)); }
     |   params COMMA ID
                 { $$ = make_list_def($1, make_string_constant($3)); }
     ;
 
 call:
-        id LPAREN empty_list RPAREN
+        id LPAREN list_items RPAREN
                 { $$ = make_func_call($1, $3); }
-    |   id LPAREN list_items RPAREN
+    |   container_access LPAREN list_items RPAREN
                 { $$ = make_func_call($1, $3); }
     ;
 
 map:
-        LBRACK empty_map RBRACK     { $$ = $2; }
-    |   LBRACK map_items RBRACK     { $$ = $2; }
-    ;
-
-empty_map:
-        /* nothing */        { $$ = make_map_def(NULL, NULL); }
+        LBRACK map_items RBRACK     { $$ = $2; }
     ;
 
 map_items:
-        map_keyval                     { $$ = make_map_def(NULL, $1); }
+        /* nothing */               { $$ = make_map_def(NULL, NULL); }
+    |   map_keyval                     { $$ = make_map_def(NULL, $1); }
     |   map_items COMMA map_keyval     { $$ = make_map_def($1, $3); }
     ;
 
@@ -156,16 +151,12 @@ map_keyval:
     ;
 
 list:
-        LSQUARE empty_list RSQUARE      { $$ = $2; }
-    |   LSQUARE list_items RSQUARE      { $$ = $2; }
-    ;
-
-empty_list:
-    /* nothing */   { $$ = make_list_def(NULL, NULL); }
+        LSQUARE list_items RSQUARE      { $$ = $2; }
     ;
 
 list_items:
-        expr                    { $$ = make_list_def(NULL, $1); }
+        /* nothing */       { $$ = make_list_def(NULL, NULL); }
+    |   expr                    { $$ = make_list_def(NULL, $1); }
     |   list_items COMMA expr   { $$ = make_list_def($1, $3); }
     ;
 
@@ -248,7 +239,7 @@ expr:
                         make_int_constant(0), $2, op_sub_t);
                 }
     |   LPAREN expr RPAREN      { $$ = $2; }
-    |   container_access             { $$ = $1; }
+    |   container_access        { $$ = $1; }
     |   map                     { $$ = $1; }
     |   list                    { $$ = $1; }
     |   call                    { $$ = $1; }

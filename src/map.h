@@ -18,11 +18,11 @@ typedef struct {
 } MapTable;
 
 
-MapTable *mt_new();
-void mt_delete(MapTable *mt);
+LuciObject *LuciMap_new();
+/* void map_delete(LuciObject *map); */
 
-LuciObject *mt_insert(MapTable *mt, LuciObject *key, LuciObject *val);
-LuciObject *mt_lookup(MapTable *mt, LuciObject *key);
-LuciObject *mt_remove(MapTable *mt, LuciObject *key);
+LuciObject *map_set(LuciObject *map, LuciObject *key, LuciObject *val);
+LuciObject *map_get(LuciObject *map, LuciObject *key);
+LuciObject *map_remove(LuciObject *map, LuciObject *key);
 
 #endif /* MAP_H */

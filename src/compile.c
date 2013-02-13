@@ -106,8 +106,6 @@ static void compile_container_assignment(AstNode *node, CompileState *cs)
 static void compile_map_def(AstNode *node, CompileState *cs)
 {
     int i;
-    printf("Compiling map definition\n");
-
     /* Compile map key-value pairs in reverse order */
     for (i = node->data.mapdef.count - 1; i >= 0; i--) {
         /* compile each pair */
@@ -119,7 +117,6 @@ static void compile_map_def(AstNode *node, CompileState *cs)
 
 static void compile_map_keyval(AstNode *node, CompileState *cs)
 {
-    printf("Compiling map key-value pair\n");
     compile(node->data.mapkeyval.key, cs);
     compile(node->data.mapkeyval.val, cs);
 }

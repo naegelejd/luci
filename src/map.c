@@ -9,9 +9,9 @@
 
 #define GET_INDEX(H0, H1, I, N)   ( ( (H0) + ((I) * (I)) * (H1) ) % (N) )
 
-static MapTable *mt_grow(MapTable *mt);
-static MapTable *mt_shrink(MapTable *mt);
-static MapTable *mt_resize(MapTable *mt, unsigned int new_size);
+static LuciMapObj *map_grow(LuciMapObj *map);
+static LuciMapObj *map_shrink(LuciMapObj *map);
+static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size);
 
 
 #define MAX_TABLE_SIZE_OPTIONS  28
@@ -25,48 +25,41 @@ static unsigned int table_sizes[] = {
 };
 
 
-MapTable *mt_new()
+LuciObject *LuciMap_new()
 {
-    MapTable *mt = calloc(1, sizeof(*mt));
-    if (!mt) {
-        DIE("%s\n", "Error allocating map table");
-    }
+    LuciMapObj *map = alloc(sizeof(*map));
+    REFCOUNT(map) = 0;
+    TYPEOF(map) = obj_map_t;
+    map->size_idx = 0;
+    map->size = table_sizes[map->size_idx];
 
-    mt->size_idx = 0;
-    mt->size = table_sizes[mt->size_idx];
-
-    mt->keys = calloc(mt->size, sizeof(*(mt->keys)));
-    if (!mt->keys) {
-        DIE("%s\n", "Error allocating map's keys array");
-    }
-
-    mt->vals = calloc(mt->size, sizeof(*(mt->vals)));
-    if (!mt->vals) {
-        DIE("%s\n", "Error allocating map's vals array");
-    }
-
-    return mt;
+    map->keys = alloc(map->size * sizeof(*(map->keys)));
+    map->vals = alloc(map->size * sizeof(*(map->vals)));
+    return (LuciObject *)map;
 }
 
-void mt_delete(MapTable *mt)
+/*
+void map_delete(LuciObject *o)
 {
-    free(mt->keys);
-    free(mt->vals);
-    free(mt);
+    LuciMapObj *map = AS_MAP(o);
+    free(map->keys);
+    free(map->vals);
+    free(map);
     return;
 }
+*/
 
-static MapTable *mt_grow(MapTable *mt)
+static LuciMapObj *map_grow(LuciMapObj *o)
 {
-    return mt_resize(mt, mt->size_idx + 1);
+    return map_resize(o, o->size_idx + 1);
 }
 
-static MapTable *mt_shrink(MapTable *mt)
+static LuciMapObj *map_shrink(LuciMapObj *o)
 {
-    return mt_resize(mt, mt->size_idx + 1);
+    return map_resize(o, o->size_idx + 1);
 }
 
-static MapTable *mt_resize(MapTable *mt, unsigned int new_size_idx)
+static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
 {
     int i;
     unsigned int old_size = 0;
@@ -74,44 +67,37 @@ static MapTable *mt_resize(MapTable *mt, unsigned int new_size_idx)
     LuciObject **old_vals = NULL;
 
     if (new_size_idx <= 0) {
-        return mt;
+        return map;
     } else if (new_size_idx > MAX_TABLE_SIZE_OPTIONS) {
-        return mt;
+        return map;
     }
 
-    old_size = mt->size;
-    old_keys = mt->keys;
-    old_vals = mt->vals;
+    old_size = map->size;
+    old_keys = map->keys;
+    old_vals = map->vals;
 
-    mt->size_idx = new_size_idx;
-    mt->size = table_sizes[new_size_idx];
-    mt->count = 0;
-    mt->collisions = 0;
+    map->size_idx = new_size_idx;
+    map->size = table_sizes[new_size_idx];
+    map->count = 0;
+    map->collisions = 0;
 
-    mt->keys = calloc(mt->size, sizeof(*(mt->keys)));
-    if (!mt->keys) {
-        DIE("%s\n", "Error resizing map's keys array");
-    }
-
-    mt->vals = calloc(mt->size, sizeof(*(mt->vals)));
-    if (!mt->vals) {
-        DIE("%s\n", "Error resizing map's vals array");
-    }
+    map->keys = alloc(map->size * sizeof(*(map->keys)));
+    map->vals = alloc(map->size * sizeof(*(map->vals)));
 
     /* re-hash every existing entry into the new, smaller array */
     for (i = 0; i < old_size; i++) {
-        mt_insert(mt, old_keys[i], old_vals[i]);
+        map_set((LuciObject *)map, old_keys[i], old_vals[i]);
     }
 
     free(old_keys);
     free(old_vals);
 
-    return mt;
+    return map;
 }
 
-LuciObject *mt_insert(MapTable *mt, LuciObject *key, LuciObject *val)
+LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
 {
-    if (!mt) {
+    if (!o) {
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {
         DIE("%s\n", "Null key in map insertion");
@@ -119,8 +105,10 @@ LuciObject *mt_insert(MapTable *mt, LuciObject *key, LuciObject *val)
         DIE("%s\n", "Map key must be of type string");
     }
 
-    if (mt->count > (mt->size * 0.60)) {
-        mt_grow(mt);
+    LuciMapObj *map = AS_MAP(o);
+
+    if (map->count > (map->size * 0.60)) {
+        map_grow(map);
     }
 
     uint32_t hash0 = string_hash_0(key);
@@ -128,24 +116,24 @@ LuciObject *mt_insert(MapTable *mt, LuciObject *key, LuciObject *val)
 
     /* otherwise, it's time to search for an empty slot */
     unsigned int i = 0, idx = 0;
-    for (i = 0; i < mt->size; i++) {
-        idx = GET_INDEX(hash0, hash1, i, mt->size);
+    for (i = 0; i < map->size; i++) {
+        idx = GET_INDEX(hash0, hash1, i, map->size);
 
-        if (!mt->keys[idx]) {
+        if (!map->keys[idx]) {
             /* if an empty slot is found, use it and break */
-            mt->keys[idx] = key;
-            mt->vals[idx] = val;
-            mt->count++;
+            map->keys[idx] = key;
+            map->vals[idx] = val;
+            map->count++;
             break;
         } else if (strcmp(
-                    AS_STRING(mt->keys[idx])->s,
+                    AS_STRING(map->keys[idx])->s,
                     AS_STRING(key)->s) == 0) {
             /* TODO: use proper LuciStringObj comparison */
             /* compare objects and break if equal */
             break;
         } else {
             /* just count the collision and continue trying indices */
-            mt->collisions++;
+            map->collisions++;
         }
     }
 
@@ -153,9 +141,9 @@ LuciObject *mt_insert(MapTable *mt, LuciObject *key, LuciObject *val)
     return key;
 }
 
-LuciObject *mt_lookup(MapTable *mt, LuciObject *key)
+LuciObject *map_get(LuciObject *o, LuciObject *key)
 {
-    if (!mt) {
+    if (!o) {
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {
         DIE("%s\n", "Null key in map lookup");
@@ -163,29 +151,31 @@ LuciObject *mt_lookup(MapTable *mt, LuciObject *key)
         DIE("%s\n", "Map key must be of type string");
     }
 
+    LuciMapObj *map = AS_MAP(o);
+
     uint32_t hash0 = string_hash_0(key);
     uint32_t hash1 = string_hash_1(key);
 
     unsigned int i, idx;
-    for (i = 0; i < mt->size; i++) {
-        idx = GET_INDEX(hash0, hash1, i, mt->size);
+    for (i = 0; i < map->size; i++) {
+        idx = GET_INDEX(hash0, hash1, i, map->size);
 
-        if (!mt->keys[idx]) {
+        if (!map->keys[idx]) {
             /* if we find a NULL slot, it's not in the hash table */
             break;
         } else if (strcmp(
-                    AS_STRING(mt->keys[idx])->s,
+                    AS_STRING(map->keys[idx])->s,
                     AS_STRING(key)->s) == 0) {
             /* TODO: use proper LuciStringObj comparison */
-            return mt->vals[idx];
+            return map->vals[idx];
         }
     }
     return NULL;
 }
 
-LuciObject *mt_remove(MapTable *mt, LuciObject *key)
+LuciObject *map_remove(LuciObject *o, LuciObject *key)
 {
-    if (!mt) {
+    if (!o) {
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {
         DIE("%s\n", "Null key in map remove");
@@ -193,8 +183,10 @@ LuciObject *mt_remove(MapTable *mt, LuciObject *key)
         DIE("%s\n", "Map key must be of type string");
     }
 
-    if (mt->count < (mt->size * 0.2)) {
-        mt_shrink(mt);
+    LuciMapObj *map = AS_MAP(o);
+
+    if (map->count < (map->size * 0.2)) {
+        map_shrink(map);
     }
 
     uint32_t hash0 = string_hash_0(key);
@@ -202,19 +194,19 @@ LuciObject *mt_remove(MapTable *mt, LuciObject *key)
 
     /* First, find the object to remove */
     unsigned int i, idx;
-    for (i = 0; i < mt->size; i++) {
-        idx = GET_INDEX(hash0, hash1, i, mt->size);
+    for (i = 0; i < map->size; i++) {
+        idx = GET_INDEX(hash0, hash1, i, map->size);
 
-        if (!mt->keys[idx]) {
+        if (!map->keys[idx]) {
             /* if we ever find a null slot, it's not in the table */
             return NULL;
         } else if (strcmp(
-                    AS_STRING(mt->keys[idx])->s,
+                    AS_STRING(map->keys[idx])->s,
                     AS_STRING(key)->s) == 0) {
             /* TODO: use proper LuciStringObj comparison */
-            mt->count--;
-            mt->keys[idx] = NULL;
-            mt->vals[idx] = NULL;
+            map->count--;
+            map->keys[idx] = NULL;
+            map->vals[idx] = NULL;
             break;
         } else {
             /* the object at this index possibly needs to be re-inserted */
@@ -224,26 +216,26 @@ LuciObject *mt_remove(MapTable *mt, LuciObject *key)
 
     /* now clean up the table */
     LuciObject *key_to_move, *val_to_move;
-    for (i = 0; i < mt->size; i++) {
-        idx = GET_INDEX(hash0, hash1, i, mt->size);
+    for (i = 0; i < map->size; i++) {
+        idx = GET_INDEX(hash0, hash1, i, map->size);
 
-        if (!mt->keys[idx]) {
+        if (!map->keys[idx]) {
             break;
         }
         /* else, delete and reinsert all objects following the
          * newly deleted one. This ensures that all objects are
          * as close as possible to their hash-index on each call
-         * to mt_insert.
+         * to map_set.
          *
          * The alternative method would be to keep track of them
          * in the first loop when searching for the original
          * object to remove */
         else {
-            key_to_move = mt->keys[idx];
-            val_to_move = mt->vals[idx];
-            mt->keys[idx] = NULL;
-            mt->vals[idx] = NULL;
-            mt_insert(mt, key_to_move, val_to_move);
+            key_to_move = map->keys[idx];
+            val_to_move = map->vals[idx];
+            map->keys[idx] = NULL;
+            map->vals[idx] = NULL;
+            map_set((LuciObject *)map, key_to_move, val_to_move);
         }
     }
 

@@ -22,11 +22,9 @@ struct var_def
 /* populates the array of var_def structs with valid LuciObjects */
 void init_variables(void);
 
-/* used by print. useful in debugging */
-void print_object(LuciObject *);
-
 LuciObject *luci_help(LuciObject **, unsigned int);
 LuciObject *luci_dir(LuciObject **, unsigned int);
+LuciObject *luci_exit(LuciObject **, unsigned int);
 LuciObject *luci_print(LuciObject **, unsigned int);
 LuciObject *luci_readline(LuciObject **, unsigned int);
 LuciObject *luci_typeof(LuciObject **, unsigned int);

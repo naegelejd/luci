@@ -2,8 +2,8 @@
  * See Copyright Notice in luci.h
  */
 
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <assert.h>
@@ -60,6 +60,7 @@ void init_variables(void)
 const struct func_def builtins[] = {
     {"help", luci_help},
     {"dir", luci_dir},
+    {"exit", luci_exit},
     {"print",  luci_print},
     {"input", luci_readline},
     {"readline", luci_readline},
@@ -109,57 +110,16 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
     return NULL;
 }
 
-/* HACK: iterates over root ExecContext's symbol table */
+/* print all names in scope... */
 LuciObject *luci_dir(LuciObject **args, unsigned int c)
 {
-    /* this is a terrible way of printing all vars in the global
-       namespace but it works for now.
-    */
-    /*
-    ExecContext *root_env = get_root_env();
-
-    Symbol *ptr;
-    for (ptr = root_env->symtable; ptr != (Symbol *) 0; ptr = (Symbol *)ptr->next) {
-	if (ptr->type == sym_bobj_t) {
-	    puts(ptr->name);
-	}
-    }
-    */
     return NULL;
 }
 
-void print_object(LuciObject *in)
+LuciObject *luci_exit(LuciObject **args, unsigned int c)
 {
-    int i;
-    LuciObject *item;
-    if (!in)
-    {
-	printf("None");
-	return;
-    }
-    switch (in->type)
-    {
-	case obj_int_t:
-	    printf("%ld", AS_INT(in)->i);
-	    break;
-	case obj_float_t:
-	    printf("%f", AS_FLOAT(in)->f);
-	    break;
-	case obj_str_t:
-	    printf("%s", AS_STRING(in)->s);
-	    break;
-	case obj_list_t:
-	    printf("[");
-	    for (i = 0; i < AS_LIST(in)->count; i++) {
-		item = list_get_object(in, i);
-		print_object(item);
-		printf(", ");
-	    }
-	    printf("]");
-	    break;
-	default:
-	    printf("None");
-    }
+    exit(EXIT_SUCCESS);
+    return NULL;
 }
 
 LuciObject *luci_print(LuciObject **args, unsigned int c)
@@ -266,6 +226,15 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 	    case obj_list_t:
 		which = "list";
 		break;
+            case obj_map_t:
+                which = "map";
+                break;
+            case obj_func_t:
+                which = "function";
+                break;
+            case obj_libfunc_t:
+                which = "libfunction";
+                break;
 	    default:
 		which = "None";
 	}
@@ -405,6 +374,7 @@ LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
             ret = LuciString_new(s);
 	    break;
 	default:
+            DIE("%s\n", "Cannot cast to string");
 	    break;
     }
     LUCI_DEBUG("str() returning %s\n", AS_STRING(ret)->s);

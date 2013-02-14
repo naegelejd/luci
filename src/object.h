@@ -82,7 +82,7 @@ typedef struct _LuciIterator {
     LuciObject base;
     unsigned int idx;
     unsigned int step;
-    LuciObject *list;
+    LuciObject *container;
 } LuciIteratorObj;
 
 typedef struct _LuciFunction {
@@ -126,6 +126,9 @@ LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
 /* decrements the object's refcount and returns it
  * also potentially destroys object (refcount <= 0) */
 LuciObject *decref(LuciObject* orig);
+
+/* used by print. useful in debugging */
+void print_object(LuciObject *);
 
 /* duplicates a LuciObject, creating a new one */
 LuciObject *copy_object(LuciObject* orig);

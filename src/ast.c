@@ -420,11 +420,13 @@ void destroy_tree(AstNode *root)
             }
             free(root->data.statements.statements);
             break;
+
         case ast_func_t:
             free(root->data.funcdef.funcname);
             destroy_tree(root->data.funcdef.param_list);
             destroy_tree(root->data.funcdef.statements);
             break;
+
         case ast_listdef_t:
             for (i = 0; i < root->data.listdef.count; i++)
             {
@@ -432,49 +434,75 @@ void destroy_tree(AstNode *root)
             }
             free(root->data.listdef.items);
             break;
+
+        case ast_mapdef_t:
+            for (i = 0; i < root->data.mapdef.count; i++)
+            {
+                destroy_tree(root->data.mapdef.pairs[i]);
+            }
+            free(root->data.mapdef.pairs);
+            break;
+
+        case ast_mapkeyval_t:
+            destroy_tree(root->data.mapkeyval.key);
+            destroy_tree(root->data.mapkeyval.val);
+            break;
+
         case ast_while_t:
             destroy_tree(root->data.while_loop.cond);
             destroy_tree(root->data.while_loop.statements);
             break;
+
         case ast_for_t:
             destroy_tree(root->data.for_loop.list);
             destroy_tree(root->data.for_loop.statements);
             free(root->data.for_loop.iter);
             break;
+
         case ast_if_t:
             destroy_tree(root->data.if_else.cond);
             destroy_tree(root->data.if_else.ifstatements);
             destroy_tree(root->data.if_else.elstatements);
             break;
+
         case ast_assign_t:
             destroy_tree(root->data.assignment.right);
             free(root->data.assignment.name);
             break;
+
         case ast_call_t:
             destroy_tree(root->data.call.arglist);
             destroy_tree(root->data.call.funcname);
             break;
+
         case ast_contaccess_t:
             destroy_tree(root->data.contaccess.container);
             destroy_tree(root->data.contaccess.index);
             break;
+
         case ast_contassign_t:
             destroy_tree(root->data.contassign.index);
             destroy_tree(root->data.contassign.right);
             destroy_tree(root->data.contassign.container);
             break;
+
         case ast_expr_t:
             destroy_tree(root->data.expression.left);
             destroy_tree(root->data.expression.right);
             break;
+
         case ast_id_t:
             free(root->data.id.val);
             break;
+
         case ast_string_t:
             free(root->data.s);
             break;
+
         case ast_return_t:
             destroy_tree(root->data.return_stmt.expr);
+            break;
+
         default:
             break;
     }

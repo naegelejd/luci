@@ -36,12 +36,8 @@ WS          [ \t\f\r]+
 "while"         { col += yyleng; return WHILE; }
 "for"           { col += yyleng; return FOR; }
 "in"            { col += yyleng; return IN; }
-"do"            { col += yyleng; return DO; }
-"done"          { col += yyleng; return DONE; }
 "if"            { col += yyleng; return IF; }
-"then"          { col += yyleng; return THEN; }
 "else"          { col += yyleng; return ELSE; }
-"end"           { col += yyleng; return END; }
 "def"           { col += yyleng; return DEF; }
 "break"         { col += yyleng; return BREAK; }
 "continue"      { col += yyleng; return CONTINUE; }

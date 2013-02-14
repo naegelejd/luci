@@ -35,6 +35,7 @@ LuciObject *LuciMap_new()
 
     map->keys = alloc(map->size * sizeof(*(map->keys)));
     map->vals = alloc(map->size * sizeof(*(map->vals)));
+
     return (LuciObject *)map;
 }
 

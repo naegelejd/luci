@@ -3,8 +3,9 @@
 #include <assert.h>
 
 #include "luci.h"
-#include "object.h"
 #include "gc.h"
+#include "object.h"
+#include "map.h"
 
 /* temporary */
 #include "compile.h" /* for destroying function object FOR NOW */
@@ -67,14 +68,14 @@ LuciObject *LuciList_new()
 }
 
 /* LuciIteratorObj */
-LuciObject *LuciIterator_new(LuciObject *list, unsigned int step)
+LuciObject *LuciIterator_new(LuciObject *container, unsigned int step)
 {
     LuciIteratorObj *o = gc_malloc(sizeof(*o));
     REFCOUNT(o) = 0;
     TYPEOF(o) = obj_iterator_t;
     o->idx = 0;
     o->step = step;
-    o->list = list;
+    o->container = container;
     return (LuciObject *)o;
 }
 
@@ -155,9 +156,73 @@ LuciObject *decref(LuciObject *orig)
     return orig;
 }
 
-LuciObject *copy_object(LuciObject *orig)
+void print_object(LuciObject *in)
 {
     int i;
+    LuciObject *item;
+
+    if (!in) {
+	printf("None");
+	return;
+    }
+
+    switch (in->type) {
+	case obj_int_t:
+	    printf("%ld", AS_INT(in)->i);
+	    break;
+
+	case obj_float_t:
+	    printf("%f", AS_FLOAT(in)->f);
+	    break;
+
+	case obj_str_t:
+	    printf("%s", AS_STRING(in)->s);
+	    break;
+
+	case obj_list_t:
+	    printf("[");
+	    for (i = 0; i < AS_LIST(in)->count; i++) {
+		item = list_get_object(in, i);
+		print_object(item);
+		printf(", ");
+	    }
+	    printf("]");
+	    break;
+
+        case obj_map_t:
+            printf("{");
+            for (i = 0; i < AS_MAP(in)->size; i++) {
+                if (AS_MAP(in)->keys[i]) {
+                    printf("\"");
+                    print_object(AS_MAP(in)->keys[i]);
+                    printf("\":");
+                    print_object(AS_MAP(in)->vals[i]);
+                    printf(", ");
+                }
+            }
+            printf("}");
+            break;
+
+        case obj_file_t:
+            printf("<file>");
+            break;
+
+        case obj_func_t:
+            printf("<func>");
+            break;
+
+        case obj_libfunc_t:
+            printf("<libfunc>");
+            break;
+
+	default:
+            DIE("%s\n", "Can't print invalid type");
+    }
+}
+
+LuciObject *copy_object(LuciObject *orig)
+{
+    LuciObject *copy = NULL;
 
     if (!orig) {
 	return NULL;
@@ -166,49 +231,75 @@ LuciObject *copy_object(LuciObject *orig)
     switch(orig->type)
     {
 	case obj_int_t:
-            return LuciInt_new(((LuciIntObj *)orig)->i);
+            copy = LuciInt_new(((LuciIntObj *)orig)->i);
 	    break;
+
 	case obj_float_t:
-            return LuciFloat_new(((LuciFloatObj *)orig)->f);
+            copy = LuciFloat_new(((LuciFloatObj *)orig)->f);
 	    break;
+
 	case obj_str_t:
             /* duplicate string first */
-            return LuciString_new(strdup(((LuciStringObj *)orig)->s));
+            copy = LuciString_new(strdup(((LuciStringObj *)orig)->s));
 	    break;
+
         case obj_file_t:
         {
             LuciFileObj *fileobj = (LuciFileObj *)orig;
-            return LuciFile_new(fileobj->ptr, fileobj->size, fileobj->mode);
+            copy = LuciFile_new(fileobj->ptr, fileobj->size, fileobj->mode);
 	    break;
         }
+
 	case obj_list_t:
         {
-            // TODO: FIX THIS WHOLE COPY
             LuciListObj *listobj = (LuciListObj *)orig;
-            LuciObject *copy = LuciList_new();
+            int i;
+
+            copy = LuciList_new();
 
 	    for (i = 0; i < listobj->count; i++) {
 		list_append_object(copy, list_get_object(orig, i));
 	    }
-            return copy;
 	    break;
         }
+
+        case obj_map_t:
+        {
+            LuciMapObj *mapobj = (LuciMapObj *)orig;
+            int i;
+
+            copy = LuciMap_new();
+
+            for (i = 0; i < mapobj->size; i++) {
+                if (mapobj->keys[i]) {
+                    map_set(copy,
+                            copy_object(mapobj->keys[i]),
+                            copy_object(mapobj->vals[i]));
+                }
+            }
+            break;
+        }
+
         case obj_iterator_t:
         {
             LuciIteratorObj *iterobj = (LuciIteratorObj *)orig;
-            return LuciIterator_new(iterobj->list, iterobj->step);
+            copy = LuciIterator_new(iterobj->container, iterobj->step);
             break;
         }
+
         case obj_func_t:
-            return LuciFunction_new(((LuciFunctionObj *)orig)->frame);
+            copy = LuciFunction_new(((LuciFunctionObj *)orig)->frame);
             break;
+
         case obj_libfunc_t:
-            return LuciLibFunc_new(((LuciLibFuncObj *)orig)->func);
+            copy = LuciLibFunc_new(((LuciLibFuncObj *)orig)->func);
             break;
+
 	default:
-            return NULL;
-	    break;
+            ;
     }
+
+    return copy;
 }
 
 
@@ -258,8 +349,6 @@ void destroy(LuciObject *trash)
             for (i = 0; i < mapobj->size; i++) {
                 if (mapobj->keys[i]) {
                     destroy(mapobj->keys[i]);
-                }
-                if (mapobj->vals[i]) {
                     destroy(mapobj->vals[i]);
                 }
             }
@@ -270,7 +359,7 @@ void destroy(LuciObject *trash)
 
         case obj_iterator_t:
             /* destroy the list if possible */
-            destroy(((LuciIteratorObj *)trash)->list);
+            destroy(((LuciIteratorObj *)trash)->container);
             break;
 
         case obj_func_t:
@@ -409,24 +498,57 @@ LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
 
 LuciObject *iterator_next_object(LuciObject *iterator)
 {
-    LuciIteratorObj *iter;
-    LuciListObj *list;
-    uint32_t idx;
-
     if (!iterator || (iterator->type != obj_iterator_t)) {
         DIE("%s", "Can't get next from non-iterator object\n");
     }
 
-    iter = (LuciIteratorObj *)iterator;
+    LuciIteratorObj *iter = (LuciIteratorObj *)iterator;
 
-    idx = iter->idx;
-    list = (LuciListObj *)iter->list;
+    switch (TYPEOF(iter->container)) {
+        case obj_list_t:
+        {
+            LuciListObj *list = (LuciListObj *)iter->container;
+            uint32_t idx = iter->idx;   /* save current index */
 
-    if (iter->idx >= list->count) {
-        return NULL;
-    } else {
-        iter->idx += iter->step;
-        return copy_object(list->items[idx]);
+            if (iter->idx >= list->count) {
+                return NULL;
+            } else {
+                iter->idx += iter->step;
+                return copy_object(list->items[idx]);
+            }
+        } break;
+
+        case obj_map_t:
+        {
+            LuciMapObj *map = (LuciMapObj *)iter->container;
+
+            if (iter->idx >= map->size) {
+                return NULL;
+            }
+
+            if (iter->idx == 0) {
+                /* be sure we're at a valid 'index' in the map's hash table */
+                while ((iter->idx < map->size) &&
+                        (map->keys[iter->idx] == NULL)) {
+                    iter->idx += 1;
+                }
+            }
+
+            uint32_t idx = iter->idx;   /* save this valid index */
+            do {
+                /* increment the index for the next call */
+                iter->idx += iter->step;
+                /* this will leave the idx at either a valid key
+                 * or the last index in the map's key array */
+            } while ((iter->idx < map->size) &&
+                    (map->keys[iter->idx] == NULL));
+
+            return copy_object(map->keys[idx]);
+        } break;
+
+        default:
+            DIE("%s\n", "Cannot iterate over a non-container type");
     }
+    return NULL;
 }
 

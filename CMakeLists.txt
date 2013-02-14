@@ -14,4 +14,4 @@ set(CMAKE_BUILD_TYPE Debug)
 add_definitions(-fno-gcse)
 #endif
 
-add_subdirectory(src bin)
+add_subdirectory(src luci)

@@ -12,7 +12,9 @@
 #include "ast.h"
 #include "binop.h"
 
+#ifdef DEBUG
 #define YYDEBUG 1
+#endif
 
 #define YYPARSE_PARAM root
 
@@ -52,9 +54,9 @@ extern int yylex();
 %token <string_v> STRING ID
 
 %token NEWLINE COLON SEMICOLON COMMA
-%token WHILE FOR IN DO DONE
+%token WHILE FOR IN
 %token BREAK CONTINUE
-%token IF THEN ELSE END
+%token IF ELSE
 %token DEF RETURN
 %token PASS
 
@@ -101,16 +103,21 @@ statement:
     |   PASS SEMICOLON              { $$ = make_pass(); }
     ;
 
-assignment:
-        ID ASSIGN expr
-                { $$ = make_assignment($1, $3); }
-    |   ID ASSIGN assignment
-                { $$ = make_assignment($1, $3); }
+while_loop:
+        WHILE expr LBRACK statements RBRACK
+                { $$ = make_while_loop($2, $4); }
     ;
 
-container_assign:
-        id container_index ASSIGN expr
-                { $$ = make_container_assignment($1, $2, $4); }
+for_loop:
+        FOR ID IN expr LBRACK statements RBRACK
+                { $$ = make_for_loop($2, $4, $6); }
+    ;
+
+if_else:
+        IF expr LBRACK statements RBRACK
+                { $$ = make_if_else($2, $4, NULL); }
+    |   IF expr LBRACK statements RBRACK ELSE LBRACK statements RBRACK
+                { $$ = make_if_else($2, $4, $8); }
     ;
 
 func_def:
@@ -130,10 +137,14 @@ params:
     ;
 
 call:
+        expr LPAREN list_items RPAREN
+                { $$ = make_func_call($1, $3); }
+    /*
         id LPAREN list_items RPAREN
                 { $$ = make_func_call($1, $3); }
     |   container_access LPAREN list_items RPAREN
                 { $$ = make_func_call($1, $3); }
+    */
     ;
 
 map:
@@ -155,9 +166,22 @@ list:
     ;
 
 list_items:
-        /* nothing */       { $$ = make_list_def(NULL, NULL); }
+        /* nothing */           { $$ = make_list_def(NULL, NULL); }
     |   expr                    { $$ = make_list_def(NULL, $1); }
     |   list_items COMMA expr   { $$ = make_list_def($1, $3); }
+    ;
+
+assignment:
+        ID ASSIGN expr
+                { $$ = make_assignment($1, $3); }
+    |   ID ASSIGN assignment
+                { $$ = make_assignment($1, $3); }
+    ;
+
+container_assign:
+        expr container_index ASSIGN expr
+                { $$ = make_container_assignment($1, $2, $4); }
+        /* note that this allows for junk like `func()["hi"] = "bye";` */
     ;
 
 container_access:
@@ -166,23 +190,6 @@ container_access:
 container_index:
         LSQUARE expr RSQUARE
                 { $$ = $2; };
-
-while_loop:
-        WHILE expr LBRACK statements RBRACK
-                { $$ = make_while_loop($2, $4); }
-    ;
-
-for_loop:
-        FOR ID IN expr LBRACK statements RBRACK
-                { $$ = make_for_loop($2, $4, $6); }
-    ;
-
-if_else:
-        IF expr LBRACK statements RBRACK
-                { $$ = make_if_else($2, $4, NULL); }
-    |   IF expr LBRACK statements RBRACK ELSE LBRACK statements RBRACK
-                { $$ = make_if_else($2, $4, $8); }
-    ;
 
 id:     ID                      { $$ = make_id_expr($1); }
     ;

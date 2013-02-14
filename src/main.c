@@ -58,6 +58,9 @@ static void help()
 
 int luci_main(int argc, char *argv[])
 {
+#ifdef DEBUG
+    yydebug = 1;
+#endif
     /* initialize options */
     unsigned short options = 0;
     char *infilename = NULL;

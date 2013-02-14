@@ -258,6 +258,9 @@ void eval(Frame *frame)
                 /* add the key & value to the map */
                 map_set(x, z, y);
             }
+            if (!x) {
+                DIE("%s\n", "a horrible flaming NULL map death");
+            }
             st_push(&lstack, x);
         DISPATCH(NEXT_OPCODE);
 
@@ -310,7 +313,7 @@ void eval(Frame *frame)
 
         HANDLE(CPUT)
         {
-            LUCI_DEBUG("CPUT %d\n", a);
+            LUCI_DEBUG("%s\n", "CPUT");
             /* pop container */
             x = st_pop(&lstack);
 
@@ -354,9 +357,9 @@ void eval(Frame *frame)
 
         HANDLE(MKITER)
             LUCI_DEBUG("%s\n", "MKITER");
-            /* y should be a list */
+            /* y should be a container */
             y = st_pop(&lstack);
-            x = LuciIterator_new(y, 1);
+            x = LuciIterator_new(y, 1); /* step = 1 */
             st_push(&lstack, x);
         DISPATCH(NEXT_OPCODE);
 

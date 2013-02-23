@@ -1,6 +1,11 @@
 /*
  * See Copyright Notice in luci.h
  */
+
+/**
+ * @file gc.c
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -11,9 +16,10 @@
 //#include <sys/time.h>
 //struct timeval t1, t2;
 
-#define INIT_ARENA_POOLS 1
+#define INIT_ARENA_POOLS 1  /**< initial number of pools per arena */
+#define ARENA_COUNT 6       /**< number of arenas available */
 
-#define ARENA_COUNT 6
+/** global array of arenas (one for each allocation size) */
 static struct gc_arena ARENA[ARENA_COUNT];
 
 static struct gc_pool * gc_pool_new(void);
@@ -22,6 +28,8 @@ static void gc_pool_delete(struct gc_pool *);
 
 /**
  * Initializes the garbage collector and memory-management interface
+ *
+ * @returns 1 on success, 0 otherwise
  */
 int gc_init(void)
 {
@@ -43,6 +51,9 @@ int gc_init(void)
 /**
  * Effectively equivalent to system `malloc`.
  * Manages pools of memory for different size-request ranges.
+ *
+ * @param size size in bytes to allocate
+ * @returns void* pointer to allocated block
  */
 void * gc_malloc(size_t size)
 {
@@ -135,6 +146,8 @@ void * gc_malloc(size_t size)
 /**
  * Effectively equivalent to system `free`.
  * Gives allocated slots of memory back to their respective pool
+ *
+ * @param ptr pointer to free
  */
 void gc_free(void *ptr)
 {
@@ -143,6 +156,8 @@ void gc_free(void *ptr)
 /**
  * Performs housekeeping (memory de-allocation) for the
  * garbage collector and memory-management utilities.
+ *
+ * @returns 1 on success, 0 otherwise
  */
 int gc_finalize()
 {
@@ -158,6 +173,11 @@ int gc_finalize()
     return 1;
 }
 
+/**
+ * Creates and initializes a new gc_pool struct
+ *
+ * @returns new gc_pool struct
+ */
 static struct gc_pool * gc_pool_new(void)
 {
     /* calloc so that both the blocks returned to the user are
@@ -169,17 +189,25 @@ static struct gc_pool * gc_pool_new(void)
     return p;
 }
 
+/**
+ * Frees a gc_pool struct
+ *
+ * @param p gc_pool struct to free
+ */
 static void gc_pool_delete(struct gc_pool *p)
 {
     free(p);
 }
 
 
-/*
+/**
  * Generic calloc wrapper
  *
  * Allocates and zeros memory for all
  * non-LuciObject requests.
+ *
+ * @param size size in bytes to allocate
+ * @returns void* pointer to allocated block
  */
 void *alloc(size_t size)
 {

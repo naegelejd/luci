@@ -2,15 +2,22 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file ast.h
+ */
+
 #ifndef AST_H
 #define AST_H
 
-/* the initial size of the array which represents a list of expressions */
+#include "binop.h"  /* for op_type */
+
+/** the initial size of the array which represents a list of expressions */
 #define AST_CONTAINER_SIZE 32
 
-/* the initial size of the array which holds pointers to statement nodes */
+/** the initial size of the array which holds pointers to statement nodes */
 #define AST_STMNTS_SIZE 32
 
+/** type enumeration of all AST nodes */
 typedef enum {
     ast_integer_t,
     ast_float_t,
@@ -36,130 +43,154 @@ typedef enum {
     ast_last_t
 } AstType;
 
-
 struct AstNode;
 
+/** AST Node representing a variable name. */
 typedef struct
 {
-    char *val;
+    char *val;  /**< string value of variable name */
 } AstID;
 
+/** AST Node representing a binary expression. */
 typedef struct
 {
-    struct AstNode *left, *right;
-    int op;
+    struct AstNode *left;   /**< right-hand side of expression */
+    struct AstNode *right;  /**< left-hand side of expression */
+    op_type op;             /**< binary operator type */
 } AstExpression;
 
+/** AST Node representing a variable assignment */
 typedef struct
 {
-    struct AstNode *right;
-    char *name;
+    struct AstNode *right;  /**< value of the assignment */
+    char *name;             /**< name being assigned to */
 } AstAssignment;
 
+/** AST Node representing a LuciMapObj definition */
 typedef struct
 {
-    int count;
-    int size;
-    struct AstNode **pairs;
+    int count;      /**< current # of map key-val pairs */
+    int size;       /**< allocated # of map key-val pairs */
+    struct AstNode **pairs;     /**< array of map key-val pairs */
 } AstMapDef;
 
+/** AST Node representing a LuciMapObj's key-value pair */
 typedef struct
 {
-    struct AstNode *key;
-    struct AstNode *val;
+    struct AstNode *key;    /**< key */
+    struct AstNode *val;    /**< value */
 } AstMapKeyVal;
 
+/** AST Node representing a LuciListObj definition */
 typedef struct
 {
-    int count;
-    int size;
-    struct AstNode **items;
+    int count;      /**< current # of list items */
+    int size;       /**< allocated # of list items */
+    struct AstNode **items;     /**< array of list items */
 } AstListDef;
 
+/** AST Node representing a container access
+ *
+ * e.g.
+ * l[0] *or* m["hello"]
+ */
 typedef struct
 {
-    struct AstNode *container;
-    struct AstNode *index;
+    struct AstNode *container;  /**< container */
+    struct AstNode *index;      /**< index/key into container */
 } AstContainerAccess;
 
+/** AST Node representing a container assignment */
 typedef struct
 {
-    struct AstNode *container;
-    struct AstNode *index;
-    struct AstNode *right;
+    struct AstNode *container;  /**< container */
+    struct AstNode *index;      /**< index/key into container */
+    struct AstNode *right;      /**< right-hand side of assignment */
 } AstContainerAssign;
 
+/** AST Node representing a while loop */
 typedef struct
 {
-    struct AstNode *cond;
-    struct AstNode *statements;
+    struct AstNode *cond;       /**< while-loop test condition */
+    struct AstNode *statements; /**< while-loop body statements */
 } AstWhileLoop;
 
+/** AST Node representing a for loop */
 typedef struct
 {
-    struct AstNode *list;
-    struct AstNode *statements;
-    char *iter;
+    struct AstNode *container;       /**< container to iterate over */
+    struct AstNode *statements; /**< for-loop body statements */
+    char *iter;                 /**< name of the step variable */
 } AstForLoop;
 
+/** AST Node representing an if-else block */
 typedef struct
 {
-    struct AstNode *cond;
-    struct AstNode *ifstatements;
-    struct AstNode *elstatements;
+    struct AstNode *cond;       /**< if-else test condition */
+    struct AstNode *ifstatements;   /**< if body statements */
+    struct AstNode *elstatements;   /**< else body statements */
 } AstIfElse;
 
+/** AST Node representing a function call */
 typedef struct
 {
-    struct AstNode *arglist;
-    struct AstNode *funcname;
+    struct AstNode *arglist;    /**< list of arguments */
+    struct AstNode *funcname;   /**< function name */
 } AstFuncCall;
 
+/** AST Node representing a function definition */
 typedef struct
 {
-    struct AstNode *param_list;
-    struct AstNode *statements;
-    char *funcname;
+    struct AstNode *param_list; /**< list of parameters */
+    struct AstNode *statements; /**< function body statements */
+    char *funcname;             /**< function name */
 } AstFuncDef;
 
+/** AST Node representing a block of statements */
 typedef struct
 {
-    int count;
-    int size;
-    struct AstNode ** statements;
+    int count;          /**< current # of statements */
+    int size;           /**< allocated # of statements */
+    struct AstNode ** statements;   /**< array of statements */
 } AstStatements;
 
+/** AST Node representing the `return` keyword */
 typedef struct
 {
-    struct AstNode *expr;
+    struct AstNode *expr;   /**< what to return */
 } AstReturn;
 
+/**
+ * A node in an Abstract Syntax Tree. Upon parsing a
+ * Luci program, all syntactical entities in the code
+ * are construct as AST nodes.
+ */
 typedef struct AstNode
 {
-    AstType type;
-    int lineno;
-    int column;
+    AstType type;   /**< the type of the node */
+    int lineno;     /**< the line # this node was constructed from */
+    int column;     /**< the column # this node was constructed from */
 
     union {
-        long i;
-        double f;
-        char *s;
-        AstID id;
-        AstExpression expression;
-        AstContainerAccess contaccess;
-        AstContainerAssign contassign;
-        AstMapDef mapdef;
-        AstMapKeyVal mapkeyval;
-        AstListDef listdef;
-        AstAssignment assignment;
-        AstWhileLoop while_loop;
-        AstForLoop for_loop;
-        AstIfElse if_else;
-        AstFuncCall call;
-        AstFuncDef funcdef;
-        AstStatements statements;
-        AstReturn return_stmt;
-    } data;
+        long i;     /**< integer constant */
+        double f;   /**< floating-point constant */
+        char *s;    /**< string constant */
+        AstID id;   /**< ID node */
+        AstExpression expression;       /**< expression node */
+        AstContainerAccess contaccess;  /**< container access node */
+        AstContainerAssign contassign;  /**< container assignment node */
+        AstMapDef mapdef;               /**< map definition node */
+        AstMapKeyVal mapkeyval;         /**< map key-value pair node */
+        AstListDef listdef;             /**< list definition node */
+        AstAssignment assignment;       /**< assignment node */
+        AstWhileLoop while_loop;        /**< while-loop node */
+        AstForLoop for_loop;            /**< for-loop node */
+        AstIfElse if_else;              /**< if-else block node */
+        AstFuncCall call;               /**< function call node */
+        AstFuncDef funcdef;             /**< function definition node */
+        AstStatements statements;       /**< statements block node */
+        AstReturn return_stmt;          /**< return statement node */
+    } data;     /**< this node's payload */
 } AstNode;
 
 void destroy_tree(AstNode *);
@@ -168,7 +199,7 @@ AstNode *make_int_constant(long);
 AstNode *make_float_constant(double);
 AstNode *make_string_constant(char *);
 AstNode *make_id_expr(char *);
-AstNode *make_binary_expr(AstNode *, AstNode *, int op);
+AstNode *make_binary_expr(AstNode *, AstNode *, op_type op);
 AstNode *make_container_access(AstNode *, AstNode *);
 AstNode *make_container_assignment(AstNode *, AstNode *, AstNode *);
 AstNode *make_list_def(AstNode *, AstNode *);

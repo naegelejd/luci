@@ -9,23 +9,29 @@
 #include "luci.h"
 #include "lmalloc.h"
 
-
+/** Returns the relative location of address X from ARENA's start address */
 #define RELATIVE(x) ((unsigned long)(x) - (unsigned long)ARENA.ptr)
 
 //#define LUCI_ARENA_INIT_SIZE 4096
-#define LUCI_ARENA_INIT_SIZE 4194304
+#define LUCI_ARENA_INIT_SIZE 4194304    /**< the size of the ARENA */
 
+/** global arena for provisiong memory */
 static struct lmalloc_arena ARENA;
+/** global head of the free-chunk linked list */
 static struct chunk_hdr *free_head;
 
 static int coalesce(struct chunk_hdr *ptr);
-
 
 
 /************************************************************
  * Simple malloc implementation for fixed-size LuciObjects  *
  ************************************************************/
 
+/**
+ * Initializes the ARENA and free_head.
+ *
+ * Must be called for any @code llmalloc @endcode call
+ */
 void lmalloc_init()
 {
     LUCI_DEBUG("%s\n", "Begin initializing lmalloc");
@@ -45,11 +51,20 @@ void lmalloc_init()
     LUCI_DEBUG("%s\n", "End initializing lmalloc");
 }
 
+/**
+ * Cleans up the llmalloc instance
+ */
 void lmalloc_finalize()
 {
     free(ARENA.ptr);
 }
 
+/**
+ * Allocates and returns a pointer to a block of memory.
+ *
+ * @param size size in bytes
+ * @returns void* pointer to allocated block of memory
+ */
 void * lmalloc(size_t size)
 {
     struct chunk_hdr *hdr = NULL;
@@ -125,7 +140,11 @@ void * lmalloc(size_t size)
     return NULL;
 }
 
-
+/**
+ * Frees an allocated pointer
+ *
+ * @param ptr the pointer to free (allocated using llmalloc)
+ */
 void lfree(void *ptr)
 {
     struct chunk_hdr *tofree = ptr - sizeof(*tofree);
@@ -179,6 +198,14 @@ void lfree(void *ptr)
     return;
 }
 
+/**
+ * Coalesces a free-block with adjacent free blocks.
+ *
+ * The goal is to prevent fragmented segments of memory in the ARENA.
+ *
+ * @param ptr header of newly freed chunk
+ * @returns number of free chunks coalesced
+ */
 static int coalesce(struct chunk_hdr *ptr)
 {
     struct chunk_hdr *prev, *next;
@@ -223,6 +250,11 @@ static int coalesce(struct chunk_hdr *ptr)
     return ncoalesced;
 }
 
+/**
+ * Prints the free-list linked list of chunk_hdrs
+ *
+ * Useful for debugging.
+ */
 void lmalloc_print()
 {
     struct chunk_hdr *hdr = NULL;

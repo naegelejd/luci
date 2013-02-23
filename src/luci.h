@@ -20,6 +20,11 @@
 * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
+
+/**
+ * @file luci.h
+ */
+
 #ifndef LUCI_LUCI_H
 #define LUCI_LUCI_H
 
@@ -27,12 +32,24 @@
 
 #ifdef DEBUG
 
+/**
+ * Verbosely prints debug information
+ *
+ * @param fmt C-style formatting
+ * @param ... everything to print
+ */
 #define LUCI_DEBUG(fmt, ...) \
     do { \
         fprintf(stderr, "%s:%d:%s(): " fmt, \
                 __FILE__, __LINE__, __func__, __VA_ARGS__); \
     } while (0)
 
+/**
+ * Verbosely prints error information prior to exiting
+ *
+ * @param fmt C-style formatting
+ * @param ... everything to print
+ */
 #define DIE(fmt, ...) \
     do { \
         fprintf(stderr, "FATAL: %s:%d:%s(): " fmt, \
@@ -42,8 +59,20 @@
 
 #else   /* DEBUG */
 
+/**
+ * Does not print any debug information.
+ *
+ * @param fmt C-style formatting
+ * @param ... everything to not print
+ */
 #define LUCI_DEBUG(fmt, ...)
 
+/**
+ * Quietly prints error information prior to exiting
+ *
+ * @param fmt C-style formatting
+ * @param ... everything to print
+ */
 #define DIE(fmt, ...) \
     do { \
         fprintf(stderr, "FATAL: " fmt, __VA_ARGS__); \

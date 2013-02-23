@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file compile.c
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -19,11 +23,16 @@ static void compile(AstNode *, CompileState *);
 static uint32_t push_instr(CompileState *, Opcode, int);
 static uint32_t put_instr(CompileState *, uint32_t, Opcode, int);
 
-static void add_new_loop(CompileState *cs, uint8_t loop_type);
+static void add_new_loop(CompileState *cs, int loop_type);
 static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end);
 
 
-
+/**
+ * Compile an integer constant AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_int_constant(AstNode *node, CompileState *cs)
 {
     int a;
@@ -34,7 +43,12 @@ static void compile_int_constant(AstNode *node, CompileState *cs)
     push_instr(cs, LOADK, a);
 }
 
-
+/**
+ * Compile a floating-point constant AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_float_constant(AstNode *node, CompileState *cs)
 {
     int a;
@@ -45,7 +59,12 @@ static void compile_float_constant(AstNode *node, CompileState *cs)
     push_instr(cs, LOADK, a);
 }
 
-
+/**
+ * Compile a string constant AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_string_constant(AstNode *node, CompileState *cs)
 {
     int a;
@@ -59,24 +78,45 @@ static void compile_string_constant(AstNode *node, CompileState *cs)
     push_instr(cs, LOADK, a);
 }
 
-
+/**
+ * Compile a symbol/id AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_id_expr(AstNode *node, CompileState *cs)
 {
     int a;
     a = symtable_id(cs->ltable, node->data.id.val, SYMFIND);
-    if (a < 0) {
-        a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
-        if (a < 0) {
+    if (a > 0) {
+        /* found the symbol immediately */
+        push_instr(cs, LOADS, a);
+    }
+    else {
+        /* didn't find symbol in the locals symbol table */
+        /* if there isn't a globals table, the symbol doesn't exist */
+        if (cs->gtable == NULL) {
             DIE("%s undefined.\n", node->data.id.val);
         } else {
-            push_instr(cs, LOADG, a);
+            /* search the globals table for the symbol */
+            a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
+            if (a < 0) {
+                /* not in globals table either */
+                DIE("%s undefined.\n", node->data.id.val);
+            } else {
+                push_instr(cs, LOADG, a);
+            }
         }
-    } else {
-        push_instr(cs, LOADS, a);
     }
 }
 
 
+/**
+ * Compile a binary expression AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_binary_expr(AstNode *node, CompileState *cs)
 {
     int a;
@@ -86,7 +126,12 @@ static void compile_binary_expr(AstNode *node, CompileState *cs)
     push_instr(cs, BINOP, a);
 }
 
-
+/**
+ * Compile a container access AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_container_access(AstNode *node, CompileState *cs)
 {
     compile(node->data.contaccess.index, cs);
@@ -94,7 +139,12 @@ static void compile_container_access(AstNode *node, CompileState *cs)
     push_instr(cs, CGET, 0);
 }
 
-
+/**
+ * Compile a container assignment AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_container_assignment(AstNode *node, CompileState *cs)
 {
     compile(node->data.contassign.right, cs);
@@ -103,6 +153,12 @@ static void compile_container_assignment(AstNode *node, CompileState *cs)
     push_instr(cs, CPUT, 0);
 }
 
+/**
+ * Compile a map definition AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_map_def(AstNode *node, CompileState *cs)
 {
     int i;
@@ -115,13 +171,24 @@ static void compile_map_def(AstNode *node, CompileState *cs)
     push_instr(cs, MKMAP, node->data.mapdef.count);
 }
 
+/**
+ * Compile a map key-value pair AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_map_keyval(AstNode *node, CompileState *cs)
 {
     compile(node->data.mapkeyval.key, cs);
     compile(node->data.mapkeyval.val, cs);
 }
 
-
+/**
+ * Compile a list definition AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_list_def(AstNode *node, CompileState *cs)
 {
     int i;
@@ -134,7 +201,12 @@ static void compile_list_def(AstNode *node, CompileState *cs)
     push_instr(cs, MKLIST, node->data.listdef.count);
 }
 
-
+/**
+ * Compile an assignment AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_assignment(AstNode *node, CompileState *cs)
 {
     int a;
@@ -164,7 +236,12 @@ static void compile_assignment(AstNode *node, CompileState *cs)
     push_instr(cs, STORE, a);
 }
 
-
+/**
+ * Compile a while-loop AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_while_loop(AstNode *node, CompileState *cs)
 {
     uint32_t addr1, addr2;
@@ -186,7 +263,12 @@ static void compile_while_loop(AstNode *node, CompileState *cs)
     back_patch_loop(cs, addr1, cs->instr_count);
 }
 
-
+/**
+ * Compile a for-loop AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_for_loop(AstNode *node, CompileState *cs)
 {
     uint32_t addr1, addr2;
@@ -194,7 +276,7 @@ static void compile_for_loop(AstNode *node, CompileState *cs)
 
     add_new_loop(cs, LOOP_TYPE_FOR);
     /* compile loop (expr) */
-    compile(node->data.for_loop.list, cs);
+    compile(node->data.for_loop.container, cs);
     /* Make Iterator */
     push_instr(cs, MKITER, 0);
     /* store addr of start of for-loop */
@@ -214,7 +296,12 @@ static void compile_for_loop(AstNode *node, CompileState *cs)
     back_patch_loop(cs, addr1, cs->instr_count);
 }
 
-
+/**
+ * Compile an if-else block AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_if_else(AstNode *node, CompileState *cs)
 {
     uint32_t addr1, addr2;
@@ -243,7 +330,12 @@ static void compile_if_else(AstNode *node, CompileState *cs)
 
 }
 
-
+/**
+ * Compile a function call AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_func_call(AstNode *node, CompileState *cs)
 {
     int i;
@@ -258,7 +350,12 @@ static void compile_func_call(AstNode *node, CompileState *cs)
     push_instr(cs, CALL, tmp->data.listdef.count);
 }
 
-
+/**
+ * Compile a function definition AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_func_def(AstNode *node, CompileState *cs)
 {
     int i, a, nparams;
@@ -315,11 +412,16 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     symtable_set(cs->ltable, obj, a);
 }
 
-
-/* compile all statements in 3 passes :'(
+/**
+ * Compile a statements block AST Node
+ *
+ * compile all statements in 3 passes :'(
  * 1. put all function names in symbol table
  * 2. compile all global statements
  * 3. compile all statements inside of function defs
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
  */
 static void compile_statements(AstNode *node, CompileState *cs)
 {
@@ -364,7 +466,12 @@ static void compile_statements(AstNode *node, CompileState *cs)
     }
 }
 
-
+/**
+ * Compile a @code break @endcode AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_break(AstNode *node, CompileState *cs)
 {
     struct loop_jump *jmp = alloc(sizeof(*jmp));
@@ -389,7 +496,12 @@ static void compile_break(AstNode *node, CompileState *cs)
     }
 }
 
-
+/**
+ * Compile a @code continue @endcode AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_continue(AstNode *node, CompileState *cs)
 {
     struct loop_jump *jmp = alloc(sizeof(*jmp));
@@ -412,7 +524,12 @@ static void compile_continue(AstNode *node, CompileState *cs)
     }
 }
 
-
+/**
+ * Compile a @code return @endcode AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_return(AstNode *node, CompileState *cs)
 {
     if (node->data.return_stmt.expr == NULL) {
@@ -423,13 +540,20 @@ static void compile_return(AstNode *node, CompileState *cs)
     push_instr(cs, RETURN, 0);
 }
 
-
+/**
+ * Compile a @code pass @endcode AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile_pass(AstNode *node, CompileState *cs)
 {
     push_instr(cs, NOP, 0);
 }
 
-
+/**
+ * Array of compiler functions for each type of AST Node
+ */
 static void (*compilers[])(AstNode *, CompileState *) = {
     compile_int_constant,
     compile_float_constant,
@@ -455,6 +579,12 @@ static void (*compilers[])(AstNode *, CompileState *) = {
 };
 
 
+/**
+ * Dispatches compilation for each type of AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
 static void compile(AstNode *node, CompileState *cs)
 {
     compilers[node->type](node, cs);
@@ -465,6 +595,10 @@ static void compile(AstNode *node, CompileState *cs)
  *
  * Allocates a CompileState struct and passes it to
  * the AST walker/compiler.
+ *
+ * @param cs existing CompileState for use in Luci's interactive mode
+ * @param root top-level AST Node
+ * @returns complete CompileState
  */
 CompileState * compile_ast(CompileState *cs, AstNode *root)
 {
@@ -516,6 +650,12 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
     return cs;
 }
 
+/**
+ * Return a copy of the given Frame
+ *
+ * @param f Frame to copy
+ * @returns copy of the given Frame
+ */
 Frame *Frame_copy(Frame *f)
 {
     int i;
@@ -558,6 +698,11 @@ Frame *Frame_copy(Frame *f)
     return copy;
 }
 
+/**
+ * Delete a Frame that was copied from another Frame
+ *
+ * @param f Frame copy to delete
+ */
 void Frame_delete_copy(Frame *f)
 {
     int i;
@@ -573,6 +718,11 @@ void Frame_delete_copy(Frame *f)
     free(f);
 }
 
+/**
+ * Completely delete a Frame.
+ *
+ * @param f Frame to delete
+ */
 void Frame_delete(Frame *f)
 {
     if (f->instructions) {
@@ -599,6 +749,14 @@ void Frame_delete(Frame *f)
     free(f);
 }
 
+/**
+ * Delete a Frame in Luci's interactive mode.
+ *
+ * The Frame's local symbol table and constant table must
+ * remain intact.
+ *
+ * @param f Frame to clean up
+ */
 void Frame_delete_interactive(Frame *f)
 {
     free(f->instructions);
@@ -607,6 +765,13 @@ void Frame_delete_interactive(Frame *f)
     free(f);
 }
 
+/**
+ * Creates a new Frame derived from the given CompileState
+ *
+ * @param cs given CompileState
+ * @param nparams number of function parameters for function Frames
+ * @returns new Frame
+ */
 Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
 {
     Frame *f = alloc(sizeof(*f));
@@ -632,6 +797,11 @@ Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
     return f;
 }
 
+/**
+ * Allocates and initializes a new CompileState
+ *
+ * @returns new, initialized CompileState
+ */
 CompileState *CompileState_new(void)
 {
     CompileState *cs = alloc(sizeof(*cs));
@@ -648,6 +818,11 @@ CompileState *CompileState_new(void)
     return cs;
 }
 
+/**
+ * Deallocates the given CompileState.
+ *
+ * @param cs given CompileState
+ */
 void CompileState_delete(CompileState *cs)
 {
     /* free(cs->instructions); */ /* Frame owns instructions */
@@ -656,8 +831,13 @@ void CompileState_delete(CompileState *cs)
     free(cs);
 }
 
-/** Deletes CompileState's instructions but maintains
- * its symbol and constant tables
+/**
+ * Allocates a new instructions array for the given CompileState
+ *
+ * All other members of the CompileState are untouched.
+ *
+ * @param cs given CompileState
+ * @returns modifed CompileState
  */
 CompileState *CompileState_refresh(CompileState *cs)
 {
@@ -672,6 +852,14 @@ CompileState *CompileState_refresh(CompileState *cs)
     return cs;
 }
 
+/**
+ * Add a new instruction.
+ *
+ * @param cs current CompileState
+ * @param op opcode for new instruction
+ * @param arg argument to given opcode
+ * @returns the address of the new instruction
+ */
 static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
 {
     int count = 0;
@@ -696,6 +884,15 @@ static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
     return old_addr;
 }
 
+/**
+ * Change the instruction at the given address.
+ *
+ * @param cs current CompileState
+ * @param addr address to modify
+ * @param op opcode for new instruction
+ * @param arg argument to given opcode
+ * @returns the number of addresses used for the new instruction
+ */
 static uint32_t put_instr(CompileState *cs, uint32_t addr,
         Opcode op, int arg) {
 
@@ -719,7 +916,13 @@ static uint32_t put_instr(CompileState *cs, uint32_t addr,
     }
 }
 
-static void add_new_loop(CompileState *cs, uint8_t loop_type)
+/**
+ * Add a new empty loop_list struct to the current CompileState
+ *
+ * @param cs CompileState
+ * @param loop_type type of the loop (for/while)
+ */
+static void add_new_loop(CompileState *cs, int loop_type)
 {
     struct loop_list *loop = alloc(sizeof(*loop));
     loop->loop_type = loop_type;
@@ -730,6 +933,13 @@ static void add_new_loop(CompileState *cs, uint8_t loop_type)
     cs->current_loop = loop;
 }
 
+/**
+ * Populate jump addresses for each continue/break in a loop.
+ *
+ * @param cs CompileState
+ * @param start address of first instruction of the loop
+ * @param end address of the first instruction after the loop
+ */
 static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end)
 {
     struct loop_jump *ptr = NULL, *old = NULL;
@@ -761,6 +971,15 @@ static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end)
     cs->current_loop = parent_loop;
 }
 
+/**
+ * Not Implemented.
+ *
+ * Serializes a Frame to a string of bytes that can
+ * be written to a file.
+ *
+ * @param globalframe global frame to serialize
+ * @returns C-style string of bytes
+ */
 char* serialize_program(Frame *globalframe)
 {
     int i;
@@ -770,6 +989,9 @@ char* serialize_program(Frame *globalframe)
     return NULL;
 }
 
+/**
+ * C-string representations corresponding to each enumerated opcode
+ */
 static char *instruction_names[] = {
     "NOP",
     "POP",
@@ -794,9 +1016,13 @@ static char *instruction_names[] = {
     "JUMPZ",
     "ITERJUMP",
 };
-/*
+
+/**
  * Prints string representations of each instruction in the CompileState.
+ *
  * Used for debugging (or fun)
+ *
+ * @param f Frame
  */
 void print_instructions(Frame *f)
 {

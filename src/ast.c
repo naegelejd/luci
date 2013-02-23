@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file ast.c
+ */
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -10,10 +14,15 @@
 #include "luci.h"
 #include "ast.h"
 
-/* defined in lexer.l */
+/** defined in lexer.l */
 extern int get_line_num();
+/** defined in lexer.l */
 extern int get_last_col_num();
 
+/**
+ * String representations of each abstract
+ * syntax tree node.
+ */
 const char *TYPE_NAMES[] = {
     "int",
     "float",
@@ -38,10 +47,16 @@ const char *TYPE_NAMES[] = {
     "pass"
 };
 
-static AstNode *create_node(int type);
-
-
-static AstNode *create_node(int type) {
+/**
+ * Allocates and AST Node and sets it's type
+ * as well as the line,column numbers of the source
+ * file from which the node came from.
+ *
+ * @param type the type of AST Node
+ * @returns new AST Node
+ */
+static AstNode *create_node(AstType type);
+static AstNode *create_node(AstType type) {
     AstNode *new = alloc(sizeof(*new));
     new->type = type;
     new->lineno = get_line_num();
@@ -49,7 +64,12 @@ static AstNode *create_node(int type) {
     return new;
 }
 
-
+/**
+ * Creates a new AST Node representing an integer constant.
+ *
+ * @param val a long integer value
+ * @returns new AST Node
+ */
 AstNode *make_int_constant(long val)
 {
     AstNode *result = create_node(ast_integer_t);
@@ -58,6 +78,12 @@ AstNode *make_int_constant(long val)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a floating-point constant.
+ *
+ * @param val a double floating-point value
+ * @returns new AST Node
+ */
 AstNode *make_float_constant(double val)
 {
     AstNode *result = create_node(ast_float_t);
@@ -66,6 +92,12 @@ AstNode *make_float_constant(double val)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a string of characters.
+ *
+ * @param val an allocated C-string
+ * @returns new AST Node
+ */
 AstNode *make_string_constant(char *val)
 {
     AstNode *result = create_node(ast_string_t);
@@ -74,6 +106,12 @@ AstNode *make_string_constant(char *val)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a symbol.
+ *
+ * @param name C-string name of the symbol
+ * @returns new AST Node
+ */
 AstNode *make_id_expr(char *name)
 {
     AstNode *result = create_node(ast_id_t);
@@ -82,8 +120,16 @@ AstNode *make_id_expr(char *name)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a binary expression
+ *
+ * @param left the left-hand operand
+ * @param right the right-hand operand
+ * @param op operation type
+ * @returns new AST Node
+ */
 AstNode *make_binary_expr(AstNode *left,
-        AstNode *right, int op)
+        AstNode *right, op_type op)
 {
     AstNode *result = create_node(ast_expr_t);
     result->data.expression.left = left;
@@ -93,6 +139,13 @@ AstNode *make_binary_expr(AstNode *left,
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a container access.
+ *
+ * @param container container to index into.
+ * @param index where in the container to pull a value from
+ * @returns new AST Node
+ */
 AstNode *make_container_access(AstNode *container, AstNode *index)
 {
     AstNode *result = create_node(ast_contaccess_t);
@@ -102,6 +155,14 @@ AstNode *make_container_access(AstNode *container, AstNode *index)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a container assignment.
+ *
+ * @param name container (symbol) name
+ * @param index where in the container to store the value
+ * @param right expression to evaluate and store
+ * @returns new AST Node
+ */
 AstNode *make_container_assignment(AstNode *name,
         AstNode *index, AstNode *right)
 {
@@ -113,6 +174,13 @@ AstNode *make_container_assignment(AstNode *name,
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a map definition.
+ *
+ * @param result existing or empty map definition node.
+ * @param to_append key-value pair node to append to the map definition
+ * @returns new AST Node
+ */
 AstNode *make_map_def(AstNode *result, AstNode *to_append)
 {
     if (!result) {
@@ -135,6 +203,13 @@ AstNode *make_map_def(AstNode *result, AstNode *to_append)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a key-value pair in a map.
+ *
+ * @param key an expression to use as the key
+ * @param val an expression to use as the value
+ * @returns new AST Node
+ */
 AstNode *make_map_keyval(AstNode *key, AstNode *val)
 {
     AstNode *result = create_node(ast_mapkeyval_t);
@@ -143,6 +218,13 @@ AstNode *make_map_keyval(AstNode *key, AstNode *val)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a list definition.
+ *
+ * @param result existing or empty list definition node
+ * @param to_append new expression to append to the list definition
+ * @returns new AST Node
+ */
 AstNode *make_list_def(AstNode *result, AstNode *to_append)
 {
     if (!result) {
@@ -165,6 +247,13 @@ AstNode *make_list_def(AstNode *result, AstNode *to_append)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing an assignment
+ *
+ * @param id symbol name in which to store the assignment
+ * @param right expression to evaluate and store
+ * @returns new AST Node
+ */
 AstNode *make_assignment(char *id, AstNode *right)
 {
     AstNode *result = create_node(ast_assign_t);
@@ -174,6 +263,13 @@ AstNode *make_assignment(char *id, AstNode *right)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a while-loop
+ *
+ * @param cond condition to evaluate
+ * @param statements body of while-loop
+ * @returns new AST Node
+ */
 AstNode *make_while_loop(AstNode *cond, AstNode *statements)
 {
     AstNode *result = create_node(ast_while_t);
@@ -184,18 +280,34 @@ AstNode *make_while_loop(AstNode *cond, AstNode *statements)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a for-loop.
+ *
+ * @param iter symbol name in which to store the value of each iteration
+ * @param container container to iterate over
+ * @param statements body of the for-loop
+ * @returns new AST Node
+ */
 AstNode *make_for_loop(char *iter,
-        AstNode *list, AstNode *statements)
+        AstNode *container, AstNode *statements)
 {
     AstNode *result = create_node(ast_for_t);
     result->data.for_loop.iter = iter;
-    result->data.for_loop.list = list;
+    result->data.for_loop.container = container;
     result->data.for_loop.statements = statements;
     LUCI_DEBUG("Made for node containing %d stmts\n",
             statements->data.statements.count);
     return result;
 }
 
+/**
+ * Creates a new AST Node representing an if-else block.
+ *
+ * @param cond condition to evaluate
+ * @param block1 statements to evaluate if cond is true
+ * @param block2 statements to evaluate if cond is false
+ * @returns new AST Node
+ */
 AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)
 {
     AstNode *result = create_node(ast_if_t);
@@ -207,6 +319,13 @@ AstNode *make_if_else(AstNode *cond, AstNode *block1, AstNode *block2)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a function call.
+ *
+ * @param name name of the funcion being called
+ * @param arglist list of arguments passed to the function
+ * @returns new AST Node
+ */
 AstNode *make_func_call(AstNode *name, AstNode *arglist)
 {
     AstNode *result = create_node(ast_call_t);
@@ -216,6 +335,14 @@ AstNode *make_func_call(AstNode *name, AstNode *arglist)
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a function definition.
+ *
+ * @param name name of the function being defined
+ * @param param_list list of parameters of the function
+ * @param statements statements comprising the function's body
+ * @returns new AST Node
+ */
 AstNode *make_func_def(char *name, AstNode *param_list,
         AstNode *statements)
 {
@@ -227,6 +354,13 @@ AstNode *make_func_def(char *name, AstNode *param_list,
     return result;
 }
 
+/**
+ * Creates a new AST Node representing a block of statements.
+ *
+ * @param list empty or existing list of statements to append to.
+ * @param new new statement to add to the list of statements.
+ * @returns new AST Node
+ */
 AstNode *make_statements(AstNode *list, AstNode *new)
 {
     if (!list)
@@ -256,16 +390,32 @@ AstNode *make_statements(AstNode *list, AstNode *new)
     return list;
 }
 
+/**
+ * Creates a new AST Node representing a @code break @endcode keyword.
+ *
+ * @returns new AST Node
+ */
 AstNode *make_break()
 {
     return create_node(ast_break_t);
 }
 
+/**
+ * Creates a new AST Node representing a @code continue @endcode keyword.
+ *
+ * @returns new AST Node
+ */
 AstNode *make_continue()
 {
     return create_node(ast_continue_t);
 }
 
+/**
+ * Creates a new AST Node representing a @code return @endcode keyword.
+ *
+ * @param expr expression to evaluate and return (may be NULL).
+ * @returns new AST Node
+ */
 AstNode *make_return(AstNode *expr)
 {
     AstNode *ret = create_node(ast_return_t);
@@ -273,12 +423,24 @@ AstNode *make_return(AstNode *expr)
     return ret;
 }
 
+/**
+ * Creates a new AST Node representing a @code pass @endcode keyword.
+ *
+ * @returns new AST Node
+ */
 AstNode *make_pass()
 {
     return create_node(ast_pass_t);
 }
 
-
+/**
+ * Prints a Graphviz "dot" graph representing the abstract syntax
+ * tree to @code stdout @endcode.
+ *
+ * @param root root-level node (usually an AstStatements node)
+ * @param id used recursively to track relationships between nodes.
+ * @returns an id used recursively to track relationships between nodes.
+ */
 int print_ast_graph(AstNode *root, int id)
 {
     AstNode *args = NULL;
@@ -328,7 +490,7 @@ int print_ast_graph(AstNode *root, int id)
         case ast_for_t:
             printf("%d [label=\"for\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.for_loop.list, id);
+            id = print_ast_graph(root->data.for_loop.container, id);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.for_loop.statements, id);
             break;
@@ -405,6 +567,11 @@ int print_ast_graph(AstNode *root, int id)
     return id;
 }
 
+/**
+ * Deallocates all nodes in a tree starting at the root.
+ *
+ * @param root root-level node (usually an AstStatements node)
+ */
 void destroy_tree(AstNode *root)
 {
     /* don't free a NULL statement */
@@ -454,7 +621,7 @@ void destroy_tree(AstNode *root)
             break;
 
         case ast_for_t:
-            destroy_tree(root->data.for_loop.list);
+            destroy_tree(root->data.for_loop.container);
             destroy_tree(root->data.for_loop.statements);
             free(root->data.for_loop.iter);
             break;

@@ -7,16 +7,21 @@
 
 #include <stdlib.h>
 
-
+/**
+ * Arena of memory for allocation
+ */
 struct lmalloc_arena {
-    unsigned int bytes;
-    void * ptr;
+    unsigned int bytes; /**< size of arena in bytes */
+    void * ptr;         /**< pointer to arena */
 };
 
+/**
+ * Header for a free block of memory
+ */
 struct chunk_hdr {
-    void *prev;
-    void *next;
-    size_t size;
+    void *prev;     /**< next free block before this */
+    void *next;     /**< next free block after this */
+    size_t size;    /**< size of this free block */
 };
 
 

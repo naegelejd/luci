@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file constant.c
+ */
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -10,6 +14,12 @@
 #include "constant.h"
 
 
+/**
+ * Allocates and initializes a new constant table.
+ *
+ * @param size initial capacity of the table's object array.
+ * @returns new ConstantTable\*
+ */
 ConstantTable *cotable_new(int size)
 {
     ConstantTable *cotable = alloc(sizeof(*cotable));
@@ -22,6 +32,8 @@ ConstantTable *cotable_new(int size)
 
 /**
  * Frees all memory allocated for constant table
+ *
+ * @param cotable the ConstantTable to delete
  */
 void cotable_delete(ConstantTable *cotable)
 {
@@ -44,8 +56,12 @@ void cotable_delete(ConstantTable *cotable)
 }
 
 /**
- * Returns the ID of the constant value
+ * Returns the ID of the constant value.
  * Inserts object into table if it is not already present
+ *
+ * @param cotable the ConstantTable in which to insert the object
+ * @param const_obj the object to insert
+ * @returns the "ID" of the constant
  */
 uint32_t constant_id(ConstantTable *cotable, LuciObject *const_obj)
 {
@@ -63,13 +79,26 @@ uint32_t constant_id(ConstantTable *cotable, LuciObject *const_obj)
     return cotable->count++;
 }
 
+/**
+ * Releases the constant table's objects array.
+ *
+ * Once this function is called, the ConstantTable no longer
+ * 'owns' its object array and will not be responsible for
+ * freeing memory allocated for the object array.
+ *
+ * @param cotable the ConstantTable containing the desired object array
+ * @returns an array of LuciObject constants
+ */
 LuciObject **cotable_get_objects(ConstantTable *cotable)
 {
     if (!cotable) {
-        return NULL;
+        DIE("%s\n", "Cannot get object array from NULL ConstantTable\n");
     }
 
-    cotable->owns_objects = 0;
-
-    return cotable->objects;
+    if (cotable->owns_objects) {
+        cotable->owns_objects = 0;
+        return cotable->objects;
+    } else {
+        return NULL;
+    }
 }

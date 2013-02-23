@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file interpret.c
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -17,6 +21,8 @@
 
 /**
  * Main interpreter loop
+ *
+ * @param frame top-level Frame to being interpreting
  */
 void eval(Frame *frame)
 {
@@ -171,7 +177,7 @@ void eval(Frame *frame)
             x = st_pop(&lstack);    /* function object */
 
             /* setup user-defined function */
-            if (x->type == obj_func_t) {
+            if (TYPEOF(x) == obj_func_t) {
                 /* save instruction pointer */
                 frame->ip = ip;
 
@@ -182,9 +188,9 @@ void eval(Frame *frame)
                 frame = Frame_copy(((LuciFunctionObj *)x)->frame);
 
                 /* check that the # of arguments equals the # of parameters */
-                if (frame->nparams > a) {
+                if (a < frame->nparams) {
                     DIE("%s", "Missing arguments to function.\n");
-                } else if (frame->nparams < a) {
+                } else if (a > frame->nparams) {
                     DIE("%s", "Too many arguments to function.\n");
                 }
 
@@ -236,8 +242,13 @@ void eval(Frame *frame)
             LUCI_DEBUG("%s\n", "RETURN");
 
             /* incref the return value at the top of the stack
-             * so it doesn't get lost(deleted) during function cleanup */
-            INCREF(st_peek(&lstack));
+             * so it doesn't get lost(deleted) during function cleanup
+             *
+             * but don't INCREF a NULL... :( */
+            x = st_peek(&lstack);
+            if (x) {
+                INCREF(x);
+            }
 
             /* delete previously active frame (and all its locals) */
             Frame_delete_copy(frame);

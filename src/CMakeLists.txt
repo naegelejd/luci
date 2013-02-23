@@ -1,4 +1,4 @@
-set(LUCI luci)
+set(LUCI_EXECUTABLE luci)
 
 find_package(BISON)
 find_package(FLEX)
@@ -11,7 +11,7 @@ ADD_FLEX_BISON_DEPENDENCY(myscanner myparser)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_executable(
-    ${LUCI}
+    ${LUCI_EXECUTABLE}
     ${BISON_myparser_OUTPUTS}
     ${FLEX_myscanner_OUTPUTS}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.c
@@ -29,22 +29,6 @@ add_executable(
 )
 
 # link only against math library
-target_link_libraries(${LUCI} m)
+target_link_libraries(${LUCI_EXECUTABLE} m)
 
-install(TARGETS ${LUCI} DESTINATION bin)
-
-find_package(DOXYGEN)
-if(DOXYGEN_FOUND)
-    configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
-        ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        @ONLY
-    )
-    add_custom_target(
-        doc
-        ${DOXYGEN_EXECUTABLE}
-        ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating API Documentation with Doxygen" VERBATIM
-    )
-endif(DOXYGEN_FOUND)
+install(TARGETS ${LUCI_EXECUTABLE} DESTINATION bin)

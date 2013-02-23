@@ -2,12 +2,16 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file binop.h
+ */
+
 #ifndef BINOP_H
 #define BINOP_H
 
 #include "object.h"
 
-/* enumeration of supported unary/binary operators */
+/** enumeration of supported unary/binary operators */
 typedef enum {
     op_add_t,
     op_sub_t,
@@ -30,6 +34,6 @@ typedef enum {
     op_bnot_t
 } op_type;
 
-LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op);
+LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, op_type op);
 
 #endif

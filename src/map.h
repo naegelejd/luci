@@ -2,21 +2,15 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file map.h
+ *
+ */
+
 #ifndef MAP_H
 #define MAP_H
 
 #include "object.h"
-
-typedef struct {
-    unsigned char flags;
-    unsigned char size_idx; /* Index of current table size */
-    unsigned int count;     /* Current # of hashed objects */
-    unsigned int collisions;/* Current # of hash collisions */
-    unsigned int size;      /* Current # of objects memory has been allocated for */
-    LuciObject **keys;   /* Array of LuciObjects keys */
-    LuciObject **vals;   /* Array of LuciObjects vals */
-} MapTable;
-
 
 LuciObject *LuciMap_new();
 /* void map_delete(LuciObject *map); */

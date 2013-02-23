@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file compile.h
+ */
+
 #ifndef COMPILE_H
 #define COMPILE_H
 
@@ -11,6 +15,9 @@
 #include "symbol.h"     /* for Symbol Table */
 #include "constant.h"   /* for Constant Table */
 
+/**
+ * Enumerated opcode types
+ */
 typedef enum {
     NOP,
     POP,
@@ -36,64 +43,81 @@ typedef enum {
     ITERJUMP
 } Opcode;
 
+/** an instruction is a 16-bit unsigned int */
 typedef uint16_t Instruction;
 
-#define BASE_INSTR_COUNT 256
-#define BASE_SYMTABLE_SCALE 0
-#define BASE_COTABLE_SIZE 0xFF
-
-#define LOOP_TYPE_WHILE 0
-#define LOOP_TYPE_FOR   1
+#define BASE_INSTR_COUNT 256    /**< initial size of instructions array */
+#define BASE_SYMTABLE_SCALE 0   /**< initial symtable scale (0=smallest) */
+#define BASE_COTABLE_SIZE 0xFF  /**< initial constant table size */
 
 
+/**
+ * A linked list node used to track nested loops
+ */
 struct loop_jump {
-    uint32_t addr;
-    struct loop_jump *next;
+    uint32_t addr;          /**< the instruction address to jump to */
+    struct loop_jump *next; /**< next loop-jump in linked list */
 };
 
+/**
+ * Tracks all breaks, continues in a loop.
+ * Also tracks parent loops.
+ */
 struct loop_list {
-    uint8_t loop_type;      /* possible types defined above */
-    struct loop_jump *breaks;
-    struct loop_jump *continues;
-    struct loop_list *parent;
+    enum { LOOP_TYPE_WHILE, LOOP_TYPE_FOR } loop_type; /**< loop type */
+    struct loop_jump *breaks;       /**< linked list of breaks */
+    struct loop_jump *continues;    /**< linked list of continues */
+    struct loop_list *parent;       /**< parent loop_list (if nested) */
 };
 
+/*
 typedef struct _program {
-    uint32_t ip;    /* (compilation) instr count. (interp) instr pointer */
-    uint32_t size;   /* size of array allocated for instructions */
+    uint32_t ip;
+    uint32_t size;
     Instruction *instructions;
     SymbolTable *ltable;
     SymbolTable *gtable;
     ConstantTable *ctable;
     struct loop_list *current_loop;
 } Program;
+*/
 
+/**
+ * Derived from a CompileState.
+ *
+ * Used in both compilation and mainly interpreting
+ */
 typedef struct _frame {
-    uint16_t nparams;
-    uint16_t nlocals;
-    uint16_t nconstants;
-    uint32_t ip;
-    uint32_t ninstrs;
-    Instruction *instructions;
-    LuciObject **locals;
-    LuciObject **globals;
-    LuciObject **constants;
+    uint16_t nparams;       /**< number of parameters */
+    uint16_t nlocals;       /**< number of local symbols */
+    uint16_t nconstants;    /**< number of constants */
+    uint32_t ip;            /**< current instruction pointer */
+    uint32_t ninstrs;       /**< total number of instructions */
+    Instruction *instructions;  /**< array of instructions */
+    LuciObject **locals;        /**< array of local LuciObjects */
+    LuciObject **globals;       /**< array of global LuciObjects */
+    LuciObject **constants;     /**< array of constant LuciObjects */
 } Frame;
 
+/**
+ * Essential state storage entity within compilation.
+ *
+ * Each CompileState represents either the global program's scope
+ * or individual function definition scopes.
+ */
 typedef struct _compile_state {
-    uint32_t instr_count;
-    uint32_t instr_alloc;
-    Instruction *instructions;
-    SymbolTable *ltable;
-    SymbolTable *gtable;
-    ConstantTable *ctable;
-    struct loop_list *current_loop;
+    uint32_t instr_count;       /**< instruction count */
+    uint32_t instr_alloc;       /**< size of instructions array */
+    Instruction *instructions;  /**< array of instructions */
+    SymbolTable *ltable;        /**< symbol table for locals */
+    SymbolTable *gtable;        /**< symbol table for globals */
+    ConstantTable *ctable;      /**< constant table */
+    struct loop_list *current_loop; /**< used while compiling loops */
 } CompileState;
 
 
 CompileState * compile_ast(CompileState *, AstNode *);
 CompileState * CompileState_new(void);
-CompileState * CompileState_init(CompileState *);
 CompileState * CompileState_refresh(CompileState *);
 void CompileState_delete(CompileState *);
 

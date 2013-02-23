@@ -2,6 +2,11 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file object.h
+ *
+ */
+
 #ifndef OBJECT_H
 #define OBJECT_H
 
@@ -9,12 +14,11 @@
 #include <stdint.h>
 
 
-/* initial allocated size of a new List */
-#define INIT_LIST_SIZE 32
-#define INIT_MAP_SIZE 8
+#define INIT_LIST_SIZE 32   /**< initial allocated size of a list */
+#define INIT_MAP_SIZE 8     /**< initial allocated size of a map */
 
 
-/* Types of LuciObjects */
+/** Types of LuciObjects */
 typedef enum {
     obj_int_t,
     obj_float_t,
@@ -27,110 +31,133 @@ typedef enum {
     obj_libfunc_t
 } LuciObjType;
 
-/* Generic Object which allows for dynamic typing */
+/** Generic Object which allows for dynamic typing */
 typedef struct _LuciObject
 {
-    LuciObjType type;
-    int refcount;
+    LuciObjType type;   /**< type ID */
+    int refcount;       /**< reference count for garbage collection */
 } LuciObject;
 
 
-/* Object Types */
+/** Integer object Type */
 typedef struct _LuciIntObj
 {
-    LuciObject base;
-    long i;
+    LuciObject base;    /**< base implementation */
+    long i;             /**< 'long' numerical value */
 } LuciIntObj;
 
+/** Floating-point object type */
 typedef struct _LuciFloatObj
 {
-    LuciObject base;
-    double f;
+    LuciObject base;    /**< base implementation */
+    double f;           /**< double-precision floating point value */
 } LuciFloatObj;
 
+/** String object type */
 typedef struct _LuciString {
-    LuciObject base;
-    long len;
-    char * s;
+    LuciObject base;    /**< base implementation */
+    long len;           /**< string length */
+    char * s;           /**< pointer to C-string */
 } LuciStringObj;
 
+/** File open type */
+typedef enum { f_read_m, f_write_m, f_append_m } file_mode;
+
+/** File object type */
 typedef struct _LuciFile {
-    LuciObject base;
-    enum { f_read_m, f_write_m, f_append_m } mode;
-    long size; /* in bytes */
-    FILE * ptr;
+    LuciObject base;    /**< base implementation */
+    long size;          /**< file length in bytes */
+    FILE * ptr;         /**< pointer to C-file pointer */
+    file_mode mode;     /**< current mode file was opened in */
 } LuciFileObj;
 
+/** List object type */
 typedef struct _LuciList {
-    LuciObject base;
-    unsigned int count;	/* current number of items in list */
-    unsigned int size;	/* current count of allocated items */
-    LuciObject **items;
+    LuciObject base;    /**< base implementation */
+    unsigned int count;	/**< current number of items in list */
+    unsigned int size;	/**< current count of allocated items */
+    LuciObject **items; /**< pointer to items array */
 } LuciListObj;
 
+/** Map object type */
 typedef struct _LuciMap {
-    LuciObject base;
-    unsigned int size_idx;
-    unsigned int collisions;
-    unsigned int count;	/* current number of key/value pairs */
-    unsigned int size;	/* current count of allocated pairs*/
-    LuciObject **keys;
-    LuciObject **vals;
+    LuciObject base;    /**< base implementation */
+    unsigned int size_idx;  /**< identifier for current size of table */
+    unsigned int collisions;    /**< number of hash collisions */
+    unsigned int count;	/**< current number of key/value pairs */
+    unsigned int size;	/**< current count of allocated pairs*/
+    LuciObject **keys;  /**< array of pointers to keys */
+    LuciObject **vals;  /**< array of pointers to values */
 } LuciMapObj;
 
+/** Iterator object type (internal) */
 typedef struct _LuciIterator {
-    LuciObject base;
-    unsigned int idx;
-    unsigned int step;
-    LuciObject *container;
+    LuciObject base;    /**< base implemenatation */
+    unsigned int idx;   /**< current index */
+    unsigned int step;  /**< amount to increment by */
+    LuciObject *container;  /**< the container this iterator applies to */
 } LuciIteratorObj;
 
+/** User-defined function type */
 typedef struct _LuciFunction {
-    LuciObject base;
-    void *frame;
+    LuciObject base;    /**< base implementation */
+    void *frame;        /**< pointer to Frame struct */
 } LuciFunctionObj;
 
-/* Library function */
+/** Library function type */
 typedef struct _LuciLibFunc {
-    LuciObject base;
-    LuciObject * (*func)(LuciObject **, unsigned int);
+    LuciObject base;        /**< base implementation */
+    LuciObject * (*func)(LuciObject **, unsigned int);  /**< function pointer */
 } LuciLibFuncObj;
 
-
+/** returns the reference count of object o */
 #define REFCOUNT(o) (((LuciObject *)(o))->refcount)
+
+/** returns the type of object o */
 #define TYPEOF(o)   (((LuciObject *)(o))->type)
 
+/** increments the reference count of object o */
 #define INCREF(o)   (((LuciObject *)(o))->refcount++)
+
+/** decrements the reference count of object o */
 #define DECREF(o)   (((LuciObject *)(o))->refcount--)
 
+/** returns 1 if two objects have the same type, 0 otherwise */
 #define TYPES_MATCH(left, right) ( TYPEOF(left) == TYPEOF(right) )
 
+/** casts LuciObject o to a LuciIntObj */
 #define AS_INT(o)       ((LuciIntObj *)(o))
+/** casts LuciObject o to a LuciFloatObj */
 #define AS_FLOAT(o)     ((LuciFloatObj *)(o))
+/** casts LuciObject o to a LuciStringObj */
 #define AS_STRING(o)    ((LuciStringObj *)(o))
+/** casts LuciObject o to a LuciListObj */
 #define AS_LIST(o)      ((LuciListObj *)(o))
+/** casts LuciObject o to a LuciMapObj */
 #define AS_MAP(o)       ((LuciMapObj *)(o))
+/** casts LuciObject o to a LuciFileObj */
 #define AS_FILE(o)      ((LuciFileObj *)(o))
+/** casts LuciObject o to a LuciMapObj */
 #define AS_FUNCTION(o)  ((LuciFunctionObj *)(o))
 
 
 LuciObject *LuciInt_new(long l);
 LuciObject *LuciFloat_new(double d);
 LuciObject *LuciString_new(char *s);
-LuciObject *LuciFile_new(FILE *fp, long size, int mode);
+LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode);
 LuciObject *LuciList_new();
 LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
 
-/* decrements the object's refcount and returns it
+/** Decrements the object's refcount and returns it
  * also potentially destroys object (refcount <= 0) */
 LuciObject *decref(LuciObject* orig);
 
-/* used by print. useful in debugging */
+/** Used by print. Useful in debugging */
 void print_object(LuciObject *);
 
-/* duplicates a LuciObject, creating a new one */
+/* Duplicates a LuciObject, allocating the new one */
 LuciObject *copy_object(LuciObject* orig);
 
 /* destroys an object */

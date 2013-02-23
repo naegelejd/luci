@@ -2,15 +2,21 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file stack.h
+ */
+
 #ifndef STACK_H
 #define STACK_H
 
 #include <stdint.h>
 
+/** A very simple, unsafe stack implementation
+ * using `void *` pointers */
 typedef struct _Stack {
-    void **array;
-    uint32_t top;
-    uint32_t size;
+    void **array;   /**< array of void * pointers to objects */
+    uint32_t top;   /**< stack pointer */
+    uint32_t size;  /**< size of allocated array */
 } Stack;
 
 Stack* st_init(Stack *);

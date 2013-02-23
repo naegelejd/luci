@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file main.c
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,26 +16,34 @@
 #include "compile.h"
 #include "interpret.h"
 
-#define INTERACTIVE 1
-#define EXECUTE     2
-#define SHOW_INSTR  4
-#define GRAPH_AST   8
-#define SERIALIZE   16
+enum {
+    INTERACTIVE=1,
+    EXECUTE=2,
+    SHOW_INSTR=4,
+    GRAPH_AST=8,
+    SERIALIZE=16
+} main_modes; /**< Luci's run-time modes of operation */
 
-/* from scanner */
+/** defined in generated scanner */
 extern void yyrestart();
-/* from parser */
+/** defined in generated parser */
 extern FILE *yyin;
+/** defined in generated parser */
 extern int yyparse();
+/** defined in generated parser */
 extern int yydebug;
 
 
+/** Current version of Luci (for printing to stdout) */
 static const char * const version_string = "Luci v0.2";
 
 int luci_main(int argc, char *argv[]);
 void luci_interactive(void);
 
 
+/**
+ * Prints basic command-line help to stdout
+ */
 static void help()
 {
     puts("Usage: luci [options] filename\n");
@@ -56,6 +68,13 @@ static void help()
     printf("%ld (%s)\n", sizeof(LuciLibFuncObj), "libfunc");
 }
 
+/**
+ * Main entry point to the Luci compiler/interpreter
+ *
+ * @param argc number of command-line arguments
+ * @param argv C-string array of command-line arguments
+ * @returns 1 on error, 0 on success
+ */
 int luci_main(int argc, char *argv[])
 {
 #ifdef DEBUG
@@ -178,9 +197,16 @@ finish:
     return EXIT_SUCCESS;
 }
 
-
+/** defined in lexer.l */
 extern void luci_start_interactive(void);
 
+/**
+ * Initiates Luci's interactive mode.
+ *
+ * Input is read from stdin, parsed, compiled, then executed.
+ * The interpreter's state is maintained between successive
+ * user inputs to stdin.
+ */
 void luci_interactive(void)
 {
     AstNode *root_node = NULL;
@@ -234,6 +260,13 @@ end_interactive:
     gc_finalize();
 }
 
+/**
+ * C main.
+ *
+ * @param argc number of command-line arguments
+ * @param argv C-style string array of command-line arguments
+ * @returns 1 on error, 0 on success
+ */
 int main(int argc, char *argv[])
 {
     return luci_main(argc, argv);

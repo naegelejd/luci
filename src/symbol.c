@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file symbol.c
+ */
+
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -20,8 +24,14 @@ static Symbol *find_symbol_by_name(SymbolTable *, const char *);
 
 static uint32_t hash_symbol(SymbolTable *, const char *);
 
-/* http://planetmath.org/GoodHashTablePrimes.html */
+
 enum { N_BUCKET_OPTIONS = 26 };
+/**
+ * Array of prime number hash table sizes.
+ *
+ * Numbers from:
+ * http://planetmath.org/GoodHashTablePrimes.html
+ */
 static unsigned int NBUCKETS[N_BUCKET_OPTIONS] = {
     97, 193, 389, 769, 1543, 3079, 6151, 12289,
     24593, 49157, 98317, 196613, 393241, 786433,
@@ -30,7 +40,13 @@ static unsigned int NBUCKETS[N_BUCKET_OPTIONS] = {
     805306457, 1610612741, 0
 };
 
-/* djb2 algorithm */
+/**
+ * djb2 algorithm (Dave Jenkins)
+ *
+ * @param symtable pointer to symbol table
+ * @param name string to hash
+ * @return hash of name
+ */
 static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
 {
     uint32_t h = 5381;
@@ -42,6 +58,13 @@ static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
     return h % NBUCKETS[symtable->bscale];
 }
 
+/**
+ * Allocates a new symbol
+ *
+ * @param name name of new symbol
+ * @param index index of corresponding LuciObject in SymbolTable array
+ * @return new Symbol
+ */
 static Symbol *symbol_new(const char *name, uint32_t index)
 {
     Symbol *new = alloc(sizeof(*new));
@@ -51,6 +74,11 @@ static Symbol *symbol_new(const char *name, uint32_t index)
     return new;
 }
 
+/**
+ * Deletes an allocated symbol
+ *
+ * @param del symbol to delete
+ */
 static void symbol_delete(Symbol *del)
 {
     if (del) {
@@ -67,6 +95,10 @@ static void symbol_delete(Symbol *del)
 /**
  * Inserts new symbol into symbol table.
  * SymbolTable must not already contain symbol
+ *
+ * @param symtable pointer to SymbolTable
+ * @param new_symbol pointer to new Symbol
+ * @return symtable
  */
 static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
 {
@@ -97,6 +129,13 @@ static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
     return symtable;
 }
 
+/**
+ * Resizes the SymbolTable, re-hashing all existing symbols
+ *
+ * @param symtable pointer to symbol table
+ * @param bucketscale index into array of possible table sizes (primes)
+ * @returns resized symtable
+ */
 static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
 {
     /* no shrink implementation defined */
@@ -136,6 +175,9 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
 
 /**
  * Allocates and returns a new symbol table.
+ *
+ * @param bucketscale index into array of possible table sizes (primes)
+ * @return pointer to new SymbolTable
  */
 SymbolTable *symtable_new(uint32_t bucketscale)
 {
@@ -174,6 +216,8 @@ SymbolTable *symtable_new(uint32_t bucketscale)
  * Should be used at the end of interpretation,
  * as all Objects referenced by symbols will also
  * be destroyed.
+ *
+ * @param symtable pointer to symbol table
  */
 void symtable_delete(SymbolTable *symtable)
 {
@@ -209,7 +253,13 @@ void symtable_delete(SymbolTable *symtable)
     return;
 }
 
-
+/**
+ * Searches the symbol table for a specific symbol name
+ *
+ * @param symtable pointer to symbol table
+ * @param name symbol name to search for
+ * @return matching symbol or NULL
+ */
 static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)
 {
     Symbol *cur = NULL;
@@ -232,8 +282,14 @@ static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)
 
 /**
  * Returns the ID of the symbol
- * if SYMCREATE flag is passed, a new symbol
+ *
+ * If SYMCREATE flag is passed, a new symbol
  * will be created if it doesn't already exist
+ *
+ * @param symtable pointer to symbol table
+ * @param name symbol name
+ * @param flags bitmask defining symbol creation options
+ * @return id an integer id for the symbol or -1 on failure
  */
 int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
 {
@@ -279,8 +335,12 @@ int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
 }
 
 /**
- * Replaces the object in the table pertaining to id
- * Returns old object if it exists
+ * Replaces the object in the table at index `id`
+ *
+ * @param symtable symtable pointer
+ * @param obj LuciObject to set as value at index `id`
+ * @param id index in the table at which to set a new object value
+ * @return object that previously resided at index `id`
  */
 void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
 {
@@ -294,6 +354,12 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
     INCREF(obj);
 }
 
+/**
+ * Returns the symbol table's array of objects
+ *
+ * @param symtable pointer to symbol table
+ * @return array of LuciObjects
+ */
 LuciObject **symtable_get_objects(SymbolTable *symtable)
 {
     if (!symtable) {

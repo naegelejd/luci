@@ -1,6 +1,11 @@
 /*
  * See Copyright Notice in luci.h
  */
+
+/**
+ * @file binop.c
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -10,9 +15,11 @@
 #include "binop.h"
 
 
-/*
-   Evaluates a conditional statement, returning an integer
-   value of 0 if False, and non-zero if True.
+/**
+ * Evaluates a conditional statement.
+ *
+ * @param cond a LuciObject that has a boolean equivalent
+ * @returns 0 if False, non-zero if True.
 */
 static int evaluate_condition(LuciObject *cond)
 {
@@ -40,7 +47,15 @@ static int evaluate_condition(LuciObject *cond)
     return huh;
 }
 
-long int_op(long l, long r, int op)
+/**
+ * Performs a binary operation on two long integers
+ *
+ * @param l left-hand long integer
+ * @param r right-hand long integer
+ * @param op binary operation type
+ * @returns long integer result of operation
+ */
+long int_op(long l, long r, op_type op)
 {
     switch (op) {
         case op_add_t:
@@ -128,7 +143,15 @@ long int_op(long l, long r, int op)
     }
 }
 
-double float_op(double l, double r, int op)
+/**
+ * Performs a binary operation on two double floating-point values
+ *
+ * @param l left-hand double
+ * @param r right-hand double
+ * @param op binary operation type
+ * @returns double floating-point result of operation
+ */
+double float_op(double l, double r, op_type op)
 {
     switch (op) {
         case op_add_t:
@@ -182,7 +205,15 @@ double float_op(double l, double r, int op)
     }
 }
 
-LuciObject *string_op(LuciStringObj *l, LuciStringObj *r, int op)
+/**
+ * Performs a binary operation on two LuciStringObjs
+ *
+ * @param l left-hand LuciStringObj
+ * @param r right-hand LuciStringObj
+ * @param op binary operation type
+ * @returns LuciStringObj result of operation
+ */
+LuciObject *string_op(LuciStringObj *l, LuciStringObj *r, op_type op)
 {
     switch (op) {
         case op_add_t:
@@ -208,7 +239,19 @@ LuciObject *string_op(LuciStringObj *l, LuciStringObj *r, int op)
     }
 }
 
-LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, int op)
+/**
+ * Performs a binary operation on two LuciObjects
+ *
+ * Determines the types of the operands and, depending
+ * on the types, calls the corresponding binary operation
+ * function on both object's values.
+ *
+ * @param left left-hand LuciObject
+ * @param right right-hand LuciObject
+ * @param op binary operation type
+ * @returns LuciObject result of operation
+ */
+LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, op_type op)
 {
     LuciObject *result = NULL;
 

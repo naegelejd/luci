@@ -1,21 +1,39 @@
 /*
  * See Copyright Notice in luci.h
  */
+
+/**
+ * @file map.c
+ */
+
 #include <stdlib.h>
 #include <string.h>
 
 #include "luci.h"
 #include "map.h"
 
+/** Returns the next computed index for the two given hashes
+ * @param H0 hash 0
+ * @param H1 hash 1
+ * @param I  iteration number
+ * @param N  table size
+ * @returns  index into hash table
+ */
 #define GET_INDEX(H0, H1, I, N)   ( ( (H0) + ((I) * (I)) * (H1) ) % (N) )
+
 
 static LuciMapObj *map_grow(LuciMapObj *map);
 static LuciMapObj *map_shrink(LuciMapObj *map);
 static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size);
 
-
+/** total number of possible hash table sizes */
 #define MAX_TABLE_SIZE_OPTIONS  28
-/* http://planetmath.org/GoodHashTablePrimes.html */
+/**
+ * Array of prime number hash table sizes.
+ *
+ * Numbers courtesy of:
+ * http://planetmath.org/GoodHashTablePrimes.html
+ */
 static unsigned int table_sizes[] = {
     7, 17, 43, 97, 193, 389, 769, 1543, 3079, 6151,
     12289, 24593, 49157, 98317, 196613, 393241, 786433,
@@ -25,6 +43,10 @@ static unsigned int table_sizes[] = {
 };
 
 
+/** Creates and initializes a new LuciMapObj
+ *
+ * @returns new LuciMapObj
+ */
 LuciObject *LuciMap_new()
 {
     LuciMapObj *map = alloc(sizeof(*map));
@@ -50,16 +72,35 @@ void map_delete(LuciObject *o)
 }
 */
 
+/**
+ * Calls map_resize with a larger size index
+ *
+ * @param o LuciMapObj to enlarge
+ * @returns enlarged LuciMapObj
+ */
 static LuciMapObj *map_grow(LuciMapObj *o)
 {
     return map_resize(o, o->size_idx + 1);
 }
 
+/**
+ * Calls map_resize with a smaller size index
+ *
+ * @param o LuciMapObj to shrink
+ * @returns shrunk LuciMapObj
+ */
 static LuciMapObj *map_shrink(LuciMapObj *o)
 {
     return map_resize(o, o->size_idx + 1);
 }
 
+/**
+ * Resizes the map's hash table and re-hashes all of its contents.
+ *
+ * @param map a LuciMapObj
+ * @param new_size_idx the new size index used to determine the new size
+ * @returns Same LuciMapObj with a new hash table
+ */
 static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
 {
     int i;
@@ -96,6 +137,14 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
     return map;
 }
 
+/**
+ * Sets a key, value pair in the map's hash table
+ *
+ * @param o     LuciObject (should be a LuciMapObj)
+ * @param key   Key to be hashed
+ * @param val   Value corresponding to key
+ * @returns     original LuciObject with updated hash table
+ */
 LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
 {
     if (!o) {
@@ -142,6 +191,14 @@ LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
     return key;
 }
 
+/**
+ * Performs a search for the value corresponding to the given key
+ * in the map's hash table
+ *
+ * @param o     LuciObject (should be a LuciMapObj)
+ * @param key   Key to be hashed and searched for
+ * @returns     LuciObject value corresponding to key or NULL if not found
+ */
 LuciObject *map_get(LuciObject *o, LuciObject *key)
 {
     if (!o) {
@@ -174,6 +231,18 @@ LuciObject *map_get(LuciObject *o, LuciObject *key)
     return NULL;
 }
 
+/**
+ * Performs a search for the value corresponding to the given key
+ * in the map's hash table then removes the key,value pair.
+ *
+ * Once a key is removed, any keys that potentially conflicted with the
+ * newly deleted key in the past must be re-hashed in order to preserve
+ * the table's integrity for future key insertions.
+ *
+ * @param o     LuciObject (should be a LuciMapObj)
+ * @param key   Key to be hashed and searched for
+ * @returns     LuciObject value corresponding to key or NULL if not found
+ */
 LuciObject *map_remove(LuciObject *o, LuciObject *key)
 {
     if (!o) {
@@ -185,6 +254,7 @@ LuciObject *map_remove(LuciObject *o, LuciObject *key)
     }
 
     LuciMapObj *map = AS_MAP(o);
+    LuciObject *val = NULL;
 
     if (map->count < (map->size * 0.2)) {
         map_shrink(map);
@@ -205,6 +275,7 @@ LuciObject *map_remove(LuciObject *o, LuciObject *key)
                     AS_STRING(map->keys[idx])->s,
                     AS_STRING(key)->s) == 0) {
             /* TODO: use proper LuciStringObj comparison */
+            val = map->vals[idx];
             map->count--;
             map->keys[idx] = NULL;
             map->vals[idx] = NULL;
@@ -240,5 +311,5 @@ LuciObject *map_remove(LuciObject *o, LuciObject *key)
         }
     }
 
-    return key;
+    return val;
 }

@@ -2,24 +2,32 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file binop.h
+ */
+
 #ifndef BUILTIN_H
 #define BUILTIN_H
 
 #include "object.h"
 
+/** Function pointer and corresponding name available to
+ * users as a builtin library function */
 struct func_def
 {
-    const char *name;
+    const char *name;       /**< builtin function name */
+    /** libfunction pointer */
     LuciObject * (*func) (LuciObject **, unsigned int);
 };
 
+/** LuciObject and corresponding name available to users
+ * as a builtin symbol definition */
 struct var_def
 {
-    const char *name;
-    LuciObject *object;
+    const char *name;       /**< builtin symbol name */
+    LuciObject *object;     /**< object pointer */
 };
 
-/* populates the array of var_def structs with valid LuciObjects */
 void init_variables(void);
 
 LuciObject *luci_help(LuciObject **, unsigned int);

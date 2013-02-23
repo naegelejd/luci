@@ -2,6 +2,10 @@
  * See Copyright Notice in luci.h
  */
 
+/**
+ * @file builtin.c
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,6 +16,11 @@
 #include "builtin.h"
 #include "object.h"
 
+/** Closes a file pointer opened during the creation
+ * of a LuciFileObj
+ * @param fp C file pointer to close
+ * @returns 1 on success, EOF on failure
+ */
 static int close_file(FILE *fp)
 {
     int ret = 1;
@@ -22,7 +31,7 @@ static int close_file(FILE *fp)
     return ret;
 }
 
-
+/** List of builtin symbol names */
 struct var_def globals[] =
 {
     {"stdout", 0},
@@ -33,30 +42,32 @@ struct var_def globals[] =
     {0, 0}
 };
 
+/** Initializes all builtin symbols with LuciObjects */
 void init_variables(void)
 {
-    /* stdout */
+    /** stdout */
     LuciObject *luci_stdout = LuciFile_new(stdout, 0, f_append_m);
     globals[0].object = luci_stdout;
 
-    /* stderr */
+    /** stderr */
     LuciObject *luci_stderr = LuciFile_new(stderr, 0, f_append_m);
     globals[1].object = luci_stderr;
 
-    /* stdin */
+    /** stdin */
     LuciObject *luci_stdin = LuciFile_new(stdin, 0, f_read_m);
     globals[2].object = luci_stdin;
 
-    /* e */
+    /** e */
     LuciObject *luci_e = LuciFloat_new(M_E);
     globals[3].object = luci_e;
 
-    /* pi */
+    /** pi */
     LuciObject *luci_pi = LuciFloat_new(M_PI);
     globals[4].object = luci_pi;
 }
 
-
+/** List of all builtin library function names and their corresponding
+ * C function pointers */
 const struct func_def builtins[] = {
     {"help", luci_help},
     {"dir", luci_dir},
@@ -82,6 +93,13 @@ const struct func_def builtins[] = {
     {0, 0}
 };
 
+/** Prints a help message, which is essentially just a list of
+ * builtin library functions for now
+ *
+ * @param args unused
+ * @param c unused
+ * @returns NULL
+ */
 LuciObject *luci_help(LuciObject **args, unsigned int c)
 {
     int width = 32;
@@ -110,18 +128,38 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
     return NULL;
 }
 
-/* print all names in scope... */
+/** NOT IMPLEMENTED...
+ * Prints all names in scope
+ *
+ * @param args unused
+ * @param c unused
+ * @returns NULL
+ */
 LuciObject *luci_dir(LuciObject **args, unsigned int c)
 {
     return NULL;
 }
 
+/**
+ * Immediately exits Luci
+ *
+ * @param args unused
+ * @param c unused
+ * @returns NULL
+ */
 LuciObject *luci_exit(LuciObject **args, unsigned int c)
 {
     exit(EXIT_SUCCESS);
     return NULL;
 }
 
+/**
+ * Prints objects to stdout
+ *
+ * @param args list of LuciObjects to print
+ * @param c number of LuciObjects to print
+ * @returns NULL
+ */
 LuciObject *luci_print(LuciObject **args, unsigned int c)
 {
     int i;
@@ -137,6 +175,13 @@ LuciObject *luci_print(LuciObject **args, unsigned int c)
     return NULL;
 }
 
+/**
+ * Reads a line of input from stdin
+ *
+ * @param args first arg is either NULL or a LuciFileObj
+ * @param c if 0, read from stdin. if > 0, read from file.
+ * @returns LuciStringObj containing what was read
+ */
 LuciObject *luci_readline(LuciObject **args, unsigned int c)
 {
     size_t lenmax = 64, len = 0;
@@ -194,6 +239,13 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Determines and returns the type of a LuciObject
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns LuciStringObj of the type of the first arg
+ */
 LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 {
     char *which;
@@ -244,6 +296,16 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Asserts that a given LuciObject is equivalent to a boolean True
+ *
+ * Currently uses C @code assert @endcode , which will exit a program
+ * mid-execution if the assertion fails.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns NULL
+ */
 LuciObject *luci_assert(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
@@ -272,6 +334,14 @@ LuciObject *luci_assert(LuciObject **args, unsigned int c)
     return NULL;
 }
 
+/**
+ * Casts the LuciObject to a LuciIntObj if possible then returns
+ * the new object.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns LuciIntObj cast of the first arg
+ */
 LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
 {
     LuciObject *ret = NULL;
@@ -307,6 +377,14 @@ LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Casts a LuciObject to a LuciFloatObj if possible, then returns
+ * the new object.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns LuciFloatObj cast of the first arg
+ */
 LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
 {
     LuciObject *ret = NULL;
@@ -343,6 +421,14 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Casts a LuciObject to a LuciStringObj if possible, then returns
+ * the new object.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns LuciStringObj cast of the first arg
+ */
 LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
 {
     LuciObject *ret = NULL;
@@ -382,7 +468,16 @@ LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
     return ret;
 }
 
-static int get_file_mode(const char *req_mode)
+/**
+ * Determines the file 'open' mode from a given open
+ * string.
+ *
+ * Performs similarly to C fopen
+ *
+ * @param req_mode C-string representing file-open mode
+ * @returns enumerated file mode
+ */
+static file_mode get_file_mode(const char *req_mode)
 {
     if (strcmp(req_mode, "r") == 0) {
 	return f_read_m;
@@ -398,6 +493,13 @@ static int get_file_mode(const char *req_mode)
     }
 }
 
+/**
+ * Opens a file in read, write, or append mode.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns LuciFileObj opened from the filename in the first arg
+ */
 LuciObject *luci_fopen(LuciObject **args, unsigned int c)
 {
     char *filename;
@@ -456,6 +558,13 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Closes an open LuciFileObj.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns NULL
+ */
 LuciObject *luci_fclose(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
@@ -478,6 +587,13 @@ LuciObject *luci_fclose(LuciObject **args, unsigned int c)
     return NULL;
 }
 
+/**
+ * Reads the contents of a file into a LuciStringObj.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns contents of the file from the first arg.
+ */
 LuciObject *luci_fread(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
@@ -509,6 +625,13 @@ LuciObject *luci_fread(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Writes a given LuciStringObj to a LuciFileObj.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns NULL
+ */
 LuciObject *luci_fwrite(LuciObject **args, unsigned int c)
 {
     if (c < 2) {
@@ -536,6 +659,14 @@ LuciObject *luci_fwrite(LuciObject **args, unsigned int c)
     return NULL;
 }
 
+/**
+ * Reads all the lines from the given input to create a
+ * list of lines.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns list of lines from file or stdin
+ */
 LuciObject *luci_flines(LuciObject **args, unsigned int c)
 {
     LuciObject *list = LuciList_new();
@@ -548,6 +679,13 @@ LuciObject *luci_flines(LuciObject **args, unsigned int c)
     return list;
 }
 
+/**
+ * Creates a LuciListObj containing a range of numbers.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns list of numbers
+ */
 LuciObject * luci_range(LuciObject **args, unsigned int c)
 {
     int start, end, incr;
@@ -618,6 +756,13 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
     return list;
 }
 
+/**
+ * Computes the sum of a range of numbers.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns sum of numbers
+ */
 LuciObject * luci_sum(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
@@ -662,6 +807,13 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Determines and returns the length of a LuciListObj.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns length of list
+ */
 LuciObject *luci_len(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
@@ -677,7 +829,13 @@ LuciObject *luci_len(LuciObject **args, unsigned int c)
     LuciObject *ret = LuciInt_new(AS_LIST(list)->count);
     return ret;
 }
-
+/**
+ * Finds the maximum value in a LuciListObj.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns max number in list
+ */
 LuciObject *luci_max(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
@@ -725,6 +883,13 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Finds the minimum value in a list.
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns min number in list
+ */
 LuciObject *luci_min(LuciObject **args, unsigned int c)
 {
     if (c < 1) {

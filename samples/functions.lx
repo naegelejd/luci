@@ -14,10 +14,6 @@ def but_locals_take_precedence(something) {
     return e;
 }
 
-def sum(a, b) {
-    return a + b;
-}
-
 def foo(a, b, c) {
     print(a, b, c);
 }
@@ -31,7 +27,7 @@ say_hello("Joe", "Chelsea");
 print(this_can_see_globals());
 print(e, but_locals_take_precedence(3.14));
 
-print(sum(42, 57));
+print(sum([42, 57]));
 
 foo(1, 2, 3);
 foo("hi", "bye", "seeya");
@@ -44,7 +40,7 @@ puts = print;
 puts("Hello World");
 
 def average(l) {
-    return sum(l) / len(l);
+    return float(sum(l)) / len(l);
 }
 
 l = range(10);

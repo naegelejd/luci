@@ -1,3 +1,11 @@
+/*
+ * See Copyright Notice in luci.h
+ */
+
+/**
+ * @file object.c
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -11,7 +19,12 @@
 #include "compile.h" /* for destroying function object FOR NOW */
 
 
-/* LuciIntObj */
+/**
+ * Creates a new LuciIntObj
+ *
+ * @param l long integer value
+ * @returns new LuciIntObj
+ */
 LuciObject *LuciInt_new(long l)
 {
     LuciIntObj *o = gc_malloc(sizeof(*o));
@@ -21,7 +34,12 @@ LuciObject *LuciInt_new(long l)
     return (LuciObject *)o;
 }
 
-/* LuciFloatObj */
+/**
+ * Creates a new LuciFloatObj
+ *
+ * @param d double floating-point value
+ * @returns new LuciFloatObj
+ */
 LuciObject *LuciFloat_new(double d)
 {
     LuciFloatObj *o = gc_malloc(sizeof(*o));
@@ -31,7 +49,12 @@ LuciObject *LuciFloat_new(double d)
     return (LuciObject *)o;
 }
 
-/* LuciStringObj */
+/**
+ * Creates a new LuciStringObj
+ *
+ * @param s C-string value
+ * @returns new LuciStringObj
+ */
 LuciObject *LuciString_new(char *s)
 {
     LuciStringObj *o = gc_malloc(sizeof(*o));
@@ -43,8 +66,15 @@ LuciObject *LuciString_new(char *s)
     return (LuciObject *)o;
 }
 
-/* LuciFileObj */
-LuciObject *LuciFile_new(FILE *fp, long size, int mode)
+/**
+ * Creates a new LuciFileObj
+ *
+ * @param fp C file pointer
+ * @param size length of file
+ * @param mode enumerated file mode
+ * @returns new LuciFileObj
+ */
+LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode)
 {
     LuciFileObj *o = gc_malloc(sizeof(*o));
     REFCOUNT(o) = 0;
@@ -55,7 +85,11 @@ LuciObject *LuciFile_new(FILE *fp, long size, int mode)
     return (LuciObject *)o;
 }
 
-/* LuciListObj */
+/**
+ * Creates a new, empty LuciListObj
+ *
+ * @returns new empty LuciListObj
+ */
 LuciObject *LuciList_new()
 {
     LuciListObj *o = gc_malloc(sizeof(*o));
@@ -67,7 +101,13 @@ LuciObject *LuciList_new()
     return (LuciObject *)o;
 }
 
-/* LuciIteratorObj */
+/**
+ * Creates a new LuciIteratorObj
+ *
+ * @param container container to iterate over
+ * @param step iteration increment size
+ * @returns new LuciIteratorObj
+ */
 LuciObject *LuciIterator_new(LuciObject *container, unsigned int step)
 {
     LuciIteratorObj *o = gc_malloc(sizeof(*o));
@@ -79,7 +119,12 @@ LuciObject *LuciIterator_new(LuciObject *container, unsigned int step)
     return (LuciObject *)o;
 }
 
-/* LuciFunctionObj */
+/**
+ * Creates a new LuciFunctionObj
+ *
+ * @param frame Frame struct defining function
+ * @returns new LuciFunctionObj
+ */
 LuciObject *LuciFunction_new(void *frame)
 {
     LuciFunctionObj *o = gc_malloc(sizeof(*o));
@@ -89,7 +134,12 @@ LuciObject *LuciFunction_new(void *frame)
     return (LuciObject *)o;
 }
 
-/* LuciLibFunc */
+/**
+ * Creates a new LuciLibFuncObj
+ *
+ * @param func C function pointer matching LuciLibFunc signature
+ * @returns new LuciLibFuncObj
+ */
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int))
 {
     LuciLibFuncObj *o = gc_malloc(sizeof(*o));
@@ -138,6 +188,14 @@ LuciObject *create_object(int type)
 }
 */
 
+/**
+ * Decrements the reference count of a LuciObject.
+ *
+ * Will deallocate the object if its reference count <= 0.
+ *
+ * @param orig LuciObject to dereference
+ * @returns modified LuciObject
+ */
 LuciObject *decref(LuciObject *orig)
 {
     if (!orig)
@@ -156,6 +214,11 @@ LuciObject *decref(LuciObject *orig)
     return orig;
 }
 
+/**
+ * Prints a LuciObject to stdout.
+ *
+ * @param in LuciObject to print
+ */
 void print_object(LuciObject *in)
 {
     int i;
@@ -220,6 +283,12 @@ void print_object(LuciObject *in)
     }
 }
 
+/**
+ * Performs a deep copy of a LuciObject.
+ *
+ * @param orig LuciObject to copy
+ * @returns deep copy of orig
+ */
 LuciObject *copy_object(LuciObject *orig)
 {
     LuciObject *copy = NULL;
@@ -303,6 +372,11 @@ LuciObject *copy_object(LuciObject *orig)
 }
 
 
+/**
+ * Deallocates and destroys a LuciObject.
+ *
+ * @param trash LuciObject to destroy
+ */
 void destroy(LuciObject *trash)
 {
     if (!trash) {
@@ -377,8 +451,13 @@ void destroy(LuciObject *trash)
     trash = NULL;
 }
 
-/*
+/**
+ * Computes a hash of a LuciStringObj
+ *
  * djb2 (hash(i) = hash(i - 1) * 33 + str[i])
+ *
+ * @param s LuciStringObj to hash
+ * @returns unsigned integer hash
  */
 unsigned int string_hash_0(LuciObject *s)
 {
@@ -393,8 +472,13 @@ unsigned int string_hash_0(LuciObject *s)
     return h;
 }
 
-/*
+/**
+ * Computes a hash of a LuciStringObj
+ *
  * sdbm (hash(i) = hash(i - 1) * 65599 + str[i])
+ *
+ * @param s LuciStringObj to hash
+ * @returns unsigned integer hash
  */
 unsigned int string_hash_1(LuciObject *s)
 {
@@ -407,8 +491,13 @@ unsigned int string_hash_1(LuciObject *s)
     return h;
 }
 
-/*
+/**
+ * Computes a hash of a LuciStringObj
+ *
  * One-at-a-time (Bob Jenkins)
+ *
+ * @param s LuciStringObj to hash
+ * @returns unsigned integer hash
  */
 unsigned int string_hash_2(LuciObject *s)
 {
@@ -427,6 +516,13 @@ unsigned int string_hash_2(LuciObject *s)
     return h;
 }
 
+/**
+ * Appends a LuciObject to a LuciListObj
+ *
+ * @param list LuciListObj to append to
+ * @param item LuciObject to append to the list
+ * @returns 1 on success, 0 otherwise
+ */
 int list_append_object(LuciObject *list, LuciObject *item)
 {
     LuciListObj *listobj = NULL;
@@ -449,8 +545,12 @@ int list_append_object(LuciObject *list, LuciObject *item)
     return 1;
 }
 
-/*
+/**
  * Returns a COPY of the object in the list at the index
+ *
+ * @param list LuciListObj to grab from
+ * @param index index from which to grab object
+ * @returns copy of LuciObject at index
  */
 LuciObject *list_get_object(LuciObject *list, int index)
 {
@@ -474,6 +574,14 @@ LuciObject *list_get_object(LuciObject *list, int index)
     return copy_object(listobj->items[index]);
 }
 
+/**
+ * Assigns a LuciObject to a LuciListObj at a given index.
+ *
+ * @param list LuciListObj to modify
+ * @param item LuciObj to insert into the list
+ * @param index index at which to store object
+ * @returns the object that formerly resided at index
+ */
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
 {
     LuciListObj *listobj = NULL;
@@ -496,6 +604,12 @@ LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
     return old;
 }
 
+/**
+ * Returns the next LuciObject in a container.
+ *
+ * @param iterator from which to compute next object
+ * @returns next object in iterator's sequence or NULL if finished iterating
+ */
 LuciObject *iterator_next_object(LuciObject *iterator)
 {
     if (!iterator || (iterator->type != obj_iterator_t)) {

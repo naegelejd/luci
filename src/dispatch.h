@@ -1,5 +1,13 @@
+/*
+ * See Copyright Notice in luci.h
+ */
 
-/* This static dispatch table is used only when the GCC "computed goto"
+/**
+ * @file dispatch.h
+ */
+
+/**
+ * This static dispatch table is used only when the GCC "computed goto"
  * (Labels as Values) extension is utilized in Luci's bytecode interpreter.
  *
  * See interpret.c.

@@ -1,14 +1,25 @@
 /*
  * See Copyright Notice in luci.h
  */
+
+/**
+ * @file stack.c
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "luci.h"
 #include "stack.h"
 
-#define STACK_INIT_HEIGHT   128
+#define STACK_INIT_HEIGHT   128     /**< initial stack size */
 
+/**
+ * Creates and initializes the stack array
+ *
+ * @param S stack to initialize
+ * @returns initialized stack
+ */
 Stack * st_init(Stack *S)
 {
     S->top = 0;
@@ -17,10 +28,23 @@ Stack * st_init(Stack *S)
     return S;
 }
 
+/**
+ * Frees memory allocated for the stack
+ *
+ * @param S stack to deallocate
+ */
 void st_destroy(Stack *S) {
     free(S->array);
 }
 
+/**
+ * Pushes a pointer onto the stack and increment the stack pointer.
+ *
+ * May increase the size of the stack's array if necessary
+ *
+ * @param S stack to push item onto
+ * @param item pointer to push onto stack
+ */
 void st_push(Stack *S, void *item)
 {
     /* resize stack if necessary */
@@ -31,26 +55,55 @@ void st_push(Stack *S, void *item)
     S->array[(S->top)++] = item;
 }
 
+/**
+ * Return the pointer on top of the stack and decrement the stack pointer
+ *
+ * @param S stack to pop pointer from
+ * @returns popped pointer
+ */
 void* st_pop(Stack *S)
 {
     return (S->array[--(S->top)]);
 }
 
+/**
+ * Return the pointer on top of the stack
+ *
+ * @param S stack to peek from
+ * @returns pointer at the top of the stack
+ */
 void* st_peek(Stack *S)
 {
     return (S->array[S->top - 1]);
 }
 
+/**
+ * Return the stack's height
+ *
+ * @param S stack to return height of
+ * @returns height of stack
+ */
 uint32_t st_height(Stack *S)
 {
     return S->top;
 }
 
+/**
+ * Return whether the stack is empty
+ *
+ * @param S stack to check for emptiness
+ * @returns non-zero if empty, 0 if not empty
+ */
 uint8_t st_empty(Stack *S)
 {
     return (S->top <= 0);
 }
 
+/**
+ * Prints the stack. Not pretty since it's just pointers.
+ *
+ * @param S stack to 'print'
+ */
 void st_print(Stack *S)
 {
     int i;

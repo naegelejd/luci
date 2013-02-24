@@ -219,7 +219,7 @@ void luci_interactive(void)
     gc_init();
 
     while (1) {
-        /* set up interactive prompt */
+        /* set up interactive prompt in the lexer */
         luci_start_interactive();
 
         /* parse yyin and build and AST */

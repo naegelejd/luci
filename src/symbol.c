@@ -291,7 +291,7 @@ static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)
  * @param flags bitmask defining symbol creation options
  * @return id an integer id for the symbol or -1 on failure
  */
-int symtable_id(SymbolTable *symtable, const char *name, uint8_t flags)
+int symtable_id(SymbolTable *symtable, const char *name, symtable_flags flags)
 {
     Symbol *sym = NULL;
 
@@ -357,13 +357,19 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
 /**
  * Returns the symbol table's array of objects
  *
+ * Once this function is called, the SymbolTable is no longer
+ * 'owns' its object array and will not be responsible for
+ * freeing memory allocated for the object array. However,
+ * this function may be called multiple times as long as the
+ * SymbolTable exists.
+ *
  * @param symtable pointer to symbol table
  * @return array of LuciObjects
  */
 LuciObject **symtable_get_objects(SymbolTable *symtable)
 {
     if (!symtable) {
-        return NULL;
+        DIE("%s\n", "Cannot get object array from NULL SymbolTable\n");
     }
 
     symtable->owns_objects = 0;

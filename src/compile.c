@@ -88,7 +88,7 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
 {
     int a;
     a = symtable_id(cs->ltable, node->data.id.val, SYMFIND);
-    if (a > 0) {
+    if (a >= 0) {
         /* found the symbol immediately */
         push_instr(cs, LOADS, a);
     }
@@ -790,9 +790,11 @@ Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
         f->nconstants = cs->ctable->count;
         f->constants = cotable_get_objects(cs->ctable);
     }
-    /* get globals array. size doesn't matter because it is never
-     * freed by a Frame_delete() call. */
-    f->globals = symtable_get_objects(cs->gtable);
+    /* get globals array. array size doesn't matter because the global
+     * objects are never freed in a Frame_delete() call. */
+    if (cs->gtable) {
+        f->globals = symtable_get_objects(cs->gtable);
+    }
 
     return f;
 }

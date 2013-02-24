@@ -38,13 +38,13 @@ typedef struct symtable
     LuciObject **objects;   /**< Object array */
 } SymbolTable;
 
-#define SYMFIND     0x0     /**< flag signifying a symbol lookup */
-#define SYMCREATE   0x1     /**< flag signifying a symbol creation */
+/** flags identifying the symtable_id intent (create/lookup/...) */
+typedef enum { SYMFIND = 0x0, SYMCREATE = 0x1 } symtable_flags;
 
 SymbolTable *symtable_new(uint32_t);
 void symtable_delete(SymbolTable *);
 void symtable_set(SymbolTable *, LuciObject *, uint32_t id);
-int symtable_id(SymbolTable *, const char *, uint8_t flags);
+int symtable_id(SymbolTable *, const char *, symtable_flags flags);
 
 LuciObject **symtable_get_objects(SymbolTable *);
 

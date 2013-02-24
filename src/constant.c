@@ -82,9 +82,11 @@ uint32_t constant_id(ConstantTable *cotable, LuciObject *const_obj)
 /**
  * Releases the constant table's objects array.
  *
- * Once this function is called, the ConstantTable no longer
+ * Once this function is called, the ConstantTable is no longer
  * 'owns' its object array and will not be responsible for
- * freeing memory allocated for the object array.
+ * freeing memory allocated for the object array. However,
+ * this function may be called multiple times as long as the
+ * ConstantTable exists.
  *
  * @param cotable the ConstantTable containing the desired object array
  * @returns an array of LuciObject constants
@@ -95,10 +97,7 @@ LuciObject **cotable_get_objects(ConstantTable *cotable)
         DIE("%s\n", "Cannot get object array from NULL ConstantTable\n");
     }
 
-    if (cotable->owns_objects) {
-        cotable->owns_objects = 0;
-        return cotable->objects;
-    } else {
-        return NULL;
-    }
+    cotable->owns_objects = 0;
+
+    return cotable->objects;
 }

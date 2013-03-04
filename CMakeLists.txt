@@ -14,11 +14,15 @@ if(CMAKE_COMPILER_IS_GNUCC)
     add_definitions(-fno-gcse)  # for labels-as-values (computed gotos)
 endif()
 
-set(LUCI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)    # used by Doxygen configuration
+# variables used by Doxygen configuration
+set(LUCI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(LUCI_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+# cmake Luci itself
 add_subdirectory(${LUCI_SOURCE_DIR} luci)
 
-
-find_package(DOXYGEN)
+# cmake some documentation
+find_package(Doxygen)
 if(DOXYGEN_FOUND)
     set(DOXYGEN_TARGET "doc")
     set(DOXYGEN_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${DOXYGEN_TARGET}/html/index.html)

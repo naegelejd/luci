@@ -4,5 +4,5 @@ dirname=$(dirname $0)
 cd $dirname
 test -d build/ || mkdir build/
 cd build/
-cmake .. && make
+cmake .. && make all doc
 echo "Executable in $dirname/build/bin/"

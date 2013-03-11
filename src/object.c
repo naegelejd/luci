@@ -533,15 +533,18 @@ int list_append_object(LuciObject *list, LuciObject *item)
 
     listobj = (LuciListObj *)list;
 
-    if (listobj->count > listobj->size) {
+    if (listobj->count >= listobj->size) {
 	listobj->size = listobj->size << 1;
 	/* realloc the list array */
 	listobj->items = realloc(listobj->items,
 		listobj->size * sizeof(*listobj->items));
+        if (!listobj->items) {
+            DIE("%s", "Failed to dynamically expand list while appending\n");
+        }
 	LUCI_DEBUG("%s\n", "Reallocated space for list");
     }
     /* increment count after appending object */
-    listobj->items[listobj->count ++] = item;
+    listobj->items[listobj->count++] = item;
     return 1;
 }
 

@@ -3,8 +3,6 @@ Luci                                         {#mainpage}
 
 Luci is a procedural, dynamically-typed toy scripting language, implemented in C.
 
-Luci's syntax resembles C and is still a work in progress.
-
 The implementation is slowly evolving into a bytecode-compiled,
 virtual machine interpreter model. Its initial form consisted of
 an abstract syntax tree and a series of functions which walked the
@@ -13,55 +11,67 @@ tree and 'executed' each node.
 
 ### Syntax
 
-Luci's syntax heavily resembles that of the language C.
+Luci's syntax resembles that of the languages C and Python, however
+the syntax is still a work in progress.
 
 
 ### Tools Needed to Build
 
 - [flex (lex)](http://flex.sourceforge.net/)
 - [bison (yacc)](http://www.gnu.org/software/bison/)
-- a decent C compiler (gcc)
+- a decent C compiler (clang, gcc)
 
 
 ### TODO
 
+- Finish developing garbage collection framework
+  (`free` out-of-scope Luci Objects throughout runtime)
+  This will theoretically eliminate the need to store
+  reference counts for each Luci type object!
 - Add support for both empty strings and escape characters
 - Track symbol names throughout compilation (useful when printing bytecode)
+- Expand `map` type to allow for non-string keys
+- Update ConstantTable to actually de-duplicate constant Luci type objects
 - Develop a module/import system. Put C-math functions in a math module.
 - Write standalone scanner/parser. This is counterintuitive considering the
   reliability and quality of *flex* and *bison*, however it will remove
   two build dependencies and provide a productive learning experience.
 - Serialize bytecode/symbols/constants (like Python's .pyc files)
-- Finalize syntax
-- Improve bytecode compiler
+- Finalize syntax (i.e. make it awesome, maybe remove semicolons)
+- Possibly hash all C-strings created during runtime, allowing for a single
+  instance of each allocated Luci string
+- Update all `delete`/`free` functions to take a double-pointer so that
+  the value of the pointer can be set to NULL (defensive programming)
 
+      static void XXX_delete(XXX **xxx)
+      {
+          free(*xxx);
+          *xxx = NULL;
+      }
+
+- Improve bytecode compiler
   - Append instructions faster (currently function call for each)
   - Implement short-circuit evaluation of conditional expressions
-
-- Finish developing garbage collection framework
-  (`free` out-of-scope Luci Objects throughout runtime)
-  This will theoretically eliminate the need to store
-  reference counts for each Luci type object.
+- Improve performance of bytecode interpreter macros
+- Improve I/O and string-manipulation capabilities
+  - Iterate through lines in a file object
+  - String operations
 - Finalize API for creating libraries in C
-
+- Expand on interactive mode (don't require Ctrl+D(EOF))
 
 ### Version 0.2 (Current)
 
 The following features have been completed for Luci v0.2.
 
 - Bytecode compiler
-
   - Instruction set is a work in progress
   - Cleanly store loop state for backpatching `BREAK` and `CONTINUE`
   - Efficient symbol table
   - Bytecode optimizations
-
 - Bytecode interpreter (VM)
-
   - Stack-based
   - Fast instruction dispatch (gcc *computed goto* vs. *switch-case*)
   - Proper function call/return handling
-
 - Interactive mode (similar to Python's `>>>`)
 - `map` type (similar to Python's `dict`)
 - Garbage collection framework (malloc wrapper) specifically for Luci

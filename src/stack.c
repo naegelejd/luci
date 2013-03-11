@@ -78,6 +78,21 @@ void* st_peek(Stack *S)
 }
 
 /**
+ * Returns the pointer at the given index in the stack
+ *
+ * @param S stack to get from
+ * @param idx index in stack
+ * @returns pointer at index
+ */
+void* st_get(Stack *S, uint32_t idx)
+{
+    if (idx > (S->top - 1)) {
+        return NULL;
+    }
+    return S->array[idx];
+}
+
+/**
  * Return the stack's height
  *
  * @param S stack to return height of

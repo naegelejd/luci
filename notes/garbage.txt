@@ -1,0 +1,29 @@
+The garbage collector contains an arena for each possible size of LuciObject. Each arena points to an array of pools of fixed size. Each pool has a corresponding bitmask capable of flagging each block in the pool as used or available.
+
+The garbage collector implements a malloc-equivalent `gc_malloc`, which searches for available slots in available pools. `gc_free` is unnecessary as objects are automatically freed when garbage is collected.
+
+Garbage is collected when all available pools are filled. If no garbage can be collected, the number of pools in the arena is doubled. This prevents garbage collection from occurring more often than necessary.
+
+In order to collect garbage, the collector must be aware of which objects are currently in scope.
+
+Potential garbage:
+
+- all objects created in a function that has already returned.
+- closed file objects
+- objects that were once bound to names, or members of a container,
+  but have since been 'overwritten'
+  (e.g. the name is bound to a new object)
+
+Gotchas:
+
+- a function creates some objects then subsequently calls
+  another function or itself.
+
+Solution:
+
+- Iterate through the frame stack, verifying that each object in
+  each frame's constants, locals, and globals arrays are not collected.
+- Iterate through object stack, ensuring nothing on stack is collected.
+  This will prevent freeing things like iterators, which are not bound
+  to names.
+- Everything else is collected?...

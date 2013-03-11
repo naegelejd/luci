@@ -24,6 +24,7 @@ void st_destroy(Stack *);
 void st_push(Stack *, void *);
 void *st_pop(Stack *);
 void *st_peek(Stack *);
+void *st_get(Stack *, uint32_t idx);
 uint32_t st_height(Stack *);
 uint8_t st_empty(Stack *);
 void st_print(Stack *);

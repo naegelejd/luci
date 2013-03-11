@@ -8,6 +8,8 @@ for k in m {
 
 m["magic"] = 42;
 print(m["hi"]);
+print(type(m));
+print(m);
 
 
 def test()

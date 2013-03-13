@@ -1,4 +1,10 @@
-The garbage collector contains an arena for each possible size of LuciObject. Each arena points to an array of pools of fixed size. Each pool has a corresponding bitmask capable of flagging each block in the pool as used or available.
+The garbage collector contains an arena structure for each possible size of
+LuciObject. Each arena contains a dynamic array of pool structures, and a count
+of how many pools are allocated and active. Each pool contains a static byte
+array of size 4032, and a corresponding bitmask capable of flagging each slot
+in the pool as used or available. A pool size of 4032 bytes allows a variable
+number of LuciObjects to fit evenly in each pool (the size of a LuciObject is
+always a multiple of 8/4).
 
 The garbage collector implements a malloc-equivalent `gc_malloc`, which searches for available slots in available pools. `gc_free` is unnecessary as objects are automatically freed when garbage is collected.
 
@@ -27,3 +33,48 @@ Solution:
   This will prevent freeing things like iterators, which are not bound
   to names.
 - Everything else is collected?...
+
+
+Design:
+
+- arena for each LuciObject size
+- each arena contains a dynamic array of pools, and a count of active/allocated
+  pools
+- pool of size 4032 bytes. objects of sizes 8,16,24,32,48,56,64 divide evenly
+  into 4032 and it's only 64 bytes under 4K.
+- each pool has an array of bitflags to mark slots as empty or used
+
+a call to gc_alloc will search the arena corresponding to the request size
+starting at the most recently allocated pool for two reasons:
+  1. recently allocated memory is more likely to be recycled (TODO: defend this)
+  2. recently allocated memory is more likely to be cached
+
+garbage is collected when either:
+  no pools contain an empty slot
+    or
+  the arena needs to be dynamically expanded for more pools
+
+either way, when garbage is collected, an attempt will be made to allocate more
+pools to avoid future garbage collection. this could potentially depend on
+how many objects are actually collected (i.e. many objects collected means more pools
+may not be needed any time soon).
+
+gc_collect must call some collection of 'get object array' functions to obtain
+the states of:
+  - the current interpreter stack
+  - all Frames on the frame stack
+  - all local variables in each Frame
+  - all global symbols
+unfortunately, this will require the interpreter to operate on global object
+and frame stacks, preventing luci from being used as a multithreaded library.
+
+gc_collect will then create an collection (array/list/tree) of live LuciObjects
+from the collections provided by the interpreter.
+
+gc_collect will then iterate through every object in every pool in every arena,
+deleting any LuciObject whose pointer is not in the collection of live objects.
+
+
+what if:
+garbage collector provides stacks for objects and functions so at collection
+time it can easily iterate through them to determine the root set?

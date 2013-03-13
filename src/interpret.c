@@ -152,15 +152,8 @@ void eval(Frame *frame)
             LUCI_DEBUG("STORE %d\n", a);
             /* pop object off of stack */
             x = st_pop(&lstack);
-
-            /* decref an existing object pointed to by this symbol */
-            if (frame->locals[a]) {
-                decref(frame->locals[a]);
-            }
-
-            /* store and incref the new object */
+            /* store the new object */
             frame->locals[a] = x;
-            INCREF(x);
         DISPATCH(NEXT_OPCODE);
 
         HANDLE(BINOP)
@@ -198,7 +191,6 @@ void eval(Frame *frame)
                 for (i = 0; i < a; i++) {
                     y = st_pop(&lstack);
                     z = copy_object(y);
-                    //INCREF(z);
                     frame->locals[i] = z;
                 }
 
@@ -223,14 +215,6 @@ void eval(Frame *frame)
                 /* call func, passing args array and arg count */
                 z = ((LuciLibFuncObj *)x)->func(lfargs, a);
                 st_push(&lstack, z);    /* always push return val */
-
-                /* cleanup libfunction arguments */
-                for (i = 0; i < a; i++) {
-                    //printf("arg %d type = %d\n", i, lfargs[i]->type);
-                    decref(lfargs[i]);
-                    lfargs[i] = NULL;
-                }
-
             }
             else {
                 DIE("%s", "Can't call something that isn't a function\n");
@@ -240,16 +224,6 @@ void eval(Frame *frame)
 
         HANDLE(RETURN)
             LUCI_DEBUG("%s\n", "RETURN");
-
-            /* incref the return value at the top of the stack
-             * so it doesn't get lost(deleted) during function cleanup
-             *
-             * but don't INCREF a NULL... :( */
-            x = st_peek(&lstack);
-            if (x) {
-                INCREF(x);
-            }
-
             /* delete previously active frame (and all its locals) */
             Frame_delete_copy(frame);
             /* pop function stack frame and replace active frame */
@@ -343,8 +317,6 @@ void eval(Frame *frame)
                 }
                 /* re-use 'y' to obtain a pointer to the old object at index i */
                 y = list_set_object(x, z, ((LuciIntObj *)y)->i);
-                /* decref the old object from index i */
-                decref(y);
             } break;
 
             case obj_map_t:
@@ -353,11 +325,8 @@ void eval(Frame *frame)
                 y = st_pop(&lstack);
                 /* pop right hand value */
                 z = st_pop(&lstack);
-
                 /* re-use 'y' to obtain a pointer to the old val */
                 y = map_set(x, y, z);
-                /* decref the old val */
-                decref(y);
             } break;
 
             default:
@@ -403,7 +372,6 @@ void eval(Frame *frame)
             if (y == NULL) {
                 /* pop and destroy the iterator object */
                 x = st_pop(&lstack);
-                decref(x);
                 ip = a;
             } else {
                 st_push(&lstack, y);

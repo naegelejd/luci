@@ -17,10 +17,9 @@
 //#define POOL_SIZE 4096
 #define POOL_SIZE 6144  /**< initial pool size in bytes */
 
-/* the number of uint64 flags must be (POOL_SIZE / 8 / 64)
+/* the number of uint32 flags must be (POOL_SIZE / 8 / 32)
  * because the smallest allocation is 8 bytes */
-//#define NUM_FLAGS 8
-#define NUM_FLAGS 24    /**< = (POOL_SIZE / 8 / 64) */
+#define NUM_FLAGS 24    /**< = (POOL_SIZE / 8 / 32) */
 
 /** Contains a byte array for use by the memory pool,
  * as well as a large bit-flag (implemented using an array

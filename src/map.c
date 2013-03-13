@@ -50,7 +50,6 @@ static unsigned int table_sizes[] = {
 LuciObject *LuciMap_new()
 {
     LuciMapObj *map = alloc(sizeof(*map));
-    REFCOUNT(map) = 0;
     TYPEOF(map) = obj_map_t;
     map->size_idx = 0;
     map->size = table_sizes[map->size_idx];

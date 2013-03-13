@@ -465,8 +465,6 @@ int print_ast_graph(AstNode *root, int id)
         case ast_func_t:
             printf("%d [label=\"func def: %s\"]\n", rID,
                     root->data.funcdef.funcname);
-            //printf("%d -> %d\n", rID, ++id);
-            //id = print_ast_graph(root->data.funcdef.funcname, id);
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.funcdef.param_list, id);
             printf("%d -> %d\n", rID, ++id);

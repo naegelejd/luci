@@ -52,9 +52,9 @@ static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
     uint32_t h = 5381;
     int c;
 
-    while ((c = *name++))
+    while ((c = *name++)) {
         h = ((h << 5) + h) + c;
-        /* h = ((h << 5 - h)) + c;  // h * 31 + c */
+    }
     return h % NBUCKETS[symtable->bscale];
 }
 
@@ -235,12 +235,6 @@ void symtable_delete(SymbolTable *symtable)
 
     /* only deallocate objects if the table still owns the array */
     if (symtable->owns_objects > 0) {
-        /* deallocate all objects in table */
-        for (i = 0; i < symtable->count; i ++) {
-            if (symtable->objects[i]) {
-                decref(symtable->objects[i]);
-            }
-        }
         free(symtable->objects);
         symtable->objects = NULL;
     }
@@ -347,11 +341,7 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
     if (id >= symtable->count)
         DIE("%s", "Symbol id out of bounds\n");
 
-    /* Decref any existing object */
-    if (symtable->objects[id])
-        decref(symtable->objects[id]);
     symtable->objects[id] = obj;
-    INCREF(obj);
 }
 
 /**

@@ -378,7 +378,6 @@ static void compile_func_def(AstNode *node, CompileState *cs)
         id_string = params->data.listdef.items[i];
         /* add arg symbol to symbol table */
         a = symtable_id(func_cs->ltable, id_string->data.s, SYMCREATE);
-        //push_instr(func_cs, STORE, a);
     }
     compile(node->data.funcdef.statements, func_cs);
 
@@ -390,9 +389,6 @@ static void compile_func_def(AstNode *node, CompileState *cs)
 
     /* create function object */
     obj = LuciFunction_new(Frame_from_CompileState(func_cs, nparams));
-    //obj = create_object(obj_func_t);
-    //obj->value.func.frame = Frame_from_CompileState(func_cs, nparams);
-    //obj->value.func.deleter = free;
 
     if (obj == NULL) {
         puts("NULL\n");
@@ -620,8 +616,6 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
         for (i = 0; builtins[i].name != 0; i++) {
             /* create object for builtin function */
             obj = LuciLibFunc_new(builtins[i].func);
-            //obj = create_object(obj_libfunc_t);
-            //obj->value.libfunc = builtins[i].func;
             /* add the symbol and function object to the symbol table */
             id = symtable_id(cs->ltable, builtins[i].name, SYMCREATE);
             symtable_set(cs->ltable, obj, id);
@@ -686,11 +680,6 @@ Frame *Frame_copy(Frame *f)
         if (f->locals[i]) {
             /* copy the object */
             locals[i] = copy_object(f->locals[i]);
-            /* copy the refcount. this is important because objects
-             * that have a refcount > 1 should not be deleted on calls
-             * to "destroy(obj)"
-             */
-            locals[i]->refcount = f->locals[i]->refcount;
         }
     }
     copy->locals = locals;
@@ -711,9 +700,6 @@ void Frame_delete_copy(Frame *f)
         DIE("%s", "Can't delete a NULL copied frame\n");
     }
 
-    for (i = 0; i < f->nlocals; i++) {
-        decref(f->locals[i]);
-    }
     free(f->locals);
     free(f);
 }
@@ -729,20 +715,10 @@ void Frame_delete(Frame *f)
         free(f->instructions);
     }
     if (f->locals) {
-        int i;
-        for (i = 0; i < f->nlocals; i++) {
-            /* need to force destruction */
-            decref(f->locals[i]);
-        }
         free(f->locals);
     }
 
     if (f->constants) {
-        int i;
-        for (i = 0; i < f->nconstants; i++) {
-            /* need to force destruction */
-            decref(f->constants[i]);
-        }
         free(f->constants);
     }
 
@@ -760,8 +736,6 @@ void Frame_delete(Frame *f)
 void Frame_delete_interactive(Frame *f)
 {
     free(f->instructions);
-    //free(f->locals);
-    //free(f->constants);
     free(f);
 }
 
@@ -986,7 +960,7 @@ char* serialize_program(Frame *globalframe)
 {
     int i;
     for (i = 0; i < globalframe->nlocals; i++) {
-        //print_object(globalframe->locals[i]);
+        /* print_object(globalframe->locals[i]); */
     }
     return NULL;
 }

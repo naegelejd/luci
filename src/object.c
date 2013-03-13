@@ -28,7 +28,6 @@
 LuciObject *LuciInt_new(long l)
 {
     LuciIntObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_int_t;
     o->i = l;
     return (LuciObject *)o;
@@ -43,7 +42,6 @@ LuciObject *LuciInt_new(long l)
 LuciObject *LuciFloat_new(double d)
 {
     LuciFloatObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_float_t;
     o->f = d;
     return (LuciObject *)o;
@@ -58,10 +56,8 @@ LuciObject *LuciFloat_new(double d)
 LuciObject *LuciString_new(char *s)
 {
     LuciStringObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_str_t;
-    //o->s = strdup(s);
-    o->s = s;
+    o->s = s;   /* not a copy! */
     o->len = strlen(o->s);
     return (LuciObject *)o;
 }
@@ -77,7 +73,6 @@ LuciObject *LuciString_new(char *s)
 LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode)
 {
     LuciFileObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_file_t;
     o->ptr = fp;
     o->mode = mode;
@@ -93,7 +88,6 @@ LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode)
 LuciObject *LuciList_new()
 {
     LuciListObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_list_t;
     o->count = 0;
     o->size = INIT_LIST_SIZE;
@@ -111,7 +105,6 @@ LuciObject *LuciList_new()
 LuciObject *LuciIterator_new(LuciObject *container, unsigned int step)
 {
     LuciIteratorObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_iterator_t;
     o->idx = 0;
     o->step = step;
@@ -128,7 +121,6 @@ LuciObject *LuciIterator_new(LuciObject *container, unsigned int step)
 LuciObject *LuciFunction_new(void *frame)
 {
     LuciFunctionObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_func_t;
     o->frame = frame;
     return (LuciObject *)o;
@@ -143,7 +135,6 @@ LuciObject *LuciFunction_new(void *frame)
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int))
 {
     LuciLibFuncObj *o = gc_malloc(sizeof(*o));
-    REFCOUNT(o) = 0;
     TYPEOF(o) = obj_libfunc_t;
     o->func = func;
     return (LuciObject *)o;
@@ -154,7 +145,6 @@ LuciObject *create_object(int type)
 {
     LuciObject *ret = gc_malloc(sizeof(*ret));
     ret->type = type;
-    ret->refcount = 0;
     switch(type)
     {
 	case obj_str_t:
@@ -187,32 +177,6 @@ LuciObject *create_object(int type)
     return ret;
 }
 */
-
-/**
- * Decrements the reference count of a LuciObject.
- *
- * Will deallocate the object if its reference count <= 0.
- *
- * @param orig LuciObject to dereference
- * @returns modified LuciObject
- */
-LuciObject *decref(LuciObject *orig)
-{
-    if (!orig)
-        return NULL;
-        /*
-        DIE("%s", "Attempt to decref NULL\n");
-        */
-
-    orig->refcount --;
-
-    if (orig->refcount < 1) {
-        //destroy(orig);
-        return NULL;
-    }
-
-    return orig;
-}
 
 /**
  * Prints a LuciObject to stdout.
@@ -384,12 +348,6 @@ void destroy(LuciObject *trash)
         return;
     }
 
-    if (trash->refcount > 0) {
-        /* Attempts to destroy a referenced obj are ignored */
-        LUCI_DEBUG("Rejecting destruction of object (refcount %d)\n", trash->refcount);
-        return;
-    }
-
     int i;
     switch(trash->type) {
 
@@ -468,7 +426,6 @@ unsigned int string_hash_0(LuciObject *s)
 
     while ((c = *str++))
         h = ((h << 5) + h) + c;
-        /* h = ((h << 5 - h)) + c;  // h * 31 + c */
     return h;
 }
 

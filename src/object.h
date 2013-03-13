@@ -34,8 +34,8 @@ typedef enum {
 /** Generic Object which allows for dynamic typing */
 typedef struct _LuciObject
 {
-    LuciObjType type;   /**< type ID */
-    int refcount;       /**< reference count for garbage collection */
+    LuciObjType type;   /**< type ID - to be replaced by type pointer */
+    int padding;        /**< to be deleted */
 } LuciObject;
 
 
@@ -110,17 +110,8 @@ typedef struct _LuciLibFunc {
     LuciObject * (*func)(LuciObject **, unsigned int);  /**< function pointer */
 } LuciLibFuncObj;
 
-/** returns the reference count of object o */
-#define REFCOUNT(o) (((LuciObject *)(o))->refcount)
-
 /** returns the type of object o */
 #define TYPEOF(o)   (((LuciObject *)(o))->type)
-
-/** increments the reference count of object o */
-#define INCREF(o)   (((LuciObject *)(o))->refcount++)
-
-/** decrements the reference count of object o */
-#define DECREF(o)   (((LuciObject *)(o))->refcount--)
 
 /** returns 1 if two objects have the same type, 0 otherwise */
 #define TYPES_MATCH(left, right) ( TYPEOF(left) == TYPEOF(right) )
@@ -149,10 +140,6 @@ LuciObject *LuciList_new();
 LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
-
-/** Decrements the object's refcount and returns it
- * also potentially destroys object (refcount <= 0) */
-LuciObject *decref(LuciObject* orig);
 
 /** Used by print. Useful in debugging */
 void print_object(LuciObject *);

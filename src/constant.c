@@ -39,13 +39,6 @@ void cotable_delete(ConstantTable *cotable)
 {
     /* only deallocate objects array if cotable still has ownership */
     if (cotable->owns_objects > 0) {
-        /* destroy all constant objects */
-        /*
-        int i;
-        for (i = 0; i < cotable->count; i ++) {
-            destroy(cotable->objects[i]);
-        }
-        */
         free(cotable->objects);
         cotable->objects = NULL;
     }

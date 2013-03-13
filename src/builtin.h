@@ -54,6 +54,4 @@ LuciObject *luci_len(LuciObject **, unsigned int);
 LuciObject *luci_max(LuciObject **, unsigned int);
 LuciObject *luci_min(LuciObject **, unsigned int);
 
-//LuciObject *get_list_node(LuciObject *list, int index);
-
 #endif

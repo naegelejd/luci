@@ -108,6 +108,15 @@ void eval(Frame *frame)
         }
         DISPATCH(NEXT_OPCODE);
 
+        HANDLE(ADD) {
+            LUCI_DEBUG("%s\n", "ADD");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->add(x, y);
+            st_push(&lstack, z);
+        }
+        DISPATCH(NEXT_OPCODE);
+
         HANDLE(POP)
         {
             LUCI_DEBUG("%s\n", "POP");
@@ -144,8 +153,9 @@ void eval(Frame *frame)
             LUCI_DEBUG("%s\n", "DUP");
             /* duplicate object on top of stack
              * and push it back on */
-            x = copy_object(st_peek(&lstack));
-            st_push(&lstack, x);
+            x = st_peek(&lstack);
+            y = x->type->copy(x);
+            st_push(&lstack, y);
         DISPATCH(NEXT_OPCODE);
 
         HANDLE(STORE)
@@ -170,7 +180,7 @@ void eval(Frame *frame)
             x = st_pop(&lstack);    /* function object */
 
             /* setup user-defined function */
-            if (TYPEOF(x) == obj_func_t) {
+            if (ISTYPE(x, obj_func_t)) {
                 /* save instruction pointer */
                 frame->ip = ip;
 
@@ -190,7 +200,7 @@ void eval(Frame *frame)
                 /* pop arguments and push COPIES into locals */
                 for (i = 0; i < a; i++) {
                     y = st_pop(&lstack);
-                    z = copy_object(y);
+                    z = y->type->copy(y);
                     frame->locals[i] = z;
                 }
 
@@ -200,7 +210,7 @@ void eval(Frame *frame)
             }
 
             /* call library function */
-            else if (x->type == obj_libfunc_t) {
+            else if (ISTYPE(x, obj_libfunc_t)) {
                 if (a >= MAX_LIBFUNC_ARGS) {
                     DIE("%s", "Too many arguments to function.\n");
                 }
@@ -209,7 +219,7 @@ void eval(Frame *frame)
                 /* must happen in reverse */
                 for (i = a - 1; i >= 0; i--) {
                     y = st_pop(&lstack);
-                    lfargs[i] = copy_object(y);
+                    lfargs[i] = y->type->copy(y);
                 }
 
                 /* call func, passing args array and arg count */
@@ -266,31 +276,23 @@ void eval(Frame *frame)
             x = st_pop(&lstack);
 
             /* determine if container is list or map */
-            switch (TYPEOF(x)) {
-
-            case obj_list_t:
-            {
+            if (ISTYPE(x, obj_list_t)) {
                 /* pop index */
                 y = st_pop(&lstack);
-                if (y->type != obj_int_t) {
+                if (!ISTYPE(y, obj_int_t)) {
                     DIE("%s", "Invalid list index type\n");
                 }
 
                 /* get a copy of the obj in list at index */
                 z = list_get_object(x, ((LuciIntObj *)y)->i);
                 st_push(&lstack, z);
-            } break;
-
-            case obj_map_t:
-            {
+            } else if (ISTYPE(x, obj_map_t)) {
                 /* pop key */
                 y = st_pop(&lstack);
                 /* get the val for key 'y' */
                 z = map_get(x, y);
                 st_push(&lstack, z);
-            } break;
-
-            default:
+            } else {
                 DIE("%s\n", "Cannot store value in a non-container object");
             }
         }
@@ -303,33 +305,25 @@ void eval(Frame *frame)
             x = st_pop(&lstack);
 
             /* determine if container is list or map */
-            switch (TYPEOF(x)) {
-
-            case obj_list_t:
-            {
+            if (ISTYPE(x, obj_list_t)) {
                 /* pop index */
                 y = st_pop(&lstack);
                 /* pop right hand value */
                 z = st_pop(&lstack);
 
-                if (y->type != obj_int_t) {
+                if (!ISTYPE(y, obj_int_t)) {
                     DIE("%s", "Invalid type in list assign\n");
                 }
                 /* re-use 'y' to obtain a pointer to the old object at index i */
                 y = list_set_object(x, z, ((LuciIntObj *)y)->i);
-            } break;
-
-            case obj_map_t:
-            {
+            } else if (ISTYPE(x, obj_map_t)) {
                 /* pop key */
                 y = st_pop(&lstack);
                 /* pop right hand value */
                 z = st_pop(&lstack);
                 /* re-use 'y' to obtain a pointer to the old val */
                 y = map_set(x, y, z);
-            } break;
-
-            default:
+            } else {
                 DIE("%s\n", "Cannot store value in a non-container object");
             }
         }

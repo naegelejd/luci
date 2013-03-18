@@ -20,6 +20,9 @@
  */
 typedef enum {
     NOP,
+
+    ADD,
+
     POP,
     PUSHNULL,
     LOADK,

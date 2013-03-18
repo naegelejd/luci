@@ -24,26 +24,25 @@
 static int evaluate_condition(LuciObject *cond)
 {
     int huh = 0;
+
     if (cond == NULL) {
 	return 0;
     }
-    switch (cond->type)
-    {
-	case obj_int_t:
-	    huh = AS_INT(cond)->i;
-	    break;
-	case obj_float_t:
-	    huh = (int)AS_FLOAT(cond)->f;
-	    break;
-	case obj_str_t:
-	    huh = AS_STRING(cond)->len;
-	    break;
-	case obj_list_t:
-	    huh = AS_LIST(cond)->count;
-	    break;
-	default:
-	    huh = 1;
+
+    if (ISTYPE(cond, obj_int_t)) {
+        huh = AS_INT(cond)->i;
+    } else if (ISTYPE(cond, obj_float_t)) {
+        huh = (int)AS_FLOAT(cond)->f;
+    } else if (ISTYPE(cond, obj_string_t)) {
+        huh = AS_STRING(cond)->len;
+    } else if (ISTYPE(cond, obj_list_t)) {
+        huh = AS_LIST(cond)->count;
+    } else if (ISTYPE(cond, obj_map_t)) {
+        huh = AS_MAP(cond)->count;
+    } else {
+        huh = 1;
     }
+
     return huh;
 }
 
@@ -262,13 +261,13 @@ LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, op_type op)
     }
 
     if (!TYPES_MATCH(left, right)) {
-        if (TYPEOF(left) == obj_float_t && TYPEOF(right) == obj_int_t) {
+        if (ISTYPE(left, obj_float_t) && ISTYPE(right, obj_int_t)) {
             double f = float_op(AS_FLOAT(left)->f,
                     (double)(AS_INT(right)->i), op);
             result = LuciFloat_new(f);
             return result;
         }
-        else if (TYPEOF(right) == obj_float_t && TYPEOF(left) == obj_int_t) {
+        else if (ISTYPE(right, obj_float_t) && ISTYPE(left, obj_int_t)) {
             double f = float_op(AS_FLOAT(right)->f,
                     (double)(AS_INT(left)->i), op);
             result = LuciFloat_new(f);
@@ -279,29 +278,19 @@ LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, op_type op)
     }
     else {
         /* left and right are of same types */
-        switch (TYPEOF(left)) {
-            case obj_int_t:
-            {
-                long i = int_op(AS_INT(left)->i, AS_INT(right)->i, op);
-                result = LuciInt_new(i);
-                return result;
-            } break;
-
-            case obj_float_t:
-            {
-                double f = float_op(AS_FLOAT(left)->f, AS_FLOAT(right)->f, op);
-                result = LuciFloat_new(f);
-                return result;
-            } break;
-
-            case obj_str_t:
-            {
-                result = string_op(AS_STRING(left), AS_STRING(right), op);
-                return result;
-            } break;
-            default:
-                DIE("%s\n", "Invalid type to binary operand");
-                break;
+        if (ISTYPE(left, obj_int_t)) {
+            long i = int_op(AS_INT(left)->i, AS_INT(right)->i, op);
+            result = LuciInt_new(i);
+            return result;
+        } else if (ISTYPE(left, obj_float_t)) {
+            double f = float_op(AS_FLOAT(left)->f, AS_FLOAT(right)->f, op);
+            result = LuciFloat_new(f);
+            return result;
+        } else if (ISTYPE(left, obj_string_t)) {
+            result = string_op(AS_STRING(left), AS_STRING(right), op);
+            return result;
+        } else {
+            DIE("%s\n", "Invalid type to binary operand");
         }
     }
 }

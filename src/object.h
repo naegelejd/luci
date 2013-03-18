@@ -18,26 +18,33 @@
 #define INIT_MAP_SIZE 8     /**< initial allocated size of a map */
 
 
-/** Types of LuciObjects */
-typedef enum {
-    obj_int_t,
-    obj_float_t,
-    obj_str_t,
-    obj_file_t,
-    obj_list_t,
-    obj_map_t,
-    obj_iterator_t,
-    obj_func_t,
-    obj_libfunc_t
-} LuciObjType;
-
 /** Generic Object which allows for dynamic typing */
 typedef struct _LuciObject
 {
-    LuciObjType type;   /**< type ID - to be replaced by type pointer */
-    int padding;        /**< to be deleted */
+    struct LuciObjectType *type;    /**< pointer to type implementation */
 } LuciObject;
 
+/** Object type virtual method table */
+typedef struct LuciObjectType
+{
+    char *type_name;                    /**< name of the type */
+    LuciObject* (*copy)(LuciObject *);  /**< copy constructor */
+    LuciObject* (*repr)(LuciObject *);  /**< LuciStringObj representation */
+    LuciObject* (*add)(LuciObject *, LuciObject *); /**< binary add */
+    void (*print)(LuciObject *);        /**< print to stdout */
+    unsigned int (*hash0)(LuciObject *);    /**< object hash 1 */
+    unsigned int (*hash1)(LuciObject *);    /**< object hash 2 */
+} LuciObjectType;
+
+extern LuciObjectType obj_int_t;
+extern LuciObjectType obj_float_t;
+extern LuciObjectType obj_string_t;
+extern LuciObjectType obj_list_t;
+extern LuciObjectType obj_map_t;
+extern LuciObjectType obj_iterator_t;
+extern LuciObjectType obj_file_t;
+extern LuciObjectType obj_func_t;
+extern LuciObjectType obj_libfunc_t;
 
 /** Integer object Type */
 typedef struct _LuciIntObj
@@ -110,11 +117,14 @@ typedef struct _LuciLibFunc {
     LuciObject * (*func)(LuciObject **, unsigned int);  /**< function pointer */
 } LuciLibFuncObj;
 
-/** returns the type of object o */
-#define TYPEOF(o)   (((LuciObject *)(o))->type)
-
+/** convenient method of accessing an object's type functions */
+#define MEMBER(o,m) (((LuciObject *)(o))->type->(##m))
+/** returns 1 if the object's type is the given type, 0 otherwise */
+#define ISTYPE(o,t) (((LuciObject *)(o))->type == (&(t)))
+/** sets the type of the given object to the given type */
+#define SET_TYPE(o, t)  (((LuciObject *)(o))->type = (&(t)))
 /** returns 1 if two objects have the same type, 0 otherwise */
-#define TYPES_MATCH(left, right) ( TYPEOF(left) == TYPEOF(right) )
+#define TYPES_MATCH(left, right) ((left)->type == (right)->type)
 
 /** casts LuciObject o to a LuciIntObj */
 #define AS_INT(o)       ((LuciIntObj *)(o))
@@ -141,15 +151,6 @@ LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
 
-/** Used by print. Useful in debugging */
-void print_object(LuciObject *);
-
-/* Duplicates a LuciObject, allocating the new one */
-LuciObject *copy_object(LuciObject* orig);
-
-/* destroys an object */
-//void destroy(LuciObject *trash);
-
 unsigned int string_hash_0(LuciObject *s);
 unsigned int string_hash_1(LuciObject *s);
 unsigned int string_hash_2(LuciObject *s);
@@ -158,5 +159,12 @@ int list_append_object(LuciObject *list, LuciObject *item);
 LuciObject *list_get_object(LuciObject *list, int index);
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index);
 LuciObject *iterator_next_object(LuciObject *iterator);
+
+void unary_noop(LuciObject *);
+void binary_noop(LuciObject *, LuciObject *);
+void ternary_noop(LuciObject *, LuciObject *, LuciObject *);
+static LuciObject* unary_null(LuciObject *);
+static LuciObject* binary_null(LuciObject *, LuciObject *);
+static LuciObject* ternary_null(LuciObject *, LuciObject *, LuciObject *);
 
 #endif

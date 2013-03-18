@@ -21,3 +21,11 @@ print(range(4));
 print(range(3, 7));
 print(range(11, 19, 2));
 
+l = [print, type, exit];
+print(l);
+
+print(type(3));
+print(type(type(3)));
+print(type(l[1](3)));
+
+l[0]("hello world");

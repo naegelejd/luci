@@ -164,11 +164,11 @@ LuciObject *luci_print(LuciObject **args, unsigned int c)
 {
     int i;
     if (c > 0) {
-        print_object(args[0]);
+        args[0]->type->print(args[0]);
     }
     for (i = 1; i < c; i++) {
 	printf(" ");
-	print_object(args[i]);
+        args[i]->type->print(args[i]);
     }
     printf("\n");
 
@@ -195,7 +195,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
     }
     else {
 	LuciObject *item = args[0];
-	if (item && (item->type == obj_file_t)) {
+	if (item && (ISTYPE(item, obj_file_t))) {
 	    LUCI_DEBUG("%s\n", "readline from file");
 	    read_from = AS_FILE(item)->ptr;
 	}
@@ -258,42 +258,11 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
     /* grab the first parameter from the param list */
     LuciObject *item = args[0];
     if (!item) {
-	which = "None";
-    }
-    else {
-	switch(item->type)
-	{
-	    case obj_int_t:
-		which = "int";
-		break;
-	    case obj_float_t:
-		which = "float";
-		break;
-	    case obj_str_t:
-		which = "string";
-		break;
-	    case obj_file_t:
-		which = "file";
-		break;
-	    case obj_list_t:
-		which = "list";
-		break;
-            case obj_map_t:
-                which = "map";
-                break;
-            case obj_func_t:
-                which = "function";
-                break;
-            case obj_libfunc_t:
-                which = "libfunction";
-                break;
-	    default:
-		which = "None";
-	}
+	return LuciString_new("None");
     }
 
-    ret = LuciString_new(strdup(which));
-    return ret;
+    /* Create new LuciString from the object's type name */
+    return LuciString_new(item->type->type_name);
 }
 
 /**
@@ -314,22 +283,16 @@ LuciObject *luci_assert(LuciObject **args, unsigned int c)
 
     LuciObject *item = args[0];
 
-    switch(item->type)
-    {
-	case obj_int_t:
-	    assert(AS_INT(item)->i);
-	    break;
-	case obj_float_t:
-	    assert((int)AS_FLOAT(item)->f);
-	    break;
-	case obj_str_t:
-	    assert(strcmp("", AS_STRING(item)->s) != 0);
-	    break;
-	case obj_list_t:
-	    assert(AS_LIST(item)->count); /* assert that it isn't empty? */
-	    break;
-	default:
-	    ;
+    if (ISTYPE(item, obj_int_t)) {
+        assert(AS_INT(item)->i);
+    } else if (ISTYPE(item, obj_float_t)) {
+        assert((int)AS_FLOAT(item)->f);
+    } else if (ISTYPE(item, obj_string_t)) {
+        assert(strcmp("", AS_STRING(item)->s) != 0);
+    } else if (ISTYPE(item, obj_list_t)) {
+        assert(AS_LIST(item)->count); /* assert that it isn't empty? */
+    } else if (ISTYPE(item, obj_map_t)) {
+        assert(AS_MAP(item)->count);
     }
     return NULL;
 }
@@ -354,25 +317,19 @@ LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
 	DIE("%s", "Can't cast NULL to int\n");
     }
 
-    switch (item->type) {
-	case obj_int_t:
-            ret = LuciInt_new(AS_INT(item)->i);
-	    break;
-	case obj_float_t:
-            ret = LuciInt_new((long)AS_FLOAT(item)->f);
-	    break;
-	case obj_str_t:
-        {
-            long i;
-	    int scanned = sscanf(AS_STRING(item)->s, "%ld", &i);
-	    if (scanned <= 0 || scanned == EOF) {
-		DIE("%s", "Could not cast to int\n");
-	    }
-            ret = LuciInt_new(i);
-	    break;
+    if (ISTYPE(item, obj_int_t)) {
+        ret = LuciInt_new(AS_INT(item)->i);
+    } else if (ISTYPE(item, obj_float_t)) {
+        ret = LuciInt_new((long)AS_FLOAT(item)->f);
+    } else if (ISTYPE(item, obj_string_t)) {
+        long i;
+        int scanned = sscanf(AS_STRING(item)->s, "%ld", &i);
+        if (scanned <= 0 || scanned == EOF) {
+            DIE("%s", "Could not cast to int\n");
         }
-	default:
-	    DIE("%s", "Could not cast to int\n");
+        ret = LuciInt_new(i);
+    } else {
+        DIE("Cannot cast type %s to type int\n", item->type->type_name);
     }
     return ret;
 }
@@ -397,25 +354,19 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
 	DIE("%s", "Can't cast NULL to int\n");
     }
 
-    switch (item->type) {
-	case obj_int_t:
-            ret = LuciFloat_new((double)AS_INT(item)->i);
-	    break;
-	case obj_float_t:
-            ret = LuciFloat_new(AS_FLOAT(item)->f);
-	    break;
-	case obj_str_t:
-        {
-            double f;
-	    int scanned = sscanf(AS_STRING(item)->s, "%f", (float *)&f);
-	    if (scanned <= 0 || scanned == EOF) {
-		DIE("%s", "Could not cast to float\n");
-	    }
-            ret = LuciFloat_new(f);
-	    break;
+    if (ISTYPE(item, obj_int_t)) {
+        ret = LuciFloat_new((double)AS_INT(item)->i);
+    } else if (ISTYPE(item, obj_float_t)) {
+        ret = LuciFloat_new(AS_FLOAT(item)->f);
+    } else if (ISTYPE(item, obj_string_t)) {
+        double f;
+        int scanned = sscanf(AS_STRING(item)->s, "%f", (float *)&f);
+        if (scanned <= 0 || scanned == EOF) {
+            DIE("%s", "Could not cast to float\n");
         }
-	default:
-	    DIE("%s", "Could not cast to float\n");
+        ret = LuciFloat_new(f);
+    } else {
+        DIE("Cannot cast type %s to type float\n", item->type->type_name);
     }
 
     return ret;
@@ -440,28 +391,10 @@ LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
     /* grab the first parameter from the param list */
     LuciObject *item = args[0];
 
-    switch (item->type)
-    {
-	case obj_int_t:
-	    s = alloc(32);
-	    sprintf(s, "%ld", AS_INT(item)->i);
-	    /* ret->s[16] = '\0'; */
-            ret = LuciString_new(s);
-	    break;
-	case obj_float_t:
-	    s = alloc(32);
-	    sprintf(s, "%f", (float)AS_FLOAT(item)->f);
-	    /* AS_STRING(ret)->s[16] = '\0'; */
-            ret = LuciString_new(s);
-	    break;
-	case obj_str_t:
-	    s = alloc(AS_STRING(item)->len + 1);
-	    strcpy(s, AS_STRING(item)->s);
-            ret = LuciString_new(s);
-	    break;
-	default:
-            DIE("%s\n", "Cannot cast to string");
-	    break;
+    ret = item->type->repr(item);
+    if (ret == NULL) {
+        DIE("Cannot cast object of type %s to type string",
+                item->type->type_name);
     }
     LUCI_DEBUG("str() returning %s\n", AS_STRING(ret)->s);
 
@@ -512,11 +445,11 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
     }
 
     LuciObject *fname_obj = args[0];
-    if (fname_obj->type != obj_str_t) {
+    if (!ISTYPE(fname_obj, obj_string_t)) {
 	DIE("%s", "Parameter 1 to open must be a string\n");
     }
     LuciObject *mode_obj = args[1];
-    if (mode_obj->type != obj_str_t) {
+    if (!ISTYPE(mode_obj, obj_string_t)) {
 	DIE("%s", "Parameter 2 to open must be a string\n");
     }
 
@@ -573,7 +506,7 @@ LuciObject *luci_fclose(LuciObject **args, unsigned int c)
 
     LuciObject *fobj = args[0];
 
-    if (!(fobj->type == obj_file_t)) {
+    if (!ISTYPE(fobj, obj_file_t)) {
 	DIE("%s", "Not a file object\n");
     }
 
@@ -602,7 +535,7 @@ LuciObject *luci_fread(LuciObject **args, unsigned int c)
 
     LuciObject *fobj = args[0];
 
-    if (!(fobj->type == obj_file_t)) {
+    if (!ISTYPE(fobj, obj_file_t)) {
 	DIE("%s", "Not a file object\n");
     }
 
@@ -640,13 +573,13 @@ LuciObject *luci_fwrite(LuciObject **args, unsigned int c)
 
     /* grab the FILE parameter */
     LuciObject *fobj = args[0];
-    if (!fobj || (fobj->type != obj_file_t)) {
+    if (!fobj || (!ISTYPE(fobj, obj_file_t))) {
 	DIE("%s", "Not a file object\n");
     }
 
     /* grab string parameter */
     LuciObject *text_obj = args[1];
-    if (!text_obj || (text_obj->type != obj_str_t) ) {
+    if (!text_obj || (!ISTYPE(text_obj, obj_string_t)) ) {
 	DIE("%s", "Not a string\n");
     }
     char *text = AS_STRING(text_obj)->s;
@@ -696,13 +629,13 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
     }
 
     first = args[0];
-    if (first->type != obj_int_t) {
+    if (!ISTYPE(first, obj_int_t)) {
 	DIE("%s", "First parameter to range must be integer\n");
     }
 
     if (c > 1) {
 	second = args[1];
-	if (second->type != obj_int_t) {
+	if (!ISTYPE(second, obj_int_t)) {
 	    DIE("%s", "Second parameter to range must be integer\n");
 	}
 	start = AS_INT(first)->i;
@@ -711,7 +644,7 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 	if (c > 2) {
             /* Ternary range(X, Y, Z) call */
 	    third = args[2];
-	    if (third->type != obj_int_t) {
+	    if (!ISTYPE(third, obj_int_t)) {
 		DIE("%s", "Third parameter to range must be integer\n");
 	    }
 	    incr = AS_INT(third)->i;
@@ -771,7 +704,7 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
 
     LuciObject *list = args[0];
 
-    if (!list || (list->type != obj_list_t)) {
+    if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Must specify a list to calculate sum\n");
     }
 
@@ -783,16 +716,14 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
 	if (!item) {
 	    DIE("%s", "Can't calulate sum of list containing NULL value\n");
 	}
-	switch (item->type) {
-	    case obj_int_t:
-		sum += (double)AS_INT(item)->i;
-		break;
-	    case obj_float_t:
-		found_float = 1;
-		sum += AS_FLOAT(item)->f;
-		break;
-	    default:
-		DIE("%s", "Can't calculate sum of list containing non-numeric value\n");
+
+        if (ISTYPE(item, obj_int_t)) {
+            sum += (double)AS_INT(item)->i;
+        } else if (ISTYPE(item, obj_float_t)) {
+            found_float = 1;
+            sum += AS_FLOAT(item)->f;
+        } else {
+            DIE("%s", "Can't calculate sum of list containing non-numeric value\n");
 	}
     }
 
@@ -822,7 +753,7 @@ LuciObject *luci_len(LuciObject **args, unsigned int c)
 
     LuciObject *list = args[0];
 
-    if (!list || (list->type != obj_list_t)) {
+    if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Must specify a list to calculate len\n");
     }
 
@@ -844,7 +775,7 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
 
     LuciObject *list = args[0];
 
-    if (!list || (list->type != obj_list_t)) {
+    if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Must specify a list to calculate max\n");
     }
 
@@ -856,20 +787,18 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
 	if (!item) {
 	    DIE("%s", "Can't calulate max of list containing NULL value\n");
 	}
-	switch (item->type) {
-	    case obj_int_t:
-		if ( (double)AS_INT(item)->i > max) {
-		    max = (double)AS_INT(item)->i;
-		}
-		break;
-	    case obj_float_t:
-		found_float = 1;
-		if (AS_FLOAT(item)->f > max) {
-		    max = AS_FLOAT(item)->f;
-		}
-		break;
-	    default:
-		DIE("%s", "Can't calculate max of list containing non-numeric value\n");
+        if (ISTYPE(item, obj_int_t)) {
+            if ( (double)AS_INT(item)->i > max) {
+                max = (double)AS_INT(item)->i;
+            }
+        } else if (ISTYPE(item, obj_float_t)) {
+            found_float = 1;
+            if (AS_FLOAT(item)->f > max) {
+                max = AS_FLOAT(item)->f;
+            }
+        } else {
+            DIE("Can't find max of list containing an object of type %s\n",
+                    item->type->type_name);
 	}
     }
 
@@ -898,7 +827,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
 
     LuciObject *list = args[0];
 
-    if (!list || (list->type != obj_list_t)) {
+    if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Must specify a list to calculate min\n");
     }
 
@@ -911,26 +840,24 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
 	if (!item) {
 	    DIE("%s", "Can't calulate max of list containing NULL value\n");
 	}
-	switch (item->type) {
-	    case obj_int_t:
-		if (i == 0) {
-		    min = (double)AS_INT(item)->i;
-		}
-		else if ( (double)AS_INT(item)->i < min) {
-		    min = (double)AS_INT(item)->i;
-		}
-		break;
-	    case obj_float_t:
-		found_float = 1;
-		if (i == 0) {
-		    min = AS_FLOAT(item)->f;
-		}
-		else if (AS_FLOAT(item)->f < min) {
-		    min = AS_FLOAT(item)->f;
-		}
-		break;
-	    default:
-		DIE("%s", "Can't calculate min of list containing non-numeric value\n");
+        if (ISTYPE(item, obj_int_t)) {
+            if (i == 0) {
+                min = (double)AS_INT(item)->i;
+            }
+            else if ( (double)AS_INT(item)->i < min) {
+                min = (double)AS_INT(item)->i;
+            }
+        } else if (ISTYPE(item, obj_float_t)) {
+            found_float = 1;
+            if (i == 0) {
+                min = AS_FLOAT(item)->f;
+            }
+            else if (AS_FLOAT(item)->f < min) {
+                min = AS_FLOAT(item)->f;
+            }
+        } else {
+            DIE("Can't find min of list containing an object of type %s\n",
+                    item->type->type_name);
 	}
     }
 

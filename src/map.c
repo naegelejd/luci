@@ -50,7 +50,7 @@ static unsigned int table_sizes[] = {
 LuciObject *LuciMap_new()
 {
     LuciMapObj *map = alloc(sizeof(*map));
-    TYPEOF(map) = obj_map_t;
+    SET_TYPE(map, obj_map_t);
     map->size_idx = 0;
     map->size = table_sizes[map->size_idx];
 
@@ -150,7 +150,7 @@ LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {
         DIE("%s\n", "Null key in map insertion");
-    } else if (TYPEOF(key) != obj_str_t) {
+    } else if (!ISTYPE(key, obj_string_t)) {
         DIE("%s\n", "Map key must be of type string");
     }
 
@@ -204,7 +204,7 @@ LuciObject *map_get(LuciObject *o, LuciObject *key)
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {
         DIE("%s\n", "Null key in map lookup");
-    } else if (TYPEOF(key) != obj_str_t) {
+    } else if (!ISTYPE(key, obj_string_t)) {
         DIE("%s\n", "Map key must be of type string");
     }
 
@@ -227,6 +227,7 @@ LuciObject *map_get(LuciObject *o, LuciObject *key)
             return map->vals[idx];
         }
     }
+    DIE("Missing key \"%s\" in map\n", AS_STRING(key)->s);
     return NULL;
 }
 
@@ -248,7 +249,7 @@ LuciObject *map_remove(LuciObject *o, LuciObject *key)
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {
         DIE("%s\n", "Null key in map remove");
-    } else if (TYPEOF(key) != obj_str_t) {
+    } else if (!ISTYPE(key, obj_string_t)) {
         DIE("%s\n", "Map key must be of type string");
     }
 

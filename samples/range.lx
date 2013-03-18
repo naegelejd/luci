@@ -10,3 +10,9 @@ print(range(5, 0, -1));
 
 print(range(0, 11, 2));
 print(range(11, 0, -2));
+
+l = range(10);
+
+for i in range(1, len(l) + 1) {
+    print(l[-i]);
+}

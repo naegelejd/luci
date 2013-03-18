@@ -122,8 +122,13 @@ static void compile_binary_expr(AstNode *node, CompileState *cs)
     int a;
     compile(node->data.expression.left, cs);
     compile(node->data.expression.right, cs);
-    a = node->data.expression.op;
-    push_instr(cs, BINOP, a);
+    switch (node->data.expression.op) {
+        case op_add_t:
+            push_instr(cs, ADD, 0);
+            break;
+        default:
+            push_instr(cs, BINOP, node->data.expression.op);
+    }
 }
 
 /**
@@ -679,7 +684,8 @@ Frame *Frame_copy(Frame *f)
     for (i = 0; i < copy->nlocals; i++) {
         if (f->locals[i]) {
             /* copy the object */
-            locals[i] = copy_object(f->locals[i]);
+            LuciObject *lcl = f->locals[i];
+            locals[i] = lcl->type->copy(lcl);
         }
     }
     copy->locals = locals;
@@ -970,6 +976,9 @@ char* serialize_program(Frame *globalframe)
  */
 static char *instruction_names[] = {
     "NOP",
+
+    "ADD",
+
     "POP",
     "PUSHNULL",
     "LOADK",
@@ -1021,7 +1030,7 @@ void print_instructions(Frame *f)
 
     for (i = 0; i < f->nlocals; i ++) {
         obj = f->locals[i];
-        if (obj && (TYPEOF(f->locals[i]) == obj_func_t)) {
+        if (obj && (ISTYPE(f->locals[i], obj_func_t))) {
             printf("Symbol 0x%X:\n", i);
             print_instructions(AS_FUNCTION(f->locals[i])->frame);
         }

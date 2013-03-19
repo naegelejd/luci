@@ -40,15 +40,18 @@ typedef enum {
     CPUT,
     MKITER,
     HALT,
-    /* here begins extended length instructions */
     JUMP,
     POPJUMP,
     JUMPZ,
     ITERJUMP
 } Opcode;
 
-/** an instruction is a 16-bit unsigned int */
-typedef uint16_t Instruction;
+/** an instruction is a 32-bit unsigned int */
+typedef uint32_t Instruction;
+/** how much to right-shift an instruction to obtain its opcode */
+#define OPCODE_SHIFT    26
+/** when masked with an instruction, gives the instruction's argument */
+#define OPARG_MASK      0x3FFFFFF
 
 #define BASE_INSTR_COUNT 256    /**< initial size of instructions array */
 #define BASE_SYMTABLE_SCALE 0   /**< initial symtable scale (0=smallest) */
@@ -73,18 +76,6 @@ struct loop_list {
     struct loop_jump *continues;    /**< linked list of continues */
     struct loop_list *parent;       /**< parent loop_list (if nested) */
 };
-
-/*
-typedef struct _program {
-    uint32_t ip;
-    uint32_t size;
-    Instruction *instructions;
-    SymbolTable *ltable;
-    SymbolTable *gtable;
-    ConstantTable *ctable;
-    struct loop_list *current_loop;
-} Program;
-*/
 
 /**
  * Derived from a CompileState.

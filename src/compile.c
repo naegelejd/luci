@@ -862,20 +862,14 @@ static uint32_t put_instr(CompileState *cs, uint32_t addr,
     if (addr > cs->instr_count)
         DIE("%s", "Address out of bounds\n");
 
-    Instruction instr = (op << 11);
-    if (op >= JUMP) {
-        instr |= (0x7FF & (arg >> 16));
-        cs->instructions[addr] = instr;
-        instr = 0xFFFF & arg;
-        cs->instructions[++addr] = instr;
-        return 2;
+    Instruction instr = (op << OPCODE_SHIFT);
+    if (arg > OPARG_MASK) {
+        DIE("%s\n", "Instruction argument out of bounds");
     } else {
-        instr |= (arg & 0x7FF);
-        /* Append the new instruction to the instruction list */
-        cs->instructions[addr] = instr;
-        /* increment instruction count after appending */
-        return 1;
+        instr |= (OPARG_MASK & arg);
     }
+    cs->instructions[addr] = instr;
+    return 1;
 }
 
 /**
@@ -976,7 +970,6 @@ static char *instruction_names[] = {
     "CPUT",
     "MKITER",
     "HALT",
-    /* here begins extended length instructions */
     "JUMP",
     "POPJUMP",
     "JUMPZ",
@@ -997,16 +990,9 @@ void print_instructions(Frame *f)
     LuciObject *obj;
 
     for (i = 0; i < f->ninstrs; i ++) {
-        a = f->instructions[i] & 0x7FF;
-        instr = f->instructions[i] >> 11;
-
-        /* rip out another instr if extended */
-        if (instr >= JUMP) {
-            a = f->instructions[i + 1] + (a << 16);
-        }
+        a = f->instructions[i] & OPARG_MASK;
+        instr = f->instructions[i] >> OPCODE_SHIFT;
         printf("%03x: %s 0x%x\n", i, instruction_names[instr], a);
-        /* increment 'i' if we just printed an extended instruction */
-        i += (instr >= JUMP) ? 1 : 0;
     }
 
     for (i = 0; i < f->nlocals; i ++) {

@@ -73,9 +73,8 @@ void eval(Frame *frame)
 #define FETCH           frame->instructions[ip - 1]
 #define NEXT_INSTR      frame->instructions[ip++]
 #define NEXT_OPCODE     OPCODE(NEXT_INSTR)
-#define OPCODE(i)       ((i) >> 11)
-#define ISJUMP(i)       ( OPCODE(i) >= JUMP )
-#define OPARG           ( ISJUMP(FETCH) ? (((0x7FF & (FETCH)) << 16) + NEXT_INSTR) : ((FETCH) & 0x7FF) )
+#define OPCODE(i)       ((i) >> OPCODE_SHIFT)
+#define OPARG           ((FETCH) & OPARG_MASK)
 
     Stack lstack, framestack;
     st_init(&lstack);
@@ -85,7 +84,6 @@ void eval(Frame *frame)
     register LuciObject *x = LuciNilObj;
     register LuciObject *y = LuciNilObj;
     register LuciObject *z = LuciNilObj;
-    //Instruction instr = 0;
     int a;
     int ip = 0;
     int i = 0;
@@ -381,9 +379,8 @@ void eval(Frame *frame)
         DISPATCH(NEXT_OPCODE);
 
         DEFAULT
+                DIE("Invalid opcode: %d\n", OPCODE(FETCH));
         }
-                //DIE("Invalid opcode: %d\n", instr >> 11);
-        //}
     }
 
 done_eval:;

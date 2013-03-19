@@ -82,16 +82,16 @@ void eval(Frame *frame)
     st_init(&framestack);
 
     LuciObject* lfargs[MAX_LIBFUNC_ARGS];
-    register LuciObject *x = NULL;
-    register LuciObject *y = NULL;
-    register LuciObject *z = NULL;
+    register LuciObject *x = LuciNilObj;
+    register LuciObject *y = LuciNilObj;
+    register LuciObject *z = LuciNilObj;
     //Instruction instr = 0;
     int a;
     int ip = 0;
     int i = 0;
 
     for (i = 0; i < MAX_LIBFUNC_ARGS; i++) {
-        lfargs[i] = NULL;
+        lfargs[i] = LuciNilObj;
     }
     i = 0;
 
@@ -117,6 +117,15 @@ void eval(Frame *frame)
         }
         DISPATCH(NEXT_OPCODE);
 
+        HANDLE(SUB) {
+            LUCI_DEBUG("%s\n", "SUB");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->sub(x, y);
+            st_push(&lstack, z);
+        }
+        DISPATCH(NEXT_OPCODE);
+
         HANDLE(POP)
         {
             LUCI_DEBUG("%s\n", "POP");
@@ -124,9 +133,9 @@ void eval(Frame *frame)
         }
         DISPATCH(NEXT_OPCODE);
 
-        HANDLE(PUSHNULL)
-            LUCI_DEBUG("%s\n", "PUSHNULL");
-            st_push(&lstack, NULL);
+        HANDLE(PUSHNIL)
+            LUCI_DEBUG("%s\n", "PUSHNIL");
+            st_push(&lstack, LuciNilObj);
         DISPATCH(NEXT_OPCODE);
 
         HANDLE(LOADK)
@@ -143,9 +152,6 @@ void eval(Frame *frame)
         HANDLE(LOADG)
             LUCI_DEBUG("LOADG %d\n", a);
             x = frame->globals[a];
-            if (x == NULL) {
-                DIE("%s", "Global is NULL\n");
-            }
             st_push(&lstack, x);
         DISPATCH(NEXT_OPCODE);
 
@@ -252,9 +258,6 @@ void eval(Frame *frame)
                 z = st_pop(&lstack);
                 /* add the key & value to the map */
                 map_set(x, z, y);
-            }
-            if (!x) {
-                DIE("%s\n", "a horrible flaming NULL map death");
             }
             st_push(&lstack, x);
         DISPATCH(NEXT_OPCODE);

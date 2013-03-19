@@ -125,7 +125,7 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
     }
     printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 
-    return NULL;
+    return LuciNilObj;
 }
 
 /** NOT IMPLEMENTED...
@@ -133,11 +133,11 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
  *
  * @param args unused
  * @param c unused
- * @returns NULL
+ * @returns LuciNilObj
  */
 LuciObject *luci_dir(LuciObject **args, unsigned int c)
 {
-    return NULL;
+    return LuciNilObj;
 }
 
 /**
@@ -145,12 +145,12 @@ LuciObject *luci_dir(LuciObject **args, unsigned int c)
  *
  * @param args unused
  * @param c unused
- * @returns NULL
+ * @returns LuciNilObj
  */
 LuciObject *luci_exit(LuciObject **args, unsigned int c)
 {
     exit(EXIT_SUCCESS);
-    return NULL;
+    return LuciNilObj;
 }
 
 /**
@@ -158,7 +158,7 @@ LuciObject *luci_exit(LuciObject **args, unsigned int c)
  *
  * @param args list of LuciObjects to print
  * @param c number of LuciObjects to print
- * @returns NULL
+ * @returns LuciNilObj
  */
 LuciObject *luci_print(LuciObject **args, unsigned int c)
 {
@@ -172,7 +172,7 @@ LuciObject *luci_print(LuciObject **args, unsigned int c)
     }
     printf("\n");
 
-    return NULL;
+    return LuciNilObj;
 }
 
 /**
@@ -223,8 +223,8 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 
     if (ch == EOF) {
 	free(input);
-	LUCI_DEBUG("%s\n", "readline at EOF, returning NULL");
-	return NULL;
+	LUCI_DEBUG("%s\n", "readline at EOF, returning nil");
+	return LuciNilObj;
     }
 
     /* overwrite the newline or EOF char with a NUL terminator */
@@ -249,7 +249,6 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 {
     char *which;
-    LuciObject *ret = NULL;
 
     if (c < 1) {
 	DIE("%s", "Missing parameter to type()\n");
@@ -273,7 +272,7 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
  *
  * @param args list of args
  * @param c number of args
- * @returns NULL
+ * @returns LuciNilObj
  */
 LuciObject *luci_assert(LuciObject **args, unsigned int c)
 {
@@ -294,7 +293,7 @@ LuciObject *luci_assert(LuciObject **args, unsigned int c)
     } else if (ISTYPE(item, obj_map_t)) {
         assert(AS_MAP(item)->count);
     }
-    return NULL;
+    return LuciNilObj;
 }
 
 /**
@@ -307,7 +306,7 @@ LuciObject *luci_assert(LuciObject **args, unsigned int c)
  */
 LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
 {
-    LuciObject *ret = NULL;
+    LuciObject *ret = LuciNilObj;
     if (c < 1) {
 	DIE("%s", "Missing parameter to int()\n");
     }
@@ -344,7 +343,7 @@ LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
  */
 LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
 {
-    LuciObject *ret = NULL;
+    LuciObject *ret = LuciNilObj;
     if (c < 1) {
 	DIE("%s", "Missing parameter to int()\n");
     }
@@ -382,7 +381,7 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
  */
 LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
 {
-    LuciObject *ret = NULL;
+    LuciObject *ret = LuciNilObj;
     char *s = NULL;
 
     if (c < 1) {
@@ -392,7 +391,7 @@ LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
     LuciObject *item = args[0];
 
     ret = item->type->repr(item);
-    if (ret == NULL) {
+    if (ISTYPE(ret, obj_nil_t)) {
         DIE("Cannot cast object of type %s to type string",
                 item->type->type_name);
     }
@@ -496,7 +495,7 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
  *
  * @param args list of args
  * @param c number of args
- * @returns NULL
+ * @returns LuciNilObj
  */
 LuciObject *luci_fclose(LuciObject **args, unsigned int c)
 {
@@ -517,7 +516,7 @@ LuciObject *luci_fclose(LuciObject **args, unsigned int c)
 
     LUCI_DEBUG("%s\n", "Closed file object.");
 
-    return NULL;
+    return LuciNilObj;
 }
 
 /**
@@ -563,7 +562,7 @@ LuciObject *luci_fread(LuciObject **args, unsigned int c)
  *
  * @param args list of args
  * @param c number of args
- * @returns NULL
+ * @returns LuciNilObj
  */
 LuciObject *luci_fwrite(LuciObject **args, unsigned int c)
 {
@@ -589,7 +588,8 @@ LuciObject *luci_fwrite(LuciObject **args, unsigned int c)
     }
 
     fwrite(text, sizeof(char), strlen(text), AS_FILE(fobj)->ptr);
-    return NULL;
+
+    return LuciNilObj;
 }
 
 /**
@@ -758,6 +758,7 @@ LuciObject *luci_len(LuciObject **args, unsigned int c)
     }
 
     LuciObject *ret = LuciInt_new(AS_LIST(list)->count);
+
     return ret;
 }
 /**
@@ -809,6 +810,7 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
     else {
 	ret = LuciFloat_new(max);
     }
+
     return ret;
 }
 
@@ -868,6 +870,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
     else {
 	ret = LuciFloat_new(min);
     }
+
     return ret;
 }
 

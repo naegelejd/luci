@@ -19,9 +19,10 @@ static void* dispatch_table[] = {
     &&do_NOP,
 
     &&do_ADD,
+    &&do_SUB,
 
     &&do_POP,
-    &&do_PUSHNULL,
+    &&do_PUSHNIL,
     &&do_LOADK,
     &&do_LOADS,
     &&do_LOADG,

@@ -36,9 +36,7 @@ static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end);
 static void compile_int_constant(AstNode *node, CompileState *cs)
 {
     int a;
-    LuciObject *obj;
-
-    obj = LuciInt_new(node->data.i);
+    LuciObject *obj = LuciInt_new(node->data.i);
     a = constant_id(cs->ctable, obj);
     push_instr(cs, LOADK, a);
 }
@@ -52,9 +50,7 @@ static void compile_int_constant(AstNode *node, CompileState *cs)
 static void compile_float_constant(AstNode *node, CompileState *cs)
 {
     int a;
-    LuciObject *obj;
-
-    obj = LuciFloat_new(node->data.f);
+    LuciObject *obj = LuciFloat_new(node->data.f);
     a = constant_id(cs->ctable, obj);
     push_instr(cs, LOADK, a);
 }
@@ -68,12 +64,7 @@ static void compile_float_constant(AstNode *node, CompileState *cs)
 static void compile_string_constant(AstNode *node, CompileState *cs)
 {
     int a;
-    LuciObject *obj;
-
-    /* TODO: Free original string from AST Node since it's
-     * copied on object creation?
-     * */
-    obj = LuciString_new(strdup(node->data.s));
+    LuciObject *obj = LuciString_new(strdup(node->data.s));
     a = constant_id(cs->ctable, obj);
     push_instr(cs, LOADK, a);
 }
@@ -125,6 +116,9 @@ static void compile_binary_expr(AstNode *node, CompileState *cs)
     switch (node->data.expression.op) {
         case op_add_t:
             push_instr(cs, ADD, 0);
+            break;
+        case op_sub_t:
+            push_instr(cs, SUB, 0);
             break;
         default:
             push_instr(cs, BINOP, node->data.expression.op);
@@ -366,7 +360,6 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     int i, a, nparams;
     AstNode *params = node->data.funcdef.param_list;
     AstNode *id_string = NULL;
-    LuciObject *obj = NULL;
 
     /* Create new frame for function scope */
     CompileState *func_cs = CompileState_new();
@@ -388,22 +381,12 @@ static void compile_func_def(AstNode *node, CompileState *cs)
 
     /* add a RETURN to end of function if necessary */
     if (func_cs->instructions[func_cs->instr_count - 1] != RETURN) {
-        push_instr(func_cs, PUSHNULL, 0);
+        push_instr(func_cs, PUSHNIL, 0);
         push_instr(func_cs, RETURN, 0);
     }
 
     /* create function object */
-    obj = LuciFunction_new(Frame_from_CompileState(func_cs, nparams));
-
-    if (obj == NULL) {
-        puts("NULL\n");
-    }
-
-    /*
-    printf("#### %s %d ####\n", node->data.funcdef.funcname, a);
-    print_instructions(func_cs);
-    puts("############");
-    */
+    LuciObject *obj = LuciFunction_new(Frame_from_CompileState(func_cs, nparams));
 
     /* Clean up CompileState created to compile this function */
     CompileState_delete(func_cs);
@@ -534,7 +517,7 @@ static void compile_continue(AstNode *node, CompileState *cs)
 static void compile_return(AstNode *node, CompileState *cs)
 {
     if (node->data.return_stmt.expr == NULL) {
-        push_instr(cs, PUSHNULL, 0);
+        push_instr(cs, PUSHNIL, 0);
     } else {
         compile(node->data.return_stmt.expr, cs);
     }
@@ -603,16 +586,13 @@ static void compile(AstNode *node, CompileState *cs)
  */
 CompileState * compile_ast(CompileState *cs, AstNode *root)
 {
-    int i, id;
-    LuciObject *obj;
-
     if (!root) {
         DIE("%s", "Nothing to compile\n");
     }
 
     /* if we're compiling an AST from scratch, create a new
-     * CompileState to pass around
-     */
+     * CompileState to pass around */
+    int i;
     if (cs == NULL) {
         cs = CompileState_new();
         /* Add builtin symbols to symbol table */
@@ -620,16 +600,16 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
 
         for (i = 0; builtins[i].name != 0; i++) {
             /* create object for builtin function */
-            obj = LuciLibFunc_new(builtins[i].func);
+            LuciObject *obj = LuciLibFunc_new(builtins[i].func);
             /* add the symbol and function object to the symbol table */
-            id = symtable_id(cs->ltable, builtins[i].name, SYMCREATE);
+            int id = symtable_id(cs->ltable, builtins[i].name, SYMCREATE);
             symtable_set(cs->ltable, obj, id);
         }
 
         init_variables();
         extern struct var_def globals[];
         for (i = 0; globals[i].name != 0; i++) {
-            id = symtable_id(cs->ltable, globals[i].name, SYMCREATE);
+            int id = symtable_id(cs->ltable, globals[i].name, SYMCREATE);
             symtable_set(cs->ltable, globals[i].object, id);
         }
     }
@@ -978,9 +958,10 @@ static char *instruction_names[] = {
     "NOP",
 
     "ADD",
+    "SUB",
 
     "POP",
-    "PUSHNULL",
+    "PUSHNIL",
     "LOADK",
     "LOADS",
     "LOADG",

@@ -30,12 +30,14 @@ typedef struct LuciObjectType
     char *type_name;                    /**< name of the type */
     LuciObject* (*copy)(LuciObject *);  /**< copy constructor */
     LuciObject* (*repr)(LuciObject *);  /**< LuciStringObj representation */
-    LuciObject* (*add)(LuciObject *, LuciObject *); /**< binary add */
+    LuciObject* (*add)(LuciObject *, LuciObject *); /**< add */
+    LuciObject* (*sub)(LuciObject *, LuciObject *); /**< subtract */
     void (*print)(LuciObject *);        /**< print to stdout */
     unsigned int (*hash0)(LuciObject *);    /**< object hash 1 */
     unsigned int (*hash1)(LuciObject *);    /**< object hash 2 */
 } LuciObjectType;
 
+extern LuciObjectType obj_nil_t;
 extern LuciObjectType obj_int_t;
 extern LuciObjectType obj_float_t;
 extern LuciObjectType obj_string_t;
@@ -45,6 +47,10 @@ extern LuciObjectType obj_iterator_t;
 extern LuciObjectType obj_file_t;
 extern LuciObjectType obj_func_t;
 extern LuciObjectType obj_libfunc_t;
+
+
+extern LuciObject LuciNilInstance;
+#define LuciNilObj &LuciNilInstance
 
 /** Integer object Type */
 typedef struct _LuciIntObj
@@ -160,11 +166,11 @@ LuciObject *list_get_object(LuciObject *list, int index);
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index);
 LuciObject *iterator_next_object(LuciObject *iterator);
 
-void unary_noop(LuciObject *);
-void binary_noop(LuciObject *, LuciObject *);
-void ternary_noop(LuciObject *, LuciObject *, LuciObject *);
-static LuciObject* unary_null(LuciObject *);
-static LuciObject* binary_null(LuciObject *, LuciObject *);
-static LuciObject* ternary_null(LuciObject *, LuciObject *, LuciObject *);
+void unary_void(LuciObject *);
+void binary_void(LuciObject *, LuciObject *);
+void ternary_void(LuciObject *, LuciObject *, LuciObject *);
+static LuciObject* unary_nil(LuciObject *);
+static LuciObject* binary_nil(LuciObject *, LuciObject *);
+static LuciObject* ternary_nil(LuciObject *, LuciObject *, LuciObject *);
 
 #endif

@@ -22,9 +22,10 @@ typedef enum {
     NOP,
 
     ADD,
+    SUB,
 
     POP,
-    PUSHNULL,
+    PUSHNIL,
     LOADK,
     LOADS,
     LOADG,

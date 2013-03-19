@@ -18,6 +18,7 @@
 /* temporary */
 #include "compile.h" /* for destroying function object FOR NOW */
 
+static LuciObject* LuciNil_copy(LuciObject *);
 static LuciObject* LuciInt_copy(LuciObject *);
 static LuciObject* LuciFloat_copy(LuciObject *);
 static LuciObject* LuciString_copy(LuciObject *);
@@ -37,6 +38,10 @@ static LuciObject* LuciString_add(LuciObject *, LuciObject *);
 static LuciObject* LuciList_add(LuciObject *, LuciObject *);
 static LuciObject* LuciMap_add(LuciObject *, LuciObject *);
 
+static LuciObject* LuciInt_sub(LuciObject *, LuciObject *);
+static LuciObject* LuciFloat_sub(LuciObject *, LuciObject *);
+
+static void LuciNil_print(LuciObject *);
 static void LuciInt_print(LuciObject *);
 static void LuciFloat_print(LuciObject *);
 static void LuciString_print(LuciObject *);
@@ -48,12 +53,23 @@ static void LuciFunction_print(LuciObject *in);
 static void LuciLibFunc_print(LuciObject *in);
 
 
+/** Type member table for LuciNilObj */
+LuciObjectType obj_nil_t = {
+    "nil",
+    LuciNil_copy,
+    unary_nil,
+    binary_nil,
+    binary_nil,
+    LuciNil_print
+};
+
 /** Type member table for LuciIntObj */
 LuciObjectType obj_int_t = {
     "int",
     LuciInt_copy,
     LuciInt_repr,
     LuciInt_add,
+    LuciInt_sub,
     LuciInt_print
 };
 
@@ -63,6 +79,7 @@ LuciObjectType obj_float_t = {
     LuciFloat_copy,
     LuciFloat_repr,
     LuciFloat_add,
+    LuciFloat_sub,
     LuciFloat_print
 };
 
@@ -72,6 +89,7 @@ LuciObjectType obj_string_t = {
     LuciString_copy,
     LuciString_repr,
     LuciString_add,
+    binary_nil,
     LuciString_print
 };
 
@@ -79,8 +97,9 @@ LuciObjectType obj_string_t = {
 LuciObjectType obj_list_t = {
     "list",
     LuciList_copy,
-    unary_null,
+    unary_nil,
     LuciList_add,
+    binary_nil,
     LuciList_print
 };
 
@@ -88,17 +107,19 @@ LuciObjectType obj_list_t = {
 LuciObjectType obj_map_t = {
     "map",
     LuciMap_copy,
-    unary_null,
+    unary_nil,
     LuciMap_add,
+    binary_nil,
     LuciMap_print
 };
 
 /** Type member table for LuciFileObj */
 LuciObjectType obj_file_t = {
     "file",
-    unary_null,
-    unary_null,
-    binary_null,
+    unary_nil,
+    unary_nil,
+    binary_nil,
+    binary_nil,
     LuciFile_print
 };
 
@@ -106,17 +127,19 @@ LuciObjectType obj_file_t = {
 LuciObjectType obj_iterator_t = {
     "iterator",
     LuciIterator_copy,
-    unary_null,
-    binary_null,
-    unary_noop
+    unary_nil,
+    binary_nil,
+    binary_nil,
+    unary_void
 };
 
 /** Type member table for LuciFunctionObj */
 LuciObjectType obj_func_t = {
     "function",
     LuciFunction_copy,
-    unary_null,
-    binary_null,
+    unary_nil,
+    binary_nil,
+    binary_nil,
     LuciFunction_print
 };
 
@@ -124,10 +147,18 @@ LuciObjectType obj_func_t = {
 LuciObjectType obj_libfunc_t = {
     "libfunction",
     LuciLibFunc_copy,
-    unary_null,
-    binary_null,
+    unary_nil,
+    binary_nil,
+    binary_nil,
     LuciLibFunc_print
 };
+
+
+/** Definition of LuciNilObj */
+LuciObject LuciNilInstance = {
+    &obj_nil_t
+};
+
 
 /**
  * Creates a new LuciIntObj
@@ -398,13 +429,11 @@ unsigned int string_hash_2(LuciObject *s)
  */
 int list_append_object(LuciObject *list, LuciObject *item)
 {
-    LuciListObj *listobj = NULL;
-
     if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Can't append item to non-list object\n");
     }
 
-    listobj = (LuciListObj *)list;
+    LuciListObj *listobj = (LuciListObj *)list;
 
     if (listobj->count >= listobj->size) {
 	listobj->size = listobj->size << 1;
@@ -430,13 +459,11 @@ int list_append_object(LuciObject *list, LuciObject *item)
  */
 LuciObject *list_get_object(LuciObject *list, int index)
 {
-    LuciListObj *listobj = NULL;
-
     if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Can't iterate over non-list object\n");
     }
 
-    listobj = (LuciListObj *)list;
+    LuciListObj *listobj = (LuciListObj *)list;
 
     /* convert negative indices to a index starting from list end */
     while (index < 0) {
@@ -445,7 +472,6 @@ LuciObject *list_get_object(LuciObject *list, int index)
 
     if (index >= listobj->count) {
 	DIE("%s", "List index out of bounds\n");
-	/* return NULL; */
     }
     LuciObject *item = listobj->items[index];
     return item->type->copy(item);
@@ -461,16 +487,13 @@ LuciObject *list_get_object(LuciObject *list, int index)
  */
 LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
 {
-    LuciListObj *listobj = NULL;
-
     if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Can't iterate over non-list object\n");
-    }
-    if (!item) {
-	DIE("%s", "Can't set list item to NULL\n");
+    } else if (!item) {
+	DIE("%s", "NULL item in list assignment\n");
     }
 
-    listobj = (LuciListObj *)list;
+    LuciListObj *listobj = (LuciListObj *)list;
 
     while (index < 0) {
 	index = listobj->count = abs(index);
@@ -534,6 +557,7 @@ LuciObject *iterator_next_object(LuciObject *iterator)
     } else {
         DIE("%s\n", "Cannot iterate over a non-container type");
     }
+
     return NULL;
 }
 
@@ -698,6 +722,17 @@ LuciObject *copy_object(LuciObject *orig)
     return copy;
 }
 */
+
+/**
+ * Copies a LuciNilObj, which is just the same instance
+ *
+ * @param orig LuciNilObj
+ * @returns same LuciNilObj
+ */
+static LuciObject* LuciNil_copy(LuciObject *orig)
+{
+    return orig;
+}
 
 
 /**
@@ -868,7 +903,7 @@ static LuciObject* LuciString_repr(LuciObject *o)
  */
 static LuciObject* LuciInt_add(LuciObject *a, LuciObject *b)
 {
-    LuciObject *res = NULL;
+    LuciObject *res = LuciNilObj;
 
     if (ISTYPE(b, obj_int_t)) {
         res = LuciInt_new(AS_INT(a)->i + AS_INT(b)->i);
@@ -889,7 +924,7 @@ static LuciObject* LuciInt_add(LuciObject *a, LuciObject *b)
  */
 static LuciObject* LuciFloat_add(LuciObject *a, LuciObject *b)
 {
-    LuciObject *res = NULL;
+    LuciObject *res = LuciNilObj;
 
     if (ISTYPE(b, obj_int_t)) {
         res = LuciFloat_new(AS_FLOAT(a)->f + AS_INT(b)->i);
@@ -910,7 +945,7 @@ static LuciObject* LuciFloat_add(LuciObject *a, LuciObject *b)
  */
 static LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
 {
-    LuciObject *res = NULL;
+    LuciObject *res = LuciNilObj;
 
     if (ISTYPE(b, obj_string_t)) {
         char *s = alloc(AS_STRING(a)->len + AS_STRING(b)-> len + 1);
@@ -934,7 +969,7 @@ static LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
  */
 static LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
 {
-    LuciObject *res = NULL;
+    LuciObject *res = LuciNilObj;
 
     if (ISTYPE(b, obj_list_t)) {
         res = LuciList_new();
@@ -962,7 +997,7 @@ static LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
  */
 static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
 {
-    LuciObject *res = NULL;
+    LuciObject *res = LuciNilObj;
 
     if (ISTYPE(b, obj_map_t)) {
         res = LuciMap_new();
@@ -988,6 +1023,45 @@ static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
     return res;
 }
 
+
+static LuciObject* LuciInt_sub(LuciObject *a, LuciObject *b)
+{
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new(AS_INT(a)->i - AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciFloat_new(AS_INT(a)->i - AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot subtract an object of type %s from an int\n", b->type->type_name);
+    }
+    return res;
+}
+
+static LuciObject* LuciFloat_sub(LuciObject *a, LuciObject *b)
+{
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciFloat_new(AS_FLOAT(a)->f - AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciFloat_new(AS_FLOAT(a)->f - AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot subtract an object of type %s from a float\n", b->type->type_name);
+    }
+    return res;
+}
+
+
+/**
+ * Prints LuciNilObj to stdout
+ *
+ * @param in LuciNilObj
+ */
+static void LuciNil_print(LuciObject *in)
+{
+    printf("%s", "nil");
+}
 
 /**
  * Prints a LuciIntObj to stdout
@@ -1106,7 +1180,7 @@ static void LuciLibFunc_print(LuciObject *in)
  *
  * @param a unused
  */
-void unary_noop(LuciObject *a) {}
+void unary_void(LuciObject *a) {}
 
 /**
  * Binary placeholder no-op type member
@@ -1114,7 +1188,7 @@ void unary_noop(LuciObject *a) {}
  * @param a unused
  * @param b unused
  */
-void binary_noop(LuciObject *a, LuciObject *b) {}
+void binary_void(LuciObject *a, LuciObject *b) {}
 
 /**
  * Ternary placeholder no-op type member
@@ -1123,18 +1197,18 @@ void binary_noop(LuciObject *a, LuciObject *b) {}
  * @param b unused
  * @param c unused
  */
-void ternary_noop(LuciObject *a, LuciObject *b, LuciObject *c) {}
+void ternary_void(LuciObject *a, LuciObject *b, LuciObject *c) {}
 
 
 /**
  * Unary placeholder type member
  *
  * @param a unused
- * @returns NULL
+ * @returns LuciNilObj
  */
-static LuciObject* unary_null(LuciObject *a)
+static LuciObject* unary_nil(LuciObject *a)
 {
-    return NULL;
+    return LuciNilObj;
 }
 
 /**
@@ -1142,11 +1216,11 @@ static LuciObject* unary_null(LuciObject *a)
  *
  * @param a unused
  * @param b unused
- * @returns NULL
+ * @returns LuciNilObj
  */
-static LuciObject* binary_null(LuciObject *a, LuciObject *b)
+static LuciObject* binary_nil(LuciObject *a, LuciObject *b)
 {
-    return NULL;
+    return LuciNilObj;
 }
 
 /**
@@ -1155,11 +1229,11 @@ static LuciObject* binary_null(LuciObject *a, LuciObject *b)
  * @param a unused
  * @param b unused
  * @param c unused
- * @returns NULL
+ * @returns LuciNilObj
  */
-static LuciObject* ternary_null(LuciObject *a, LuciObject *b, LuciObject *c)
+static LuciObject* ternary_nil(LuciObject *a, LuciObject *b, LuciObject *c)
 {
-    return NULL;
+    return LuciNilObj;
 }
 
 

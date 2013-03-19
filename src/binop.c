@@ -25,7 +25,11 @@ static int evaluate_condition(LuciObject *cond)
 {
     int huh = 0;
 
-    if (cond == NULL) {
+    if (!cond) {
+        DIE("%s\n", "NULL object in conditional evaluation");
+    }
+
+    if (cond == LuciNilObj) {
 	return 0;
     }
 
@@ -252,11 +256,9 @@ LuciObject *string_op(LuciStringObj *l, LuciStringObj *r, op_type op)
  */
 LuciObject *solve_bin_expr(LuciObject *left, LuciObject *right, op_type op)
 {
-    LuciObject *result = NULL;
+    LuciObject *result = LuciNilObj;
 
     if (!left || !right) {
-        /* uh oh */
-        /* return NULL; */
         DIE("%s\n", "NULL object in binary expression dispatcher");
     }
 

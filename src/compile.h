@@ -48,14 +48,26 @@ typedef enum {
 
 /** an instruction is a 32-bit unsigned int */
 typedef uint32_t Instruction;
+
 /** how much to right-shift an instruction to obtain its opcode */
 #define OPCODE_SHIFT    26
 /** when masked with an instruction, gives the instruction's argument */
-#define OPARG_MASK      0x3FFFFFF
+#define OPARG_MASK      0x1FFFFFF
+/** maximum possible (signed) value an opcode argument */
+#define OPARG_MAXIMUM   0x3FFFFFF
+/** when masked with an instruction, 0 if positive, else negative */
+#define OPARG_NEG_BIT   0x2000000
+/** extracts the opcode from the given instruction */
+#define OPCODE(i)   ((i) >> OPCODE_SHIFT)
+/** extracts the argument from the given instruction */
+#define OPARG(i)    ((i) & OPARG_NEG_BIT ? -((i) & OPARG_MASK) : ((i) & OPARG_MASK))
 
-#define BASE_INSTR_COUNT 256    /**< initial size of instructions array */
-#define BASE_SYMTABLE_SCALE 0   /**< initial symtable scale (0=smallest) */
-#define BASE_COTABLE_SIZE 0xFF  /**< initial constant table size */
+/** initial size of instructions array */
+#define BASE_INSTR_COUNT    256
+/** initial symtable scale (0=smallest) */
+#define BASE_SYMTABLE_SCALE 0
+/** initial constant table size */
+#define BASE_COTABLE_SIZE   0xFF
 
 
 /**
@@ -86,9 +98,9 @@ typedef struct _frame {
     uint16_t nparams;       /**< number of parameters */
     uint16_t nlocals;       /**< number of local symbols */
     uint16_t nconstants;    /**< number of constants */
-    uint32_t ip;            /**< current instruction pointer */
     uint32_t ninstrs;       /**< total number of instructions */
     Instruction *instructions;  /**< array of instructions */
+    Instruction *ip;            /**< current instruction pointer */
     LuciObject **locals;        /**< array of local LuciObjects */
     LuciObject **globals;       /**< array of global LuciObjects */
     LuciObject **constants;     /**< array of constant LuciObjects */

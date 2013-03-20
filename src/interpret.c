@@ -51,30 +51,27 @@ void eval(Frame *frame)
 
 #include "dispatch.h"  /* include static jump table */
 
-#define INTERP_INIT()   DISPATCH(NEXT_OPCODE)
-#define SWITCH(instr)
+#define INTERP_INIT()   DISPATCH
+#define SWITCH
 #define DEFAULT
-#define HANDLE(op)      do_##op: { a = OPARG; }
-//#define DISPATCH(instr) goto *dispatch_table[OPCODE(NEXT)]
-#define DISPATCH(instr) goto *dispatch_table[instr]
+#define HANDLE(op)      do_##op: { a = GETARG; }
+#define DISPATCH        goto *dispatch_table[GETOPCODE]
 
 #else /* __GNUC__ */
 
 #define INTERP_INIT()
-//#define SWITCH(instr)   switch(OPCODE(NEXT)) {
-#define SWITCH(instr)   switch(instr)
+#define SWITCH          switch(GETOPCODE)
 #define DEFAULT         default: goto done_eval;
-#define HANDLE(op)      case (op): { a = OPARG; }
-#define DISPATCH(instr) break
+#define HANDLE(op)      case (op): { a = GETARG; }
+#define DISPATCH        break
 
 #endif /* __GNUC__ */
 /**************************************************************/
 
-#define FETCH           frame->instructions[ip - 1]
-#define NEXT_INSTR      frame->instructions[ip++]
-#define NEXT_OPCODE     OPCODE(NEXT_INSTR)
-#define OPCODE(i)       ((i) >> OPCODE_SHIFT)
-#define OPARG           ((FETCH) & OPARG_MASK)
+#define FETCH(c)        (ip += (c))
+#define READ            (*ip)
+#define GETOPCODE       OPCODE(READ)
+#define GETARG          OPARG(READ)
 
     Stack lstack, framestack;
     st_init(&lstack);
@@ -85,8 +82,8 @@ void eval(Frame *frame)
     register LuciObject *y = LuciNilObj;
     register LuciObject *z = LuciNilObj;
     int a;
-    int ip = 0;
     int i = 0;
+    Instruction *ip = frame->instructions;
 
     for (i = 0; i < MAX_LIBFUNC_ARGS; i++) {
         lfargs[i] = LuciNilObj;
@@ -98,13 +95,13 @@ void eval(Frame *frame)
     /* Begin interpreting instructions */
 #define EVER ;; /* saw this on stackoverflow. so dumb */
     for(EVER) {
-        SWITCH(NEXT_OPCODE) {
+        SWITCH {
 
         HANDLE(NOP) {
             LUCI_DEBUG("%s\n", "NOP");
-            printf("NOP");
         }
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(ADD) {
             LUCI_DEBUG("%s\n", "ADD");
@@ -113,7 +110,8 @@ void eval(Frame *frame)
             z = x->type->add(x, y);
             st_push(&lstack, z);
         }
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(SUB) {
             LUCI_DEBUG("%s\n", "SUB");
@@ -122,36 +120,42 @@ void eval(Frame *frame)
             z = x->type->sub(x, y);
             st_push(&lstack, z);
         }
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(POP)
         {
             LUCI_DEBUG("%s\n", "POP");
             x = st_pop(&lstack);
         }
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(PUSHNIL)
             LUCI_DEBUG("%s\n", "PUSHNIL");
             st_push(&lstack, LuciNilObj);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(LOADK)
             LUCI_DEBUG("LOADK %d\n", a);
             st_push(&lstack, frame->constants[a]);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(LOADS)
             LUCI_DEBUG("LOADS %d\n", a);
             x = frame->locals[a];
             st_push(&lstack, x);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(LOADG)
             LUCI_DEBUG("LOADG %d\n", a);
             x = frame->globals[a];
             st_push(&lstack, x);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(DUP)
             LUCI_DEBUG("%s\n", "DUP");
@@ -160,7 +164,8 @@ void eval(Frame *frame)
             x = st_peek(&lstack);
             y = x->type->copy(x);
             st_push(&lstack, y);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(STORE)
             LUCI_DEBUG("STORE %d\n", a);
@@ -168,7 +173,8 @@ void eval(Frame *frame)
             x = st_pop(&lstack);
             /* store the new object */
             frame->locals[a] = x;
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(BINOP)
             LUCI_DEBUG("BINOP %d\n", a);
@@ -176,7 +182,8 @@ void eval(Frame *frame)
             x = st_pop(&lstack);
             z = solve_bin_expr(x, y, a);
             st_push(&lstack, z);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(CALL)
         {
@@ -208,9 +215,11 @@ void eval(Frame *frame)
                     frame->locals[i] = z;
                 }
 
-                /* reset instruction pointer */
-                ip = 0;
-                /* and carry on our merry way */
+                /* reset instruction pointer and carry on our merry way */
+                /* NOTE: while ugly, we decrement ip by one instruction
+                 * so that the following FETCH call starts at the 1st
+                 * instruction!!! */
+                ip = frame->instructions - 1;
             }
 
             /* call library function */
@@ -234,7 +243,8 @@ void eval(Frame *frame)
                 DIE("%s", "Can't call something that isn't a function\n");
             }
         }
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(RETURN)
             LUCI_DEBUG("%s\n", "RETURN");
@@ -244,7 +254,8 @@ void eval(Frame *frame)
             frame = st_pop(&framestack);
             /* restore saved instruction pointer */
             ip = frame->ip;
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(MKMAP)
             LUCI_DEBUG("MKMAP %d\n", a);
@@ -258,7 +269,8 @@ void eval(Frame *frame)
                 map_set(x, z, y);
             }
             st_push(&lstack, x);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(MKLIST)
             LUCI_DEBUG("MKLIST %d\n", a);
@@ -268,7 +280,8 @@ void eval(Frame *frame)
                 list_append_object(x, y);
             }
             st_push(&lstack, x);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(CGET)
         {
@@ -297,7 +310,8 @@ void eval(Frame *frame)
                 DIE("%s\n", "Cannot store value in a non-container object");
             }
         }
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(CPUT)
         {
@@ -328,7 +342,8 @@ void eval(Frame *frame)
                 DIE("%s\n", "Cannot store value in a non-container object");
             }
         }
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(MKITER)
             LUCI_DEBUG("%s\n", "MKITER");
@@ -336,29 +351,32 @@ void eval(Frame *frame)
             y = st_pop(&lstack);
             x = LuciIterator_new(y, 1); /* step = 1 */
             st_push(&lstack, x);
-        DISPATCH(NEXT_OPCODE);
+        FETCH(1);
+        DISPATCH;
 
         HANDLE(JUMP)
-            LUCI_DEBUG("JUMP %X\n", a);
-            ip = a;
-        DISPATCH(NEXT_OPCODE);
+            LUCI_DEBUG("JUMP %d\n", a);
+        FETCH(a);
+        DISPATCH;
 
         HANDLE(POPJUMP)
-            LUCI_DEBUG("POPJUMP %X\n", a);
+            LUCI_DEBUG("POPJUMP %d\n", a);
             x = st_pop(&lstack);
-            ip = a;
-        DISPATCH(NEXT_OPCODE);
+        FETCH(a);
+        DISPATCH;
 
         HANDLE(JUMPZ)
-            LUCI_DEBUG("JUMPZ %X\n", a);
+            LUCI_DEBUG("JUMPZ %d\n", a);
             x = st_pop(&lstack);
             if (((LuciIntObj *)x)->i == 0) {
-                ip = a;
+                FETCH(a);
+            } else {
+                FETCH(1);
             }
-        DISPATCH(NEXT_OPCODE);
+        DISPATCH;
 
         HANDLE(ITERJUMP)
-            LUCI_DEBUG("%s\n", "ITERJUMP");
+            LUCI_DEBUG("ITERJUMP %d\n", a);
             x = st_peek(&lstack);
             /* get a COPY of the next object in the iterator's list */
             y = iterator_next_object(x);
@@ -367,19 +385,20 @@ void eval(Frame *frame)
             if (y == NULL) {
                 /* pop and destroy the iterator object */
                 x = st_pop(&lstack);
-                ip = a;
+                FETCH(a);
             } else {
                 st_push(&lstack, y);
+                FETCH(1);
             }
-        DISPATCH(NEXT_OPCODE);
+        DISPATCH;
 
         HANDLE(HALT)
             LUCI_DEBUG("%s\n", "HALT");
             goto done_eval;
-        DISPATCH(NEXT_OPCODE);
+        DISPATCH;
 
         DEFAULT
-                DIE("Invalid opcode: %d\n", OPCODE(FETCH));
+                DIE("Invalid opcode: %d\n", GETOPCODE);
         }
     }
 

@@ -259,7 +259,7 @@ AstNode *make_assignment(char *id, AstNode *right)
     AstNode *result = create_node(ast_assign_t);
     result->data.assignment.name = id;
     result->data.assignment.right = right;
-    LUCI_DEBUG("Made assignment node to\n", id);
+    LUCI_DEBUG("Made assignment node to %s\n", id);
     return result;
 }
 

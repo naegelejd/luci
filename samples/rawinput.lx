@@ -1,3 +1,0 @@
-stuff = input();
-
-print (stuff);

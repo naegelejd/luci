@@ -289,7 +289,7 @@ static void compile_for_loop(AstNode *node, CompileState *cs)
     compile(node->data.for_loop.statements, cs);
     /* add jump to beginning of for-loop */
     push_instr(cs, JUMP, addr1);
-    /* change bogus jump to a JUMPI (get iter->next or jump) */
+    /* change bogus jump to a ITERJUMP (get iter->next or jump) */
     put_instr(cs, addr2, ITERJUMP, cs->instr_count);
 
     back_patch_loop(cs, addr1, cs->instr_count);
@@ -736,10 +736,10 @@ Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
 {
     Frame *f = alloc(sizeof(*f));
 
-    f->ip = 0;
     f->nparams = nparams;
     f->ninstrs = cs->instr_count;
     f->instructions = cs->instructions;
+    f->ip = f->instructions;
     /* get locals object array and size of array */
     if (cs->ltable) {
         f->nlocals = cs->ltable->count;
@@ -824,13 +824,12 @@ CompileState *CompileState_refresh(CompileState *cs)
  */
 static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
 {
-    int count = 0;
-    uint32_t old_addr;
-
-    if (!cs)
+    if (!cs) {
         DIE("%s", "CompileState not allocated. Can't add instruction\n");
-    if (!(cs->instructions))
+    }
+    if (!(cs->instructions)) {
         DIE("%s", "Instruction list not allocated. Can't add instruction\n");
+    }
 
     /* Reallocate the CompileState's instruction list if necessary */
     if (cs->instr_count + 1 > cs->instr_alloc) {
@@ -839,8 +838,8 @@ static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
                 cs->instr_alloc * sizeof(*(cs->instructions)));
     }
 
-    count = put_instr(cs, cs->instr_count, op, arg);
-    old_addr = cs->instr_count;
+    uint32_t count = put_instr(cs, cs->instr_count, op, arg);
+    uint32_t old_addr = cs->instr_count;
     cs->instr_count += count;
 
     return old_addr;
@@ -856,20 +855,30 @@ static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
  * @returns the number of addresses used for the new instruction
  */
 static uint32_t put_instr(CompileState *cs, uint32_t addr,
-        Opcode op, int arg) {
-
-    /* if (addr < 0) ... addr is unsigned */
-    if (addr > cs->instr_count)
+        Opcode op, int arg)
+{
+    if (addr > cs->instr_count) {
         DIE("%s", "Address out of bounds\n");
-
-    Instruction instr = (op << OPCODE_SHIFT);
-    if (arg > OPARG_MASK) {
-        DIE("%s\n", "Instruction argument out of bounds");
-    } else {
-        instr |= (OPARG_MASK & arg);
     }
+
+    /* JUMP operations must be made relative */
+    if (op >= JUMP) {
+        arg -= addr;
+    }
+
+    /* initialize instruction with the opcode */
+    Instruction instr = (op << OPCODE_SHIFT);
+
+    /* add signed bit if the argument is negative */
+    if (arg < 0) {
+        arg = -arg;
+        instr |= OPARG_NEG_BIT;
+    }
+
+    instr |= (OPARG_MASK & arg);
     cs->instructions[addr] = instr;
-    return 1;
+
+    return 1;   /* number of instructions written at addr */
 }
 
 /**
@@ -990,9 +999,9 @@ void print_instructions(Frame *f)
     LuciObject *obj;
 
     for (i = 0; i < f->ninstrs; i ++) {
-        a = f->instructions[i] & OPARG_MASK;
-        instr = f->instructions[i] >> OPCODE_SHIFT;
-        printf("%03x: %s 0x%x\n", i, instruction_names[instr], a);
+        a = OPARG(f->instructions[i]);
+        instr = OPCODE(f->instructions[i]);
+        printf("%03x: %s %d\n", i, instruction_names[instr], a);
     }
 
     for (i = 0; i < f->nlocals; i ++) {

@@ -234,7 +234,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
     /* destroy the input buffer */
     free(input);
 
-    LUCI_DEBUG("Read line\n", AS_STRING(ret)->s);
+    LUCI_DEBUG("Read line %s\n", AS_STRING(ret)->s);
 
     return ret;
 }

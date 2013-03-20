@@ -21,16 +21,3 @@ for i in l {
 }
 
 print(l);
-
-f = open("for_loops.lx", "r");
-line = readline(f);
-print(line);
-close(f);
-
-f = open("for_loops.lx", "r");
-lines = readlines(f);
-close(f);
-
-for l in lines {
-  print(l);
-}

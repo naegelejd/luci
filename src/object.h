@@ -30,8 +30,28 @@ typedef struct LuciObjectType
     char *type_name;                    /**< name of the type */
     LuciObject* (*copy)(LuciObject *);  /**< copy constructor */
     LuciObject* (*repr)(LuciObject *);  /**< LuciStringObj representation */
+    LuciObject* (*asbool)(LuciObject *);    /**< 0 or 1 representation */
+
     LuciObject* (*add)(LuciObject *, LuciObject *); /**< add */
-    LuciObject* (*sub)(LuciObject *, LuciObject *); /**< subtract */
+    LuciObject* (*sub)(LuciObject *, LuciObject *); /**< sub */
+    LuciObject* (*mul)(LuciObject *, LuciObject *); /**< mul */
+    LuciObject* (*div)(LuciObject *, LuciObject *); /**< div */
+    LuciObject* (*mod)(LuciObject *, LuciObject *); /**< mod */
+    LuciObject* (*pow)(LuciObject *, LuciObject *); /**< pow */
+    LuciObject* (*eq)(LuciObject *, LuciObject *); /**< eq */
+    LuciObject* (*neq)(LuciObject *, LuciObject *); /**< neq */
+    LuciObject* (*lt)(LuciObject *, LuciObject *); /**< lt */
+    LuciObject* (*gt)(LuciObject *, LuciObject *); /**< gt */
+    LuciObject* (*lte)(LuciObject *, LuciObject *); /**< lte */
+    LuciObject* (*gte)(LuciObject *, LuciObject *); /**< gte */
+    LuciObject* (*lgor)(LuciObject *, LuciObject *); /**< lgor */
+    LuciObject* (*lgand)(LuciObject *, LuciObject *); /**< lgand */
+    LuciObject* (*lgnot)(LuciObject *, LuciObject *); /**< lgnot */
+    LuciObject* (*bxor)(LuciObject *, LuciObject *); /**< bxor */
+    LuciObject* (*bor)(LuciObject *, LuciObject *); /**< bor */
+    LuciObject* (*band)(LuciObject *, LuciObject *); /**< band */
+    LuciObject* (*bnot)(LuciObject *, LuciObject *); /**< bnot */
+
     void (*print)(LuciObject *);        /**< print to stdout */
     unsigned int (*hash0)(LuciObject *);    /**< object hash 1 */
     unsigned int (*hash1)(LuciObject *);    /**< object hash 2 */
@@ -144,6 +164,8 @@ typedef struct _LuciLibFunc {
 #define AS_MAP(o)       ((LuciMapObj *)(o))
 /** casts LuciObject o to a LuciFileObj */
 #define AS_FILE(o)      ((LuciFileObj *)(o))
+/** casts LuciObject o to a LuciIteratorObj */
+#define AS_ITERATOR(o)  ((LuciIteratorObj *)(o))
 /** casts LuciObject o to a LuciMapObj */
 #define AS_FUNCTION(o)  ((LuciFunctionObj *)(o))
 

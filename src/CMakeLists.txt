@@ -24,7 +24,6 @@ add_executable(
     ${CMAKE_CURRENT_SOURCE_DIR}/constant.c
     ${CMAKE_CURRENT_SOURCE_DIR}/compile.c
     ${CMAKE_CURRENT_SOURCE_DIR}/interpret.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/binop.c
     ${CMAKE_CURRENT_SOURCE_DIR}/builtin.c
 )
 

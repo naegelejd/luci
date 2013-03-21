@@ -113,16 +113,8 @@ static void compile_binary_expr(AstNode *node, CompileState *cs)
     int a;
     compile(node->data.expression.left, cs);
     compile(node->data.expression.right, cs);
-    switch (node->data.expression.op) {
-        case op_add_t:
-            push_instr(cs, ADD, 0);
-            break;
-        case op_sub_t:
-            push_instr(cs, SUB, 0);
-            break;
-        default:
-            push_instr(cs, BINOP, node->data.expression.op);
-    }
+    /* offset by opcode 'ADD', which is the first binary opcode */
+    push_instr(cs, ADD + node->data.expression.op, 0);
 }
 
 /**
@@ -962,6 +954,23 @@ static char *instruction_names[] = {
 
     "ADD",
     "SUB",
+    "MUL",
+    "DIV",
+    "MOD",
+    "POW",
+    "EQ",
+    "NEQ",
+    "LT",
+    "GT",
+    "LTE",
+    "GTE",
+    "LGOR",
+    "LGAND",
+    "LGNOT",
+    "BXOR",
+    "BOR",
+    "BAND",
+    "BNOT",
 
     "POP",
     "PUSHNIL",
@@ -970,7 +979,6 @@ static char *instruction_names[] = {
     "LOADG",
     "DUP",
     "STORE",
-    "BINOP",
     "CALL",
     "RETURN",
     "MKMAP",

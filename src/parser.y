@@ -10,7 +10,6 @@
 
 #include "luci.h"
 #include "ast.h"
-#include "binop.h"
 
 #ifdef DEBUG
 #define YYDEBUG 1

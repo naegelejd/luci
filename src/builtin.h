@@ -3,7 +3,7 @@
  */
 
 /**
- * @file binop.h
+ * @file builtin.h
  */
 
 #ifndef BUILTIN_H

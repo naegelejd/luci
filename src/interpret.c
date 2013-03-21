@@ -16,7 +16,6 @@
 #include "interpret.h"
 #include "stack.h"
 #include "compile.h"
-#include "binop.h"
 
 
 /**
@@ -123,6 +122,176 @@ void eval(Frame *frame)
         FETCH(1);
         DISPATCH;
 
+        HANDLE(MUL) {
+            LUCI_DEBUG("%s\n", "MUL");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->mul(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(DIV) {
+            LUCI_DEBUG("%s\n", "DIV");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->div(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(MOD) {
+            LUCI_DEBUG("%s\n", "MOD");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->mod(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(POW) {
+            LUCI_DEBUG("%s\n", "POW");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->pow(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(EQ) {
+            LUCI_DEBUG("%s\n", "EQ");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->eq(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(NEQ) {
+            LUCI_DEBUG("%s\n", "NEQ");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->neq(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(LT) {
+            LUCI_DEBUG("%s\n", "LT");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->lt(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(GT) {
+            LUCI_DEBUG("%s\n", "GT");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->gt(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(LTE) {
+            LUCI_DEBUG("%s\n", "LTE");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->lte(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(GTE) {
+            LUCI_DEBUG("%s\n", "GTE");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->gte(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(LGOR) {
+            LUCI_DEBUG("%s\n", "LGOR");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->lgor(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(LGAND) {
+            LUCI_DEBUG("%s\n", "LGAND");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->lgand(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(LGNOT) {
+            LUCI_DEBUG("%s\n", "LGNOT");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->lgnot(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(BXOR) {
+            LUCI_DEBUG("%s\n", "BXOR");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->bxor(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(BOR) {
+            LUCI_DEBUG("%s\n", "BOR");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->bor(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(BAND) {
+            LUCI_DEBUG("%s\n", "BAND");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->band(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(BNOT) {
+            LUCI_DEBUG("%s\n", "BNOT");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->bnot(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
         HANDLE(POP)
         {
             LUCI_DEBUG("%s\n", "POP");
@@ -173,15 +342,6 @@ void eval(Frame *frame)
             x = st_pop(&lstack);
             /* store the new object */
             frame->locals[a] = x;
-        FETCH(1);
-        DISPATCH;
-
-        HANDLE(BINOP)
-            LUCI_DEBUG("BINOP %d\n", a);
-            y = st_pop(&lstack);
-            x = st_pop(&lstack);
-            z = solve_bin_expr(x, y, a);
-            st_push(&lstack, z);
         FETCH(1);
         DISPATCH;
 

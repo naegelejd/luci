@@ -29,8 +29,12 @@
 #define LUCI_LUCI_H
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <limits.h>
+#include <math.h>
+
 
 #define MAX_INT_DIGITS      (CHAR_BIT * (sizeof(long) / 3) + 3)
 #define MAX_FLOAT_DIGITS    (CHAR_BIT * (sizeof(double) / 3) + 3)

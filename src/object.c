@@ -61,11 +61,13 @@ static LuciObject* LuciInt_lte(LuciObject *, LuciObject *);
 static LuciObject* LuciInt_gte(LuciObject *, LuciObject *);
 static LuciObject* LuciInt_lgor(LuciObject *, LuciObject *);
 static LuciObject* LuciInt_lgand(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_lgnot(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_bxor(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_bor(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_band(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_bnot(LuciObject *, LuciObject *);
+static LuciObject* LuciInt_bwxor(LuciObject *, LuciObject *);
+static LuciObject* LuciInt_bwor(LuciObject *, LuciObject *);
+static LuciObject* LuciInt_bwand(LuciObject *, LuciObject *);
+
+static LuciObject* LuciInt_neg(LuciObject *);
+static LuciObject* LuciInt_lgnot(LuciObject *);
+static LuciObject* LuciInt_bwnot(LuciObject *);
 
 static LuciObject* LuciFloat_add(LuciObject *, LuciObject *);
 static LuciObject* LuciFloat_sub(LuciObject *, LuciObject *);
@@ -81,11 +83,13 @@ static LuciObject* LuciFloat_lte(LuciObject *, LuciObject *);
 static LuciObject* LuciFloat_gte(LuciObject *, LuciObject *);
 static LuciObject* LuciFloat_lgor(LuciObject *, LuciObject *);
 static LuciObject* LuciFloat_lgand(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_lgnot(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_bxor(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_bor(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_band(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_bnot(LuciObject *, LuciObject *);
+static LuciObject* LuciFloat_bwxor(LuciObject *, LuciObject *);
+static LuciObject* LuciFloat_bwor(LuciObject *, LuciObject *);
+static LuciObject* LuciFloat_bwand(LuciObject *, LuciObject *);
+
+static LuciObject* LuciFloat_neg(LuciObject *);
+static LuciObject* LuciFloat_lgnot(LuciObject *);
+static LuciObject* LuciFloat_bwnot(LuciObject *);
 
 
 static void LuciNil_print(LuciObject *);
@@ -106,9 +110,10 @@ LuciObjectType obj_nil_t = {
     LuciNil_copy,
     unary_nil,
     LuciNil_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -135,6 +140,9 @@ LuciObjectType obj_int_t = {
     LuciInt_copy,
     LuciInt_repr,
     LuciInt_asbool,
+    LuciInt_neg,
+    LuciInt_lgnot,
+    LuciInt_bwnot,
 
     LuciInt_add,
     LuciInt_sub,
@@ -150,11 +158,9 @@ LuciObjectType obj_int_t = {
     LuciInt_gte,
     LuciInt_lgor,
     LuciInt_lgand,
-    LuciInt_lgnot,
-    LuciInt_bxor,
-    LuciInt_bor,
-    LuciInt_band,
-    LuciInt_bnot,
+    LuciInt_bwxor,
+    LuciInt_bwor,
+    LuciInt_bwand,
 
     LuciInt_print
 };
@@ -165,6 +171,9 @@ LuciObjectType obj_float_t = {
     LuciFloat_copy,
     LuciFloat_repr,
     LuciFloat_asbool,
+    LuciFloat_neg,
+    LuciFloat_lgnot,
+    LuciFloat_bwnot,
 
     LuciFloat_add,
     LuciFloat_sub,
@@ -180,11 +189,9 @@ LuciObjectType obj_float_t = {
     LuciFloat_gte,
     LuciFloat_lgor,
     LuciFloat_lgand,
-    LuciFloat_lgnot,
-    LuciFloat_bxor,
-    LuciFloat_bor,
-    LuciFloat_band,
-    LuciFloat_bnot,
+    LuciFloat_bwxor,
+    LuciFloat_bwor,
+    LuciFloat_bwand,
 
     LuciFloat_print
 };
@@ -195,10 +202,11 @@ LuciObjectType obj_string_t = {
     LuciString_copy,
     LuciString_repr,
     LuciString_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
     LuciString_add,
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -224,10 +232,11 @@ LuciObjectType obj_list_t = {
     LuciList_copy,
     unary_nil,
     LuciList_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
     LuciList_add,
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -253,10 +262,11 @@ LuciObjectType obj_map_t = {
     LuciMap_copy,
     unary_nil,
     LuciMap_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
     LuciMap_add,
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -282,9 +292,10 @@ LuciObjectType obj_file_t = {
     unary_nil,
     unary_nil,
     LuciFile_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -311,9 +322,10 @@ LuciObjectType obj_iterator_t = {
     LuciIterator_copy,
     unary_nil,
     LuciIterator_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -340,9 +352,10 @@ LuciObjectType obj_func_t = {
     LuciFunction_copy,
     unary_nil,
     LuciFunction_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -369,9 +382,10 @@ LuciObjectType obj_libfunc_t = {
     LuciLibFunc_copy,
     unary_nil,
     LuciLibFunc_asbool,
+    unary_nil,
+    unary_nil,
+    unary_nil,
 
-    binary_nil,
-    binary_nil,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -1406,7 +1420,7 @@ static LuciObject* LuciInt_eq(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_int_t)) {
         res = LuciInt_new(AS_INT(a)->i == AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
-        res = LuciFloat_new(AS_INT(a)->i == AS_FLOAT(b)->f);
+        res = LuciInt_new(AS_INT(a)->i == AS_FLOAT(b)->f);
     } else {
         DIE("Cannot determine if an int is equal to an object of type %s\n",
                 b->type->type_name);
@@ -1421,7 +1435,7 @@ static LuciObject* LuciInt_neq(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_int_t)) {
         res = LuciInt_new(AS_INT(a)->i != AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
-        res = LuciFloat_new(AS_INT(a)->i != AS_FLOAT(b)->f);
+        res = LuciInt_new(AS_INT(a)->i != AS_FLOAT(b)->f);
     } else {
         DIE("Cannot determine if an int is equal to an object of type %s\n",
                 b->type->type_name);
@@ -1436,7 +1450,7 @@ static LuciObject* LuciInt_lt(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_int_t)) {
         res = LuciInt_new(AS_INT(a)->i < AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
-        res = LuciFloat_new(AS_INT(a)->i < AS_FLOAT(b)->f);
+        res = LuciInt_new(AS_INT(a)->i < AS_FLOAT(b)->f);
     } else {
         DIE("Cannot determine if an int is less than an object of type %s\n",
                 b->type->type_name);
@@ -1451,7 +1465,7 @@ static LuciObject* LuciInt_gt(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_int_t)) {
         res = LuciInt_new(AS_INT(a)->i > AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
-        res = LuciFloat_new(AS_INT(a)->i > AS_FLOAT(b)->f);
+        res = LuciInt_new(AS_INT(a)->i > AS_FLOAT(b)->f);
     } else {
         DIE("Cannot determine if an int is greater than an object of type %s\n",
                 b->type->type_name);
@@ -1466,7 +1480,7 @@ static LuciObject* LuciInt_lte(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_int_t)) {
         res = LuciInt_new(AS_INT(a)->i <= AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
-        res = LuciFloat_new(AS_INT(a)->i <= AS_FLOAT(b)->f);
+        res = LuciInt_new(AS_INT(a)->i <= AS_FLOAT(b)->f);
     } else {
         DIE("Cannot determine if an int is less than or equal to an "
                 "object of type %s\n", b->type->type_name);
@@ -1481,7 +1495,7 @@ static LuciObject* LuciInt_gte(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_int_t)) {
         res = LuciInt_new(AS_INT(a)->i >= AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
-        res = LuciFloat_new(AS_INT(a)->i >= AS_FLOAT(b)->f);
+        res = LuciInt_new(AS_INT(a)->i >= AS_FLOAT(b)->f);
     } else {
         DIE("Cannot determine if an int is greater than or equal to an "
                 "object of type %s\n", b->type->type_name);
@@ -1505,13 +1519,7 @@ static LuciObject* LuciInt_lgand(LuciObject *a, LuciObject *b)
     return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
 }
 
-static LuciObject* LuciInt_lgnot(LuciObject *a, LuciObject *b)
-{
-    LuciObject *a0 = a->type->asbool(a);
-    return LuciInt_new(!(AS_INT(a0)->i));
-}
-
-static LuciObject* LuciInt_bxor(LuciObject *a, LuciObject *b)
+static LuciObject* LuciInt_bwxor(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -1519,11 +1527,14 @@ static LuciObject* LuciInt_bxor(LuciObject *a, LuciObject *b)
         res = LuciInt_new(AS_INT(a)->i ^ AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
         res = LuciInt_new(AS_INT(a)->i ^ (long)AS_FLOAT(b)->f);
+    } else {
+        DIE("Can't compute bitwise XOR of an int and object of type %s\n",
+                b->type->type_name);
     }
     return res;
 }
 
-static LuciObject* LuciInt_bor(LuciObject *a, LuciObject *b)
+static LuciObject* LuciInt_bwor(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -1531,11 +1542,14 @@ static LuciObject* LuciInt_bor(LuciObject *a, LuciObject *b)
         res = LuciInt_new(AS_INT(a)->i | AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
         res = LuciInt_new(AS_INT(a)->i | (long)AS_FLOAT(b)->f);
+    } else {
+        DIE("Can't compute bitwise OR of an int and object of type %s\n",
+                b->type->type_name);
     }
     return res;
 }
 
-static LuciObject* LuciInt_band(LuciObject *a, LuciObject *b)
+static LuciObject* LuciInt_bwand(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -1543,15 +1557,28 @@ static LuciObject* LuciInt_band(LuciObject *a, LuciObject *b)
         res = LuciInt_new(AS_INT(a)->i & AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
         res = LuciInt_new(AS_INT(a)->i & (long)AS_FLOAT(b)->f);
+    } else {
+        DIE("Can't compute bitwise AND of an int and object of type %s\n",
+                b->type->type_name);
     }
     return res;
 }
 
-static LuciObject* LuciInt_bnot(LuciObject *a, LuciObject *b)
+static LuciObject* LuciInt_lgnot(LuciObject *a)
+{
+    LuciObject *a0 = a->type->asbool(a);
+    return LuciInt_new(!(AS_INT(a0)->i));
+}
+
+static LuciObject* LuciInt_bwnot(LuciObject *a)
 {
     return LuciInt_new(~(AS_INT(a)->i));
 }
 
+static LuciObject *LuciInt_neg(LuciObject *a)
+{
+    return LuciInt_new(-(AS_INT(a)->i));
+}
 
 /**
  * Adds a LuciFloatObj to a second numeric LuciObject
@@ -1590,87 +1617,227 @@ static LuciObject* LuciFloat_sub(LuciObject *a, LuciObject *b)
 
 static LuciObject* LuciFloat_mul(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciFloat_new(AS_FLOAT(a)->f * AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciFloat_new(AS_FLOAT(a)->f * AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot multiply an object of type %s and a float\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_div(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        if (AS_INT(b)->i != 0) {
+            res = LuciFloat_new(AS_FLOAT(a)->f / AS_INT(b)->i);
+        } else {
+            DIE("%s\n", "Divide by zero");
+        }
+    } else if (ISTYPE(b, obj_float_t)) {
+        if (AS_FLOAT(b)->f != 0.0L) {
+            res = LuciFloat_new(AS_FLOAT(a)->f / AS_FLOAT(b)->f);
+        } else {
+            DIE("%s\n", "Divide by zero");
+        }
+    } else {
+        DIE("Cannot divide a float by an object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_mod(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    DIE("%s\n", "Cannot compute float modulus");
 }
 
 static LuciObject* LuciFloat_pow(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciFloat_new(pow(AS_FLOAT(a)->f, AS_INT(b)->i));
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciFloat_new(pow(AS_FLOAT(a)->f, AS_FLOAT(b)->f));
+    } else {
+        DIE("Cannot compute the power of a float using an object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_eq(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f == AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f == AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot determine if a float is equal to an object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_neq(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f != AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f != AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot determine if a float is equal to an object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_lt(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f < AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f < AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot determine if a float is less than an object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_gt(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f > AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f > AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot determine if a float is greater than an object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_lte(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f <= AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f <= AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot determine if a float is less than or equal "
+                "to an object of type %s\n", b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_gte(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f >= AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new(AS_FLOAT(a)->f >= AS_FLOAT(b)->f);
+    } else {
+        DIE("Cannot determine if a float is greater than or equal "
+                "to an object of type %s\n", b->type->type_name);
+    }
+    return res;
 }
 
 static LuciObject* LuciFloat_lgor(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *a0 = a->type->asbool(a);
+    LuciObject *b0 = a->type->asbool(a);
+
+    return LuciInt_new(AS_INT(a0)->i || AS_INT(b0)->i);
 }
 
 static LuciObject* LuciFloat_lgand(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *a0 = a->type->asbool(a);
+    LuciObject *b0 = a->type->asbool(a);
+
+    return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
 }
 
-static LuciObject* LuciFloat_lgnot(LuciObject *a, LuciObject *b)
+static LuciObject* LuciFloat_bwxor(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new((long)AS_FLOAT(a)->f ^ AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new((long)AS_FLOAT(a)->f ^ (long)AS_FLOAT(b)->f);
+    } else {
+        DIE("Can't compute bitwise XOR of a float and object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
-static LuciObject* LuciFloat_bxor(LuciObject *a, LuciObject *b)
+static LuciObject* LuciFloat_bwor(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new((long)AS_FLOAT(a)->f | AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new((long)AS_FLOAT(a)->f | (long)AS_FLOAT(b)->f);
+    } else {
+        DIE("Can't compute bitwise OR of a float and object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
-static LuciObject* LuciFloat_bor(LuciObject *a, LuciObject *b)
+static LuciObject* LuciFloat_bwand(LuciObject *a, LuciObject *b)
 {
-    return LuciNilObj;
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_int_t)) {
+        res = LuciInt_new((long)AS_FLOAT(a)->f & AS_INT(b)->i);
+    } else if (ISTYPE(b, obj_float_t)) {
+        res = LuciInt_new((long)AS_FLOAT(a)->f & (long)AS_FLOAT(b)->f);
+    } else {
+        DIE("Can't compute bitwise AND of a float and object of type %s\n",
+                b->type->type_name);
+    }
+    return res;
 }
 
-static LuciObject* LuciFloat_band(LuciObject *a, LuciObject *b)
+static LuciObject* LuciFloat_lgnot(LuciObject *a)
 {
-    return LuciNilObj;
+    LuciObject *a0 = a->type->asbool(a);
+    return LuciInt_new(!(AS_INT(a0)->i));
 }
 
-static LuciObject* LuciFloat_bnot(LuciObject *a, LuciObject *b)
+static LuciObject* LuciFloat_bwnot(LuciObject *a)
 {
-    return LuciNilObj;
+    return LuciInt_new(~((long)AS_FLOAT(a)->f));
+}
+
+static LuciObject *LuciFloat_neg(LuciObject *a)
+{
+    return LuciFloat_new(-(AS_FLOAT(a)->f));
 }
 
 

@@ -223,27 +223,21 @@ expr:
     |   expr GTHEQ expr
                 { $$ = make_binary_expr($1, $3, op_gte_t); }
     |   expr LGOR expr
-                { $$ = make_binary_expr($1, $3, op_lor_t); }
+                { $$ = make_binary_expr($1, $3, op_lgor_t); }
     |   expr LGAND expr
-                { $$ = make_binary_expr($1, $3, op_land_t); }
+                { $$ = make_binary_expr($1, $3, op_lgand_t); }
     |   expr BWXOR expr
-                { $$ = make_binary_expr($1, $3, op_bxor_t); }
+                { $$ = make_binary_expr($1, $3, op_bwxor_t); }
     |   expr BWOR expr
-                { $$ = make_binary_expr($1, $3, op_bor_t); }
+                { $$ = make_binary_expr($1, $3, op_bwor_t); }
     |   expr BWAND expr
-                { $$ = make_binary_expr($1, $3, op_band_t); }
-    |   BWNOT expr %prec UBWNOT
-                { $$ = make_binary_expr(
-                        make_int_constant(0), $2, op_bnot_t);
-                }
-    |   LGNOT expr %prec ULGNOT
-                { $$ = make_binary_expr(
-                        make_int_constant(0), $2, op_lnot_t);
-                }
+                { $$ = make_binary_expr($1, $3, op_bwand_t); }
     |   MINUS expr %prec UMINUS
-                { $$ = make_binary_expr(
-                        make_int_constant(0), $2, op_sub_t);
-                }
+                { $$ = make_unary_expr($2, op_neg_t); }
+    |   LGNOT expr %prec ULGNOT
+                { $$ = make_unary_expr($2, op_lgnot_t); }
+    |   BWNOT expr %prec UBWNOT
+                { $$ = make_unary_expr($2, op_bwnot_t); }
     |   LPAREN expr RPAREN      { $$ = $2; }
     |   container_access        { $$ = $1; }
     |   map                     { $$ = $1; }

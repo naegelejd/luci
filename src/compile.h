@@ -35,11 +35,13 @@ typedef enum {
     GTE,
     LGOR,
     LGAND,
+    BWXOR,
+    BWOR,
+    BWAND,
+
+    NEG,
     LGNOT,
-    BXOR,
-    BOR,
-    BAND,
-    BNOT,
+    BWNOT,
 
     POP,
     PUSHNIL,

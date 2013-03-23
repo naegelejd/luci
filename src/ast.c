@@ -121,6 +121,22 @@ AstNode *make_id_expr(char *name)
 }
 
 /**
+ * Creates a new AST Node representing a unary expression
+ *
+ * @param right the right-hand operand
+ * @param op operation type
+ * @returns new AST Node
+ */
+AstNode *make_unary_expr(AstNode *right, op_type op)
+{
+    AstNode *result = create_node(ast_unexpr_t);
+    result->data.unexpr.right = right;
+    result->data.unexpr.op = op;
+    LUCI_DEBUG("Made unary expression node with op %d\n", op);
+    return result;
+}
+
+/**
  * Creates a new AST Node representing a binary expression
  *
  * @param left the left-hand operand
@@ -131,10 +147,10 @@ AstNode *make_id_expr(char *name)
 AstNode *make_binary_expr(AstNode *left,
         AstNode *right, op_type op)
 {
-    AstNode *result = create_node(ast_expr_t);
-    result->data.expression.left = left;
-    result->data.expression.right = right;
-    result->data.expression.op = op;
+    AstNode *result = create_node(ast_binexpr_t);
+    result->data.binexpr.left = left;
+    result->data.binexpr.right = right;
+    result->data.binexpr.op = op;
     LUCI_DEBUG("Made binary expression node with op %d\n", op);
     return result;
 }
@@ -536,12 +552,17 @@ int print_ast_graph(AstNode *root, int id)
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.contassign.right, id);
             break;
-        case ast_expr_t:
-            printf("%d [label=\"expression\"]\n", rID);
+        case ast_unexpr_t:
+            printf("%d [label=\"unexpr\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.expression.left, id);
+            id = print_ast_graph(root->data.unexpr.right, id);
+            break;
+        case ast_binexpr_t:
+            printf("%d [label=\"binexpr\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.expression.right, id);
+            id = print_ast_graph(root->data.binexpr.left, id);
+            printf("%d -> %d\n", rID, ++id);
+            id = print_ast_graph(root->data.binexpr.right, id);
             break;
         case ast_id_t:
             printf("%d [label=\"ID: %s\"]\n", rID, root->data.id.val);
@@ -651,9 +672,13 @@ void destroy_tree(AstNode *root)
             destroy_tree(root->data.contassign.container);
             break;
 
-        case ast_expr_t:
-            destroy_tree(root->data.expression.left);
-            destroy_tree(root->data.expression.right);
+        case ast_unexpr_t:
+            destroy_tree(root->data.unexpr.right);
+            break;
+
+        case ast_binexpr_t:
+            destroy_tree(root->data.binexpr.left);
+            destroy_tree(root->data.binexpr.right);
             break;
 
         case ast_id_t:

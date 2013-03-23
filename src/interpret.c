@@ -242,51 +242,58 @@ void eval(Frame *frame)
         FETCH(1);
         DISPATCH;
 
+        HANDLE(BWXOR) {
+            LUCI_DEBUG("%s\n", "BWXOR");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->bwxor(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(BWOR) {
+            LUCI_DEBUG("%s\n", "BWOR");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->bwor(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(BWAND) {
+            LUCI_DEBUG("%s\n", "BWAND");
+            y = st_pop(&lstack);
+            x = st_pop(&lstack);
+            z = x->type->bwand(x, y);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
+        HANDLE(NEG) {
+            LUCI_DEBUG("%s\n", "NEG");
+            y = st_pop(&lstack);
+            z = x->type->neg(x);
+            st_push(&lstack, z);
+        }
+        FETCH(1);
+        DISPATCH;
+
         HANDLE(LGNOT) {
             LUCI_DEBUG("%s\n", "LGNOT");
             y = st_pop(&lstack);
-            x = st_pop(&lstack);
-            z = x->type->lgnot(x, y);
+            z = x->type->lgnot(x);
             st_push(&lstack, z);
         }
         FETCH(1);
         DISPATCH;
 
-        HANDLE(BXOR) {
-            LUCI_DEBUG("%s\n", "BXOR");
+        HANDLE(BWNOT) {
+            LUCI_DEBUG("%s\n", "BWNOT");
             y = st_pop(&lstack);
-            x = st_pop(&lstack);
-            z = x->type->bxor(x, y);
-            st_push(&lstack, z);
-        }
-        FETCH(1);
-        DISPATCH;
-
-        HANDLE(BOR) {
-            LUCI_DEBUG("%s\n", "BOR");
-            y = st_pop(&lstack);
-            x = st_pop(&lstack);
-            z = x->type->bor(x, y);
-            st_push(&lstack, z);
-        }
-        FETCH(1);
-        DISPATCH;
-
-        HANDLE(BAND) {
-            LUCI_DEBUG("%s\n", "BAND");
-            y = st_pop(&lstack);
-            x = st_pop(&lstack);
-            z = x->type->band(x, y);
-            st_push(&lstack, z);
-        }
-        FETCH(1);
-        DISPATCH;
-
-        HANDLE(BNOT) {
-            LUCI_DEBUG("%s\n", "BNOT");
-            y = st_pop(&lstack);
-            x = st_pop(&lstack);
-            z = x->type->bnot(x, y);
+            z = x->type->bwnot(x);
             st_push(&lstack, z);
         }
         FETCH(1);

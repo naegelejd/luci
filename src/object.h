@@ -28,10 +28,17 @@ typedef struct _LuciObject
 typedef struct LuciObjectType
 {
     char *type_name;                    /**< name of the type */
+
+    /* unary methods */
     LuciObject* (*copy)(LuciObject *);  /**< copy constructor */
     LuciObject* (*repr)(LuciObject *);  /**< LuciStringObj representation */
-    LuciObject* (*asbool)(LuciObject *);    /**< 0 or 1 representation */
+    LuciObject* (*asbool)(LuciObject *);/**< 0 or 1 representation */
 
+    LuciObject* (*neg)(LuciObject *);   /**< negated object */
+    LuciObject* (*lgnot)(LuciObject *); /**< lgnot */
+    LuciObject* (*bwnot)(LuciObject *); /**< bnot */
+
+    /* binary methods */
     LuciObject* (*add)(LuciObject *, LuciObject *); /**< add */
     LuciObject* (*sub)(LuciObject *, LuciObject *); /**< sub */
     LuciObject* (*mul)(LuciObject *, LuciObject *); /**< mul */
@@ -46,11 +53,9 @@ typedef struct LuciObjectType
     LuciObject* (*gte)(LuciObject *, LuciObject *); /**< gte */
     LuciObject* (*lgor)(LuciObject *, LuciObject *); /**< lgor */
     LuciObject* (*lgand)(LuciObject *, LuciObject *); /**< lgand */
-    LuciObject* (*lgnot)(LuciObject *, LuciObject *); /**< lgnot */
-    LuciObject* (*bxor)(LuciObject *, LuciObject *); /**< bxor */
-    LuciObject* (*bor)(LuciObject *, LuciObject *); /**< bor */
-    LuciObject* (*band)(LuciObject *, LuciObject *); /**< band */
-    LuciObject* (*bnot)(LuciObject *, LuciObject *); /**< bnot */
+    LuciObject* (*bwxor)(LuciObject *, LuciObject *); /**< bxor */
+    LuciObject* (*bwor)(LuciObject *, LuciObject *); /**< bor */
+    LuciObject* (*bwand)(LuciObject *, LuciObject *); /**< band */
 
     void (*print)(LuciObject *);        /**< print to stdout */
     unsigned int (*hash0)(LuciObject *);    /**< object hash 1 */

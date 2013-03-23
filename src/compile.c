@@ -103,6 +103,20 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
 
 
 /**
+ * Compile a unary expression AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
+static void compile_unary_expr(AstNode *node, CompileState *cs)
+{
+    int a;
+    compile(node->data.unexpr.right, cs);
+    /* offset by opcode 'NEG', which is the first binary opcode */
+    push_instr(cs, NEG + (node->data.unexpr.op - op_neg_t), 0);
+}
+
+/**
  * Compile a binary expression AST Node
  *
  * @param node AST Node to compile
@@ -111,10 +125,10 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
 static void compile_binary_expr(AstNode *node, CompileState *cs)
 {
     int a;
-    compile(node->data.expression.left, cs);
-    compile(node->data.expression.right, cs);
+    compile(node->data.binexpr.left, cs);
+    compile(node->data.binexpr.right, cs);
     /* offset by opcode 'ADD', which is the first binary opcode */
-    push_instr(cs, ADD + node->data.expression.op, 0);
+    push_instr(cs, ADD + node->data.binexpr.op, 0);
 }
 
 /**
@@ -426,7 +440,9 @@ static void compile_statements(AstNode *node, CompileState *cs)
             /* statements that leave a value on the stack (i.e.
              * expressions lacking an assignment, or void function
              * calls) need a post-POP statement */
-            if ((tmp->type == ast_expr_t) || (tmp->type == ast_call_t) ||
+            if (    (tmp->type == ast_unexpr_t) ||
+                    (tmp->type == ast_binexpr_t) ||
+                    (tmp->type == ast_call_t) ||
                     (tmp->type == ast_id_t)) {
                 push_instr(cs, POP, 0);
             }
@@ -535,6 +551,7 @@ static void (*compilers[])(AstNode *, CompileState *) = {
     compile_float_constant,
     compile_string_constant,
     compile_id_expr,
+    compile_unary_expr,
     compile_binary_expr,
     compile_container_access,
     compile_container_assignment,
@@ -966,11 +983,13 @@ static char *instruction_names[] = {
     "GTE",
     "LGOR",
     "LGAND",
+    "BWXOR",
+    "BWOR",
+    "BWAND",
+
+    "NEG",
     "LGNOT",
-    "BXOR",
-    "BOR",
-    "BAND",
-    "BNOT",
+    "BWNOT",
 
     "POP",
     "PUSHNIL",

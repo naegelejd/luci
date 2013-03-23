@@ -32,11 +32,13 @@ static void* dispatch_table[] = {
     &&do_GTE,
     &&do_LGOR,
     &&do_LGAND,
+    &&do_BWXOR,
+    &&do_BWOR,
+    &&do_BWAND,
+
+    &&do_NEG,
     &&do_LGNOT,
-    &&do_BXOR,
-    &&do_BOR,
-    &&do_BAND,
-    &&do_BNOT,
+    &&do_BWNOT,
 
     &&do_POP,
     &&do_PUSHNIL,

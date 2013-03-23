@@ -256,7 +256,9 @@ void luci_interactive(void)
     }
 
 end_interactive:
-    CompileState_delete(cs);
+    if (cs != NULL) {
+        CompileState_delete(cs);
+    }
     gc_finalize();
 }
 

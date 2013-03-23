@@ -17,6 +17,7 @@
 
 /** enumeration of supported unary/binary operators */
 typedef enum {
+    /* binary operations */
     op_add_t,
     op_sub_t,
     op_mul_t,
@@ -29,13 +30,15 @@ typedef enum {
     op_gt_t,
     op_lte_t,
     op_gte_t,
-    op_lor_t,
-    op_land_t,
-    op_lnot_t,
-    op_bxor_t,
-    op_bor_t,
-    op_band_t,
-    op_bnot_t
+    op_lgor_t,
+    op_lgand_t,
+    op_bwxor_t,
+    op_bwor_t,
+    op_bwand_t,
+    /* unary operations */
+    op_neg_t,
+    op_lgnot_t,
+    op_bwnot_t,
 } op_type;
 
 /** type enumeration of all AST nodes */
@@ -44,7 +47,8 @@ typedef enum {
     ast_float_t,
     ast_string_t,
     ast_id_t,
-    ast_expr_t,
+    ast_unexpr_t,
+    ast_binexpr_t,
     ast_contaccess_t,
     ast_contassign_t,
     ast_mapdef_t,
@@ -72,13 +76,20 @@ typedef struct
     char *val;  /**< string value of variable name */
 } AstID;
 
+/** AST Node representing a unary expression. */
+typedef struct
+{
+    struct AstNode *right;  /**< right-hand side of expression */
+    op_type op;             /**< unary operator type */
+} AstUnaryExpression;
+
 /** AST Node representing a binary expression. */
 typedef struct
 {
-    struct AstNode *left;   /**< right-hand side of expression */
-    struct AstNode *right;  /**< left-hand side of expression */
+    struct AstNode *left;   /**< left-hand side of expression */
+    struct AstNode *right;  /**< right-hand side of expression */
     op_type op;             /**< binary operator type */
-} AstExpression;
+} AstBinaryExpression;
 
 /** AST Node representing a variable assignment */
 typedef struct
@@ -197,7 +208,8 @@ typedef struct AstNode
         double f;   /**< floating-point constant */
         char *s;    /**< string constant */
         AstID id;   /**< ID node */
-        AstExpression expression;       /**< expression node */
+        AstUnaryExpression unexpr;      /**< unary expression node */
+        AstBinaryExpression binexpr;    /**< binary expression node */
         AstContainerAccess contaccess;  /**< container access node */
         AstContainerAssign contassign;  /**< container assignment node */
         AstMapDef mapdef;               /**< map definition node */
@@ -220,6 +232,7 @@ AstNode *make_int_constant(long);
 AstNode *make_float_constant(double);
 AstNode *make_string_constant(char *);
 AstNode *make_id_expr(char *);
+AstNode *make_unary_expr(AstNode *, op_type op);
 AstNode *make_binary_expr(AstNode *, AstNode *, op_type op);
 AstNode *make_container_access(AstNode *, AstNode *);
 AstNode *make_container_assignment(AstNode *, AstNode *, AstNode *);

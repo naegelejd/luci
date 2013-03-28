@@ -33,6 +33,7 @@ typedef struct LuciObjectType
     LuciObject* (*copy)(LuciObject *);  /**< copy constructor */
     LuciObject* (*repr)(LuciObject *);  /**< LuciStringObj representation */
     LuciObject* (*asbool)(LuciObject *);/**< 0 or 1 representation */
+    LuciObject* (*len)(LuciObject *);   /**< length/size of container */
 
     LuciObject* (*neg)(LuciObject *);   /**< negated object */
     LuciObject* (*lgnot)(LuciObject *); /**< lgnot */
@@ -57,6 +58,10 @@ typedef struct LuciObjectType
     LuciObject* (*bwor)(LuciObject *, LuciObject *); /**< bor */
     LuciObject* (*bwand)(LuciObject *, LuciObject *); /**< band */
 
+    LuciObject* (*next)(LuciObject *, LuciObject *);    /**< next item */
+    LuciObject* (*cget)(LuciObject *, LuciObject *); /**< get item */
+
+    LuciObject* (*cput)(LuciObject *, LuciObject *, LuciObject *); /**< put item */
     void (*print)(LuciObject *);        /**< print to stdout */
     unsigned int (*hash0)(LuciObject *);    /**< object hash 1 */
     unsigned int (*hash1)(LuciObject *);    /**< object hash 2 */
@@ -130,9 +135,9 @@ typedef struct _LuciMap {
 
 /** Iterator object type (internal) */
 typedef struct _LuciIterator {
-    LuciObject base;    /**< base implemenatation */
-    unsigned int idx;   /**< current index */
-    unsigned int step;  /**< amount to increment by */
+    LuciObject base;        /**< base implemenatation */
+    LuciObject *idx;        /**< current index */
+    int step;               /**< amount to increment by */
     LuciObject *container;  /**< the container this iterator applies to */
 } LuciIteratorObj;
 
@@ -180,7 +185,7 @@ LuciObject *LuciFloat_new(double d);
 LuciObject *LuciString_new(char *s);
 LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode);
 LuciObject *LuciList_new();
-LuciObject *LuciIterator_new(LuciObject *list, unsigned int step);
+LuciObject *LuciIterator_new(LuciObject *list, int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
 
@@ -189,8 +194,8 @@ unsigned int string_hash_1(LuciObject *s);
 unsigned int string_hash_2(LuciObject *s);
 
 int list_append_object(LuciObject *list, LuciObject *item);
-LuciObject *list_get_object(LuciObject *list, int index);
-LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index);
+LuciObject *list_get_object(LuciObject *list, long index);
+LuciObject *list_set_object(LuciObject *list, LuciObject *item, long index);
 LuciObject *iterator_next_object(LuciObject *iterator);
 
 void unary_void(LuciObject *);

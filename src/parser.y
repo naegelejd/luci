@@ -58,6 +58,11 @@ extern int yylex();
 %token IF ELSE
 %token DEF RETURN
 %token PASS
+%token NIL
+
+%right ASSIGN
+%right LGNOT BWNOT
+%right UPLUS UMINUS ULGNOT UBWNOT
 
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
@@ -69,10 +74,6 @@ extern int yylex();
 %left LPAREN RPAREN
 %left LSQUARE RSQUARE
 %left LBRACK RBRACK
-
-%right ASSIGN
-%right LGNOT BWNOT
-%right UPLUS UMINUS ULGNOT UBWNOT
 
 %%
 
@@ -194,7 +195,8 @@ id:     ID                      { $$ = make_id_expr($1); }
     ;
 
 expr:
-        INT                     { $$ = make_int_constant($1); }
+        NIL                     { $$ = make_nil_expression(); }
+    |   INT                     { $$ = make_int_constant($1); }
     |   FLOAT                   { $$ = make_float_constant($1); }
     |   STRING                  { $$ = make_string_constant($1); }
     |   id                      { $$ = $1; }

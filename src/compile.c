@@ -28,6 +28,17 @@ static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end);
 
 
 /**
+ * Compile a @code nil @endcode AST Node
+ *
+ * @param node AST Node to compile
+ * @param cs CompileState to compile to
+ */
+static void compile_nil(AstNode *node, CompileState *cs)
+{
+    push_instr(cs, PUSHNIL, 0);
+}
+
+/**
  * Compile an integer constant AST Node
  *
  * @param node AST Node to compile
@@ -547,6 +558,7 @@ static void compile_pass(AstNode *node, CompileState *cs)
  * Array of compiler functions for each type of AST Node
  */
 static void (*compilers[])(AstNode *, CompileState *) = {
+    compile_nil,
     compile_int_constant,
     compile_float_constant,
     compile_string_constant,

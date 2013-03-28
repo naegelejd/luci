@@ -274,27 +274,27 @@ void eval(Frame *frame)
 
         HANDLE(NEG) {
             LUCI_DEBUG("%s\n", "NEG");
-            y = st_pop(&lstack);
-            z = x->type->neg(x);
-            st_push(&lstack, z);
+            x = st_pop(&lstack);
+            y = x->type->neg(x);
+            st_push(&lstack, y);
         }
         FETCH(1);
         DISPATCH;
 
         HANDLE(LGNOT) {
             LUCI_DEBUG("%s\n", "LGNOT");
-            y = st_pop(&lstack);
-            z = x->type->lgnot(x);
-            st_push(&lstack, z);
+            x = st_pop(&lstack);
+            y = x->type->lgnot(x);
+            st_push(&lstack, y);
         }
         FETCH(1);
         DISPATCH;
 
         HANDLE(BWNOT) {
             LUCI_DEBUG("%s\n", "BWNOT");
-            y = st_pop(&lstack);
-            z = x->type->bwnot(x);
-            st_push(&lstack, z);
+            x = st_pop(&lstack);
+            y = x->type->bwnot(x);
+            st_push(&lstack, y);
         }
         FETCH(1);
         DISPATCH;
@@ -455,27 +455,11 @@ void eval(Frame *frame)
             LUCI_DEBUG("%s\n", "CGET");
             /* pop container */
             x = st_pop(&lstack);
-
-            /* determine if container is list or map */
-            if (ISTYPE(x, obj_list_t)) {
-                /* pop index */
-                y = st_pop(&lstack);
-                if (!ISTYPE(y, obj_int_t)) {
-                    DIE("%s", "Invalid list index type\n");
-                }
-
-                /* get a copy of the obj in list at index */
-                z = list_get_object(x, ((LuciIntObj *)y)->i);
-                st_push(&lstack, z);
-            } else if (ISTYPE(x, obj_map_t)) {
-                /* pop key */
-                y = st_pop(&lstack);
-                /* get the val for key 'y' */
-                z = map_get(x, y);
-                st_push(&lstack, z);
-            } else {
-                DIE("%s\n", "Cannot store value in a non-container object");
-            }
+            /* pop 'index' */
+            y = st_pop(&lstack);
+            /* cget from the container */
+            z = x->type->cget(x, y);
+            st_push(&lstack, z);
         }
         FETCH(1);
         DISPATCH;
@@ -485,39 +469,22 @@ void eval(Frame *frame)
             LUCI_DEBUG("%s\n", "CPUT");
             /* pop container */
             x = st_pop(&lstack);
-
-            /* determine if container is list or map */
-            if (ISTYPE(x, obj_list_t)) {
-                /* pop index */
-                y = st_pop(&lstack);
-                /* pop right hand value */
-                z = st_pop(&lstack);
-
-                if (!ISTYPE(y, obj_int_t)) {
-                    DIE("%s", "Invalid type in list assign\n");
-                }
-                /* re-use 'y' to obtain a pointer to the old object at index i */
-                y = list_set_object(x, z, ((LuciIntObj *)y)->i);
-            } else if (ISTYPE(x, obj_map_t)) {
-                /* pop key */
-                y = st_pop(&lstack);
-                /* pop right hand value */
-                z = st_pop(&lstack);
-                /* re-use 'y' to obtain a pointer to the old val */
-                y = map_set(x, y, z);
-            } else {
-                DIE("%s\n", "Cannot store value in a non-container object");
-            }
+            /* pop index/key/... */
+            y = st_pop(&lstack);
+            /* pop right hand value */
+            z = st_pop(&lstack);
+            /* put the right hand value into the container */
+            y = x->type->cput(x, y, z);
         }
         FETCH(1);
         DISPATCH;
 
         HANDLE(MKITER)
             LUCI_DEBUG("%s\n", "MKITER");
-            /* y should be a container */
-            y = st_pop(&lstack);
-            x = LuciIterator_new(y, 1); /* step = 1 */
-            st_push(&lstack, x);
+            /* x should be a container */
+            x = st_pop(&lstack);
+            y = LuciIterator_new(x, 1); /* step = 1 */
+            st_push(&lstack, y);
         FETCH(1);
         DISPATCH;
 
@@ -550,7 +517,7 @@ void eval(Frame *frame)
             /* if the iterator returned NULL, jump to the
              * end of the for loop. Otherwise, push iterator->next */
             if (y == NULL) {
-                /* pop and destroy the iterator object */
+                /* pop the iterator object */
                 x = st_pop(&lstack);
                 FETCH(a);
             } else {

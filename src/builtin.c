@@ -739,11 +739,11 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
 }
 
 /**
- * Determines and returns the length of a LuciListObj.
+ * Determines and returns the size of a container object.
  *
  * @param args list of args
  * @param c number of args
- * @returns length of list
+ * @returns size of container
  */
 LuciObject *luci_len(LuciObject **args, unsigned int c)
 {
@@ -751,15 +751,9 @@ LuciObject *luci_len(LuciObject **args, unsigned int c)
 	DIE("%s", "Missing parameter to len()\n");
     }
 
-    LuciObject *list = args[0];
+    LuciObject *container = args[0];
 
-    if (!list || (!ISTYPE(list, obj_list_t))) {
-	DIE("%s", "Must specify a list to calculate len\n");
-    }
-
-    LuciObject *ret = LuciInt_new(AS_LIST(list)->count);
-
-    return ret;
+    return container->type->len(container);
 }
 /**
  * Finds the maximum value in a LuciListObj.

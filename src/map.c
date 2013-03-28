@@ -127,7 +127,9 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
 
     /* re-hash every existing entry into the new, smaller array */
     for (i = 0; i < old_size; i++) {
-        map_set((LuciObject *)map, old_keys[i], old_vals[i]);
+        if (old_keys[i]) {
+            map_set((LuciObject *)map, old_keys[i], old_vals[i]);
+        }
     }
 
     free(old_keys);
@@ -146,6 +148,9 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
  */
 LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
 {
+    if (!key) {
+        printf("oh shit\n");
+    }
     if (!o) {
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {

@@ -1,26 +1,24 @@
-Luci                                         {#mainpage}
-=========================================================
+Luci                                         
+====
 
 Luci is a procedural, dynamically-typed toy scripting language, implemented in C.
-
-The implementation is slowly evolving into a bytecode-compiled,
-virtual machine interpreter model. Its initial form consisted of
-an abstract syntax tree and a series of functions which walked the
-tree and 'executed' each node.
-
 
 ### Syntax
 
 Luci's syntax resembles that of the languages C and Python, however
 the syntax is still a work in progress.
 
-
 ### Tools Needed to Build
 
 - [flex (lex)](http://flex.sourceforge.net/)
 - [bison (yacc)](http://www.gnu.org/software/bison/)
-- a decent C compiler (clang, gcc)
+- [doxygen 1.8.3](http://www.doxygen.org) to generate documentation
+- a C compiler (clang, gcc)
 
+### Implementation
+
+Luci code is parsed to form an abstract syntax tree, which is then compiled
+to bytecode and executed by a virtual machine.
 
 ### TODO
 
@@ -28,7 +26,6 @@ the syntax is still a work in progress.
   (`free` out-of-scope Luci Objects throughout runtime)
   This will theoretically eliminate the need to store
   reference counts for each Luci type object!
-- Add support for both empty strings and escape characters
 - Track symbol names throughout compilation (useful when printing bytecode)
 - Expand `map` type to allow for non-string keys
 - Update ConstantTable to actually de-duplicate constant Luci type objects
@@ -52,14 +49,15 @@ the syntax is still a work in progress.
 - Improve bytecode compiler
   - Append instructions faster (currently function call for each)
   - Implement short-circuit evaluation of conditional expressions
-- Improve performance of bytecode interpreter macros
-- Improve I/O and string-manipulation capabilities
-  - Iterate through lines in a file object
-  - String operations
+  - Bytecode optimizations
+- Provide file manipulation functions (like iteration through lines in a file)
+- Provide string manipulation functions
+- Add support for both empty strings and escape characters
+- Implement Luci strings as unicode strings
 - Finalize API for creating libraries in C
 - Expand on interactive mode (don't require Ctrl+D(EOF))
 
-### Version 0.2 (Current)
+### Version 0.2
 
 The following features have been completed for Luci v0.2.
 
@@ -67,16 +65,15 @@ The following features have been completed for Luci v0.2.
   - Instruction set is a work in progress
   - Cleanly store loop state for backpatching `BREAK` and `CONTINUE`
   - Efficient symbol table
-  - Bytecode optimizations
 - Bytecode interpreter (VM)
   - Stack-based
   - Fast instruction dispatch (gcc *computed goto* vs. *switch-case*)
-  - Proper function call/return handling
-- Interactive mode (similar to Python's `>>>`)
+  - Infinite function call stack
+- Crude interactive mode (similar to Python's `>>>`)
 - `map` type (similar to Python's `dict`)
-- Garbage collection framework (malloc wrapper) specifically for Luci
+  - Uses quadratic and double hashing 
+- Virtual method tables for each built-in object type
   object types.
-
 
 ### Version 0.1
 

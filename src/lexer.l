@@ -43,6 +43,18 @@ WS          [ \t\f\r]+
 "continue"      { col += yyleng; return CONTINUE; }
 "return"        { col += yyleng; return RETURN; }
 "pass"          { col += yyleng; return PASS; }
+"nil"           { col += yyleng; return NIL; }
+
+"true"          {
+                    yylval.int_v = 1;
+                    col += yyleng;
+                    return INT;
+                }
+"false"         {
+                    yylval.int_v = 0;
+                    col += yyleng;
+                    return INT;
+                }
 
 {STRING}        {
                     yylval.string_v = strndup(yytext + 1, strlen(yytext) - 2);
@@ -56,16 +68,6 @@ WS          [ \t\f\r]+
                 }
 {INTEGER}       {
                     yylval.int_v = atoi(yytext);
-                    col += yyleng;
-                    return INT;
-                }
-"true"          {
-                    yylval.int_v = 1;
-                    col += yyleng;
-                    return INT;
-                }
-"false"         {
-                    yylval.int_v = 0;
                     col += yyleng;
                     return INT;
                 }

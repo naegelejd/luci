@@ -65,6 +65,16 @@ static AstNode *create_node(AstType type) {
 }
 
 /**
+ * Creates a new AST Node representing a @code nil @endcode expression.
+ *
+ * @returns new AST Node
+ */
+AstNode *make_nil_expression()
+{
+    return create_node(ast_nil_t);
+}
+
+/**
  * Creates a new AST Node representing an integer constant.
  *
  * @param val a long integer value

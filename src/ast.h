@@ -43,6 +43,7 @@ typedef enum {
 
 /** type enumeration of all AST nodes */
 typedef enum {
+    ast_nil_t,
     ast_integer_t,
     ast_float_t,
     ast_string_t,
@@ -228,6 +229,7 @@ typedef struct AstNode
 
 void destroy_tree(AstNode *);
 
+AstNode *make_nil_expression();
 AstNode *make_int_constant(long);
 AstNode *make_float_constant(double);
 AstNode *make_string_constant(char *);

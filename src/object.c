@@ -18,34 +18,67 @@
 /* temporary */
 #include "compile.h" /* for destroying function object FOR NOW */
 
+
+/**
+ * Makes a negative container index positive based on the container's length.
+ *
+ * e.g. if the index is -5 and the length is 5, the index
+ * should be 2 because 7 - 5 - 2.
+ * likewise, if the index is -14 and the length is 5, the index
+ * should be 1.
+ *
+ * @param idx index to make positive
+ * @param len length of container being indexed
+ */
+#define MAKE_INDEX_POS(idx, len) while ((idx) < 0) { (idx) = (len) - (idx); }
+
+
 static LuciObject* LuciNil_copy(LuciObject *);
 static LuciObject* LuciInt_copy(LuciObject *);
 static LuciObject* LuciFloat_copy(LuciObject *);
-static LuciObject* LuciString_copy(LuciObject *);
-static LuciObject* LuciList_copy(LuciObject *);
-static LuciObject* LuciMap_copy(LuciObject *);
 static LuciObject* LuciIterator_copy(LuciObject *);
 static LuciObject* LuciFunction_copy(LuciObject *);
 static LuciObject* LuciLibFunc_copy(LuciObject *);
 
 static LuciObject* LuciInt_repr(LuciObject *);
 static LuciObject* LuciFloat_repr(LuciObject *);
-static LuciObject* LuciString_repr(LuciObject *);
 
 static LuciObject* LuciNil_asbool(LuciObject *);
 static LuciObject* LuciInt_asbool(LuciObject *);
 static LuciObject* LuciFloat_asbool(LuciObject *);
-static LuciObject* LuciString_asbool(LuciObject *);
-static LuciObject* LuciList_asbool(LuciObject *);
-static LuciObject* LuciMap_asbool(LuciObject *);
 static LuciObject* LuciFile_asbool(LuciObject *);
 static LuciObject* LuciIterator_asbool(LuciObject *);
 static LuciObject* LuciFunction_asbool(LuciObject *);
 static LuciObject* LuciLibFunc_asbool(LuciObject *);
 
+static LuciObject* LuciString_copy(LuciObject *);
+static LuciObject* LuciString_repr(LuciObject *);
+static LuciObject* LuciString_asbool(LuciObject *);
+static LuciObject* LuciString_len(LuciObject *);
 static LuciObject* LuciString_add(LuciObject *, LuciObject *);
+static LuciObject* LuciString_mul(LuciObject *, LuciObject *);
+static LuciObject* LuciString_eq(LuciObject *, LuciObject *);
+static LuciObject* LuciString_cget(LuciObject *, LuciObject *);
+static LuciObject* LuciString_cput(LuciObject *, LuciObject *, LuciObject *);
+static LuciObject* LuciString_next(LuciObject *, LuciObject *);
+
+static LuciObject* LuciList_copy(LuciObject *);
+static LuciObject* LuciList_len(LuciObject *);
+static LuciObject* LuciList_asbool(LuciObject *);
 static LuciObject* LuciList_add(LuciObject *, LuciObject *);
+static LuciObject* LuciList_eq(LuciObject *, LuciObject *);
+static LuciObject* LuciList_cget(LuciObject *, LuciObject *);
+static LuciObject* LuciList_cput(LuciObject *, LuciObject *, LuciObject *);
+static LuciObject* LuciList_next(LuciObject *, LuciObject *);
+
+static LuciObject* LuciMap_copy(LuciObject *);
+static LuciObject* LuciMap_asbool(LuciObject *);
+static LuciObject* LuciMap_len(LuciObject *);
 static LuciObject* LuciMap_add(LuciObject *, LuciObject *);
+static LuciObject* LuciMap_eq(LuciObject *, LuciObject *);
+static LuciObject* LuciMap_cget(LuciObject *, LuciObject *);
+static LuciObject* LuciMap_cput(LuciObject *, LuciObject *, LuciObject *);
+static LuciObject* LuciMap_next(LuciObject *, LuciObject *);
 
 static LuciObject* LuciInt_add(LuciObject *, LuciObject *);
 static LuciObject* LuciInt_sub(LuciObject *, LuciObject *);
@@ -113,6 +146,7 @@ LuciObjectType obj_nil_t = {
     unary_nil,
     unary_nil,
     unary_nil,
+    unary_nil,
 
     binary_nil,
     binary_nil,
@@ -131,6 +165,12 @@ LuciObjectType obj_nil_t = {
     binary_nil,
     binary_nil,
     binary_nil,
+
+    binary_nil,
+    binary_nil,
+
+    ternary_nil,
+
     LuciNil_print
 };
 
@@ -140,6 +180,7 @@ LuciObjectType obj_int_t = {
     LuciInt_copy,
     LuciInt_repr,
     LuciInt_asbool,
+    unary_nil,
     LuciInt_neg,
     LuciInt_lgnot,
     LuciInt_bwnot,
@@ -162,6 +203,11 @@ LuciObjectType obj_int_t = {
     LuciInt_bwor,
     LuciInt_bwand,
 
+    binary_nil,
+    binary_nil,
+
+    ternary_nil,
+
     LuciInt_print
 };
 
@@ -171,6 +217,7 @@ LuciObjectType obj_float_t = {
     LuciFloat_copy,
     LuciFloat_repr,
     LuciFloat_asbool,
+    unary_nil,
     LuciFloat_neg,
     LuciFloat_lgnot,
     LuciFloat_bwnot,
@@ -193,6 +240,11 @@ LuciObjectType obj_float_t = {
     LuciFloat_bwor,
     LuciFloat_bwand,
 
+    binary_nil,
+    binary_nil,
+
+    ternary_nil,
+
     LuciFloat_print
 };
 
@@ -202,12 +254,18 @@ LuciObjectType obj_string_t = {
     LuciString_copy,
     LuciString_repr,
     LuciString_asbool,
+    LuciString_len,
     unary_nil,
     unary_nil,
     unary_nil,
 
     LuciString_add,
     binary_nil,
+    LuciString_mul,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    LuciString_eq,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -218,11 +276,12 @@ LuciObjectType obj_string_t = {
     binary_nil,
     binary_nil,
     binary_nil,
-    binary_nil,
-    binary_nil,
-    binary_nil,
-    binary_nil,
-    binary_nil,
+
+    LuciString_next,
+    LuciString_cget,
+
+    LuciString_cput,
+
     LuciString_print
 };
 
@@ -232,6 +291,7 @@ LuciObjectType obj_list_t = {
     LuciList_copy,
     unary_nil,
     LuciList_asbool,
+    LuciList_len,
     unary_nil,
     unary_nil,
     unary_nil,
@@ -242,6 +302,7 @@ LuciObjectType obj_list_t = {
     binary_nil,
     binary_nil,
     binary_nil,
+    LuciList_eq,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -252,7 +313,12 @@ LuciObjectType obj_list_t = {
     binary_nil,
     binary_nil,
     binary_nil,
-    binary_nil,
+
+    LuciList_next,
+    LuciList_cget,
+
+    LuciList_cput,
+
     LuciList_print
 };
 
@@ -262,6 +328,7 @@ LuciObjectType obj_map_t = {
     LuciMap_copy,
     unary_nil,
     LuciMap_asbool,
+    LuciMap_len,
     unary_nil,
     unary_nil,
     unary_nil,
@@ -272,6 +339,7 @@ LuciObjectType obj_map_t = {
     binary_nil,
     binary_nil,
     binary_nil,
+    LuciMap_eq,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -282,7 +350,12 @@ LuciObjectType obj_map_t = {
     binary_nil,
     binary_nil,
     binary_nil,
-    binary_nil,
+
+    LuciMap_next,
+    LuciMap_cget,
+
+    LuciMap_cput,
+
     LuciMap_print
 };
 
@@ -295,6 +368,7 @@ LuciObjectType obj_file_t = {
     unary_nil,
     unary_nil,
     unary_nil,
+    unary_nil,
 
     binary_nil,
     binary_nil,
@@ -313,6 +387,12 @@ LuciObjectType obj_file_t = {
     binary_nil,
     binary_nil,
     binary_nil,
+
+    binary_nil,
+    binary_nil,
+
+    ternary_nil,
+
     LuciFile_print
 };
 
@@ -325,6 +405,7 @@ LuciObjectType obj_iterator_t = {
     unary_nil,
     unary_nil,
     unary_nil,
+    unary_nil,
 
     binary_nil,
     binary_nil,
@@ -343,6 +424,12 @@ LuciObjectType obj_iterator_t = {
     binary_nil,
     binary_nil,
     binary_nil,
+
+    binary_nil,
+    binary_nil,
+
+    ternary_nil,
+
     unary_void
 };
 
@@ -355,6 +442,7 @@ LuciObjectType obj_func_t = {
     unary_nil,
     unary_nil,
     unary_nil,
+    unary_nil,
 
     binary_nil,
     binary_nil,
@@ -373,6 +461,12 @@ LuciObjectType obj_func_t = {
     binary_nil,
     binary_nil,
     binary_nil,
+
+    binary_nil,
+    binary_nil,
+
+    ternary_nil,
+
     LuciFunction_print
 };
 
@@ -385,6 +479,7 @@ LuciObjectType obj_libfunc_t = {
     unary_nil,
     unary_nil,
     unary_nil,
+    unary_nil,
 
     binary_nil,
     binary_nil,
@@ -403,6 +498,12 @@ LuciObjectType obj_libfunc_t = {
     binary_nil,
     binary_nil,
     binary_nil,
+
+    binary_nil,
+    binary_nil,
+
+    ternary_nil,
+
     LuciLibFunc_print
 };
 
@@ -496,11 +597,11 @@ LuciObject *LuciList_new()
  * @param step iteration increment size
  * @returns new LuciIteratorObj
  */
-LuciObject *LuciIterator_new(LuciObject *container, unsigned int step)
+LuciObject *LuciIterator_new(LuciObject *container, int step)
 {
     LuciIteratorObj *o = gc_malloc(sizeof(*o));
     SET_TYPE(o, obj_iterator_t);
-    o->idx = 0;
+    o->idx = LuciInt_new(0);
     o->step = step;
     o->container = container;
     return (LuciObject *)o;
@@ -710,7 +811,7 @@ int list_append_object(LuciObject *list, LuciObject *item)
  * @param index index from which to grab object
  * @returns copy of LuciObject at index
  */
-LuciObject *list_get_object(LuciObject *list, int index)
+LuciObject *list_get_object(LuciObject *list, long index)
 {
     if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Can't iterate over non-list object\n");
@@ -738,7 +839,7 @@ LuciObject *list_get_object(LuciObject *list, int index)
  * @param index index at which to store object
  * @returns the object that formerly resided at index
  */
-LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
+LuciObject *list_set_object(LuciObject *list, LuciObject *item, long index)
 {
     if (!list || (!ISTYPE(list, obj_list_t))) {
 	DIE("%s", "Can't iterate over non-list object\n");
@@ -758,6 +859,80 @@ LuciObject *list_set_object(LuciObject *list, LuciObject *item, int index)
 }
 
 /**
+ * Returns the 'next' char in the string
+ *
+ * @param str LuciStringObj
+ * @param idx index
+ * @returns char at index idx or NULL if out of bounds
+ */
+LuciObject *LuciString_next(LuciObject *str, LuciObject *idx)
+{
+    if (!ISTYPE(idx, obj_int_t)) {
+        DIE("%s\n", "Argument to LuciString_next must be LuciIntObj");
+    }
+
+    if (AS_INT(idx)->i >= AS_STRING(str)->len) {
+        return NULL;
+    }
+
+    char *s = alloc(2 * sizeof(char));
+    s[0] = AS_STRING(str)->s[AS_INT(idx)->i];
+    s[1] = '\0';
+    return LuciString_new(s);
+}
+
+/**
+ * Returns the 'next' object in the list
+ *
+ * @param l LuciListObj
+ * @param idx index
+ * @returns copy of object at index idx or NULL if out of bounds
+ */
+LuciObject *LuciList_next(LuciObject *l, LuciObject *idx)
+{
+    if (!ISTYPE(idx, obj_int_t)) {
+        DIE("%s\n", "Argument to LuciList_next must be LuciIntObj");
+    }
+
+    if (AS_INT(idx)->i >= AS_LIST(l)->count) {
+        return NULL;
+    }
+
+    LuciObject *item = AS_LIST(l)->items[AS_INT(idx)->i];
+    return item->type->copy(item);
+}
+
+/**
+ * Returns the 'next' object in the map
+ *
+ * @param m LuciMapObj
+ * @param idx index
+ * @returns copy of object at index idx or NULL if out of bounds
+ */
+LuciObject *LuciMap_next(LuciObject *m, LuciObject *idx)
+{
+    if (!ISTYPE(idx, obj_int_t)) {
+        DIE("%s\n", "Argument to LuciList_next must be LuciIntObj");
+    }
+
+    if (AS_INT(idx)->i >= AS_MAP(m)->count) {
+        return NULL;
+    }
+
+    /* loop through the map keys, counting keys until we reach idx */
+    int i = 0, count = -1;
+    for (i = 0; i < AS_MAP(m)->size; i++) {
+        if (AS_MAP(m)->keys[i]) {
+            count++;
+        }
+        if (count == AS_INT(idx)->i) {
+            return AS_MAP(m)->keys[i];
+        }
+    }
+    return NULL;
+}
+
+/**
  * Returns the next LuciObject in a container.
  *
  * @param iterator from which to compute next object
@@ -770,42 +945,71 @@ LuciObject *iterator_next_object(LuciObject *iterator)
     }
 
     LuciIteratorObj *iter = (LuciIteratorObj *)iterator;
+    LuciObject *container = iter->container;
 
-    if (ISTYPE(iter->container, obj_list_t)) {
-        LuciListObj *list = (LuciListObj *)iter->container;
-        uint32_t idx = iter->idx;   /* save current index */
+    LuciObject *next = container->type->next(container, iter->idx);
+    AS_INT(iter->idx)->i += iter->step;
+    return next;
 
-        if (iter->idx >= list->count) {
+    long idx = AS_INT(iter->idx)->i;
+    if (ISTYPE(container, obj_string_t)) {
+        LuciStringObj *str = (LuciStringObj *)container;
+        if (idx >= str->len) {
             return NULL;
         } else {
-            iter->idx += iter->step;
+            char *s = alloc(2 * sizeof(char));
+            s[0] = str->s[idx];
+            s[1] = '\0';
+
+            LuciObject *item = LuciString_new(s);
+
+            AS_INT(iter->idx)->i += iter->step;
+
+            return item;
+        }
+    } else if (ISTYPE(container, obj_list_t)) {
+        LuciListObj *list = (LuciListObj *)container;
+
+        if (idx >= list->count) {
+            return NULL;
+        } else {
+            /* get the item from the list */
             LuciObject *item = list->items[idx];
+            /* update the iterator's index */
+            AS_INT(iter->idx)->i += iter->step;
+            /* return a copy of the item */
             return item->type->copy(item);
         }
-    } else if (ISTYPE(iter->container, obj_map_t)) {
-        LuciMapObj *map = (LuciMapObj *)iter->container;
+    } else if (ISTYPE(container, obj_map_t)) {
+        LuciMapObj *map = (LuciMapObj *)container;
 
-        if (iter->idx >= map->size) {
+        if (idx >= map->size) {
             return NULL;
         }
 
-        if (iter->idx == 0) {
+        if (idx == 0) {
             /* be sure we're at a valid 'index' in the map's hash table */
-            while ((iter->idx < map->size) &&
-                    (map->keys[iter->idx] == NULL)) {
-                iter->idx += 1;
+            while ((idx < map->size) && (map->keys[idx] == NULL)) {
+                idx += 1;
             }
         }
+        /* save this valid index to return the corresponding key */
+        long this_idx = idx;
 
-        uint32_t idx = iter->idx;   /* save this valid index */
         do {
             /* increment the index for the next call */
-            iter->idx += iter->step;
+            idx += iter->step;
             /* this will leave the idx at either a valid key
              * or the last index in the map's key array */
-        } while ((iter->idx < map->size) &&
-                (map->keys[iter->idx] == NULL));
-        LuciObject *key = map->keys[idx];
+        } while ((idx < map->size) && (map->keys[idx] == NULL));
+
+        /* grab the key at the saved index */
+        LuciObject *key = map->keys[this_idx];
+
+        /* update the iterator's index */
+        AS_INT(iter->idx)->i = idx;
+
+        /* return a copy of the key */
         return key->type->copy(key);
     } else {
         DIE("%s\n", "Cannot iterate over a non-container type");
@@ -1198,7 +1402,7 @@ static LuciObject* LuciIterator_asbool(LuciObject *o)
         len = AS_LIST(container)->size;
     }
 
-    if (AS_ITERATOR(o)->idx < len) {
+    if (AS_INT(AS_ITERATOR(o)->idx)->i < len) {
         res = LuciInt_new(true);
     } else {
         res = LuciInt_new(false);
@@ -1218,6 +1422,18 @@ static LuciObject* LuciLibFunc_asbool(LuciObject *o)
 
 
 /**
+ * Returns the length of a LuciStringObj
+ *
+ * @param o LuciStringObj
+ * @returns length of o
+ */
+static LuciObject* LuciString_len(LuciObject *o)
+{
+    return LuciInt_new(AS_STRING(o)->len);
+}
+
+
+/**
  * Concatenates two LuciStringObjs
  *
  * @param a first LuciStringObj
@@ -1226,19 +1442,145 @@ static LuciObject* LuciLibFunc_asbool(LuciObject *o)
  */
 static LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
 {
-    LuciObject *res = LuciNilObj;
-
     if (ISTYPE(b, obj_string_t)) {
         char *s = alloc(AS_STRING(a)->len + AS_STRING(b)-> len + 1);
         strncpy(s, AS_STRING(a)->s, AS_STRING(a)->len);
         strncat(s, AS_STRING(b)->s, AS_STRING(b)->len);
-        res = LuciString_new(s);
+        return LuciString_new(s);
     } else {
         DIE("Cannot append object of type %s to a string\n",
                 b->type->type_name);
     }
 
-    return res;
+    return LuciNilObj;
+}
+
+/**
+ * Concatenates a LuciStringObj b times
+ *
+ * @param a LuciStringObj to multiply
+ * @param b integer multiplier
+ * @returns concatenated LuciStringObj
+ */
+static LuciObject* LuciString_mul(LuciObject *a, LuciObject *b)
+{
+    if (ISTYPE(b, obj_int_t)) {
+        char *s = alloc(AS_STRING(a)->len * AS_INT(b)->i + 1);
+        *s = '\0';
+
+        int i;
+        for (i = 0; i < AS_INT(b)->i; i++) {
+            strncat(s, AS_STRING(a)->s, AS_STRING(a)->len);
+        }
+        return LuciString_new(s);
+    } else {
+        DIE("Cannot multiply a string by an object of type %s\n",
+                b->type->type_name);
+    }
+
+    return LuciNilObj;
+}
+
+/**
+ * Determines if two LuciStringObjs are equal
+ *
+ * @param a LuciStringObj
+ * @param b LuciStringObj
+ * @returns 1 if equal, 0 otherwise
+ */
+static LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
+{
+    if(ISTYPE(b, obj_string_t)) {
+        if (AS_STRING(a)->len != AS_STRING(b)->len) {
+            return LuciInt_new(false);
+        }
+        if ((strncmp(AS_STRING(a)->s, AS_STRING(b)->s, AS_STRING(a)->len)) == 0) {
+            return LuciInt_new(true);
+        } else {
+            return LuciInt_new(false);
+        }
+    } else {
+        DIE("Cannot compare a string to an object of type %s\n",
+                b->type->type_name);
+    }
+    return LuciNilObj;
+}
+
+
+/**
+ * Gets the character at index b in LuciStringObj a
+ *
+ * @param a LuciStringObj
+ * @param b index in a
+ * @returns character at index b
+ */
+static LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
+{
+    if (ISTYPE(b, obj_int_t)) {
+        long idx = AS_INT(b)->i;
+
+        MAKE_INDEX_POS(idx, AS_STRING(a)->len);
+
+        if (idx >= AS_STRING(a)->len) {
+            DIE("%s\n", "String subscript out of bounds");
+        }
+
+        char *s = alloc(2 * sizeof(char));
+        s[0] = AS_STRING(a)->s[idx];
+        s[1] = '\0';
+        return LuciString_new(s);
+    } else {
+        DIE("Cannot subscript a string with an object of type %s\n",
+                b->type->type_name);
+    }
+    return LuciNilObj;
+}
+
+/**
+ * Sets the character at index b in LuciStringObj a
+ *
+ * @param a LuciStringObj
+ * @param b index in a
+ * @returns former character at index b
+ */
+static LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
+{
+    if (ISTYPE(b, obj_int_t)) {
+        if (ISTYPE(c, obj_string_t)) {
+            long idx = AS_INT(b)->i;
+            MAKE_INDEX_POS(idx, AS_STRING(a)->len);
+            if (idx >= AS_STRING(a)->len) {
+                DIE("%s\n", "String subscript out of bounds");
+            }
+            char *s = alloc(2 * sizeof(char));
+            s[0] = AS_STRING(a)->s[idx];
+            s[1] = '\0';
+
+            /* just put one char for now */
+            AS_STRING(a)->s[idx] = AS_STRING(c)->s[0];
+
+            /* return the former char */
+            return LuciString_new(s);
+        } else {
+            DIE("Cannot put an object of type %s into a string\n", 
+                    c->type->type_name);
+        }
+    } else {
+        DIE("Cannot subscript a string with an object of type %s\n",
+                b->type->type_name);
+    }
+    return LuciNilObj;
+}
+
+/**
+ * Returns the length of a LuciListObj
+ *
+ * @param o LuciListObj
+ * @returns length of o
+ */
+static LuciObject* LuciList_len(LuciObject *o)
+{
+    return LuciInt_new(AS_LIST(o)->count);
 }
 
 /**
@@ -1267,6 +1609,74 @@ static LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
     }
 
     return res;
+}
+
+/**
+ * Determines if two LuciListObjs are equal
+ *
+ * @param a LuciListObj
+ * @param b LuciListObj
+ * @returns 1 if equal, 0 otherwise
+ */
+static LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
+{
+    if(ISTYPE(b, obj_list_t)) {
+        if (AS_LIST(a)->count != AS_LIST(b)->count) {
+            return LuciInt_new(false);
+        }
+        int i;
+        for (i = 0; i < AS_LIST(a)->count; i++) {
+            LuciObject *item1 = AS_LIST(a)->items[i];
+            LuciObject *item2 = AS_LIST(b)->items[i];
+            LuciObject *eq = item1->type->eq(item1, item2);
+            /* if the objects in the lists at index i aren't equal,
+             * return false */
+            if (!AS_INT(eq)->i) {
+                return LuciInt_new(false);
+            }
+        }
+        /* all objects match */
+        return LuciInt_new(true);
+    } else {
+        DIE("Cannot compare a list to an object of type %s\n",
+                b->type->type_name);
+    }
+    return LuciNilObj;
+}
+
+static LuciObject* LuciList_cget(LuciObject *a, LuciObject *b)
+{
+    if (ISTYPE(b, obj_int_t)) {
+        return list_get_object(a, AS_INT(b)->i);
+    } else {
+        DIE("Cannot subscript a list with an object of type %s\n",
+                b->type->type_name);
+    }
+
+    return LuciNilObj;
+}
+
+static LuciObject* LuciList_cput(LuciObject *a, LuciObject *b, LuciObject *c)
+{
+    if (ISTYPE(b, obj_int_t)) {
+        return list_set_object(a, c, AS_INT(b)->i);
+    } else {
+        DIE("Cannot subscript a list with an object of type %s\n",
+                b->type->type_name);
+    }
+
+    return LuciNilObj;
+}
+
+/**
+ * Returns the length of a LuciMapObj
+ *
+ * @param o LuciMapObj
+ * @returns length of o
+ */
+static LuciObject* LuciMap_len(LuciObject *o)
+{
+    return LuciInt_new(AS_MAP(o)->count);
 }
 
 /**
@@ -1302,6 +1712,54 @@ static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
     }
 
     return res;
+}
+
+/**
+ * Determines if two LuciMapObjs are equal
+ *
+ * @param a LuciMapObj
+ * @param b LuciMapObj
+ * @returns 1 if equal, 0 otherwise
+ */
+static LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
+{
+    if(ISTYPE(b, obj_map_t)) {
+        if (AS_MAP(a)->count != AS_MAP(b)->count) {
+            return LuciInt_new(false);
+        }
+        int i;
+        for (i = 0; i < AS_MAP(a)->size; i++) {
+            LuciObject *key = AS_MAP(a)->keys[i];
+            if (key) {
+                LuciObject *val1 = AS_MAP(b)->vals[i];
+                /* TODO: if the key isn't in the second map,
+                 * this will DIE and kill luci */
+                LuciObject *val2 = map_get(b, key);
+                LuciObject *eq = val1->type->eq(val1, val2);
+                /* if the objects in the lists at index i aren't equal,
+                 * return false */
+                if (!AS_INT(eq)->i) {
+                    return LuciInt_new(false);
+                }
+            }
+        }
+        /* all key-value pairs are in both maps */
+        return LuciInt_new(true);
+    } else {
+        DIE("Cannot compare a map to an object of type %s\n",
+                b->type->type_name);
+    }
+    return LuciNilObj;
+}
+
+static LuciObject* LuciMap_cget(LuciObject *a, LuciObject *b)
+{
+    return map_get(a, b);
+}
+
+static LuciObject* LuciMap_cput(LuciObject *a, LuciObject *b, LuciObject *c)
+{
+    return map_set(a, b, c);
 }
 
 

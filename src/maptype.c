@@ -3,14 +3,14 @@
  */
 
 /**
- * @file map.c
+ * @file maptype.c
  */
 
 #include <stdlib.h>
 #include <string.h>
 
 #include "luci.h"
-#include "map.h"
+#include "object.h"
 
 /** Returns the next computed index for the two given hashes
  * @param H0 hash 0
@@ -20,6 +20,20 @@
  * @returns  index into hash table
  */
 #define GET_INDEX(H0, H1, I, N)   ( ( (H0) + ((I) * (I)) * (H1) ) % (N) )
+
+
+static LuciObject* LuciMap_copy(LuciObject *);
+static LuciObject* LuciMap_asbool(LuciObject *);
+static LuciObject* LuciMap_len(LuciObject *);
+static LuciObject* LuciMap_add(LuciObject *, LuciObject *);
+static LuciObject* LuciMap_eq(LuciObject *, LuciObject *);
+static LuciObject* LuciMap_contains(LuciObject *m, LuciObject *o);
+static LuciObject* LuciMap_next(LuciObject *, LuciObject *);
+static LuciObject *LuciMap_cput(LuciObject *map, LuciObject *key, LuciObject *val);
+static LuciObject *LuciMap_cget(LuciObject *map, LuciObject *key);
+static LuciObject *LuciMap_cdel(LuciObject *map, LuciObject *key);
+
+static void LuciMap_print(LuciObject *);
 
 
 static LuciMapObj *map_grow(LuciMapObj *map);
@@ -40,6 +54,44 @@ static unsigned int table_sizes[] = {
     1572869, 3145739, 6291469, 12582917, 25165843,
     50331653, 100663319, 201326611, 402653189,
     805306457, 1610612741, 0
+};
+
+/** Type member table for LuciMapObj */
+LuciObjectType obj_map_t = {
+    "map",
+    LuciMap_copy,
+    unary_nil,
+    LuciMap_asbool,
+    LuciMap_len,
+    unary_nil,
+    unary_nil,
+    unary_nil,
+
+    LuciMap_add,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    LuciMap_eq,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+    binary_nil,
+
+    LuciMap_contains,
+    LuciMap_next,
+    LuciMap_cget,
+
+    LuciMap_cput,
+
+    LuciMap_print
 };
 
 
@@ -70,6 +122,170 @@ void map_delete(LuciObject *o)
     return;
 }
 */
+
+/**
+ * Copies a LuciMapObj
+ *
+ * @param orig LucMapObj to copy
+ * @returns new copy of orig
+ */
+static LuciObject *LuciMap_copy(LuciObject *orig)
+{
+    LuciMapObj *mapobj = (LuciMapObj *)orig;
+    int i;
+
+    LuciObject *copy = LuciMap_new();
+
+    for (i = 0; i < mapobj->size; i++) {
+        if (mapobj->keys[i]) {
+            LuciObject *key = mapobj->keys[i];
+            LuciObject *val = mapobj->vals[i];
+            LuciMap_cput(copy, key->type->copy(key), val->type->copy(val));
+        }
+    }
+    return copy;
+}
+
+static LuciObject* LuciMap_asbool(LuciObject *o)
+{
+    return LuciInt_new(AS_MAP(o)->count > 0);
+}
+
+/**
+ * Concatenates two LuciMapObjs
+ *
+ * @param a first LuciMapObj
+ * @param b second LuciMapObj
+ * @returns concatenated LuciMapObj
+ */
+static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
+{
+    LuciObject *res = LuciNilObj;
+
+    if (ISTYPE(b, obj_map_t)) {
+        res = LuciMap_new();
+        int i;
+        LuciObject *key = NULL, *val = NULL;
+        for (i = 0; i < AS_MAP(a)->size; i++) {
+            key = AS_MAP(a)->keys[i];
+            if (key) {
+                LuciMap_cput(res, key, AS_MAP(a)->vals[i]);
+            }
+        }
+        for (i = 0; i < AS_MAP(b)->size; i++) {
+            key = AS_MAP(b)->keys[i];
+            if (key) {
+                LuciMap_cput(res, key, AS_MAP(b)->vals[i]);
+            }
+        }
+    } else {
+        DIE("Cannot append object of type %s to a map\n",
+                b->type->type_name);
+    }
+
+    return res;
+}
+
+/**
+ * Determines if two LuciMapObjs are equal
+ *
+ * @param a LuciMapObj
+ * @param b LuciMapObj
+ * @returns 1 if equal, 0 otherwise
+ */
+static LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
+{
+    if(ISTYPE(b, obj_map_t)) {
+        if (AS_MAP(a)->count != AS_MAP(b)->count) {
+            return LuciInt_new(false);
+        }
+        int i;
+        for (i = 0; i < AS_MAP(a)->size; i++) {
+            LuciObject *key = AS_MAP(a)->keys[i];
+            if (key) {
+                LuciObject *val1 = AS_MAP(b)->vals[i];
+                /* TODO: if the key isn't in the second map,
+                 * this will DIE and kill luci */
+                LuciObject *val2 = LuciMap_cget(b, key);
+                LuciObject *eq = val1->type->eq(val1, val2);
+                /* if the objects in the lists at index i aren't equal,
+                 * return false */
+                if (!AS_INT(eq)->i) {
+                    return LuciInt_new(false);
+                }
+            }
+        }
+        /* all key-value pairs are in both maps */
+        return LuciInt_new(true);
+    } else {
+        DIE("Cannot compare a map to an object of type %s\n",
+                b->type->type_name);
+    }
+    return LuciNilObj;
+}
+
+/**
+ * Returns the length of a LuciMapObj
+ *
+ * @param o LuciMapObj
+ * @returns length of o
+ */
+static LuciObject* LuciMap_len(LuciObject *o)
+{
+    return LuciInt_new(AS_MAP(o)->count);
+}
+
+/**
+ * Determines whether a LuciMapObj contains a key
+ *
+ * @param m LuciMapObj
+ * @param o object
+ * @returns 1 if str contains k, 0 otherwise
+ */
+static LuciObject *LuciMap_contains(LuciObject *m, LuciObject *o)
+{
+    int i;
+    for (i = 0; i < AS_MAP(m)->size; i++) {
+        LuciObject *key = AS_MAP(m)->keys[i];
+        if (key) {
+            LuciObject *eq = o->type->eq(o, key);
+            if (AS_INT(eq)->i) {
+                return LuciInt_new(true);
+            }
+        }
+    }
+    return LuciInt_new(false);
+}
+
+/**
+ * Returns the 'next' object in the map
+ *
+ * @param m LuciMapObj
+ * @param idx index
+ * @returns copy of object at index idx or NULL if out of bounds
+ */
+LuciObject *LuciMap_next(LuciObject *m, LuciObject *idx)
+{
+    if (!ISTYPE(idx, obj_int_t)) {
+        DIE("%s\n", "Argument to LuciMap_next must be LuciIntObj");
+    }
+
+    if (AS_INT(idx)->i >= AS_MAP(m)->count) {
+        return NULL;
+    }
+
+    /* loop through the map keys, counting keys until we reach idx */
+    int i = 0, count = -1;
+    for (i = 0; i < AS_MAP(m)->size; i++) {
+        if (AS_MAP(m)->keys[i]) {
+            count++;
+        }
+        if (count == AS_INT(idx)->i) {
+            return AS_MAP(m)->keys[i];
+        }
+    }
+    return NULL;
+}
 
 /**
  * Calls map_resize with a larger size index
@@ -146,7 +362,7 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
  * @param val   Value corresponding to key
  * @returns     original LuciObject with updated hash table
  */
-LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
+static LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -202,7 +418,7 @@ LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
  * @param key   Key to be hashed and searched for
  * @returns     LuciObject value corresponding to key or NULL if not found
  */
-LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
+static LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -247,7 +463,7 @@ LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
  * @param key   Key to be hashed and searched for
  * @returns     LuciObject value corresponding to key or NULL if not found
  */
-LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
+static LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -317,3 +533,27 @@ LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
 
     return val;
 }
+
+/**
+ * Prints a LuciMapObj to stdout
+ *
+ * @param in LuciMapObj to print
+ */
+static void LuciMap_print(LuciObject *in)
+{
+    int i;
+    printf("{");
+    for (i = 0; i < AS_MAP(in)->size; i++) {
+        if (AS_MAP(in)->keys[i]) {
+            LuciObject *key = AS_MAP(in)->keys[i];
+            LuciObject *val = AS_MAP(in)->vals[i];
+            printf("\"");
+            key->type->print(key);
+            printf("\":");
+            val->type->print(val);
+            printf(", ");
+        }
+    }
+    printf("}");
+}
+

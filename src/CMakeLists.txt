@@ -19,7 +19,11 @@ add_executable(
     ${CMAKE_CURRENT_SOURCE_DIR}/stack.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ast.c
     ${CMAKE_CURRENT_SOURCE_DIR}/object.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/map.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/inttype.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/floattype.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/stringtype.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/listtype.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/maptype.c
     ${CMAKE_CURRENT_SOURCE_DIR}/symbol.c
     ${CMAKE_CURRENT_SOURCE_DIR}/constant.c
     ${CMAKE_CURRENT_SOURCE_DIR}/compile.c

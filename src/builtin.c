@@ -606,7 +606,8 @@ LuciObject *luci_flines(LuciObject **args, unsigned int c)
     LuciObject *list = LuciList_new();
     LuciObject *line = luci_readline(args, c);
     while (line) {
-	list_append_object(list, line);
+        /* LuciList_append */
+	list->type->lt(list, line);
 	line = luci_readline(args, c);
     }
 
@@ -672,7 +673,8 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 
         for (i = start; i > end; i += incr) {
             item = LuciInt_new(i);
-            list_append_object(list, item);
+            /* LuciList_append */
+            list->type->lt(list, item);
         }
     }
     else {
@@ -683,7 +685,8 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 
         for (i = start; i < end; i += incr) {
             item = LuciInt_new(i);
-            list_append_object(list, item);
+            /* LuciList_append */
+            list->type->lt(list, item);
         }
     }
 
@@ -712,8 +715,9 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
     LuciObject *item;
     double sum = 0;
     int i, found_float = 0;
-    for (i = 0; i < AS_LIST(list)->count; i ++) {
-	item = list_get_object(list, i);
+    for (i = 0; i < AS_LIST(list)->count; i++) {
+        LuciIntObj intobj;
+	item = AS_LIST(list)->items[i];
 	if (!item) {
 	    DIE("%s", "Can't calulate sum of list containing NULL value\n");
 	}
@@ -779,7 +783,7 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
     double max = 0;
     int i, found_float = 0;
     for (i = 0; i < AS_LIST(list)->count; i ++) {
-	item = list_get_object(list, i);
+	item = AS_LIST(list)->items[i];
 	if (!item) {
 	    DIE("%s", "Can't calulate max of list containing NULL value\n");
 	}
@@ -833,7 +837,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
     int i, found_float = 0;
 
     for (i = 0; i < AS_LIST(list)->count; i ++) {
-	item = list_get_object(list, i);
+	item = AS_LIST(list)->items[i];
 	if (!item) {
 	    DIE("%s", "Can't calulate max of list containing NULL value\n");
 	}

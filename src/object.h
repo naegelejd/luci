@@ -17,6 +17,18 @@
 #define INIT_LIST_SIZE 32   /**< initial allocated size of a list */
 #define INIT_MAP_SIZE 8     /**< initial allocated size of a map */
 
+/**
+ * Makes a negative container index positive based on the container's length.
+ *
+ * e.g. if the index is -5 and the length is 5, the index
+ * should be 2 because 7 - 5 - 2.
+ * likewise, if the index is -14 and the length is 5, the index
+ * should be 1.
+ *
+ * @param idx index to make positive
+ * @param len length of container being indexed
+ */
+#define MAKE_INDEX_POS(idx, len) while ((idx) < 0) { (idx) = (len) - (idx); }
 
 /** Generic Object which allows for dynamic typing */
 typedef struct _LuciObject
@@ -186,6 +198,7 @@ LuciObject *LuciFloat_new(double d);
 LuciObject *LuciString_new(char *s);
 LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode);
 LuciObject *LuciList_new();
+LuciObject *LuciMap_new();
 LuciObject *LuciIterator_new(LuciObject *list, int step);
 LuciObject *LuciFunction_new(void *frame);
 LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
@@ -194,16 +207,13 @@ unsigned int string_hash_0(LuciObject *s);
 unsigned int string_hash_1(LuciObject *s);
 unsigned int string_hash_2(LuciObject *s);
 
-int list_append_object(LuciObject *list, LuciObject *item);
-LuciObject *list_get_object(LuciObject *list, long index);
-LuciObject *list_set_object(LuciObject *list, LuciObject *item, long index);
 LuciObject *iterator_next_object(LuciObject *iterator);
 
 void unary_void(LuciObject *);
 void binary_void(LuciObject *, LuciObject *);
 void ternary_void(LuciObject *, LuciObject *, LuciObject *);
-static LuciObject* unary_nil(LuciObject *);
-static LuciObject* binary_nil(LuciObject *, LuciObject *);
-static LuciObject* ternary_nil(LuciObject *, LuciObject *, LuciObject *);
+LuciObject* unary_nil(LuciObject *);
+LuciObject* binary_nil(LuciObject *, LuciObject *);
+LuciObject* ternary_nil(LuciObject *, LuciObject *, LuciObject *);
 
 #endif

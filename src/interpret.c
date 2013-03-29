@@ -12,7 +12,6 @@
 
 #include "luci.h"
 #include "object.h"
-#include "map.h"
 #include "interpret.h"
 #include "stack.h"
 #include "compile.h"
@@ -433,7 +432,7 @@ void eval(Frame *frame)
                 /* then the key */
                 z = st_pop(&lstack);
                 /* add the key & value to the map */
-                LuciMap_cput(x, z, y);
+                x->type->cput(x, z, y);
             }
             st_push(&lstack, x);
         FETCH(1);
@@ -444,7 +443,8 @@ void eval(Frame *frame)
             x = LuciList_new();
             for (i = 0; i < a; i ++) {
                 y = st_pop(&lstack);
-                list_append_object(x, y);
+                /* LuciList_append */
+                x->type->lt(x, y);
             }
             st_push(&lstack, x);
         FETCH(1);

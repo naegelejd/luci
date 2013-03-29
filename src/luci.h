@@ -29,11 +29,13 @@
 #define LUCI_LUCI_H
 
 #include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
+#include <assert.h>
 
 
 #define MAX_INT_DIGITS      (CHAR_BIT * (sizeof(long) / 3) + 3)

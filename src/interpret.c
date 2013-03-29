@@ -433,7 +433,7 @@ void eval(Frame *frame)
                 /* then the key */
                 z = st_pop(&lstack);
                 /* add the key & value to the map */
-                map_set(x, z, y);
+                LuciMap_cput(x, z, y);
             }
             st_push(&lstack, x);
         FETCH(1);

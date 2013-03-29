@@ -128,7 +128,7 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
     /* re-hash every existing entry into the new, smaller array */
     for (i = 0; i < old_size; i++) {
         if (old_keys[i]) {
-            map_set((LuciObject *)map, old_keys[i], old_vals[i]);
+            LuciMap_cput((LuciObject *)map, old_keys[i], old_vals[i]);
         }
     }
 
@@ -146,11 +146,8 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
  * @param val   Value corresponding to key
  * @returns     original LuciObject with updated hash table
  */
-LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
+LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
 {
-    if (!key) {
-        printf("oh shit\n");
-    }
     if (!o) {
         DIE("%s\n", "Map table not allocated");
     } else if (!key) {
@@ -172,19 +169,21 @@ LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
     unsigned int i = 0, idx = 0;
     for (i = 0; i < map->size; i++) {
         idx = GET_INDEX(hash0, hash1, i, map->size);
+        LuciObject *curkey = map->keys[idx];
 
-        if (!map->keys[idx]) {
+        if (!curkey) {
             /* if an empty slot is found, use it and break */
             map->keys[idx] = key;
             map->vals[idx] = val;
             map->count++;
             break;
-        } else if (strcmp(
-                    AS_STRING(map->keys[idx])->s,
-                    AS_STRING(key)->s) == 0) {
+        } else if (strcmp(AS_STRING(curkey)->s, AS_STRING(key)->s) == 0) {
             /* TODO: use proper LuciStringObj comparison */
-            /* compare objects and break if equal */
-            break;
+            /* compare objects and return if equal */
+
+            /* update the corresponding val */
+            map->vals[idx] = val;
+            return key;
         } else {
             /* just count the collision and continue trying indices */
             map->collisions++;
@@ -203,7 +202,7 @@ LuciObject *map_set(LuciObject *o, LuciObject *key, LuciObject *val)
  * @param key   Key to be hashed and searched for
  * @returns     LuciObject value corresponding to key or NULL if not found
  */
-LuciObject *map_get(LuciObject *o, LuciObject *key)
+LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -248,7 +247,7 @@ LuciObject *map_get(LuciObject *o, LuciObject *key)
  * @param key   Key to be hashed and searched for
  * @returns     LuciObject value corresponding to key or NULL if not found
  */
-LuciObject *map_remove(LuciObject *o, LuciObject *key)
+LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -302,7 +301,7 @@ LuciObject *map_remove(LuciObject *o, LuciObject *key)
         /* else, delete and reinsert all objects following the
          * newly deleted one. This ensures that all objects are
          * as close as possible to their hash-index on each call
-         * to map_set.
+         * to LuciMap_cput.
          *
          * The alternative method would be to keep track of them
          * in the first loop when searching for the original
@@ -312,7 +311,7 @@ LuciObject *map_remove(LuciObject *o, LuciObject *key)
             val_to_move = map->vals[idx];
             map->keys[idx] = NULL;
             map->vals[idx] = NULL;
-            map_set((LuciObject *)map, key_to_move, val_to_move);
+            LuciMap_cput((LuciObject *)map, key_to_move, val_to_move);
         }
     }
 

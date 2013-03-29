@@ -58,6 +58,7 @@ typedef struct LuciObjectType
     LuciObject* (*bwor)(LuciObject *, LuciObject *); /**< bor */
     LuciObject* (*bwand)(LuciObject *, LuciObject *); /**< band */
 
+    LuciObject* (*contains)(LuciObject *, LuciObject *); /**< contains */
     LuciObject* (*next)(LuciObject *, LuciObject *);    /**< next item */
     LuciObject* (*cget)(LuciObject *, LuciObject *); /**< get item */
 

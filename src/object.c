@@ -58,6 +58,7 @@ static LuciObject* LuciString_len(LuciObject *);
 static LuciObject* LuciString_add(LuciObject *, LuciObject *);
 static LuciObject* LuciString_mul(LuciObject *, LuciObject *);
 static LuciObject* LuciString_eq(LuciObject *, LuciObject *);
+static LuciObject* LuciString_contains(LuciObject *m, LuciObject *o);
 static LuciObject* LuciString_cget(LuciObject *, LuciObject *);
 static LuciObject* LuciString_cput(LuciObject *, LuciObject *, LuciObject *);
 static LuciObject* LuciString_next(LuciObject *, LuciObject *);
@@ -67,6 +68,7 @@ static LuciObject* LuciList_len(LuciObject *);
 static LuciObject* LuciList_asbool(LuciObject *);
 static LuciObject* LuciList_add(LuciObject *, LuciObject *);
 static LuciObject* LuciList_eq(LuciObject *, LuciObject *);
+static LuciObject* LuciList_contains(LuciObject *m, LuciObject *o);
 static LuciObject* LuciList_cget(LuciObject *, LuciObject *);
 static LuciObject* LuciList_cput(LuciObject *, LuciObject *, LuciObject *);
 static LuciObject* LuciList_next(LuciObject *, LuciObject *);
@@ -76,8 +78,7 @@ static LuciObject* LuciMap_asbool(LuciObject *);
 static LuciObject* LuciMap_len(LuciObject *);
 static LuciObject* LuciMap_add(LuciObject *, LuciObject *);
 static LuciObject* LuciMap_eq(LuciObject *, LuciObject *);
-static LuciObject* LuciMap_cget(LuciObject *, LuciObject *);
-static LuciObject* LuciMap_cput(LuciObject *, LuciObject *, LuciObject *);
+static LuciObject* LuciMap_contains(LuciObject *m, LuciObject *o);
 static LuciObject* LuciMap_next(LuciObject *, LuciObject *);
 
 static LuciObject* LuciInt_add(LuciObject *, LuciObject *);
@@ -168,6 +169,7 @@ LuciObjectType obj_nil_t = {
 
     binary_nil,
     binary_nil,
+    binary_nil,
 
     ternary_nil,
 
@@ -203,6 +205,7 @@ LuciObjectType obj_int_t = {
     LuciInt_bwor,
     LuciInt_bwand,
 
+    binary_nil,
     binary_nil,
     binary_nil,
 
@@ -242,6 +245,7 @@ LuciObjectType obj_float_t = {
 
     binary_nil,
     binary_nil,
+    binary_nil,
 
     ternary_nil,
 
@@ -277,6 +281,7 @@ LuciObjectType obj_string_t = {
     binary_nil,
     binary_nil,
 
+    LuciString_contains,
     LuciString_next,
     LuciString_cget,
 
@@ -314,6 +319,7 @@ LuciObjectType obj_list_t = {
     binary_nil,
     binary_nil,
 
+    LuciList_contains,
     LuciList_next,
     LuciList_cget,
 
@@ -351,6 +357,7 @@ LuciObjectType obj_map_t = {
     binary_nil,
     binary_nil,
 
+    LuciMap_contains,
     LuciMap_next,
     LuciMap_cget,
 
@@ -390,6 +397,7 @@ LuciObjectType obj_file_t = {
 
     binary_nil,
     binary_nil,
+    binary_nil,
 
     ternary_nil,
 
@@ -425,6 +433,7 @@ LuciObjectType obj_iterator_t = {
     binary_nil,
     binary_nil,
 
+    binary_nil,
     binary_nil,
     binary_nil,
 
@@ -464,6 +473,7 @@ LuciObjectType obj_func_t = {
 
     binary_nil,
     binary_nil,
+    binary_nil,
 
     ternary_nil,
 
@@ -499,6 +509,7 @@ LuciObjectType obj_libfunc_t = {
     binary_nil,
     binary_nil,
 
+    binary_nil,
     binary_nil,
     binary_nil,
 
@@ -912,7 +923,7 @@ LuciObject *LuciList_next(LuciObject *l, LuciObject *idx)
 LuciObject *LuciMap_next(LuciObject *m, LuciObject *idx)
 {
     if (!ISTYPE(idx, obj_int_t)) {
-        DIE("%s\n", "Argument to LuciList_next must be LuciIntObj");
+        DIE("%s\n", "Argument to LuciMap_next must be LuciIntObj");
     }
 
     if (AS_INT(idx)->i >= AS_MAP(m)->count) {
@@ -1019,168 +1030,6 @@ LuciObject *iterator_next_object(LuciObject *iterator)
 }
 
 /**
- * Prints a LuciObject to stdout.
- *
- * @param in LuciObject to print
- */
-/*
-void print_object(LuciObject *in)
-{
-    int i;
-    LuciObject *item;
-
-    if (!in) {
-	printf("None");
-	return;
-    }
-
-    switch (in->type) {
-	case obj_int_t:
-	    printf("%ld", AS_INT(in)->i);
-	    break;
-
-	case obj_float_t:
-	    printf("%f", AS_FLOAT(in)->f);
-	    break;
-
-	case obj_string_t:
-	    printf("%s", AS_STRING(in)->s);
-	    break;
-
-	case obj_list_t:
-	    printf("[");
-	    for (i = 0; i < AS_LIST(in)->count; i++) {
-		item = list_get_object(in, i);
-		print_object(item);
-		printf(", ");
-	    }
-	    printf("]");
-	    break;
-
-        case obj_map_t:
-            printf("{");
-            for (i = 0; i < AS_MAP(in)->size; i++) {
-                if (AS_MAP(in)->keys[i]) {
-                    printf("\"");
-                    print_object(AS_MAP(in)->keys[i]);
-                    printf("\":");
-                    print_object(AS_MAP(in)->vals[i]);
-                    printf(", ");
-                }
-            }
-            printf("}");
-            break;
-
-        case obj_file_t:
-            printf("<file>");
-            break;
-
-        case obj_func_t:
-            printf("<func>");
-            break;
-
-        case obj_libfunc_t:
-            printf("<libfunc>");
-            break;
-
-	default:
-            DIE("%s\n", "Can't print invalid type");
-    }
-}
-*/
-
-
-/**
- * Performs a deep copy of a LuciObject.
- *
- * @param orig LuciObject to copy
- * @returns deep copy of orig
- */
-/*
-LuciObject *copy_object(LuciObject *orig)
-{
-    LuciObject *copy = NULL;
-
-    if (!orig) {
-	return NULL;
-    }
-
-    switch(orig->type)
-    {
-	case obj_int_t:
-            copy = LuciInt_new(((LuciIntObj *)orig)->i);
-	    break;
-
-	case obj_float_t:
-            copy = LuciFloat_new(((LuciFloatObj *)orig)->f);
-	    break;
-
-	case obj_string_t:
-            // duplicate string first
-            copy = LuciString_new(strdup(((LuciStringObj *)orig)->s));
-	    break;
-
-        case obj_file_t:
-        {
-            LuciFileObj *fileobj = (LuciFileObj *)orig;
-            copy = LuciFile_new(fileobj->ptr, fileobj->size, fileobj->mode);
-	    break;
-        }
-
-	case obj_list_t:
-        {
-            LuciListObj *listobj = (LuciListObj *)orig;
-            int i;
-
-            copy = LuciList_new();
-
-	    for (i = 0; i < listobj->count; i++) {
-		list_append_object(copy, list_get_object(orig, i));
-	    }
-	    break;
-        }
-
-        case obj_map_t:
-        {
-            LuciMapObj *mapobj = (LuciMapObj *)orig;
-            int i;
-
-            copy = LuciMap_new();
-
-            for (i = 0; i < mapobj->size; i++) {
-                if (mapobj->keys[i]) {
-                    map_set(copy,
-                            copy_object(mapobj->keys[i]),
-                            copy_object(mapobj->vals[i]));
-                }
-            }
-            break;
-        }
-
-        case obj_iterator_t:
-        {
-            LuciIteratorObj *iterobj = (LuciIteratorObj *)orig;
-            copy = LuciIterator_new(iterobj->container, iterobj->step);
-            break;
-        }
-
-        case obj_func_t:
-            copy = LuciFunction_new(((LuciFunctionObj *)orig)->frame);
-            break;
-
-        case obj_libfunc_t:
-            copy = LuciLibFunc_new(((LuciLibFuncObj *)orig)->func);
-            break;
-
-	default:
-            ;
-    }
-
-    return copy;
-}
-*/
-
-/**
  * Copies a LuciNilObj, which is just the same instance
  *
  * @param orig LuciNilObj
@@ -1262,7 +1111,7 @@ static LuciObject *LuciMap_copy(LuciObject *orig)
         if (mapobj->keys[i]) {
             LuciObject *key = mapobj->keys[i];
             LuciObject *val = mapobj->vals[i];
-            map_set(copy, key->type->copy(key), val->type->copy(val));
+            LuciMap_cput(copy, key->type->copy(key), val->type->copy(val));
         }
     }
     return copy;
@@ -1506,6 +1355,25 @@ static LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
     return LuciNilObj;
 }
 
+/**
+ * Determines whether a LuciStringObj contains an object
+ *
+ * @param str LuciStringObj
+ * @param o object
+ * @returns 1 if str contains o, 0 otherwise
+ */
+static LuciObject *LuciString_contains(LuciObject *str, LuciObject *o)
+{
+    if (!ISTYPE(o, obj_string_t)) {
+        DIE("A string can only contain a string, not a %s\n",
+                o->type->type_name);
+    }
+    if ((strstr(AS_STRING(str)->s, AS_STRING(o)->s)) != NULL) {
+        return LuciInt_new(true);
+    } else {
+        return LuciInt_new(false);
+    }
+}
 
 /**
  * Gets the character at index b in LuciStringObj a
@@ -1644,6 +1512,34 @@ static LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
     return LuciNilObj;
 }
 
+
+/**
+ * Determines whether a LuciListObj contains an object
+ *
+ * @param l LuciListObj
+ * @param o object
+ * @returns 1 if str contains o, 0 otherwise
+ */
+static LuciObject *LuciList_contains(LuciObject *l, LuciObject *o)
+{
+    int i;
+    for (i = 0; i < AS_LIST(l)->count; i++) {
+        LuciObject *x = AS_LIST(l)->items[i];
+        LuciObject *eq = o->type->eq(o, x);
+        if (AS_INT(eq)->i) {
+            return LuciInt_new(true);
+        }
+    }
+    return LuciInt_new(false);
+}
+
+/**
+ * Gets the object at index b in LuciListObj a
+ *
+ * @param a LuciListObj
+ * @param b index in a
+ * @returns object at index b
+ */
 static LuciObject* LuciList_cget(LuciObject *a, LuciObject *b)
 {
     if (ISTYPE(b, obj_int_t)) {
@@ -1697,13 +1593,13 @@ static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
         for (i = 0; i < AS_MAP(a)->size; i++) {
             key = AS_MAP(a)->keys[i];
             if (key) {
-                map_set(res, key, AS_MAP(a)->vals[i]);
+                LuciMap_cput(res, key, AS_MAP(a)->vals[i]);
             }
         }
         for (i = 0; i < AS_MAP(b)->size; i++) {
             key = AS_MAP(b)->keys[i];
             if (key) {
-                map_set(res, key, AS_MAP(b)->vals[i]);
+                LuciMap_cput(res, key, AS_MAP(b)->vals[i]);
             }
         }
     } else {
@@ -1734,7 +1630,7 @@ static LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
                 LuciObject *val1 = AS_MAP(b)->vals[i];
                 /* TODO: if the key isn't in the second map,
                  * this will DIE and kill luci */
-                LuciObject *val2 = map_get(b, key);
+                LuciObject *val2 = LuciMap_cget(b, key);
                 LuciObject *eq = val1->type->eq(val1, val2);
                 /* if the objects in the lists at index i aren't equal,
                  * return false */
@@ -1752,14 +1648,26 @@ static LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
     return LuciNilObj;
 }
 
-static LuciObject* LuciMap_cget(LuciObject *a, LuciObject *b)
+/**
+ * Determines whether a LuciMapObj contains a key
+ *
+ * @param m LuciMapObj
+ * @param o object
+ * @returns 1 if str contains k, 0 otherwise
+ */
+static LuciObject *LuciMap_contains(LuciObject *m, LuciObject *o)
 {
-    return map_get(a, b);
-}
-
-static LuciObject* LuciMap_cput(LuciObject *a, LuciObject *b, LuciObject *c)
-{
-    return map_set(a, b, c);
+    int i;
+    for (i = 0; i < AS_MAP(m)->size; i++) {
+        LuciObject *key = AS_MAP(m)->keys[i];
+        if (key) {
+            LuciObject *eq = o->type->eq(o, key);
+            if (AS_INT(eq)->i) {
+                return LuciInt_new(true);
+            }
+        }
+    }
+    return LuciInt_new(false);
 }
 
 

@@ -90,6 +90,7 @@ const struct func_def builtins[] = {
     {"len", luci_len},
     {"max", luci_max},
     {"min", luci_min},
+    {"contains", luci_contains},
     {0, 0}
 };
 
@@ -868,3 +869,25 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
     return ret;
 }
 
+/**
+ * Determines whether a container contains an object
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns min number in list
+ */
+LuciObject *luci_contains(LuciObject **args, unsigned int c)
+{
+    if (c < 2) {
+	DIE("%s", "Missing parameter to contains()\n");
+    }
+
+    LuciObject *cont = args[0];
+    LuciObject *item = args[1];
+
+    if (!cont) {
+	DIE("%s", "NULL container in contains()\n");
+    }
+
+    return cont->type->contains(cont, item);
+}

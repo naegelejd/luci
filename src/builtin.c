@@ -80,6 +80,7 @@ const struct func_def builtins[] = {
     {"str", luci_cast_str},
     {"int", luci_cast_int},
     {"float", luci_cast_float},
+    {"hex", luci_hex},
     {"open", luci_fopen},
     {"close", luci_fclose},
     {"read", luci_fread},
@@ -370,6 +371,30 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
     }
 
     return ret;
+}
+
+/**
+ * Returns a hex string representation of an integer
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns LuciStringObj representation of an integer
+ */
+LuciObject *luci_hex(LuciObject **args, unsigned int c)
+{
+    if (c < 1) {
+        DIE("%s\n", "Missing param to hex()");
+    }
+    LuciObject *hexint = args[0];
+
+    if (!ISTYPE(hexint, obj_int_t)) {
+        DIE("Cannot get hex representation of an object of type %s\n",
+                hexint->type->type_name);
+    }
+
+    char *s = alloc(MAX_INT_DIGITS + 2);
+    snprintf(s, MAX_INT_DIGITS, "0x%lX", AS_INT(hexint)->i);
+    return LuciString_new(s);
 }
 
 /**

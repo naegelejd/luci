@@ -42,6 +42,8 @@ LuciObject *luci_cast_int(LuciObject **, unsigned int);
 LuciObject *luci_cast_float(LuciObject **, unsigned int);
 LuciObject *luci_cast_str(LuciObject **, unsigned int);
 
+LuciObject *luci_hex(LuciObject **, unsigned int);
+
 LuciObject *luci_fopen(LuciObject **, unsigned int);
 LuciObject *luci_fclose(LuciObject **, unsigned int);
 LuciObject *luci_fread(LuciObject **, unsigned int);

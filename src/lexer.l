@@ -5,11 +5,14 @@
 %option noyywrap
 /* %option debug */
 
+%x str
+
 %{
 
-#include <string.h>
+#include "luci.h"
 #include "parser.tab.h"
 
+extern void yyerror(const char *msg);
 
 static int line = 1;
 static int col = 1;
@@ -21,15 +24,52 @@ void comment(void);
 int get_line_num(void);
 int get_last_col_num(void);
 
+char string_buffer[MAX_STR_CONST];
+char *str_buf_ptr;
+
 %}
 
-INTEGER     [0-9]+
-FLOAT       [0-9]+\.[0-9]*|\.[0-9]+
+    /* STRING      \"(\\.|[^\\"])*\" */
+D           [0-9]
+H           [a-fA-F0-9]
+E           [Ee][+-]?{D}+
+
+INTEGER     {D}+|0[xX]{H}+
+FLOAT       {D}+{E}|{D}*\.{D}+({E})?|{D}+\.{D}*({E})?
 WORD        [a-zA-Z_][a-zA-Z_0-9]*
-STRING      \"[^\"]+\"|\"\"
 WS          [ \t\f\r]+
 
 %%
+
+"\""        {
+                col++;
+                str_buf_ptr = string_buffer;
+                BEGIN(str);
+            }
+<str>{
+"\""        {
+                col++;
+                BEGIN(INITIAL);
+                *str_buf_ptr = '\0';
+                yylval.string_v = strndup(string_buffer,
+                        strlen(string_buffer));
+                return STRING;
+            }
+"\n"        { yyerror("Unterminated string literal"); }
+"\\n"       { col++; *str_buf_ptr++ = '\n'; }
+"\\t"       { col++; *str_buf_ptr++ = '\t'; }
+"\\r"       { col++; *str_buf_ptr++ = '\r'; }
+"\\b"       { col++; *str_buf_ptr++ = '\b'; }
+"\\f"       { col++; *str_buf_ptr++ = '\f'; }
+"\\(.|\n)"      { col++; *str_buf_ptr++ = yytext[1]; }
+"[^\\\n\"]+"    {
+                    char *sptr = yytext;
+                    while (*sptr) {
+                        *str_buf_ptr++ = *sptr++;
+                        col++;
+                    }
+                }
+} /* <str> */
 
 "/*"            { comment(); }
 
@@ -55,23 +95,18 @@ WS          [ \t\f\r]+
                     col += yyleng;
                     return INT;
                 }
-
-{STRING}        {
-                    yylval.string_v = strndup(yytext + 1, strlen(yytext) - 2);
-                    col += yyleng;
-                    return STRING;
-                }
-{FLOAT}         {
-                    yylval.float_v = atof(yytext);
-                    col += yyleng;
-                    return FLOAT;
-                }
 {INTEGER}       {
-                    yylval.int_v = atoi(yytext);
+                    yylval.int_v = strtol(yytext, NULL, 0);
                     col += yyleng;
                     return INT;
                 }
-{WORD}          { yylval.string_v = strdup(yytext);
+{FLOAT}         {
+                    yylval.float_v = strtod(yytext, NULL);
+                    col += yyleng;
+                    return FLOAT;
+                }
+{WORD}          {
+                    yylval.string_v = strdup(yytext);
                     col += yyleng;
                     return ID;
                 }
@@ -116,7 +151,7 @@ WS          [ \t\f\r]+
 "&"     { col++; return BWAND; }
 "~"     { col++; return BWNOT; }
 
-"$ "    { ECHO; }
+"$ "    { ECHO; /* interactive mode */ }
 
 .       { col += yyleng; /* ignore invalid chars */ }
 

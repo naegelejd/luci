@@ -332,6 +332,13 @@ void eval(Frame *frame)
         FETCH(1);
         DISPATCH;
 
+        HANDLE(LOADB)
+            LUCI_DEBUG("LOADB %d\n", a);
+            x = builtins[a];
+            st_push(&lstack, x);
+        FETCH(1);
+        DISPATCH;
+
         HANDLE(DUP)
             LUCI_DEBUG("%s\n", "DUP");
             /* duplicate object on top of stack

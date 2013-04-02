@@ -37,7 +37,7 @@
 #include <math.h>
 #include <assert.h>
 
-#define MAX_STR_CONST       32768
+#define MAX_STR_CONST       8192
 #define MAX_INT_DIGITS      (CHAR_BIT * (sizeof(long) / 3) + 3)
 #define MAX_FLOAT_DIGITS    (CHAR_BIT * (sizeof(double) / 3) + 3)
 

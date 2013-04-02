@@ -160,10 +160,14 @@ typedef struct _LuciFunction {
     void *frame;        /**< pointer to Frame struct */
 } LuciFunctionObj;
 
+
+/** Function pointer signature for Luci's builtin library functions */
+typedef LuciObject* (*LuciBuiltin)(LuciObject **, unsigned int);
+
 /** Library function type */
 typedef struct _LuciLibFunc {
     LuciObject base;        /**< base implementation */
-    LuciObject * (*func)(LuciObject **, unsigned int);  /**< function pointer */
+    LuciBuiltin func;       /**< pointer to a builtin function */
 } LuciLibFuncObj;
 
 /** convenient method of accessing an object's type functions */

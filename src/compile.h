@@ -48,6 +48,7 @@ typedef enum {
     LOADK,
     LOADS,
     LOADG,
+    LOADB,
     DUP,
     STORE,
     CALL,
@@ -86,6 +87,11 @@ typedef uint32_t Instruction;
 #define BASE_SYMTABLE_SCALE 0
 /** initial constant table size */
 #define BASE_COTABLE_SIZE   0xFF
+
+/** global symbol table for builtin functions */
+extern SymbolTable *builtin_symbols;
+/** global builtins array (from final builtins symbol table) */
+extern LuciObject **builtins;
 
 
 /**

@@ -13,22 +13,28 @@
 
 /** Function pointer and corresponding name available to
  * users as a builtin library function */
-struct func_def
+struct builtin_record
 {
     const char *name;       /**< builtin function name */
-    /** libfunction pointer */
-    LuciObject * (*func) (LuciObject **, unsigned int);
+    LuciBuiltin funcptr;       /**< pointer to a builtin function */
 };
+
+/** global registry of builtin function records */
+extern const struct builtin_record builtins_registry[];
 
 /** LuciObject and corresponding name available to users
  * as a builtin symbol definition */
-struct var_def
+struct constant_record
 {
     const char *name;       /**< builtin symbol name */
     LuciObject *object;     /**< object pointer */
 };
 
-void init_variables(void);
+/** global registry of builtin constant types */
+extern struct constant_record constants_registry[];
+
+
+void init_luci_constants(void);
 
 LuciObject *luci_help(LuciObject **, unsigned int);
 LuciObject *luci_dir(LuciObject **, unsigned int);

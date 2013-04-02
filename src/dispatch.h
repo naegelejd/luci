@@ -45,6 +45,7 @@ static void* dispatch_table[] = {
     &&do_LOADK,
     &&do_LOADS,
     &&do_LOADG,
+    &&do_LOADB,
     &&do_DUP,
     &&do_STORE,
     &&do_CALL,

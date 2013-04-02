@@ -18,6 +18,12 @@
 #include "builtin.h"
 #include "stack.h"
 
+/** global symbol table for builtin functions */
+SymbolTable *builtin_symbols;
+/** global builtins array (from final builtins symbol table) */
+LuciObject **builtins;
+
+
 static void compile(AstNode *, CompileState *);
 
 static uint32_t push_instr(CompileState *, Opcode, int);
@@ -89,27 +95,35 @@ static void compile_string_constant(AstNode *node, CompileState *cs)
 static void compile_id_expr(AstNode *node, CompileState *cs)
 {
     int a;
+
     a = symtable_id(cs->ltable, node->data.id.val, SYMFIND);
     if (a >= 0) {
         /* found the symbol immediately */
         push_instr(cs, LOADS, a);
+        return;
     }
-    else {
-        /* didn't find symbol in the locals symbol table */
-        /* if there isn't a globals table, the symbol doesn't exist */
-        if (cs->gtable == NULL) {
-            DIE("%s undefined.\n", node->data.id.val);
-        } else {
-            /* search the globals table for the symbol */
-            a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
-            if (a < 0) {
-                /* not in globals table either */
-                DIE("%s undefined.\n", node->data.id.val);
-            } else {
-                push_instr(cs, LOADG, a);
-            }
+
+    /* didn't find symbol in the locals symbol table */
+    if (cs->gtable) {
+        /* search the globals table for the symbol */
+        a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
+        if (a >= 0) {
+            /* found the symbol in the globals table */
+            push_instr(cs, LOADG, a);
+            return;
         }
+    } 
+
+    /* didn't find symbol in the globals table either */
+    a = symtable_id(builtin_symbols, node->data.id.val, SYMFIND);
+    if (a >= 0) {
+        /* the symbol is one of Luci's builtin symbols */
+        push_instr(cs, LOADB, a);
+        return;
     }
+
+    /* symbol not found */
+    DIE("%s undefined.\n", node->data.id.val);
 }
 
 
@@ -616,22 +630,24 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
     int i;
     if (cs == NULL) {
         cs = CompileState_new();
-        /* Add builtin symbols to symbol table */
-        extern struct func_def builtins[];  /* defined in builtins.c */
-
-        for (i = 0; builtins[i].name != 0; i++) {
+        
+        /* allocate the global builtin symbol table */
+        builtin_symbols = symtable_new(BASE_SYMTABLE_SCALE);
+        /* Add all builtin symbols to builtin symbol table */
+        for (i = 0; builtins_registry[i].name != 0; i++) {
             /* create object for builtin function */
-            LuciObject *obj = LuciLibFunc_new(builtins[i].func);
-            /* add the symbol and function object to the symbol table */
-            int id = symtable_id(cs->ltable, builtins[i].name, SYMCREATE);
-            symtable_set(cs->ltable, obj, id);
+            LuciObject *obj = LuciLibFunc_new(builtins_registry[i].funcptr);
+            /* add the symbol and function object to the builtins symbol table */
+            int id = symtable_id(builtin_symbols,
+                    builtins_registry[i].name, SYMCREATE);
+            symtable_set(builtin_symbols, obj, id);
         }
 
-        init_variables();
-        extern struct var_def globals[];
-        for (i = 0; globals[i].name != 0; i++) {
-            int id = symtable_id(cs->ltable, globals[i].name, SYMCREATE);
-            symtable_set(cs->ltable, globals[i].object, id);
+        init_luci_constants();
+        for (i = 0; constants_registry[i].name != 0; i++) {
+            int id = symtable_id(builtin_symbols,
+                    constants_registry[i].name, SYMCREATE);
+            symtable_set(builtin_symbols, constants_registry[i].object, id);
         }
     }
     /* otherwise, cleanup the old instructions but maintain the symbol table
@@ -646,6 +662,9 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
 
     /* end the CompileState with an HALT instr */
     push_instr(cs, HALT, 0);
+
+    /* intialize the builtins array with the builtin symbol table's array */
+    builtins = symtable_get_objects(builtin_symbols);
 
     return cs;
 }
@@ -1008,6 +1027,7 @@ static char *instruction_names[] = {
     "LOADK",
     "LOADS",
     "LOADG",
+    "LOADB",
     "DUP",
     "STORE",
     "CALL",

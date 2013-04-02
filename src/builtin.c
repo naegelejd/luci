@@ -32,7 +32,7 @@ static int close_file(FILE *fp)
 }
 
 /** List of builtin symbol names */
-struct var_def globals[] =
+struct constant_record constants_registry[] =
 {
     {"stdout", 0},
     {"stderr", 0},
@@ -43,36 +43,36 @@ struct var_def globals[] =
 };
 
 /** Initializes all builtin symbols with LuciObjects */
-void init_variables(void)
+void init_luci_constants(void)
 {
     /** stdout */
     LuciObject *luci_stdout = LuciFile_new(stdout, 0, f_append_m);
-    globals[0].object = luci_stdout;
+    constants_registry[0].object = luci_stdout;
 
     /** stderr */
     LuciObject *luci_stderr = LuciFile_new(stderr, 0, f_append_m);
-    globals[1].object = luci_stderr;
+    constants_registry[1].object = luci_stderr;
 
     /** stdin */
     LuciObject *luci_stdin = LuciFile_new(stdin, 0, f_read_m);
-    globals[2].object = luci_stdin;
+    constants_registry[2].object = luci_stdin;
 
     /** e */
     LuciObject *luci_e = LuciFloat_new(M_E);
-    globals[3].object = luci_e;
+    constants_registry[3].object = luci_e;
 
     /** pi */
     LuciObject *luci_pi = LuciFloat_new(M_PI);
-    globals[4].object = luci_pi;
+    constants_registry[4].object = luci_pi;
 }
 
 /** List of all builtin library function names and their corresponding
  * C function pointers */
-const struct func_def builtins[] = {
+const struct builtin_record builtins_registry[] = {
     {"help", luci_help},
-    {"dir", luci_dir},
-    {"exit", luci_exit},
     {"print",  luci_print},
+/* {"dir", luci_dir}, */
+    {"exit", luci_exit},
     {"input", luci_readline},
     {"readline", luci_readline},
     {"type",  luci_typeof},
@@ -113,14 +113,14 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
     printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 
     int i, len, f, l, j;
-    for (i = 0; builtins[i].name != 0; i++)
+    for (i = 0; builtins_registry[i].name != 0; i++)
     {
-	len = strlen(builtins[i].name);
+	len = strlen(builtins_registry[i].name);
 	f = (width - len) / 2;
 	l = width - f;
 	for (j = 0; j < f; j++)
 	    printf(" ");
-	printf("%s", builtins[i].name);
+	printf("%s", builtins_registry[i].name);
 	for (j = 0; j < l; j++)
 	    printf(" ");
 	printf("\n");

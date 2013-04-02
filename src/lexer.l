@@ -29,7 +29,6 @@ char *str_buf_ptr;
 
 %}
 
-    /* STRING      \"(\\.|[^\\"])*\" */
 D           [0-9]
 H           [a-fA-F0-9]
 E           [Ee][+-]?{D}+
@@ -41,13 +40,13 @@ WS          [ \t\f\r]+
 
 %%
 
-"\""        {
+\"        {
                 col++;
                 str_buf_ptr = string_buffer;
                 BEGIN(str);
             }
 <str>{
-"\""        {
+\"        {
                 col++;
                 BEGIN(INITIAL);
                 *str_buf_ptr = '\0';
@@ -55,14 +54,14 @@ WS          [ \t\f\r]+
                         strlen(string_buffer));
                 return STRING;
             }
-"\n"        { yyerror("Unterminated string literal"); }
-"\\n"       { col++; *str_buf_ptr++ = '\n'; }
-"\\t"       { col++; *str_buf_ptr++ = '\t'; }
-"\\r"       { col++; *str_buf_ptr++ = '\r'; }
-"\\b"       { col++; *str_buf_ptr++ = '\b'; }
-"\\f"       { col++; *str_buf_ptr++ = '\f'; }
-"\\(.|\n)"      { col++; *str_buf_ptr++ = yytext[1]; }
-"[^\\\n\"]+"    {
+\n        { yyerror("Unterminated string literal"); }
+\\n       { col++; *str_buf_ptr++ = '\n'; }
+\\t       { col++; *str_buf_ptr++ = '\t'; }
+\\r       { col++; *str_buf_ptr++ = '\r'; }
+\\b       { col++; *str_buf_ptr++ = '\b'; }
+\\f       { col++; *str_buf_ptr++ = '\f'; }
+\\(.|\n)      { col++; *str_buf_ptr++ = yytext[1]; }
+[^\\\n\"]+    {
                     char *sptr = yytext;
                     while (*sptr) {
                         *str_buf_ptr++ = *sptr++;

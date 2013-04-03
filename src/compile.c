@@ -491,8 +491,8 @@ static void compile_statements(AstNode *node, CompileState *cs)
  */
 static void compile_break(AstNode *node, CompileState *cs)
 {
-    struct loop_jump *jmp = alloc(sizeof(*jmp));
-    struct loop_jump *ptr;
+    Loopjump *jmp = alloc(sizeof(*jmp));
+    Loopjump *ptr;
 
     if (!cs->current_loop) {
         DIE("'break' @ line %d not inside a loop\n", node->lineno);
@@ -521,8 +521,8 @@ static void compile_break(AstNode *node, CompileState *cs)
  */
 static void compile_continue(AstNode *node, CompileState *cs)
 {
-    struct loop_jump *jmp = alloc(sizeof(*jmp));
-    struct loop_jump *ptr;
+    Loopjump *jmp = alloc(sizeof(*jmp));
+    Loopjump *ptr;
     if (!cs->current_loop) {
         DIE("'continue' @ line %d not inside a loop\n", node->lineno);
     }
@@ -633,21 +633,16 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
         
         /* allocate the global builtin symbol table */
         builtin_symbols = symtable_new(BASE_SYMTABLE_SCALE);
+
+        /* initialize all of Luci's builtins */
+        init_luci_builtins();
+
         /* Add all builtin symbols to builtin symbol table */
-        for (i = 0; builtins_registry[i].name != 0; i++) {
-            /* create object for builtin function */
-            LuciObject *obj = LuciLibFunc_new(builtins_registry[i].funcptr);
+        for (i = 0; builtins_registry[i].name != NULL; i++) {
             /* add the symbol and function object to the builtins symbol table */
             int id = symtable_id(builtin_symbols,
                     builtins_registry[i].name, SYMCREATE);
-            symtable_set(builtin_symbols, obj, id);
-        }
-
-        init_luci_constants();
-        for (i = 0; constants_registry[i].name != 0; i++) {
-            int id = symtable_id(builtin_symbols,
-                    constants_registry[i].name, SYMCREATE);
-            symtable_set(builtin_symbols, constants_registry[i].object, id);
+            symtable_set(builtin_symbols, builtins_registry[i].object, id);
         }
     }
     /* otherwise, cleanup the old instructions but maintain the symbol table
@@ -663,7 +658,7 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
     /* end the CompileState with an HALT instr */
     push_instr(cs, HALT, 0);
 
-    /* intialize the builtins array with the builtin symbol table's array */
+    /* initialize the builtins array with the builtin symbol table's array */
     builtins = symtable_get_objects(builtin_symbols);
 
     return cs;
@@ -922,14 +917,14 @@ static uint32_t put_instr(CompileState *cs, uint32_t addr,
 }
 
 /**
- * Add a new empty loop_list struct to the current CompileState
+ * Add a new empty Looplist struct to the current CompileState
  *
  * @param cs CompileState
  * @param loop_type type of the loop (for/while)
  */
 static void add_new_loop(CompileState *cs, int loop_type)
 {
-    struct loop_list *loop = alloc(sizeof(*loop));
+    Looplist *loop = alloc(sizeof(*loop));
     loop->loop_type = loop_type;
     loop->breaks = NULL;
     loop->continues = NULL;
@@ -947,9 +942,9 @@ static void add_new_loop(CompileState *cs, int loop_type)
  */
 static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end)
 {
-    struct loop_jump *ptr = NULL, *old = NULL;
-    struct loop_list *cur_loop = cs->current_loop;
-    struct loop_list *parent_loop = cs->current_loop->parent;
+    Loopjump *ptr = NULL, *old = NULL;
+    Looplist *cur_loop = cs->current_loop;
+    Looplist *parent_loop = cs->current_loop->parent;
 
     ptr = cur_loop->continues;
     while (ptr) {

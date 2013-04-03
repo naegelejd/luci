@@ -65,9 +65,6 @@ typedef enum {
     ITERJUMP
 } Opcode;
 
-/** an instruction is a 32-bit unsigned int */
-typedef uint32_t Instruction;
-
 /** how much to right-shift an instruction to obtain its opcode */
 #define OPCODE_SHIFT    26
 /** when masked with an instruction, gives the instruction's argument */
@@ -88,6 +85,16 @@ typedef uint32_t Instruction;
 /** initial constant table size */
 #define BASE_COTABLE_SIZE   0xFF
 
+/** an instruction is a 32-bit unsigned int */
+typedef uint32_t Instruction;
+
+/** a dynamic array of instructions */
+typedef struct instruction_array_ {
+    unsigned int count;
+    unsigned int size;
+    Instruction *instructions;
+} InstructionArray;
+
 /** global symbol table for builtin functions */
 extern SymbolTable *builtin_symbols;
 /** global builtins array (from final builtins symbol table) */
@@ -97,28 +104,28 @@ extern LuciObject **builtins;
 /**
  * A linked list node used to track nested loops
  */
-struct loop_jump {
-    uint32_t addr;          /**< the instruction address to jump to */
-    struct loop_jump *next; /**< next loop-jump in linked list */
-};
+typedef struct loop_jump_ {
+    uint32_t addr;              /**< the instruction address to jump to */
+    struct loop_jump_ *next;    /**< next loop-jump in linked list */
+} Loopjump;
 
 /**
  * Tracks all breaks, continues in a loop.
  * Also tracks parent loops.
  */
-struct loop_list {
+typedef struct loop_list_ {
     enum { LOOP_TYPE_WHILE, LOOP_TYPE_FOR } loop_type; /**< loop type */
-    struct loop_jump *breaks;       /**< linked list of breaks */
-    struct loop_jump *continues;    /**< linked list of continues */
-    struct loop_list *parent;       /**< parent loop_list (if nested) */
-};
+    Loopjump *breaks;       /**< linked list of breaks */
+    Loopjump *continues;    /**< linked list of continues */
+    struct loop_list_ *parent;      /**< parent loop_list (if nested) */
+} Looplist;
 
 /**
  * Derived from a CompileState.
  *
  * Used in both compilation and mainly interpreting
  */
-typedef struct _frame {
+typedef struct frame_ {
     uint16_t nparams;       /**< number of parameters */
     uint16_t nlocals;       /**< number of local symbols */
     uint16_t nconstants;    /**< number of constants */
@@ -136,15 +143,26 @@ typedef struct _frame {
  * Each CompileState represents either the global program's scope
  * or individual function definition scopes.
  */
-typedef struct _compile_state {
+typedef struct compile_state_ {
     uint32_t instr_count;       /**< instruction count */
     uint32_t instr_alloc;       /**< size of instructions array */
     Instruction *instructions;  /**< array of instructions */
     SymbolTable *ltable;        /**< symbol table for locals */
     SymbolTable *gtable;        /**< symbol table for globals */
     ConstantTable *ctable;      /**< constant table */
-    struct loop_list *current_loop; /**< used while compiling loops */
+    Looplist *current_loop;     /**< used while compiling loops */
 } CompileState;
+
+
+typedef struct luci_scope_ {
+    unsigned int nparams;
+    InstructionArray *instr_array;
+    Instruction *ip;
+    SymbolTable *ltable;
+    SymbolTable *gtable;
+    ConstantTable *ctable;
+    Looplist *current_loop;
+} LuciScope;
 
 
 CompileState * compile_ast(CompileState *, AstNode *);

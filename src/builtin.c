@@ -16,84 +16,231 @@
 #include "builtin.h"
 #include "object.h"
 
-/** Closes a file pointer opened during the creation
- * of a LuciFileObj
- * @param fp C file pointer to close
- * @returns 1 on success, EOF on failure
- */
-static int close_file(FILE *fp)
-{
-    int ret = 1;
-    if (fp) {
-	ret = fclose(fp);
-	fp = NULL;
-    }
-    return ret;
-}
+static LuciLibFuncObj builtin_print = {
+    {&obj_libfunc_t},
+    luci_print,
+    "prints string representations of objects to stdout",
+    0
+};
 
-/** List of builtin symbol names */
-struct constant_record constants_registry[] =
-{
-    {"stdout", 0},
-    {"stderr", 0},
-    {"stdin", 0},
-    {"e", 0},
-    {"pi", 0},
-    {0, 0}
+static LuciLibFuncObj builtin_help = {
+    {&obj_libfunc_t},
+    luci_help,
+    "prints a help string for a given object",
+    0
+};
+
+static LuciLibFuncObj builtin_exit = {
+    {&obj_libfunc_t},
+    luci_exit,
+    "abruptly exits Luci",
+    0
+};
+
+static LuciLibFuncObj builtin_input = {
+    {&obj_libfunc_t},
+    luci_readline,
+    "reads a line from stdin",
+    0
+};
+
+static LuciLibFuncObj builtin_readline = {
+    {&obj_libfunc_t},
+    luci_readline,
+    "reads a line from a file",
+    1
+};
+
+static LuciLibFuncObj builtin_typeof = {
+    {&obj_libfunc_t},
+    luci_typeof,
+    "returns the type of a given object",
+    1
+};
+
+static LuciLibFuncObj builtin_assert = {
+    {&obj_libfunc_t},
+    luci_assert,
+    "asserts that an expression is true",
+    1
+};
+
+static LuciLibFuncObj builtin_cast_str = {
+    {&obj_libfunc_t},
+    luci_cast_str,
+    "casts an object to a string",
+    1
+};
+
+static LuciLibFuncObj builtin_cast_int = {
+    {&obj_libfunc_t},
+    luci_cast_int,
+    "casts an object to an int",
+    1
+};
+
+static LuciLibFuncObj builtin_cast_float = {
+    {&obj_libfunc_t},
+    luci_cast_float,
+    "casts an object to a float",
+    1
+};
+
+static LuciLibFuncObj builtin_hex = {
+    {&obj_libfunc_t},
+    luci_hex,
+    "returns a string of the hex representation of an int",
+    1
+};
+
+static LuciLibFuncObj builtin_fopen = {
+    {&obj_libfunc_t},
+    luci_fopen,
+    "opens a file",
+    1
+};
+
+static LuciLibFuncObj builtin_fclose = {
+    {&obj_libfunc_t},
+    luci_fclose,
+    "closes a file",
+    1
+};
+
+static LuciLibFuncObj builtin_fread = {
+    {&obj_libfunc_t},
+    luci_fread,
+    "reads a file",
+    1
+};
+
+static LuciLibFuncObj builtin_fwrite = {
+    {&obj_libfunc_t},
+    luci_fwrite,
+    "writes a string to a file",
+    2
+};
+
+static LuciLibFuncObj builtin_flines = {
+    {&obj_libfunc_t},
+    luci_flines,
+    "reads the lines in a file as a list",
+    1
+};
+
+static LuciLibFuncObj builtin_range = {
+    {&obj_libfunc_t},
+    luci_range,
+    "generates a range of integers",
+    1
+};
+
+static LuciLibFuncObj builtin_sum = {
+    {&obj_libfunc_t},
+    luci_sum,
+    "computes the sum of a list of numbers",
+    1
+};
+
+static LuciLibFuncObj builtin_len = {
+    {&obj_libfunc_t},
+    luci_len,
+    "computes the length of a list",
+    1
+};
+
+static LuciLibFuncObj builtin_max = {
+    {&obj_libfunc_t},
+    luci_max,
+    "computes the sum of a list of numbers",
+    1
+};
+
+static LuciLibFuncObj builtin_min = {
+    {&obj_libfunc_t},
+    luci_min,
+    "computes the sum of a list of numbers",
+    1
+};
+
+static LuciLibFuncObj builtin_contains = {
+    {&obj_libfunc_t},
+    luci_contains,
+    "determines if the given container contains a given object",
+    2
+};
+
+static LuciFileObj builtin_stdout = {
+    {&obj_file_t},
+    NULL,
+    0,
+    f_append_m
+};
+
+static LuciFileObj builtin_stderr = {
+    {&obj_file_t},
+    NULL,
+    0,
+    f_append_m
+};
+
+static LuciFileObj builtin_stdin = {
+    {&obj_file_t},
+    NULL,
+    0,
+    f_read_m
+};
+
+static LuciFloatObj builtin_e = {
+    {&obj_float_t},
+    M_E
+};
+
+static LuciFloatObj builtin_pi = {
+    {&obj_float_t},
+    M_PI
+};
+
+/** List of all builtin library symbols and their corresponding objects */
+const LuciObjectRecord builtins_registry[] = {
+    {"print",       (LuciObject*)&builtin_print},
+    {"help",        (LuciObject*)&builtin_help},
+//  {"dir",         (LuciObject*)&builtin_dir},
+    {"exit",        (LuciObject*)&builtin_exit},
+    {"input",       (LuciObject*)&builtin_input},
+    {"readline",    (LuciObject*)&builtin_readline},
+    {"type",        (LuciObject*)&builtin_typeof},
+    {"assert",      (LuciObject*)&builtin_assert},
+    {"str",         (LuciObject*)&builtin_cast_str},
+    {"int",         (LuciObject*)&builtin_cast_int},
+    {"float",       (LuciObject*)&builtin_cast_float},
+    {"hex",         (LuciObject*)&builtin_hex},
+    {"open",        (LuciObject*)&builtin_fopen},
+    {"close",       (LuciObject*)&builtin_fclose},
+    {"read",        (LuciObject*)&builtin_fread},
+    {"write",       (LuciObject*)&builtin_fwrite},
+    {"readlines",   (LuciObject*)&builtin_flines},
+    {"range",       (LuciObject*)&builtin_range},
+    {"sum",         (LuciObject*)&builtin_sum},
+    {"len",         (LuciObject*)&builtin_len},
+    {"max",         (LuciObject*)&builtin_max},
+    {"min",         (LuciObject*)&builtin_min},
+    {"contains",    (LuciObject*)&builtin_contains},
+    {"stdout",      (LuciObject*)&builtin_stdout},
+    {"stderr",      (LuciObject*)&builtin_stderr},
+    {"stdin",       (LuciObject*)&builtin_stdin},
+    {"e",           (LuciObject*)&builtin_e},
+    {"pi",          (LuciObject*)&builtin_pi},
+    {NULL, NULL}
 };
 
 /** Initializes all builtin symbols with LuciObjects */
-void init_luci_constants(void)
+void init_luci_builtins(void)
 {
-    /** stdout */
-    LuciObject *luci_stdout = LuciFile_new(stdout, 0, f_append_m);
-    constants_registry[0].object = luci_stdout;
-
-    /** stderr */
-    LuciObject *luci_stderr = LuciFile_new(stderr, 0, f_append_m);
-    constants_registry[1].object = luci_stderr;
-
-    /** stdin */
-    LuciObject *luci_stdin = LuciFile_new(stdin, 0, f_read_m);
-    constants_registry[2].object = luci_stdin;
-
-    /** e */
-    LuciObject *luci_e = LuciFloat_new(M_E);
-    constants_registry[3].object = luci_e;
-
-    /** pi */
-    LuciObject *luci_pi = LuciFloat_new(M_PI);
-    constants_registry[4].object = luci_pi;
+    builtin_stdout.ptr = stdout;
+    builtin_stderr.ptr = stderr;
+    builtin_stdin.ptr = stdin;
 }
-
-/** List of all builtin library function names and their corresponding
- * C function pointers */
-const struct builtin_record builtins_registry[] = {
-    {"help", luci_help},
-    {"print",  luci_print},
-/* {"dir", luci_dir}, */
-    {"exit", luci_exit},
-    {"input", luci_readline},
-    {"readline", luci_readline},
-    {"type",  luci_typeof},
-    {"assert", luci_assert},
-    {"str", luci_cast_str},
-    {"int", luci_cast_int},
-    {"float", luci_cast_float},
-    {"hex", luci_hex},
-    {"open", luci_fopen},
-    {"close", luci_fclose},
-    {"read", luci_fread},
-    {"write", luci_fwrite},
-    {"readlines", luci_flines},
-    {"range", luci_range},
-    {"sum", luci_sum},
-    {"len", luci_len},
-    {"max", luci_max},
-    {"min", luci_min},
-    {"contains", luci_contains},
-    {0, 0}
-};
 
 /** Prints a help message, which is essentially just a list of
  * builtin library functions for now
@@ -106,27 +253,39 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
 {
     int width = 32;
 
-    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
-    printf("              HELP               \n");
-    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
-    printf("        BUILTIN FUNCTIONS        \n");
-    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+    if (c == 0) {
+        printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+        printf("              HELP               \n");
+        printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+        printf("        BUILTIN FUNCTIONS        \n");
+        printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
 
-    int i, len, f, l, j;
-    for (i = 0; builtins_registry[i].name != 0; i++)
-    {
-	len = strlen(builtins_registry[i].name);
-	f = (width - len) / 2;
-	l = width - f;
-	for (j = 0; j < f; j++)
-	    printf(" ");
-	printf("%s", builtins_registry[i].name);
-	for (j = 0; j < l; j++)
-	    printf(" ");
-	printf("\n");
+        int i, len, f, l, j;
+        for (i = 0; builtins_registry[i].name != 0; i++)
+        {
+            len = strlen(builtins_registry[i].name);
+            f = (width - len) / 2;
+            l = width - f;
+            for (j = 0; j < f; j++)
+                printf(" ");
+            printf("%s", builtins_registry[i].name);
+            for (j = 0; j < l; j++)
+                printf(" ");
+            printf("\n");
+        }
+        printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
+    } else {
+        int i;
+        for (i = 0; i < c; i++) {
+            LuciObject *o = args[i];
+            if (!ISTYPE(o, obj_libfunc_t)) {
+                printf("No help available for object of type %s\n",
+                        o->type->type_name);
+            } else {
+                printf("%s\n", AS_LIBFUNC(o)->help);
+            }
+        }
     }
-    printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
-
     return LuciNilObj;
 }
 
@@ -450,6 +609,22 @@ static file_mode get_file_mode(const char *req_mode)
 	return -1;
     }
 }
+
+/** Closes a file pointer opened during the creation
+ * of a LuciFileObj
+ * @param fp C file pointer to close
+ * @returns 1 on success, EOF on failure
+ */
+static int close_file(FILE *fp)
+{
+    int ret = 1;
+    if (fp) {
+	ret = fclose(fp);
+	fp = NULL;
+    }
+    return ret;
+}
+
 
 /**
  * Opens a file in read, write, or append mode.

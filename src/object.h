@@ -31,8 +31,7 @@
 #define MAKE_INDEX_POS(idx, len) while ((idx) < 0) { (idx) = (len) - (idx); }
 
 /** Generic Object which allows for dynamic typing */
-typedef struct _LuciObject
-{
+typedef struct LuciObject_ {
     struct LuciObjectType *type;    /**< pointer to type implementation */
 } LuciObject;
 
@@ -96,21 +95,21 @@ extern LuciObject LuciNilInstance;
 #define LuciNilObj &LuciNilInstance
 
 /** Integer object Type */
-typedef struct _LuciIntObj
+typedef struct LuciIntObj_
 {
     LuciObject base;    /**< base implementation */
     long i;             /**< 'long' numerical value */
 } LuciIntObj;
 
 /** Floating-point object type */
-typedef struct _LuciFloatObj
+typedef struct LuciFloatObj_
 {
     LuciObject base;    /**< base implementation */
     double f;           /**< double-precision floating point value */
 } LuciFloatObj;
 
 /** String object type */
-typedef struct _LuciString {
+typedef struct LuciString_ {
     LuciObject base;    /**< base implementation */
     long len;           /**< string length */
     char * s;           /**< pointer to C-string */
@@ -120,15 +119,15 @@ typedef struct _LuciString {
 typedef enum { f_read_m, f_write_m, f_append_m } file_mode;
 
 /** File object type */
-typedef struct _LuciFile {
+typedef struct LuciFile_ {
     LuciObject base;    /**< base implementation */
-    long size;          /**< file length in bytes */
     FILE * ptr;         /**< pointer to C-file pointer */
+    long size;          /**< file length in bytes */
     file_mode mode;     /**< current mode file was opened in */
 } LuciFileObj;
 
 /** List object type */
-typedef struct _LuciList {
+typedef struct LuciList_ {
     LuciObject base;    /**< base implementation */
     unsigned int count;	/**< current number of items in list */
     unsigned int size;	/**< current count of allocated items */
@@ -136,7 +135,7 @@ typedef struct _LuciList {
 } LuciListObj;
 
 /** Map object type */
-typedef struct _LuciMap {
+typedef struct LuciMap_ {
     LuciObject base;    /**< base implementation */
     unsigned int size_idx;  /**< identifier for current size of table */
     unsigned int collisions;    /**< number of hash collisions */
@@ -147,7 +146,7 @@ typedef struct _LuciMap {
 } LuciMapObj;
 
 /** Iterator object type (internal) */
-typedef struct _LuciIterator {
+typedef struct LuciIterator_ {
     LuciObject base;        /**< base implemenatation */
     LuciObject *idx;        /**< current index */
     int step;               /**< amount to increment by */
@@ -155,19 +154,21 @@ typedef struct _LuciIterator {
 } LuciIteratorObj;
 
 /** User-defined function type */
-typedef struct _LuciFunction {
+typedef struct LuciFunction_ {
     LuciObject base;    /**< base implementation */
     void *frame;        /**< pointer to Frame struct */
 } LuciFunctionObj;
 
 
 /** Function pointer signature for Luci's builtin library functions */
-typedef LuciObject* (*LuciBuiltin)(LuciObject **, unsigned int);
+typedef LuciObject* (*LuciCFunc)(LuciObject **, unsigned int);
 
 /** Library function type */
-typedef struct _LuciLibFunc {
+typedef struct LuciLibFunc_ {
     LuciObject base;        /**< base implementation */
-    LuciBuiltin func;       /**< pointer to a builtin function */
+    LuciCFunc func;         /**< pointer to a Luci C function */
+    char *help;             /**< help string for Luci C function */
+    int min_args;           /**< minimum number of arguments to function */
 } LuciLibFuncObj;
 
 /** convenient method of accessing an object's type functions */
@@ -193,8 +194,10 @@ typedef struct _LuciLibFunc {
 #define AS_FILE(o)      ((LuciFileObj *)(o))
 /** casts LuciObject o to a LuciIteratorObj */
 #define AS_ITERATOR(o)  ((LuciIteratorObj *)(o))
-/** casts LuciObject o to a LuciMapObj */
+/** casts LuciObject o to a LuciFunctionObj */
 #define AS_FUNCTION(o)  ((LuciFunctionObj *)(o))
+/** casts LuciObject o to a LuciLibFuncObj */
+#define AS_LIBFUNC(o)  ((LuciLibFuncObj *)(o))
 
 
 LuciObject *LuciInt_new(long l);
@@ -205,7 +208,7 @@ LuciObject *LuciList_new();
 LuciObject *LuciMap_new();
 LuciObject *LuciIterator_new(LuciObject *list, int step);
 LuciObject *LuciFunction_new(void *frame);
-LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int));
+LuciObject *LuciLibFunc_new(LuciCFunc fptr, char *help, int min_args);
 
 unsigned int string_hash_0(LuciObject *s);
 unsigned int string_hash_1(LuciObject *s);

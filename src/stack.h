@@ -13,7 +13,7 @@
 
 /** A very simple, unsafe stack implementation
  * using `void *` pointers */
-typedef struct _Stack {
+typedef struct stack_ {
     void **array;   /**< array of void * pointers to objects */
     uint32_t top;   /**< stack pointer */
     uint32_t size;  /**< size of allocated array */

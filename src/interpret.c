@@ -398,7 +398,9 @@ void eval(Frame *frame)
             /* call library function */
             else if (ISTYPE(x, obj_libfunc_t)) {
                 if (a >= MAX_LIBFUNC_ARGS) {
-                    DIE("%s", "Too many arguments to function.\n");
+                    DIE("%s\n", "Too many arguments to function");
+                } else if (a < AS_LIBFUNC(x)->min_args) {
+                    DIE("%s\n", "Missing arguments to function");
                 }
 
                 /* pop args and push into args array */

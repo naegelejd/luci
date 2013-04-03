@@ -340,11 +340,13 @@ LuciObject *LuciFunction_new(void *frame)
  * @param func C function pointer matching LuciLibFunc signature
  * @returns new LuciLibFuncObj
  */
-LuciObject *LuciLibFunc_new(LuciObject * (*func)(LuciObject **, unsigned int))
+LuciObject *LuciLibFunc_new(LuciCFunc fptr, char *help, int min_args)
 {
     LuciLibFuncObj *o = gc_malloc(sizeof(*o));
     SET_TYPE(o, obj_libfunc_t);
-    o->func = func;
+    o->func = fptr;
+    o->help = help;
+    o->min_args = min_args;
     return (LuciObject *)o;
 }
 
@@ -549,7 +551,8 @@ static LuciObject *LuciFunction_copy(LuciObject *orig)
  */
 static LuciObject *LuciLibFunc_copy(LuciObject *orig)
 {
-    return LuciLibFunc_new(((LuciLibFuncObj *)orig)->func);
+    LuciLibFuncObj *tmp = (LuciLibFuncObj *)orig;
+    return LuciLibFunc_new(tmp->func, tmp->help, tmp->min_args);
 }
 
 

@@ -59,6 +59,7 @@ static unsigned int table_sizes[] = {
 /** Type member table for LuciMapObj */
 LuciObjectType obj_map_t = {
     "map",
+    SHALLOW_COPIED,
     LuciMap_copy,
     unary_nil,
     LuciMap_asbool,

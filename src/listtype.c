@@ -20,6 +20,7 @@ static LuciObject *list_set_object(LuciObject *list, LuciObject *item, long inde
 /** Type member table for LuciListObj */
 LuciObjectType obj_list_t = {
     "list",
+    SHALLOW_COPIED,
     LuciList_copy,
     unary_nil,
     LuciList_asbool,

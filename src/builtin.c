@@ -65,6 +65,13 @@ static LuciLibFuncObj builtin_assert = {
     1
 };
 
+static LuciLibFuncObj builtin_copy = {
+    {&obj_libfunc_t},
+    luci_copy,
+    "returns a deep copy of a given object",
+    1
+};
+
 static LuciLibFuncObj builtin_cast_str = {
     {&obj_libfunc_t},
     luci_cast_str,
@@ -211,6 +218,7 @@ const LuciObjectRecord builtins_registry[] = {
     {"readline",    (LuciObject*)&builtin_readline},
     {"type",        (LuciObject*)&builtin_typeof},
     {"assert",      (LuciObject*)&builtin_assert},
+    {"copy",        (LuciObject*)&builtin_copy},
     {"str",         (LuciObject*)&builtin_cast_str},
     {"int",         (LuciObject*)&builtin_cast_int},
     {"float",       (LuciObject*)&builtin_cast_float},
@@ -455,6 +463,22 @@ LuciObject *luci_assert(LuciObject **args, unsigned int c)
         assert(AS_MAP(item)->count);
     }
     return LuciNilObj;
+}
+
+/**
+ * Deep copies an object
+ *
+ * @param args list of args
+ * @param c number of args
+ * @returns deep copy of argument
+ */
+LuciObject *luci_copy(LuciObject **args, unsigned int c)
+{
+    if (c < 1) {
+        DIE("%s\n", "Missing argument to copy()");
+    }
+    LuciObject *o = args[0];
+    return o->type->copy(o);
 }
 
 /**

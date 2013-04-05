@@ -1,0 +1,79 @@
+# ints, floats (deep copied)
+print("--- numbers ---");
+def mutate_number(i, f) {
+    i = 42;
+    f = pi;
+}
+
+I = 7;
+F = 2.71;
+print(I, F);
+mutate_number(I, F);
+print(I, F);
+
+# strings (deep copied)
+print("\n--- strings ---");
+s1 = "hello";
+s2 = s1;
+s2[0] = "y";
+print(s1, s2);
+
+def mutate_string(s) {
+    tmp = s;
+    for i in range(len(s)) {
+        s[i] = tmp[-(i+1)];
+    }
+    print(s);
+    s = "achoo";
+}
+
+word = "foobar";
+print(word);
+mutate_string(word);
+print(word);
+
+
+# lists (shallow copied)
+print("\n--- lists ---");
+p = range(5);
+q = p;
+r = copy(p);
+print(p, q, r);
+q[4] = 12345;
+print(p, q, r);
+
+def mutate_list(p) {
+    for i in p {
+        if p[i] % 2 == 0 {
+            p[i] = -(p[i] + 1); # can modify list
+        }
+    }
+
+    p = range(42);      # cannot replace reference
+}
+
+l = range(12);
+print(l);
+mutate_list(l);
+print(l);
+
+
+# maps (shallow copied)
+print("\n--- maps ---");
+x = {"car":1, "truck":2};
+y = x;
+z = copy(x);
+print(x, y, z);
+x["car"] = 3;
+y["horse"] = "awesome";
+print(x, y, z);
+
+def mutate_map(p) {
+    p["done"] = "for";  # can modify map
+    p = "hello";        # cannot replace reference
+}
+
+m = {"joe":25, "luci":3};
+print(m);
+mutate_map(m);
+print(m);

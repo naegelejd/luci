@@ -32,6 +32,7 @@ static void LuciInt_print(LuciObject *);
 /** Type member table for LuciIntObj */
 LuciObjectType obj_int_t = {
     "int",
+    DEEP_COPIED,
     LuciInt_copy,
     LuciInt_repr,
     LuciInt_asbool,

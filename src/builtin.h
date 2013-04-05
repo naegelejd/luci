@@ -32,6 +32,7 @@ LuciObject *luci_print(LuciObject **, unsigned int);
 LuciObject *luci_readline(LuciObject **, unsigned int);
 LuciObject *luci_typeof(LuciObject **, unsigned int);
 LuciObject *luci_assert(LuciObject **, unsigned int);
+LuciObject *luci_copy(LuciObject **, unsigned int);
 
 LuciObject *luci_cast_int(LuciObject **, unsigned int);
 LuciObject *luci_cast_float(LuciObject **, unsigned int);

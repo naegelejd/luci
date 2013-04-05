@@ -19,6 +19,7 @@ static void LuciString_print(LuciObject *);
 /** Type member table for LuciStringObj */
 LuciObjectType obj_string_t = {
     "string",
+    DEEP_COPIED,
     LuciString_copy,
     LuciString_repr,
     LuciString_asbool,
@@ -271,7 +272,7 @@ static LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
             /* return the former char */
             return LuciString_new(s);
         } else {
-            DIE("Cannot put an object of type %s into a string\n", 
+            DIE("Cannot put an object of type %s into a string\n",
                     c->type->type_name);
         }
     } else {

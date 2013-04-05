@@ -1,0 +1,31 @@
+# hex
+a = 0x1aB2d;
+b = 0XDEADBEEF;
+print(a, hex(a));
+print(b, hex(b));
+
+# floats
+a = 3.14159;
+b = .4567;
+c = 12.;
+
+d = 1.23e+3;
+d = .56E-2;
+e = 3E7;
+f = 4.E-5;
+
+print(a);
+print(b);
+print(c);
+print(d);
+print(e);
+print(f);
+
+# strings
+a = ("");
+b = ("\n");
+c = ("a");
+d = ("b\n");
+e = "\tc\t";
+               
+print(a + b + c + d + e);

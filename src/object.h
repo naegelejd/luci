@@ -28,17 +28,20 @@
  * @param idx index to make positive
  * @param len length of container being indexed
  */
-#define MAKE_INDEX_POS(idx, len) while ((idx) < 0) { (idx) = (len) - (idx); }
+#define MAKE_INDEX_POS(idx, len) while ((idx) < 0) { (idx) = (len) + (idx); }
 
 /** Generic Object which allows for dynamic typing */
 typedef struct LuciObject_ {
     struct LuciObjectType *type;    /**< pointer to type implementation */
 } LuciObject;
 
+typedef enum { DEEP_COPIED = 0, SHALLOW_COPIED = 1} copy_style;
+
 /** Object type virtual method table */
 typedef struct LuciObjectType
 {
-    char *type_name;                    /**< name of the type */
+    char *type_name;        /**< name of the type */
+    copy_style shallow;     /**< shallow = don't copy on assignment */
 
     /* unary methods */
     LuciObject* (*copy)(LuciObject *);  /**< copy constructor */

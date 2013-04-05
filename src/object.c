@@ -33,6 +33,7 @@ static void LuciLibFunc_print(LuciObject *in);
 /** Type member table for LuciNilObj */
 LuciObjectType obj_nil_t = {
     "nil",
+    DEEP_COPIED,
     LuciNil_copy,
     unary_nil,
     LuciNil_asbool,
@@ -71,6 +72,7 @@ LuciObjectType obj_nil_t = {
 /** Type member table for LuciFileObj */
 LuciObjectType obj_file_t = {
     "file",
+    DEEP_COPIED,
     unary_nil,
     unary_nil,
     LuciFile_asbool,
@@ -109,6 +111,7 @@ LuciObjectType obj_file_t = {
 /** Type member table for LuciIteratorObj */
 LuciObjectType obj_iterator_t = {
     "iterator",
+    DEEP_COPIED,
     LuciIterator_copy,
     unary_nil,
     LuciIterator_asbool,
@@ -147,6 +150,7 @@ LuciObjectType obj_iterator_t = {
 /** Type member table for LuciFunctionObj */
 LuciObjectType obj_func_t = {
     "function",
+    DEEP_COPIED,
     LuciFunction_copy,
     unary_nil,
     LuciFunction_asbool,
@@ -185,6 +189,7 @@ LuciObjectType obj_func_t = {
 /** Type member table for LuciLibFuncObj */
 LuciObjectType obj_libfunc_t = {
     "libfunction",
+    DEEP_COPIED,
     LuciLibFunc_copy,
     unary_nil,
     LuciLibFunc_asbool,

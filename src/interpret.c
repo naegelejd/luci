@@ -354,7 +354,11 @@ void eval(Frame *frame)
             /* pop object off of stack */
             x = st_pop(&lstack);
             /* store the new object */
-            frame->locals[a] = x;
+            if (x->type->shallow) {
+                frame->locals[a] = x;
+            } else {
+                frame->locals[a] = x->type->copy(x);
+            }
         FETCH(1);
         DISPATCH;
 
@@ -384,8 +388,11 @@ void eval(Frame *frame)
                 /* pop arguments and push COPIES into locals */
                 for (i = 0; i < a; i++) {
                     y = st_pop(&lstack);
-                    z = y->type->copy(y);
-                    frame->locals[i] = z;
+                    if (y->type->shallow) {
+                        frame->locals[i] = y;
+                    } else {
+                        frame->locals[i] = y->type->copy(y);
+                    }
                 }
 
                 /* reset instruction pointer and carry on our merry way */
@@ -407,7 +414,11 @@ void eval(Frame *frame)
                 /* must happen in reverse */
                 for (i = a - 1; i >= 0; i--) {
                     y = st_pop(&lstack);
-                    lfargs[i] = y->type->copy(y);
+                    if (y->type->shallow) {
+                        lfargs[i] = y;
+                    } else {
+                        lfargs[i] = y->type->copy(y);
+                    }
                 }
 
                 /* call func, passing args array and arg count */

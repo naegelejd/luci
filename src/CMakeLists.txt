@@ -10,28 +10,57 @@ ADD_FLEX_BISON_DEPENDENCY(myscanner myparser)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+set(LUCI_SOURCE_FILES
+    main.c
+    gc.c
+    stack.c
+    ast.c
+    object.c
+    inttype.c
+    floattype.c
+    stringtype.c
+    listtype.c
+    maptype.c
+    symbol.c
+    constant.c
+    compile.c
+    interpret.c
+    builtin.c
+)
+
+set(LUCI_HEADER_FILES
+    luci.h
+    gc.h
+    stack.h
+    ast.h
+    object.h
+    symbol.h
+    constant.h
+    compile.h
+    interpret.h
+    builtin.h
+    dispatch.h 
+)
+
 add_executable(
     ${LUCI_EXECUTABLE}
     ${BISON_myparser_OUTPUTS}
     ${FLEX_myscanner_OUTPUTS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/gc.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stack.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/ast.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/object.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/inttype.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/floattype.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/stringtype.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/listtype.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/maptype.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/symbol.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/constant.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/compile.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/interpret.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/builtin.c
+    ${LUCI_SOURCE_FILES}
 )
 
 # link only against math library
 target_link_libraries(${LUCI_EXECUTABLE} m)
 
 install(TARGETS ${LUCI_EXECUTABLE} DESTINATION bin)
+
+message(STATUS ${LUCI_SOURCE_FILES})
+message(STATUS ${LUCI_HEADER_FILES})
+
+set_source_files_properties(tags PROPERTIES GENERATED true)
+add_custom_command(
+    OUTPUT tags
+    COMMAND ctags ${LUCI_SOURCE_FILES} ${LUCI_HEADER_FILES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_custom_target(ctags DEPENDS tags)

@@ -1,3 +1,45 @@
+The garbage collector maintains a single heap (provided by malloc).
+
+EVERYTHING are allocated via the garbage collector.
+The size of each allocated object is irrelevant.
+
+    def collect(roots):
+        for each root in roots:
+            gc(root)
+
+    def gc(obj):
+        get a list of pointers that obj references and the size of each child referenced
+        for each pointer and size:
+            copy pointer:pointer+size
+            put forwarding pointer at child's former address
+            update obj's reference to new child's address
+            gc(child)
+    
+
+Native function support
+An issue arises if, in a native C function, the following occurs:
+ 1. allocate container object
+ 2. begin allocating objects to put in container
+ 3. garbage collection runs while allocating a child object
+The container object is not yet referenced by any roots (e.g. symbols or interpreter stack)
+so the default collection algorithm will collect the container and children. The container
+object is no longer valid, but the native function will likely continue appending/inserting
+child objects.
+
+Solution:
+Require native functions to supply the address of the local pointer being used to store
+the result of the allocation:
+
+    LuciList *list = gc_alloc(LuciListType, &list);
+
+The collector will keep track of these pointers and simply update the local pointer remotely
+if collection occurs mid-function. The native function need never be aware that it's local
+pointer to the container object changed where it's pointing to altogether.
+
+
+
+OLD NOTES
+-------------------------------------------------------------------------------
 The garbage collector contains an arena structure for each possible size of
 LuciObject. Each arena contains a dynamic array of pool structures, and a count
 of how many pools are allocated and active. Each pool contains a static byte

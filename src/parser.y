@@ -118,6 +118,8 @@ if_else:
                 { $$ = make_if_else($2, $4, NULL); }
     |   IF expr LBRACK statements RBRACK ELSE LBRACK statements RBRACK
                 { $$ = make_if_else($2, $4, $8); }
+    |   IF expr LBRACK statements RBRACK ELSE if_else
+                { $$ = make_if_else($2, $4, $7); }
     ;
 
 func_def:

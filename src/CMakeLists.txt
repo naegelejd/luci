@@ -54,9 +54,6 @@ target_link_libraries(${LUCI_EXECUTABLE} m)
 
 install(TARGETS ${LUCI_EXECUTABLE} DESTINATION bin)
 
-message(STATUS ${LUCI_SOURCE_FILES})
-message(STATUS ${LUCI_HEADER_FILES})
-
 set_source_files_properties(tags PROPERTIES GENERATED true)
 add_custom_command(
     OUTPUT tags

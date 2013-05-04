@@ -85,16 +85,6 @@ typedef enum {
 /** initial constant table size */
 #define BASE_COTABLE_SIZE   0xFF
 
-/** an instruction is a 32-bit unsigned int */
-typedef uint32_t Instruction;
-
-/** a dynamic array of instructions */
-typedef struct instruction_array_ {
-    unsigned int count;
-    unsigned int size;
-    Instruction *instructions;
-} InstructionArray;
-
 /** global symbol table for builtin functions */
 extern SymbolTable *builtin_symbols;
 /** global builtins array (from final builtins symbol table) */
@@ -125,17 +115,20 @@ typedef struct loop_list_ {
  *
  * Used in both compilation and mainly interpreting
  */
-typedef struct frame_ {
-    uint16_t nparams;       /**< number of parameters */
-    uint16_t nlocals;       /**< number of local symbols */
-    uint16_t nconstants;    /**< number of constants */
-    uint32_t ninstrs;       /**< total number of instructions */
-    Instruction *instructions;  /**< array of instructions */
-    Instruction *ip;            /**< current instruction pointer */
-    LuciObject **locals;        /**< array of local LuciObjects */
-    LuciObject **globals;       /**< array of global LuciObjects */
-    LuciObject **constants;     /**< array of constant LuciObjects */
-} Frame;
+/*
+ *typedef struct frame_ {
+ *    Instruction *instructions;  [>*< array of instructions <]
+ *    Instruction *ip;            [>*< current instruction pointer <]
+ *    LuciObject **locals;        [>*< array of local LuciObjects <]
+ *    LuciObject **globals;       [>*< array of global LuciObjects <]
+ *    LuciObject **constants;     [>*< array of constant LuciObjects <]
+ *    uint32_t ninstrs;       [>*< total number of instructions <]
+ *    uint16_t nparams;       [>*< number of parameters <]
+ *    uint16_t nlocals;       [>*< number of local symbols <]
+ *    uint16_t nconstants;    [>*< number of constants <]
+ *} Frame;
+ */
+
 
 /**
  * Essential state storage entity within compilation.
@@ -144,25 +137,14 @@ typedef struct frame_ {
  * or individual function definition scopes.
  */
 typedef struct compile_state_ {
-    uint32_t instr_count;       /**< instruction count */
-    uint32_t instr_alloc;       /**< size of instructions array */
     Instruction *instructions;  /**< array of instructions */
     SymbolTable *ltable;        /**< symbol table for locals */
     SymbolTable *gtable;        /**< symbol table for globals */
     ConstantTable *ctable;      /**< constant table */
     Looplist *current_loop;     /**< used while compiling loops */
+    uint32_t instr_count;       /**< instruction count */
+    uint32_t instr_alloc;       /**< size of instructions array */
 } CompileState;
-
-
-typedef struct luci_scope_ {
-    unsigned int nparams;
-    InstructionArray *instr_array;
-    Instruction *ip;
-    SymbolTable *ltable;
-    SymbolTable *gtable;
-    ConstantTable *ctable;
-    Looplist *current_loop;
-} LuciScope;
 
 
 CompileState * compile_ast(CompileState *, AstNode *);
@@ -170,14 +152,13 @@ CompileState * CompileState_new(void);
 CompileState * CompileState_refresh(CompileState *);
 void CompileState_delete(CompileState *);
 
-Frame * Frame_from_CompileState(CompileState *, uint16_t);
-void Frame_delete(Frame *);
-Frame * Frame_copy(Frame *);
-void Frame_delete_copy(Frame *);
-void Frame_delete_interactive(Frame *f);
+LuciObject * LuciFunction_from_CompileState(CompileState *, uint16_t);
+void LuciFunction_delete(LuciObject *);
+void LuciFunction_delete_copy(LuciObject *);
+void LuciFunction_delete_interactive(LuciObject *f);
 
-void print_instructions(Frame *);
+void print_instructions(LuciObject *);
 
-char * serialize_program(Frame *);
+char * serialize_program(LuciObject *);
 
 #endif

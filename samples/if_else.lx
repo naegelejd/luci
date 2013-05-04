@@ -2,9 +2,7 @@
 
 x = 2;
 
-if x > 1 {
-print("true");
-}
+if x > 1 { print("true"); }
 
 if x < 0 {
     x = 0;
@@ -13,13 +11,11 @@ if x < 0 {
 }
 
 if x % 2 == 1 {
-print("true again?");
+    print("true again?");
+} else if x / 2 == 33 {
+    print("this too?");
 } else {
-    if x / 2 == 33 {
-	print("this too?");
-    } else {
-	print("this is true!");
-    }
+    print("this is true!");
 }
 
 # demonstrating a few more builtin functions

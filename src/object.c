@@ -33,7 +33,9 @@ static void LuciLibFunc_print(LuciObject *in);
 /** Type member table for LuciNilObj */
 LuciObjectType obj_nil_t = {
     "nil",
-    DEEP_COPIED,
+    FLAG_DEEP_COPY,
+    sizeof(LuciNilObj),
+
     LuciNil_copy,
     unary_nil,
     LuciNil_asbool,
@@ -72,7 +74,9 @@ LuciObjectType obj_nil_t = {
 /** Type member table for LuciFileObj */
 LuciObjectType obj_file_t = {
     "file",
-    DEEP_COPIED,
+    FLAG_DEEP_COPY,
+    sizeof(LuciFileObj),
+
     unary_nil,
     unary_nil,
     LuciFile_asbool,
@@ -111,7 +115,9 @@ LuciObjectType obj_file_t = {
 /** Type member table for LuciIteratorObj */
 LuciObjectType obj_iterator_t = {
     "iterator",
-    DEEP_COPIED,
+    FLAG_DEEP_COPY,
+    sizeof(LuciIteratorObj),
+
     LuciIterator_copy,
     unary_nil,
     LuciIterator_asbool,
@@ -150,7 +156,9 @@ LuciObjectType obj_iterator_t = {
 /** Type member table for LuciFunctionObj */
 LuciObjectType obj_func_t = {
     "function",
-    DEEP_COPIED,
+    FLAG_DEEP_COPY,
+    sizeof(LuciFunctionObj),
+
     LuciFunction_copy,
     unary_nil,
     LuciFunction_asbool,
@@ -189,7 +197,9 @@ LuciObjectType obj_func_t = {
 /** Type member table for LuciLibFuncObj */
 LuciObjectType obj_libfunc_t = {
     "libfunction",
-    DEEP_COPIED,
+    FLAG_DEEP_COPY,
+    sizeof(LuciLibFuncObj),
+
     LuciLibFunc_copy,
     unary_nil,
     LuciLibFunc_asbool,
@@ -331,11 +341,10 @@ LuciObject *LuciIterator_new(LuciObject *container, int step)
  * @param frame Frame struct defining function
  * @returns new LuciFunctionObj
  */
-LuciObject *LuciFunction_new(void *frame)
+LuciObject *LuciFunction_new()
 {
     LuciFunctionObj *o = gc_malloc(sizeof(*o));
     SET_TYPE(o, obj_func_t);
-    o->frame = frame;
     return (LuciObject *)o;
 }
 
@@ -425,7 +434,7 @@ void destroy(LuciObject *trash)
             (unsigned long) trash, trash->type);
 
     // destroy the LuciObject itself
-    gc_free(trash);
+    free(trash);
     trash = NULL;
 }
 */
@@ -545,7 +554,39 @@ static LuciObject *LuciIterator_copy(LuciObject *orig)
  */
 static LuciObject *LuciFunction_copy(LuciObject *orig)
 {
-    return LuciFunction_new(((LuciFunctionObj *)orig)->frame);
+    if (orig == NULL) {
+        DIE("%s", "Can't copy NULL function\n");
+    }
+
+    LuciObject *copy = LuciFunction_new();
+    LuciFunctionObj *oldf = AS_FUNCTION(orig);
+    LuciFunctionObj *newf = AS_FUNCTION(copy);
+
+    newf->nparams = oldf->nparams;
+    newf->nlocals = oldf->nlocals;
+    newf->nconstants = oldf->nconstants;
+    newf->ip = oldf->ip;
+    newf->ninstrs = oldf->ninstrs;
+    newf->instructions = oldf->instructions;
+    newf->globals = oldf->globals;
+    newf->constants = oldf->constants;
+
+    LUCI_DEBUG("Copying frame:\nnparams: %d\nnlocals: %d\nnconstants: %d\n",
+            newf->nparams, newf->nlocals, newf->nconstants);
+
+    /* Copy the frame's local variable array */
+    LuciObject **locals = alloc(newf->nlocals * sizeof(*locals));
+    int i;
+    for (i = 0; i < newf->nlocals; i++) {
+        if (oldf->locals[i]) {
+            /* copy the object */
+            LuciObject *lcl = oldf->locals[i];
+            locals[i] = lcl->type->copy(lcl);
+        }
+    }
+    newf->locals = locals;
+
+    return copy;
 }
 
 /**
@@ -583,7 +624,7 @@ static LuciObject* LuciIterator_asbool(LuciObject *o)
     LuciObject *res = LuciNilObj;
 
     LuciObject *container = AS_ITERATOR(o)->container;
-    unsigned int len;
+    unsigned int len = 0;
     if (ISTYPE(container, obj_list_t)) {
         len = AS_LIST(container)->count;
     } else if (ISTYPE(container, obj_map_t)) {

@@ -417,8 +417,6 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
  */
 LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 {
-    char *which;
-
     if (c < 1) {
 	DIE("%s", "Missing parameter to type()\n");
     }
@@ -591,7 +589,6 @@ LuciObject *luci_hex(LuciObject **args, unsigned int c)
 LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
 {
     LuciObject *ret = LuciNilObj;
-    char *s = NULL;
 
     if (c < 1) {
 	DIE("%s", "Missing parameter to str()\n");
@@ -940,7 +937,6 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
     double sum = 0;
     int i, found_float = 0;
     for (i = 0; i < AS_LIST(list)->count; i++) {
-        LuciIntObj intobj;
 	item = AS_LIST(list)->items[i];
 	if (!item) {
 	    DIE("%s", "Can't calulate sum of list containing NULL value\n");

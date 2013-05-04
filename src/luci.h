@@ -41,6 +41,11 @@
 #define MAX_INT_DIGITS      (CHAR_BIT * (sizeof(long) / 3) + 3)
 #define MAX_FLOAT_DIGITS    (CHAR_BIT * (sizeof(double) / 3) + 3)
 
+
+/** an instruction is a 32-bit unsigned int */
+typedef uint32_t Instruction;
+
+
 #ifdef DEBUG
 
 /**

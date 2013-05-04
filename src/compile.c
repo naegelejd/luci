@@ -112,7 +112,7 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
             push_instr(cs, LOADG, a);
             return;
         }
-    } 
+    }
 
     /* didn't find symbol in the globals table either */
     a = symtable_id(builtin_symbols, node->data.id.val, SYMFIND);
@@ -135,7 +135,6 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
  */
 static void compile_unary_expr(AstNode *node, CompileState *cs)
 {
-    int a;
     compile(node->data.unexpr.right, cs);
     /* offset by opcode 'NEG', which is the first binary opcode */
     push_instr(cs, NEG + (node->data.unexpr.op - op_neg_t), 0);
@@ -149,7 +148,6 @@ static void compile_unary_expr(AstNode *node, CompileState *cs)
  */
 static void compile_binary_expr(AstNode *node, CompileState *cs)
 {
-    int a;
     compile(node->data.binexpr.left, cs);
     compile(node->data.binexpr.right, cs);
     /* offset by opcode 'ADD', which is the first binary opcode */
@@ -417,7 +415,7 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     }
 
     /* create function object */
-    LuciObject *obj = LuciFunction_new(Frame_from_CompileState(func_cs, nparams));
+    LuciObject *obj = LuciFunction_from_CompileState(func_cs, nparams);
 
     /* Clean up CompileState created to compile this function */
     CompileState_delete(func_cs);
@@ -630,7 +628,7 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
     int i;
     if (cs == NULL) {
         cs = CompileState_new();
-        
+
         /* allocate the global builtin symbol table */
         builtin_symbols = symtable_new(BASE_SYMTABLE_SCALE);
 
@@ -665,73 +663,29 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
 }
 
 /**
- * Return a copy of the given Frame
+ * Delete a LuciFunctionObj that was copied from another LuciFunctionObj
  *
- * @param f Frame to copy
- * @returns copy of the given Frame
+ * @param o LuciFunctionObj copy to delete
  */
-Frame *Frame_copy(Frame *f)
+void LuciFunction_delete_copy(LuciObject *o)
 {
-    int i;
-    Frame *copy = NULL;
-    LuciObject **locals = NULL;
-
+    LuciFunctionObj *f = AS_FUNCTION(o);
     if (f == NULL) {
-        DIE("%s", "Can't copy NULL frame\n");
-    }
-
-    copy = alloc(sizeof(*copy));
-
-    copy->nparams = f->nparams;
-    copy->nlocals = f->nlocals;
-    copy->nconstants = f->nconstants;
-    copy->ip = f->ip;
-    copy->ninstrs = f->ninstrs;
-    copy->instructions = f->instructions;
-    copy->globals = f->globals;
-    copy->constants = f->constants;
-
-    LUCI_DEBUG("Copying frame:\nnparams: %d\nnlocals: %d\nnconstants: %d\n",
-            copy->nparams, copy->nlocals, copy->nconstants);
-
-    /* Copy the frame's local variable array */
-    locals = alloc(copy->nlocals * sizeof(*locals));
-    for (i = 0; i < copy->nlocals; i++) {
-        if (f->locals[i]) {
-            /* copy the object */
-            LuciObject *lcl = f->locals[i];
-            locals[i] = lcl->type->copy(lcl);
-        }
-    }
-    copy->locals = locals;
-
-    return copy;
-}
-
-/**
- * Delete a Frame that was copied from another Frame
- *
- * @param f Frame copy to delete
- */
-void Frame_delete_copy(Frame *f)
-{
-    int i;
-
-    if (f == NULL) {
-        DIE("%s", "Can't delete a NULL copied frame\n");
+        DIE("%s", "Can't delete a NULL copied function\n");
     }
 
     free(f->locals);
-    free(f);
 }
 
 /**
- * Completely delete a Frame.
+ * Free a LuciFunctionObj's members.
  *
- * @param f Frame to delete
+ * @param o LuciFunctionObj to clean up
  */
-void Frame_delete(Frame *f)
+void LuciFunction_delete(LuciObject *o)
 {
+    LuciFunctionObj *f = AS_FUNCTION(o);
+
     if (f->instructions) {
         free(f->instructions);
     }
@@ -742,34 +696,33 @@ void Frame_delete(Frame *f)
     if (f->constants) {
         free(f->constants);
     }
-
-    free(f);
 }
 
 /**
- * Delete a Frame in Luci's interactive mode.
+ * Delete a LuciFunctionObj in Luci's interactive mode.
  *
- * The Frame's local symbol table and constant table must
+ * The LuciFunctionObj's local symbol table and constant table must
  * remain intact.
  *
- * @param f Frame to clean up
+ * @param o LuciFunctionObj to clean up
  */
-void Frame_delete_interactive(Frame *f)
+void LuciFunction_delete_interactive(LuciObject *o)
 {
-    free(f->instructions);
-    free(f);
+    LuciFunctionObj *f = AS_FUNCTION(o);
+    free(AS_FUNCTION(f)->instructions);
 }
 
 /**
- * Creates a new Frame derived from the given CompileState
+ * Creates a new function derived from the given CompileState
  *
  * @param cs given CompileState
- * @param nparams number of function parameters for function Frames
- * @returns new Frame
+ * @param nparams number of function parameters for resulting function
+ * @returns new LuciFunctionObj
  */
-Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
+LuciObject *LuciFunction_from_CompileState(CompileState *cs, uint16_t nparams)
 {
-    Frame *f = alloc(sizeof(*f));
+    LuciObject *o = LuciFunction_new();
+    LuciFunctionObj *f = AS_FUNCTION(o);
 
     f->nparams = nparams;
     f->ninstrs = cs->instr_count;
@@ -786,12 +739,12 @@ Frame *Frame_from_CompileState(CompileState *cs, uint16_t nparams)
         f->constants = cotable_get_objects(cs->ctable);
     }
     /* get globals array. array size doesn't matter because the global
-     * objects are never freed in a Frame_delete() call. */
+     * objects are never freed in a LuciFunction_delete() call. */
     if (cs->gtable) {
         f->globals = symtable_get_objects(cs->gtable);
     }
 
-    return f;
+    return (LuciObject *)f;
 }
 
 /**
@@ -822,7 +775,7 @@ CompileState *CompileState_new(void)
  */
 void CompileState_delete(CompileState *cs)
 {
-    /* free(cs->instructions); */ /* Frame owns instructions */
+    /* free(cs->instructions); */ /* LuciFunction owns instructions */
     symtable_delete(cs->ltable);
     cotable_delete(cs->ctable);
     free(cs);
@@ -974,16 +927,16 @@ static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end)
 /**
  * Not Implemented.
  *
- * Serializes a Frame to a string of bytes that can
+ * Serializes a LuciFunctionObj to a string of bytes that can
  * be written to a file.
  *
  * @param globalframe global frame to serialize
  * @returns C-style string of bytes
  */
-char* serialize_program(Frame *globalframe)
+char* serialize_program(LuciObject *globalscope)
 {
     int i;
-    for (i = 0; i < globalframe->nlocals; i++) {
+    for (i = 0; i < AS_FUNCTION(globalscope)->nlocals; i++) {
         /* print_object(globalframe->locals[i]); */
     }
     return NULL;
@@ -1044,25 +997,24 @@ static char *instruction_names[] = {
  *
  * Used for debugging (or fun)
  *
- * @param f Frame
+ * @param o LuciFunctionObj
  */
-void print_instructions(Frame *f)
+void print_instructions(LuciObject *o)
 {
-    int i, a, instr;
-    const char *name = NULL;
-    LuciObject *obj;
+    LuciFunctionObj *f = AS_FUNCTION(o);
 
+    int i;
     for (i = 0; i < f->ninstrs; i ++) {
-        a = OPARG(f->instructions[i]);
-        instr = OPCODE(f->instructions[i]);
+        int a = OPARG(f->instructions[i]);
+        Instruction instr = OPCODE(f->instructions[i]);
         printf("%03x: %s %d\n", i, instruction_names[instr], a);
     }
 
     for (i = 0; i < f->nlocals; i ++) {
-        obj = f->locals[i];
+        LuciObject *obj = f->locals[i];
         if (obj && (ISTYPE(f->locals[i], obj_func_t))) {
             printf("Symbol 0x%X:\n", i);
-            print_instructions(AS_FUNCTION(f->locals[i])->frame);
+            print_instructions(f->locals[i]);
         }
     }
 }

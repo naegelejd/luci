@@ -33,7 +33,9 @@ static void LuciFloat_print(LuciObject *);
 /** Type member table for LuciFloatObj */
 LuciObjectType obj_float_t = {
     "float",
-    DEEP_COPIED,
+    FLAG_DEEP_COPY,
+    sizeof(LuciFloatObj),
+
     LuciFloat_copy,
     LuciFloat_repr,
     LuciFloat_asbool,

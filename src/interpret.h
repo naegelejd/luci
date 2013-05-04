@@ -9,10 +9,10 @@
 #ifndef INTERPRET_H
 #define INTERPRET_H
 
-#include "compile.h"
+#include "object.h"
 
 #define MAX_LIBFUNC_ARGS 256
 
-void eval (Frame *);
+void eval (LuciObject *);
 
 #endif

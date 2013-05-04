@@ -35,13 +35,18 @@ typedef struct LuciObject_ {
     struct LuciObjectType *type;    /**< pointer to type implementation */
 } LuciObject;
 
-typedef enum { DEEP_COPIED = 0, SHALLOW_COPIED = 1} copy_style;
+/** type flag bits */
+enum {
+    FLAG_DEEP_COPY = 0,
+    FLAG_SHALLOW_COPY = 1,
+};
 
 /** Object type virtual method table */
 typedef struct LuciObjectType
 {
-    char *type_name;        /**< name of the type */
-    copy_style shallow;     /**< shallow = don't copy on assignment */
+    char *type_name;    /**< name of the type */
+    uint32_t flags;     /**< type flags */
+    uint32_t size;      /**< size of an instance */
 
     /* unary methods */
     LuciObject* (*copy)(LuciObject *);  /**< copy constructor */
@@ -114,8 +119,8 @@ typedef struct LuciFloatObj_
 /** String object type */
 typedef struct LuciString_ {
     LuciObject base;    /**< base implementation */
-    long len;           /**< string length */
     char * s;           /**< pointer to C-string */
+    long len;           /**< string length */
 } LuciStringObj;
 
 /** File open type */
@@ -132,20 +137,20 @@ typedef struct LuciFile_ {
 /** List object type */
 typedef struct LuciList_ {
     LuciObject base;    /**< base implementation */
+    LuciObject **items; /**< pointer to items array */
     unsigned int count;	/**< current number of items in list */
     unsigned int size;	/**< current count of allocated items */
-    LuciObject **items; /**< pointer to items array */
 } LuciListObj;
 
 /** Map object type */
 typedef struct LuciMap_ {
     LuciObject base;    /**< base implementation */
+    LuciObject **keys;  /**< array of pointers to keys */
+    LuciObject **vals;  /**< array of pointers to values */
     unsigned int size_idx;  /**< identifier for current size of table */
     unsigned int collisions;    /**< number of hash collisions */
     unsigned int count;	/**< current number of key/value pairs */
     unsigned int size;	/**< current count of allocated pairs*/
-    LuciObject **keys;  /**< array of pointers to keys */
-    LuciObject **vals;  /**< array of pointers to values */
 } LuciMapObj;
 
 /** Iterator object type (internal) */
@@ -158,8 +163,16 @@ typedef struct LuciIterator_ {
 
 /** User-defined function type */
 typedef struct LuciFunction_ {
-    LuciObject base;    /**< base implementation */
-    void *frame;        /**< pointer to Frame struct */
+    LuciObject base;            /**< base implementation */
+    Instruction *instructions;  /**< array of instructions */
+    Instruction *ip;            /**< current instruction pointer */
+    LuciObject **locals;        /**< array of local LuciObjects */
+    LuciObject **globals;       /**< array of global LuciObjects */
+    LuciObject **constants;     /**< array of constant LuciObjects */
+    uint32_t ninstrs;           /**< total number of instructions */
+    uint16_t nparams;           /**< number of parameters */
+    uint16_t nlocals;           /**< number of local symbols */
+    uint16_t nconstants;        /**< number of constants */
 } LuciFunctionObj;
 
 
@@ -173,6 +186,7 @@ typedef struct LuciLibFunc_ {
     char *help;             /**< help string for Luci C function */
     int min_args;           /**< minimum number of arguments to function */
 } LuciLibFuncObj;
+
 
 /** convenient method of accessing an object's type functions */
 #define MEMBER(o,m) (((LuciObject *)(o))->type->(##m))
@@ -210,7 +224,7 @@ LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode);
 LuciObject *LuciList_new();
 LuciObject *LuciMap_new();
 LuciObject *LuciIterator_new(LuciObject *list, int step);
-LuciObject *LuciFunction_new(void *frame);
+LuciObject *LuciFunction_new();
 LuciObject *LuciLibFunc_new(LuciCFunc fptr, char *help, int min_args);
 
 unsigned int string_hash_0(LuciObject *s);

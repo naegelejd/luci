@@ -22,7 +22,7 @@
 //struct timeval t1, t2;
 
 #define INIT_ARENA_POOLS 1  /**< initial number of pools per arena */
-#define ARENA_COUNT 6       /**< number of arenas available */
+#define ARENA_COUNT 10       /**< number of arenas available */
 
 /** global array of arenas (one for each allocation size) */
 static struct gc_arena ARENA[ARENA_COUNT];
@@ -175,7 +175,7 @@ static int gc_collect(void)
     if (!framestack) {
         return 0;
     }
-
+/*
     unsigned int height = st_height(framestack);
     unsigned int frame_idx;
     for (frame_idx = 0; frame_idx < height; frame_idx++) {
@@ -202,18 +202,9 @@ static int gc_collect(void)
             }
         }
     }
+*/
 
     return 0;
-}
-
-/**
- * Effectively equivalent to system `free`.
- * Gives allocated slots of memory back to their respective pool
- *
- * @param ptr pointer to free
- */
-void gc_free(void *ptr)
-{
 }
 
 /**

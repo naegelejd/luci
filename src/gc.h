@@ -38,9 +38,16 @@ struct gc_arena {
     unsigned int pool_total;    /**< total number of gc_pools allocated */
 };
 
+struct pool_ {
+    size_t size;
+    size_t block;
+    char *base;
+    char *next;
+    uint32_t *colors;
+};
+
 int gc_init(void);
 void * gc_malloc(size_t);
-void gc_free(void *);
 int gc_finalize(void);
 
 #endif /* LUCI_MALLOC_H */

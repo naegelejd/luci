@@ -59,7 +59,9 @@ static unsigned int table_sizes[] = {
 /** Type member table for LuciMapObj */
 LuciObjectType obj_map_t = {
     "map",
-    SHALLOW_COPIED,
+    FLAG_SHALLOW_COPY,
+    sizeof(LuciMapObj),
+
     LuciMap_copy,
     unary_nil,
     LuciMap_asbool,
@@ -166,7 +168,7 @@ static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_map_t)) {
         res = LuciMap_new();
         int i;
-        LuciObject *key = NULL, *val = NULL;
+        LuciObject *key = NULL;
         for (i = 0; i < AS_MAP(a)->size; i++) {
             key = AS_MAP(a)->keys[i];
             if (key) {

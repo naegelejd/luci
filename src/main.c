@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "luci.h"
+#include "object.h"
 #include "gc.h"
 #include "ast.h"
 #include "compile.h"
@@ -86,7 +87,7 @@ int luci_main(int argc, char *argv[])
 
     AstNode *root_node = NULL;
     CompileState *cs = NULL;
-    Frame *gf = NULL;
+    LuciObject *gf = NULL;
 
     if (argc < 2) {
         /* interactive mode */
@@ -169,7 +170,7 @@ int luci_main(int argc, char *argv[])
 
     /* Compile the AST */
     cs = compile_ast(NULL, root_node);
-    gf = Frame_from_CompileState(cs, 0);
+    gf = LuciFunction_from_CompileState(cs, 0);
 
     if (options & SERIALIZE) {
         /* Serialize program */
@@ -188,7 +189,7 @@ int luci_main(int argc, char *argv[])
 
 cleanup:
     CompileState_delete(cs);
-    Frame_delete(gf);
+    LuciFunction_delete(gf);
 cleanup_tree:
     destroy_tree(root_node);
     gc_finalize();
@@ -211,7 +212,7 @@ void luci_interactive(void)
 {
     AstNode *root_node = NULL;
     CompileState *cs = NULL;
-    Frame *gf = NULL;
+    LuciObject *gf = NULL;
 
     printf("\nWelcome to Interactive %s\n\n", version_string);
 
@@ -232,7 +233,7 @@ void luci_interactive(void)
 
         /* Compile the AST */
         cs = compile_ast(cs, root_node);
-        gf = Frame_from_CompileState(cs, 0);
+        gf = LuciFunction_from_CompileState(cs, 0);
 
         /* print a spacing between input/output */
         fprintf(stdout, "%s", "  \n\n");
@@ -244,7 +245,7 @@ void luci_interactive(void)
         fprintf(stdout, "%s", "\n");
 
         /* clean up frame's memory */
-        Frame_delete_interactive(gf);
+        LuciFunction_delete_interactive(gf);
         /* clean up AST memory */
         destroy_tree(root_node);
         root_node = NULL;

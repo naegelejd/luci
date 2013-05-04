@@ -45,7 +45,7 @@ void st_destroy(Stack *S) {
  * @param S stack to push item onto
  * @param item pointer to push onto stack
  */
-void st_push(Stack *S, void *item)
+void st_push(Stack *S, LuciObject *item)
 {
     /* resize stack if necessary */
     if (S->top >= S->size) {
@@ -61,7 +61,7 @@ void st_push(Stack *S, void *item)
  * @param S stack to pop pointer from
  * @returns popped pointer
  */
-void* st_pop(Stack *S)
+LuciObject* st_pop(Stack *S)
 {
     return (S->array[--(S->top)]);
 }
@@ -72,7 +72,7 @@ void* st_pop(Stack *S)
  * @param S stack to peek from
  * @returns pointer at the top of the stack
  */
-void* st_peek(Stack *S)
+LuciObject* st_peek(Stack *S)
 {
     return (S->array[S->top - 1]);
 }
@@ -84,7 +84,7 @@ void* st_peek(Stack *S)
  * @param idx index in stack
  * @returns pointer at index
  */
-void* st_get(Stack *S, uint32_t idx)
+LuciObject* st_get(Stack *S, unsigned int idx)
 {
     if (idx > (S->top - 1)) {
         return NULL;
@@ -98,7 +98,7 @@ void* st_get(Stack *S, uint32_t idx)
  * @param S stack to return height of
  * @returns height of stack
  */
-uint32_t st_height(Stack *S)
+unsigned int st_height(Stack *S)
 {
     return S->top;
 }
@@ -109,7 +109,7 @@ uint32_t st_height(Stack *S)
  * @param S stack to check for emptiness
  * @returns non-zero if empty, 0 if not empty
  */
-uint8_t st_empty(Stack *S)
+unsigned int st_empty(Stack *S)
 {
     return (S->top <= 0);
 }
@@ -127,7 +127,7 @@ void st_print(Stack *S)
     else {
         printf("Stack contents: ");
         for (i = 0; i < S-> top; i++) {
-            printf("%lu  ", (unsigned long)S->array[i]);
+            printf("%p, ", S->array[i]);
         }
         printf("\n");
     }

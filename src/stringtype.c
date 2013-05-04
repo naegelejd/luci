@@ -19,7 +19,9 @@ static void LuciString_print(LuciObject *);
 /** Type member table for LuciStringObj */
 LuciObjectType obj_string_t = {
     "string",
-    DEEP_COPIED,
+    FLAG_DEEP_COPY,
+    sizeof(LuciStringObj),
+
     LuciString_copy,
     LuciString_repr,
     LuciString_asbool,

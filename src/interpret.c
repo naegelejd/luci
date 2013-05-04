@@ -20,9 +20,9 @@
 /**
  * Main interpreter loop
  *
- * @param frame top-level Frame to being interpreting
+ * @param frame top-level function to being interpreting
  */
-void eval(Frame *frame)
+void eval(LuciObject *frame)
 {
 
 /******** Computed Goto Definitions (Labels as Values) ********/
@@ -81,7 +81,7 @@ void eval(Frame *frame)
     register LuciObject *z = LuciNilObj;
     int a;
     int i = 0;
-    Instruction *ip = frame->instructions;
+    Instruction *ip = AS_FUNCTION(frame)->instructions;
 
     for (i = 0; i < MAX_LIBFUNC_ARGS; i++) {
         lfargs[i] = LuciNilObj;
@@ -314,20 +314,20 @@ void eval(Frame *frame)
 
         HANDLE(LOADK)
             LUCI_DEBUG("LOADK %d\n", a);
-            st_push(&lstack, frame->constants[a]);
+            st_push(&lstack, AS_FUNCTION(frame)->constants[a]);
         FETCH(1);
         DISPATCH;
 
         HANDLE(LOADS)
             LUCI_DEBUG("LOADS %d\n", a);
-            x = frame->locals[a];
+            x = AS_FUNCTION(frame)->locals[a];
             st_push(&lstack, x);
         FETCH(1);
         DISPATCH;
 
         HANDLE(LOADG)
             LUCI_DEBUG("LOADG %d\n", a);
-            x = frame->globals[a];
+            x = AS_FUNCTION(frame)->globals[a];
             st_push(&lstack, x);
         FETCH(1);
         DISPATCH;
@@ -354,10 +354,10 @@ void eval(Frame *frame)
             /* pop object off of stack */
             x = st_pop(&lstack);
             /* store the new object */
-            if (x->type->shallow) {
-                frame->locals[a] = x;
+            if (x->type->flags & FLAG_SHALLOW_COPY) {
+                AS_FUNCTION(frame)->locals[a] = x;
             } else {
-                frame->locals[a] = x->type->copy(x);
+                AS_FUNCTION(frame)->locals[a] = x->type->copy(x);
             }
         FETCH(1);
         DISPATCH;
@@ -370,28 +370,28 @@ void eval(Frame *frame)
             /* setup user-defined function */
             if (ISTYPE(x, obj_func_t)) {
                 /* save instruction pointer */
-                frame->ip = ip;
+                AS_FUNCTION(frame)->ip = ip;
 
                 /* push a func frame object onto framestack */
                 st_push(&framestack, frame);
 
                 /* activate a copy of the function frame */
-                frame = Frame_copy(((LuciFunctionObj *)x)->frame);
+                frame = x->type->copy(x);
 
                 /* check that the # of arguments equals the # of parameters */
-                if (a < frame->nparams) {
+                if (a < AS_FUNCTION(frame)->nparams) {
                     DIE("%s", "Missing arguments to function.\n");
-                } else if (a > frame->nparams) {
+                } else if (a > AS_FUNCTION(frame)->nparams) {
                     DIE("%s", "Too many arguments to function.\n");
                 }
 
                 /* pop arguments and push COPIES into locals */
                 for (i = 0; i < a; i++) {
                     y = st_pop(&lstack);
-                    if (y->type->shallow) {
-                        frame->locals[i] = y;
+                    if (y->type->flags & FLAG_SHALLOW_COPY) {
+                        AS_FUNCTION(frame)->locals[i] = y;
                     } else {
-                        frame->locals[i] = y->type->copy(y);
+                        AS_FUNCTION(frame)->locals[i] = y->type->copy(y);
                     }
                 }
 
@@ -399,7 +399,7 @@ void eval(Frame *frame)
                 /* NOTE: while ugly, we decrement ip by one instruction
                  * so that the following FETCH call starts at the 1st
                  * instruction!!! */
-                ip = frame->instructions - 1;
+                ip = AS_FUNCTION(frame)->instructions - 1;
             }
 
             /* call library function */
@@ -414,7 +414,7 @@ void eval(Frame *frame)
                 /* must happen in reverse */
                 for (i = a - 1; i >= 0; i--) {
                     y = st_pop(&lstack);
-                    if (y->type->shallow) {
+                    if (y->type->flags & FLAG_SHALLOW_COPY) {
                         lfargs[i] = y;
                     } else {
                         lfargs[i] = y->type->copy(y);
@@ -435,11 +435,11 @@ void eval(Frame *frame)
         HANDLE(RETURN)
             LUCI_DEBUG("%s\n", "RETURN");
             /* delete previously active frame (and all its locals) */
-            Frame_delete_copy(frame);
+            LuciFunction_delete_copy(frame);
             /* pop function stack frame and replace active frame */
             frame = st_pop(&framestack);
             /* restore saved instruction pointer */
-            ip = frame->ip;
+            ip = AS_FUNCTION(frame)->ip;
         FETCH(1);
         DISPATCH;
 

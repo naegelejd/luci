@@ -5,7 +5,7 @@ project(luci)
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE Debug)
 
-#add_definitions(-Wall)
+add_definitions(-Wall)
 
 # Uncomment the next line to enable lots of debug output during runtime
 #add_definitions(-DNDEBUG -DDEBUG)

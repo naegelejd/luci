@@ -71,9 +71,8 @@ void eval(LuciObject *frame)
 #define GETOPCODE       OPCODE(READ)
 #define GETARG          OPARG(READ)
 
-    Stack lstack, framestack;
+    Stack lstack;
     st_init(&lstack);
-    st_init(&framestack);
 
     LuciObject* lfargs[MAX_LIBFUNC_ARGS];
     register LuciObject *x = LuciNilObj;
@@ -372,8 +371,8 @@ void eval(LuciObject *frame)
                 /* save instruction pointer */
                 AS_FUNCTION(frame)->ip = ip;
 
-                /* push a func frame object onto framestack */
-                st_push(&framestack, frame);
+                /* save the current frame to push it on the stack */
+                LuciObject *current_frame = frame;
 
                 /* activate a copy of the function frame */
                 frame = x->type->copy(x);
@@ -394,6 +393,9 @@ void eval(LuciObject *frame)
                         AS_FUNCTION(frame)->locals[i] = y->type->copy(y);
                     }
                 }
+
+                /* the stack is clean, now push the previous frame */
+                st_push(&lstack, current_frame);
 
                 /* reset instruction pointer and carry on our merry way */
                 /* NOTE: while ugly, we decrement ip by one instruction
@@ -436,8 +438,16 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "RETURN");
             /* delete previously active frame (and all its locals) */
             LuciFunction_delete_copy(frame);
+
+            /* pop the return value */
+            LuciObject *return_value = st_pop(&lstack);
+
             /* pop function stack frame and replace active frame */
-            frame = st_pop(&framestack);
+            frame = st_pop(&lstack);
+
+            /* push the return value back onto the stack */
+            st_push(&lstack, return_value);
+
             /* restore saved instruction pointer */
             ip = AS_FUNCTION(frame)->ip;
         FETCH(1);
@@ -563,7 +573,6 @@ done_eval:;
      * need freed at runtime-end
      */
     st_destroy(&lstack);
-    st_destroy(&framestack);
 
     return;
 }

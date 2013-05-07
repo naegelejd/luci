@@ -1,32 +1,12 @@
-#include "luci.h"
-#include "object.h"
+/*
+ * See Copyright Notice in luci.h
+ */
 
-static LuciObject* LuciInt_copy(LuciObject *);
-static LuciObject* LuciInt_repr(LuciObject *);
-static LuciObject* LuciInt_asbool(LuciObject *);
-static LuciObject* LuciInt_add(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_sub(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_mul(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_div(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_mod(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_pow(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_eq(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_neq(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_lt(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_gt(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_lte(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_gte(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_lgor(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_lgand(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_bwxor(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_bwor(LuciObject *, LuciObject *);
-static LuciObject* LuciInt_bwand(LuciObject *, LuciObject *);
+/**
+ * @file inttype.c
+ */
 
-static LuciObject* LuciInt_neg(LuciObject *);
-static LuciObject* LuciInt_lgnot(LuciObject *);
-static LuciObject* LuciInt_bwnot(LuciObject *);
-static void LuciInt_print(LuciObject *);
-
+#include "inttype.h"
 
 
 /** Type member table for LuciIntObj */
@@ -71,12 +51,26 @@ LuciObjectType obj_int_t = {
 };
 
 /**
+ * Creates a new LuciIntObj
+ *
+ * @param l long integer value
+ * @returns new LuciIntObj
+ */
+LuciObject *LuciInt_new(long l)
+{
+    LuciIntObj *o = gc_malloc(sizeof(*o));
+    SET_TYPE(o, obj_int_t);
+    o->i = l;
+    return (LuciObject *)o;
+}
+
+/**
  * Copies a LuciIntObj
  *
  * @param orig LucIntObj to copy
  * @returns new copy of orig
  */
-static LuciObject* LuciInt_copy(LuciObject *orig)
+LuciObject* LuciInt_copy(LuciObject *orig)
 {
     return LuciInt_new(((LuciIntObj *)orig)->i);
 }
@@ -87,7 +81,7 @@ static LuciObject* LuciInt_copy(LuciObject *orig)
  * @param o LuciIntObj to represent
  * @returns LuciStringObj representation of o
  */
-static LuciObject* LuciInt_repr(LuciObject *o)
+LuciObject* LuciInt_repr(LuciObject *o)
 {
     char *s = alloc(MAX_INT_DIGITS);
     snprintf(s, MAX_INT_DIGITS, "%ld", AS_INT(o)->i);
@@ -95,7 +89,7 @@ static LuciObject* LuciInt_repr(LuciObject *o)
     return LuciString_new(s);
 }
 
-static LuciObject* LuciInt_asbool(LuciObject *o)
+LuciObject* LuciInt_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_INT(o)->i > 0L);
 }
@@ -109,7 +103,7 @@ static LuciObject* LuciInt_asbool(LuciObject *o)
  * @param b LuciIntObj or LuciFloatObj
  * @returns sum as a LuciIntObj or LuciFloatObj
  */
-static LuciObject* LuciInt_add(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_add(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -123,7 +117,7 @@ static LuciObject* LuciInt_add(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_sub(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_sub(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -138,7 +132,7 @@ static LuciObject* LuciInt_sub(LuciObject *a, LuciObject *b)
 }
 
 
-static LuciObject* LuciInt_mul(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_mul(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -152,7 +146,7 @@ static LuciObject* LuciInt_mul(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_div(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_div(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -175,7 +169,7 @@ static LuciObject* LuciInt_div(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_mod(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_mod(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -193,7 +187,7 @@ static LuciObject* LuciInt_mod(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_pow(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_pow(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -208,7 +202,7 @@ static LuciObject* LuciInt_pow(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_eq(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_eq(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -223,7 +217,7 @@ static LuciObject* LuciInt_eq(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_neq(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_neq(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -238,7 +232,7 @@ static LuciObject* LuciInt_neq(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_lt(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_lt(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -253,7 +247,7 @@ static LuciObject* LuciInt_lt(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_gt(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_gt(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -268,7 +262,7 @@ static LuciObject* LuciInt_gt(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_lte(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_lte(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -283,7 +277,7 @@ static LuciObject* LuciInt_lte(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_gte(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_gte(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -298,7 +292,7 @@ static LuciObject* LuciInt_gte(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_lgor(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_lgor(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
     LuciObject *b0 = a->type->asbool(a);
@@ -306,7 +300,7 @@ static LuciObject* LuciInt_lgor(LuciObject *a, LuciObject *b)
     return LuciInt_new(AS_INT(a0)->i || AS_INT(b0)->i);
 }
 
-static LuciObject* LuciInt_lgand(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_lgand(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
     LuciObject *b0 = a->type->asbool(a);
@@ -314,7 +308,7 @@ static LuciObject* LuciInt_lgand(LuciObject *a, LuciObject *b)
     return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
 }
 
-static LuciObject* LuciInt_bwxor(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_bwxor(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -329,7 +323,7 @@ static LuciObject* LuciInt_bwxor(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_bwor(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_bwor(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -344,7 +338,7 @@ static LuciObject* LuciInt_bwor(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_bwand(LuciObject *a, LuciObject *b)
+LuciObject* LuciInt_bwand(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -359,18 +353,18 @@ static LuciObject* LuciInt_bwand(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciInt_lgnot(LuciObject *a)
+LuciObject* LuciInt_lgnot(LuciObject *a)
 {
     LuciObject *a0 = a->type->asbool(a);
     return LuciInt_new(!(AS_INT(a0)->i));
 }
 
-static LuciObject* LuciInt_bwnot(LuciObject *a)
+LuciObject* LuciInt_bwnot(LuciObject *a)
 {
     return LuciInt_new(~(AS_INT(a)->i));
 }
 
-static LuciObject *LuciInt_neg(LuciObject *a)
+LuciObject *LuciInt_neg(LuciObject *a)
 {
     return LuciInt_new(-(AS_INT(a)->i));
 }
@@ -380,7 +374,7 @@ static LuciObject *LuciInt_neg(LuciObject *a)
  *
  * @param in LuciIntObj to print
  */
-static void LuciInt_print(LuciObject *in)
+void LuciInt_print(LuciObject *in)
 {
     printf("%ld", AS_INT(in)->i);
 }

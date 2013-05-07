@@ -9,8 +9,7 @@
 #ifndef CONSTANT_H
 #define CONSTANT_H
 
-#include <stdint.h>
-#include "object.h"
+#include "lucitypes.h"
 
 /**
  * A table for storing all constants in a Luci program.

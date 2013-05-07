@@ -1,18 +1,13 @@
-#include "luci.h"
-#include "object.h"
+/*
+ * See Copyright Notice in luci.h
+ */
 
+/**
+ * @file listtype.c
+ */
 
-static LuciObject* LuciList_copy(LuciObject *);
-static LuciObject* LuciList_len(LuciObject *);
-static LuciObject* LuciList_asbool(LuciObject *);
-static LuciObject* LuciList_add(LuciObject *, LuciObject *);
-static LuciObject* LuciList_eq(LuciObject *, LuciObject *);
-static LuciObject* LuciList_append(LuciObject *, LuciObject *);
-static LuciObject* LuciList_contains(LuciObject *m, LuciObject *o);
-static LuciObject* LuciList_cget(LuciObject *, LuciObject *);
-static LuciObject* LuciList_cput(LuciObject *, LuciObject *, LuciObject *);
-static LuciObject* LuciList_next(LuciObject *, LuciObject *);
-static void LuciList_print(LuciObject *);
+#include "listtype.h"
+
 
 static LuciObject *list_get_object(LuciObject *list, long index);
 static LuciObject *list_set_object(LuciObject *list, LuciObject *item, long index);
@@ -57,6 +52,21 @@ LuciObjectType obj_list_t = {
 
     LuciList_print
 };
+
+/**
+ * Creates a new, empty LuciListObj
+ *
+ * @returns new empty LuciListObj
+ */
+LuciObject *LuciList_new()
+{
+    LuciListObj *o = gc_malloc(sizeof(*o));
+    SET_TYPE(o, obj_list_t);
+    o->count = 0;
+    o->size = INIT_LIST_SIZE;
+    o->items = alloc(o->size * sizeof(*o->items));
+    return (LuciObject *)o;
+}
 
 /**
  * Returns a COPY of the object in the list at the index
@@ -118,7 +128,7 @@ static LuciObject *list_set_object(LuciObject *list, LuciObject *item, long inde
  * @param orig LucListObj to copy
  * @returns new copy of orig
  */
-static LuciObject* LuciList_copy(LuciObject *orig)
+LuciObject* LuciList_copy(LuciObject *orig)
 {
     LuciListObj *listobj = (LuciListObj *)orig;
     int i;
@@ -132,7 +142,7 @@ static LuciObject* LuciList_copy(LuciObject *orig)
     return copy;
 }
 
-static LuciObject* LuciList_asbool(LuciObject *o)
+LuciObject* LuciList_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_LIST(o)->count > 0);
 }
@@ -143,7 +153,7 @@ static LuciObject* LuciList_asbool(LuciObject *o)
  * @param o LuciListObj
  * @returns length of o
  */
-static LuciObject* LuciList_len(LuciObject *o)
+LuciObject* LuciList_len(LuciObject *o)
 {
     return LuciInt_new(AS_LIST(o)->count);
 }
@@ -156,7 +166,7 @@ static LuciObject* LuciList_len(LuciObject *o)
  * @param b second LuciListObj
  * @returns concatenated LuciListObj
  */
-static LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
+LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -184,7 +194,7 @@ static LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
  * @param b item to append
  * @returns LuciNilObj
  */
-static LuciObject* LuciList_append(LuciObject *l, LuciObject *b)
+LuciObject* LuciList_append(LuciObject *l, LuciObject *b)
 {
     LuciListObj *list = (LuciListObj *)l;
 
@@ -210,7 +220,7 @@ static LuciObject* LuciList_append(LuciObject *l, LuciObject *b)
  * @param b LuciListObj
  * @returns 1 if equal, 0 otherwise
  */
-static LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
+LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
 {
     if(ISTYPE(b, obj_list_t)) {
         if (AS_LIST(a)->count != AS_LIST(b)->count) {
@@ -244,7 +254,7 @@ static LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
  * @param o object
  * @returns 1 if str contains o, 0 otherwise
  */
-static LuciObject *LuciList_contains(LuciObject *l, LuciObject *o)
+LuciObject *LuciList_contains(LuciObject *l, LuciObject *o)
 {
     int i;
     for (i = 0; i < AS_LIST(l)->count; i++) {
@@ -285,7 +295,7 @@ LuciObject *LuciList_next(LuciObject *l, LuciObject *idx)
  * @param b index in a
  * @returns object at index b
  */
-static LuciObject* LuciList_cget(LuciObject *a, LuciObject *b)
+LuciObject* LuciList_cget(LuciObject *a, LuciObject *b)
 {
     if (ISTYPE(b, obj_int_t)) {
         return list_get_object(a, AS_INT(b)->i);
@@ -297,7 +307,7 @@ static LuciObject* LuciList_cget(LuciObject *a, LuciObject *b)
     return LuciNilObj;
 }
 
-static LuciObject* LuciList_cput(LuciObject *a, LuciObject *b, LuciObject *c)
+LuciObject* LuciList_cput(LuciObject *a, LuciObject *b, LuciObject *c)
 {
     if (ISTYPE(b, obj_int_t)) {
         return list_set_object(a, c, AS_INT(b)->i);
@@ -315,7 +325,7 @@ static LuciObject* LuciList_cput(LuciObject *a, LuciObject *b, LuciObject *c)
  *
  * @param in LuciListObj to print
  */
-static void LuciList_print(LuciObject *in)
+void LuciList_print(LuciObject *in)
 {
     int i;
     printf("[");

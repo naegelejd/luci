@@ -6,12 +6,9 @@
  * @file constant.c
  */
 
-#include <stdlib.h>
-#include <string.h>
-
 #include "luci.h"
-#include "object.h"
 #include "constant.h"
+#include "lucitypes.h"
 
 
 /**

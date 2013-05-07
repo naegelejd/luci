@@ -6,10 +6,6 @@
  * @file stack.c
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-
-#include "luci.h"
 #include "stack.h"
 
 #define STACK_INIT_HEIGHT   128     /**< initial stack size */

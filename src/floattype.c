@@ -1,34 +1,12 @@
-#include "luci.h"
-#include "object.h"
+/*
+ * See Copyright Notice in luci.h
+ */
 
+/**
+ * @file floattype.c
+ */
 
-static LuciObject* LuciFloat_copy(LuciObject *);
-static LuciObject* LuciFloat_repr(LuciObject *);
-static LuciObject* LuciFloat_asbool(LuciObject *);
-static LuciObject* LuciFloat_add(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_sub(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_mul(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_div(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_mod(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_pow(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_eq(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_neq(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_lt(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_gt(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_lte(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_gte(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_lgor(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_lgand(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_bwxor(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_bwor(LuciObject *, LuciObject *);
-static LuciObject* LuciFloat_bwand(LuciObject *, LuciObject *);
-
-static LuciObject* LuciFloat_neg(LuciObject *);
-static LuciObject* LuciFloat_lgnot(LuciObject *);
-static LuciObject* LuciFloat_bwnot(LuciObject *);
-
-static void LuciFloat_print(LuciObject *);
-
+#include "floattype.h"
 
 /** Type member table for LuciFloatObj */
 LuciObjectType obj_float_t = {
@@ -71,6 +49,19 @@ LuciObjectType obj_float_t = {
     LuciFloat_print
 };
 
+/**
+ * Creates a new LuciFloatObj
+ *
+ * @param d double floating-point value
+ * @returns new LuciFloatObj
+ */
+LuciObject *LuciFloat_new(double d)
+{
+    LuciFloatObj *o = gc_malloc(sizeof(*o));
+    SET_TYPE(o, obj_float_t);
+    o->f = d;
+    return (LuciObject *)o;
+}
 
 /**
  * Copies a LuciFloatObj
@@ -78,7 +69,7 @@ LuciObjectType obj_float_t = {
  * @param orig LucFloatObj to copy
  * @returns new copy of orig
  */
-static LuciObject* LuciFloat_copy(LuciObject *orig)
+LuciObject* LuciFloat_copy(LuciObject *orig)
 {
     return LuciFloat_new(((LuciFloatObj *)orig)->f);
 }
@@ -89,7 +80,7 @@ static LuciObject* LuciFloat_copy(LuciObject *orig)
  * @param o LuciFloatObj to represent
  * @returns LuciStringObj representation of o
  */
-static LuciObject* LuciFloat_repr(LuciObject *o)
+LuciObject* LuciFloat_repr(LuciObject *o)
 {
     char *s = alloc(MAX_FLOAT_DIGITS);
     snprintf(s, MAX_FLOAT_DIGITS, "%f", (float)AS_FLOAT(o)->f);
@@ -97,7 +88,7 @@ static LuciObject* LuciFloat_repr(LuciObject *o)
     return LuciString_new(s);
 }
 
-static LuciObject* LuciFloat_asbool(LuciObject *o)
+LuciObject* LuciFloat_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_FLOAT(o)->f > 0.0L);
 }
@@ -109,7 +100,7 @@ static LuciObject* LuciFloat_asbool(LuciObject *o)
  * @param b LuciIntObj or LuciFloatObj
  * @returns sum as a LuciFloatObj
  */
-static LuciObject* LuciFloat_add(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_add(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -123,7 +114,7 @@ static LuciObject* LuciFloat_add(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_sub(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_sub(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -137,7 +128,7 @@ static LuciObject* LuciFloat_sub(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_mul(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_mul(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -152,7 +143,7 @@ static LuciObject* LuciFloat_mul(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_div(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_div(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -175,12 +166,12 @@ static LuciObject* LuciFloat_div(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_mod(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_mod(LuciObject *a, LuciObject *b)
 {
     DIE("%s\n", "Cannot compute float modulus");
 }
 
-static LuciObject* LuciFloat_pow(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_pow(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -195,7 +186,7 @@ static LuciObject* LuciFloat_pow(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_eq(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_eq(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -210,7 +201,7 @@ static LuciObject* LuciFloat_eq(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_neq(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_neq(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -225,7 +216,7 @@ static LuciObject* LuciFloat_neq(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_lt(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_lt(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -240,7 +231,7 @@ static LuciObject* LuciFloat_lt(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_gt(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_gt(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -255,7 +246,7 @@ static LuciObject* LuciFloat_gt(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_lte(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_lte(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -270,7 +261,7 @@ static LuciObject* LuciFloat_lte(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_gte(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_gte(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -285,7 +276,7 @@ static LuciObject* LuciFloat_gte(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_lgor(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_lgor(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
     LuciObject *b0 = a->type->asbool(a);
@@ -293,7 +284,7 @@ static LuciObject* LuciFloat_lgor(LuciObject *a, LuciObject *b)
     return LuciInt_new(AS_INT(a0)->i || AS_INT(b0)->i);
 }
 
-static LuciObject* LuciFloat_lgand(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_lgand(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
     LuciObject *b0 = a->type->asbool(a);
@@ -301,7 +292,7 @@ static LuciObject* LuciFloat_lgand(LuciObject *a, LuciObject *b)
     return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
 }
 
-static LuciObject* LuciFloat_bwxor(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_bwxor(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -316,7 +307,7 @@ static LuciObject* LuciFloat_bwxor(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_bwor(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_bwor(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -331,7 +322,7 @@ static LuciObject* LuciFloat_bwor(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_bwand(LuciObject *a, LuciObject *b)
+LuciObject* LuciFloat_bwand(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -346,18 +337,18 @@ static LuciObject* LuciFloat_bwand(LuciObject *a, LuciObject *b)
     return res;
 }
 
-static LuciObject* LuciFloat_lgnot(LuciObject *a)
+LuciObject* LuciFloat_lgnot(LuciObject *a)
 {
     LuciObject *a0 = a->type->asbool(a);
     return LuciInt_new(!(AS_INT(a0)->i));
 }
 
-static LuciObject* LuciFloat_bwnot(LuciObject *a)
+LuciObject* LuciFloat_bwnot(LuciObject *a)
 {
     return LuciInt_new(~((long)AS_FLOAT(a)->f));
 }
 
-static LuciObject *LuciFloat_neg(LuciObject *a)
+LuciObject *LuciFloat_neg(LuciObject *a)
 {
     return LuciFloat_new(-(AS_FLOAT(a)->f));
 }
@@ -367,8 +358,7 @@ static LuciObject *LuciFloat_neg(LuciObject *a)
  *
  * @param in LuciFloatObj to print
  */
-static void LuciFloat_print(LuciObject *in)
+void LuciFloat_print(LuciObject *in)
 {
     printf("%f", AS_FLOAT(in)->f);
 }
-

@@ -9,8 +9,6 @@
 #ifndef COMPILE_H
 #define COMPILE_H
 
-#include <stdint.h>
-
 #include "ast.h"        /* for AstNode */
 #include "symbol.h"     /* for Symbol Table */
 #include "constant.h"   /* for Constant Table */

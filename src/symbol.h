@@ -9,8 +9,7 @@
 #ifndef SYMBOL_H
 #define SYMBOL_H
 
-#include <stdint.h>
-#include "object.h"
+#include "lucitypes.h"
 
 /**
  * A linked-list node containing a node and index (reference)

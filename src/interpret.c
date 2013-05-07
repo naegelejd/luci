@@ -6,15 +6,11 @@
  * @file interpret.c
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "luci.h"
-#include "object.h"
 #include "interpret.h"
-#include "stack.h"
 #include "compile.h"
+#include "lucitypes.h"
+#include "stack.h"
 
 
 /**
@@ -473,8 +469,7 @@ void eval(LuciObject *frame)
             x = LuciList_new();
             for (i = 0; i < a; i ++) {
                 y = st_pop(&lstack);
-                /* LuciList_append */
-                x->type->lt(x, y);
+                LuciList_append(x, y);
             }
             st_push(&lstack, x);
         FETCH(1);

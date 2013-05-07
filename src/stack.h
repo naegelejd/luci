@@ -9,7 +9,7 @@
 #ifndef STACK_H
 #define STACK_H
 
-#include "object.h"
+#include "lucitypes.h"
 
 /** A very simple, unsafe stack implementation
  * using `void *` pointers */

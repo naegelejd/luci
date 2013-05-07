@@ -9,7 +9,7 @@
 #ifndef BUILTIN_H
 #define BUILTIN_H
 
-#include "object.h"
+#include "lucitypes.h"
 
 /** LuciObject and corresponding name available to users
  * as a builtin symbol definition */

@@ -15,12 +15,16 @@ set(LUCI_SOURCE_FILES
     gc.c
     stack.c
     ast.c
-    object.c
+    lucitypes.c
     inttype.c
     floattype.c
     stringtype.c
     listtype.c
     maptype.c
+    functiontype.c
+    iteratortype.c
+    filetype.c
+    nativefunctype.c
     symbol.c
     constant.c
     compile.c
@@ -33,7 +37,16 @@ set(LUCI_HEADER_FILES
     gc.h
     stack.h
     ast.h
-    object.h
+    lucitypes.h
+    inttype.h
+    floattype.h
+    stringtype.h
+    listtype.h
+    maptype.h
+    functiontype.h
+    iteratortype.h
+    filetype.h
+    nativefunctype.h
     symbol.h
     constant.h
     compile.h

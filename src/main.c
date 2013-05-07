@@ -6,12 +6,8 @@
  * @file main.c
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "luci.h"
-#include "object.h"
+#include "lucitypes.h"
 #include "gc.h"
 #include "ast.h"
 #include "compile.h"

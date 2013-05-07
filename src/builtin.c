@@ -6,15 +6,10 @@
  * @file builtin.c
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-#include <assert.h>
-
 #include "luci.h"
 #include "builtin.h"
-#include "object.h"
+#include "lucitypes.h"
+
 
 static LuciLibFuncObj builtin_print = {
     {&obj_libfunc_t},
@@ -827,8 +822,7 @@ LuciObject *luci_flines(LuciObject **args, unsigned int c)
     LuciObject *list = LuciList_new();
     LuciObject *line = luci_readline(args, c);
     while (line) {
-        /* LuciList_append */
-	list->type->lt(list, line);
+	LuciList_append(list, line);
 	line = luci_readline(args, c);
     }
 
@@ -894,8 +888,7 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 
         for (i = start; i > end; i += incr) {
             item = LuciInt_new(i);
-            /* LuciList_append */
-            list->type->lt(list, item);
+            LuciList_append(list, item);
         }
     }
     else {
@@ -906,8 +899,7 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 
         for (i = start; i < end; i += incr) {
             item = LuciInt_new(i);
-            /* LuciList_append */
-            list->type->lt(list, item);
+            LuciList_append(list, item);
         }
     }
 

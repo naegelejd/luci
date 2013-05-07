@@ -6,14 +6,10 @@
  * @file compile.c
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "luci.h"
-#include "object.h"
 #include "compile.h"
 #include "ast.h"
+#include "lucitypes.h"
 #include "symbol.h"
 #include "builtin.h"
 #include "stack.h"

@@ -6,11 +6,7 @@
  * @file maptype.c
  */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include "luci.h"
-#include "object.h"
+#include "maptype.h"
 
 /** Returns the next computed index for the two given hashes
  * @param H0 hash 0
@@ -21,19 +17,6 @@
  */
 #define GET_INDEX(H0, H1, I, N)   ( ( (H0) + ((I) * (I)) * (H1) ) % (N) )
 
-
-static LuciObject* LuciMap_copy(LuciObject *);
-static LuciObject* LuciMap_asbool(LuciObject *);
-static LuciObject* LuciMap_len(LuciObject *);
-static LuciObject* LuciMap_add(LuciObject *, LuciObject *);
-static LuciObject* LuciMap_eq(LuciObject *, LuciObject *);
-static LuciObject* LuciMap_contains(LuciObject *m, LuciObject *o);
-static LuciObject* LuciMap_next(LuciObject *, LuciObject *);
-static LuciObject *LuciMap_cput(LuciObject *map, LuciObject *key, LuciObject *val);
-static LuciObject *LuciMap_cget(LuciObject *map, LuciObject *key);
-static LuciObject *LuciMap_cdel(LuciObject *map, LuciObject *key);
-
-static void LuciMap_print(LuciObject *);
 
 
 static LuciMapObj *map_grow(LuciMapObj *map);
@@ -48,7 +31,7 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size);
  * Numbers courtesy of:
  * http://planetmath.org/GoodHashTablePrimes.html
  */
-static unsigned int table_sizes[] = {
+unsigned int table_sizes[] = {
     7, 17, 43, 97, 193, 389, 769, 1543, 3079, 6151,
     12289, 24593, 49157, 98317, 196613, 393241, 786433,
     1572869, 3145739, 6291469, 12582917, 25165843,
@@ -132,7 +115,7 @@ void map_delete(LuciObject *o)
  * @param orig LucMapObj to copy
  * @returns new copy of orig
  */
-static LuciObject *LuciMap_copy(LuciObject *orig)
+LuciObject *LuciMap_copy(LuciObject *orig)
 {
     LuciMapObj *mapobj = (LuciMapObj *)orig;
     int i;
@@ -149,7 +132,7 @@ static LuciObject *LuciMap_copy(LuciObject *orig)
     return copy;
 }
 
-static LuciObject* LuciMap_asbool(LuciObject *o)
+LuciObject* LuciMap_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_MAP(o)->count > 0);
 }
@@ -161,7 +144,7 @@ static LuciObject* LuciMap_asbool(LuciObject *o)
  * @param b second LuciMapObj
  * @returns concatenated LuciMapObj
  */
-static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
+LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
 {
     LuciObject *res = LuciNilObj;
 
@@ -196,7 +179,7 @@ static LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
  * @param b LuciMapObj
  * @returns 1 if equal, 0 otherwise
  */
-static LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
+LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
 {
     if(ISTYPE(b, obj_map_t)) {
         if (AS_MAP(a)->count != AS_MAP(b)->count) {
@@ -233,7 +216,7 @@ static LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
  * @param o LuciMapObj
  * @returns length of o
  */
-static LuciObject* LuciMap_len(LuciObject *o)
+LuciObject* LuciMap_len(LuciObject *o)
 {
     return LuciInt_new(AS_MAP(o)->count);
 }
@@ -245,7 +228,7 @@ static LuciObject* LuciMap_len(LuciObject *o)
  * @param o object
  * @returns 1 if str contains k, 0 otherwise
  */
-static LuciObject *LuciMap_contains(LuciObject *m, LuciObject *o)
+LuciObject *LuciMap_contains(LuciObject *m, LuciObject *o)
 {
     int i;
     for (i = 0; i < AS_MAP(m)->size; i++) {
@@ -365,7 +348,7 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
  * @param val   Value corresponding to key
  * @returns     original LuciObject with updated hash table
  */
-static LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
+LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -421,7 +404,7 @@ static LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
  * @param key   Key to be hashed and searched for
  * @returns     LuciObject value corresponding to key or NULL if not found
  */
-static LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
+LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -466,7 +449,7 @@ static LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
  * @param key   Key to be hashed and searched for
  * @returns     LuciObject value corresponding to key or NULL if not found
  */
-static LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
+LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
 {
     if (!o) {
         DIE("%s\n", "Map table not allocated");
@@ -542,7 +525,7 @@ static LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
  *
  * @param in LuciMapObj to print
  */
-static void LuciMap_print(LuciObject *in)
+void LuciMap_print(LuciObject *in)
 {
     int i;
     printf("{");

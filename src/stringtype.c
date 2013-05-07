@@ -1,19 +1,12 @@
-#include "luci.h"
-#include "object.h"
+/*
+ * See Copyright Notice in luci.h
+ */
 
+/**
+ * @file stringtype.c
+ */
 
-static LuciObject* LuciString_copy(LuciObject *);
-static LuciObject* LuciString_repr(LuciObject *);
-static LuciObject* LuciString_asbool(LuciObject *);
-static LuciObject* LuciString_len(LuciObject *);
-static LuciObject* LuciString_add(LuciObject *, LuciObject *);
-static LuciObject* LuciString_mul(LuciObject *, LuciObject *);
-static LuciObject* LuciString_eq(LuciObject *, LuciObject *);
-static LuciObject* LuciString_contains(LuciObject *m, LuciObject *o);
-static LuciObject* LuciString_cget(LuciObject *, LuciObject *);
-static LuciObject* LuciString_cput(LuciObject *, LuciObject *, LuciObject *);
-static LuciObject* LuciString_next(LuciObject *, LuciObject *);
-static void LuciString_print(LuciObject *);
+#include "stringtype.h"
 
 
 /** Type member table for LuciStringObj */
@@ -57,6 +50,20 @@ LuciObjectType obj_string_t = {
     LuciString_print
 };
 
+/**
+ * Creates a new LuciStringObj
+ *
+ * @param s C-string value
+ * @returns new LuciStringObj
+ */
+LuciObject *LuciString_new(char *s)
+{
+    LuciStringObj *o = gc_malloc(sizeof(*o));
+    SET_TYPE(o, obj_string_t);
+    o->s = s;   /* not a copy! */
+    o->len = strlen(o->s);
+    return (LuciObject *)o;
+}
 
 /**
  * Copies a LuciStringObj
@@ -64,7 +71,7 @@ LuciObjectType obj_string_t = {
  * @param orig LucStringObj to copy
  * @returns new copy of orig
  */
-static LuciObject* LuciString_copy(LuciObject *orig)
+LuciObject* LuciString_copy(LuciObject *orig)
 {
     return LuciString_new(strdup(((LuciStringObj *)orig)->s));
 }
@@ -78,7 +85,7 @@ static LuciObject* LuciString_copy(LuciObject *orig)
  * @param o LuciStringObj to represent
  * @returns LuciStringObj representation of o
  */
-static LuciObject* LuciString_repr(LuciObject *o)
+LuciObject* LuciString_repr(LuciObject *o)
 {
     int len = AS_STRING(o)->len + 1;
     char *s = alloc(len);
@@ -86,7 +93,7 @@ static LuciObject* LuciString_repr(LuciObject *o)
     return LuciString_new(s);
 }
 
-static LuciObject* LuciString_asbool(LuciObject *o)
+LuciObject* LuciString_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_STRING(o)->len > 0);
 }
@@ -97,7 +104,7 @@ static LuciObject* LuciString_asbool(LuciObject *o)
  * @param o LuciStringObj
  * @returns length of o
  */
-static LuciObject* LuciString_len(LuciObject *o)
+LuciObject* LuciString_len(LuciObject *o)
 {
     return LuciInt_new(AS_STRING(o)->len);
 }
@@ -110,7 +117,7 @@ static LuciObject* LuciString_len(LuciObject *o)
  * @param b second LuciStringObj
  * @returns concatenated LuciStringObj
  */
-static LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
+LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
 {
     if (ISTYPE(b, obj_string_t)) {
         char *s = alloc(AS_STRING(a)->len + AS_STRING(b)-> len + 1);
@@ -132,7 +139,7 @@ static LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
  * @param b integer multiplier
  * @returns concatenated LuciStringObj
  */
-static LuciObject* LuciString_mul(LuciObject *a, LuciObject *b)
+LuciObject* LuciString_mul(LuciObject *a, LuciObject *b)
 {
     if (ISTYPE(b, obj_int_t)) {
         char *s = alloc(AS_STRING(a)->len * AS_INT(b)->i + 1);
@@ -158,7 +165,7 @@ static LuciObject* LuciString_mul(LuciObject *a, LuciObject *b)
  * @param b LuciStringObj
  * @returns 1 if equal, 0 otherwise
  */
-static LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
+LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
 {
     if(ISTYPE(b, obj_string_t)) {
         if (AS_STRING(a)->len != AS_STRING(b)->len) {
@@ -183,7 +190,7 @@ static LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
  * @param o object
  * @returns 1 if str contains o, 0 otherwise
  */
-static LuciObject *LuciString_contains(LuciObject *str, LuciObject *o)
+LuciObject *LuciString_contains(LuciObject *str, LuciObject *o)
 {
     if (!ISTYPE(o, obj_string_t)) {
         DIE("A string can only contain a string, not a %s\n",
@@ -203,7 +210,7 @@ static LuciObject *LuciString_contains(LuciObject *str, LuciObject *o)
  * @param idx index
  * @returns char at index idx or NULL if out of bounds
  */
-static LuciObject *LuciString_next(LuciObject *str, LuciObject *idx)
+LuciObject *LuciString_next(LuciObject *str, LuciObject *idx)
 {
     if (!ISTYPE(idx, obj_int_t)) {
         DIE("%s\n", "Argument to LuciString_next must be LuciIntObj");
@@ -226,7 +233,7 @@ static LuciObject *LuciString_next(LuciObject *str, LuciObject *idx)
  * @param b index in a
  * @returns character at index b
  */
-static LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
+LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
 {
     if (ISTYPE(b, obj_int_t)) {
         long idx = AS_INT(b)->i;
@@ -255,7 +262,7 @@ static LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
  * @param b index in a
  * @returns former character at index b
  */
-static LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
+LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
 {
     if (ISTYPE(b, obj_int_t)) {
         if (ISTYPE(c, obj_string_t)) {
@@ -289,7 +296,73 @@ static LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
  *
  * @param in LuciStringObj to print
  */
-static void LuciString_print(LuciObject *in)
+void LuciString_print(LuciObject *in)
 {
     printf("%s", AS_STRING(in)->s);
 }
+
+
+/**
+ * Computes a hash of a LuciStringObj
+ *
+ * djb2 (hash(i) = hash(i - 1) * 33 + str[i])
+ *
+ * @param s LuciStringObj to hash
+ * @returns unsigned integer hash
+ */
+unsigned int string_hash_0(LuciObject *s)
+{
+    char *str = AS_STRING(s)->s;
+
+    unsigned int h = 5381;
+    int c;
+
+    while ((c = *str++))
+        h = ((h << 5) + h) + c;
+    return h;
+}
+
+/**
+ * Computes a hash of a LuciStringObj
+ *
+ * sdbm (hash(i) = hash(i - 1) * 65599 + str[i])
+ *
+ * @param s LuciStringObj to hash
+ * @returns unsigned integer hash
+ */
+unsigned int string_hash_1(LuciObject *s)
+{
+    char *str = AS_STRING(s)->s;
+
+    unsigned int h = 0;
+    int c;
+    while ((c = *str++))
+        h = c + (h << 6) + (h << 16) - h;
+    return h;
+}
+
+/**
+ * Computes a hash of a LuciStringObj
+ *
+ * One-at-a-time (Bob Jenkins)
+ *
+ * @param s LuciStringObj to hash
+ * @returns unsigned integer hash
+ */
+unsigned int string_hash_2(LuciObject *s)
+{
+    char *str = AS_STRING(s)->s;
+
+    unsigned int h = 0;
+    int c;
+    while ((c = *str++)) {
+        h += c;
+        h += h << 10;
+        h ^= h >> 6;
+    }
+    h += h << 3;
+    h ^= h >> 11;
+    h += h << 15;
+    return h;
+}
+

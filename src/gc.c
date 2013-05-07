@@ -6,17 +6,9 @@
  * @file gc.c
  */
 
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdint.h>
-
 #include "luci.h"
 #include "gc.h"
-
-#include "stack.h"
-#include "interpret.h"
-#include "compile.h"
+#include "lucitypes.h"
 
 //#include <sys/time.h>
 //struct timeval t1, t2;
@@ -171,10 +163,10 @@ static int gc_collect(void)
     LuciObject **live_objects = alloc(1024 * sizeof(*live_objects));
 
     /* get the current frame stack from the interpreter */
-    Stack *framestack = NULL; /* TODO: get frame stack somehow */
-    if (!framestack) {
-        return 0;
-    }
+    //Stack *framestack = NULL; /* TODO: get frame stack somehow */
+    //if (!framestack) {
+        //return 0;
+    //}
 /*
     unsigned int height = st_height(framestack);
     unsigned int frame_idx;

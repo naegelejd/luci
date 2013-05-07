@@ -6,14 +6,9 @@
  * @file symbol.c
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "luci.h"
-#include "object.h"
 #include "symbol.h"
+#include "lucitypes.h"
 
 static Symbol *symbol_new(const char *, uint32_t);
 static void symbol_delete(Symbol *);

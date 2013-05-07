@@ -9,9 +9,7 @@
 #ifndef LUCI_GC_H
 #define LUCI_GC_H
 
-#include <stdlib.h>
-#include <stdint.h>
-
+#include "luci.h"
 
 //#define POOL_SIZE 8000
 //#define POOL_SIZE 4096

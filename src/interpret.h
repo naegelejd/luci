@@ -9,7 +9,7 @@
 #ifndef INTERPRET_H
 #define INTERPRET_H
 
-#include "object.h"
+#include "lucitypes.h"
 
 #define MAX_LIBFUNC_ARGS 256
 

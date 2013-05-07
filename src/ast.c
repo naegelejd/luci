@@ -6,11 +6,6 @@
  * @file ast.c
  */
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <assert.h>
-
 #include "luci.h"
 #include "ast.h"
 

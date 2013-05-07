@@ -30,6 +30,6 @@ for i in range(x) {
     }
     continue;   /* this will just JUMP to the beginning */
 }
-print("
+print(" \
         ", i);
 

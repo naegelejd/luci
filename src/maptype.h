@@ -29,7 +29,7 @@ typedef struct LuciMap_ {
 /** casts LuciObject o to a LuciMapObj */
 #define AS_MAP(o)       ((LuciMapObj *)(o))
 
-LuciObject *LuciMap_new();
+LuciObject* LuciMap_new();
 LuciObject* LuciMap_copy(LuciObject *);
 LuciObject* LuciMap_asbool(LuciObject *);
 LuciObject* LuciMap_len(LuciObject *);

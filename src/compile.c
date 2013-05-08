@@ -12,7 +12,6 @@
 #include "lucitypes.h"
 #include "symbol.h"
 #include "builtin.h"
-#include "stack.h"
 
 /** global symbol table for builtin functions */
 SymbolTable *builtin_symbols;

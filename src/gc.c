@@ -151,51 +151,6 @@ void * gc_malloc(size_t size)
  */
 static int gc_collect(void)
 {
-    int i;
-    int num_pools = 0;
-    uint32_t *mark_flags[ARENA_COUNT];
-    for (i = 0; i < ARENA_COUNT; i++) {
-        num_pools = ARENA[i].pool_count;
-        mark_flags[i] = alloc(sizeof(*mark_flags[i]) * NUM_FLAGS * num_pools);
-    }
-
-    /* allocate a dynamic array for tracking live objects */
-    LuciObject **live_objects = alloc(1024 * sizeof(*live_objects));
-
-    /* get the current frame stack from the interpreter */
-    //Stack *framestack = NULL; /* TODO: get frame stack somehow */
-    //if (!framestack) {
-        //return 0;
-    //}
-/*
-    unsigned int height = st_height(framestack);
-    unsigned int frame_idx;
-    for (frame_idx = 0; frame_idx < height; frame_idx++) {
-        Frame *frame = (Frame *)st_get(framestack, frame_idx);
-        int local_idx;
-        for (local_idx = 0; local_idx < frame->nlocals; local_idx++) {
-            bool marked = false;
-            void *local_pointer = frame->locals[local_idx];
-            int arena_idx;
-            for (arena_idx = 0; arena_idx < ARENA_COUNT; arena_idx++) {
-                struct gc_arena arena = ARENA[arena_idx];
-                int pool_idx;
-                for (pool_idx = 0; pool_idx < arena.pool_count; pool_idx++) {
-                    struct gc_pool *pool = arena.pools[pool_idx];
-                    if (((void *)pool < (void *)local_pointer) &&
-                            ((void*)local_pointer < (void*)pool + POOL_SIZE)) {
-                        printf("Don't collect %p\n", local_pointer);
-                        marked = true;
-                    }
-                }
-            }
-            if (!marked) {
-                printf("Collect %p\n", local_pointer);
-            }
-        }
-    }
-*/
-
     return 0;
 }
 

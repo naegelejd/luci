@@ -32,7 +32,15 @@ LuciObject* LuciList_len(LuciObject *);
 LuciObject* LuciList_asbool(LuciObject *);
 LuciObject* LuciList_add(LuciObject *, LuciObject *);
 LuciObject* LuciList_eq(LuciObject *, LuciObject *);
+
+#define LuciList_push LuciList_append
 LuciObject* LuciList_append(LuciObject *, LuciObject *);
+
+LuciObject* LuciList_pop(LuciObject *l);
+
+#define LuciList_peek LuciList_tail
+LuciObject* LuciList_tail(LuciObject *l);
+
 LuciObject* LuciList_contains(LuciObject *m, LuciObject *o);
 LuciObject* LuciList_cget(LuciObject *, LuciObject *);
 LuciObject* LuciList_cput(LuciObject *, LuciObject *, LuciObject *);

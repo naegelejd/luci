@@ -5,13 +5,15 @@ project(luci)
 #set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_BUILD_TYPE Debug)
 
-add_definitions(-Wall)
+add_definitions(-Wall) #-Weverything -pedantic)
 
 # Uncomment the next line to enable lots of debug output during runtime
 #add_definitions(-DNDEBUG -DDEBUG)
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    add_definitions(-fno-gcse)  # for labels-as-values (computed gotos)
+    # for address-of-label and indirect-goto GNU extensions
+    # i.e. computed gotos in interpret.c
+    add_definitions(-fno-gcse)  
 endif()
 
 # variables used by Doxygen configuration

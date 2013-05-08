@@ -93,8 +93,8 @@ extern LuciObject **builtins;
  * A linked list node used to track nested loops
  */
 typedef struct loop_jump_ {
-    uint32_t addr;              /**< the instruction address to jump to */
     struct loop_jump_ *next;    /**< next loop-jump in linked list */
+    uint32_t addr;              /**< the instruction address to jump to */
 } Loopjump;
 
 /**
@@ -102,10 +102,10 @@ typedef struct loop_jump_ {
  * Also tracks parent loops.
  */
 typedef struct loop_list_ {
-    enum { LOOP_TYPE_WHILE, LOOP_TYPE_FOR } loop_type; /**< loop type */
     Loopjump *breaks;       /**< linked list of breaks */
     Loopjump *continues;    /**< linked list of continues */
     struct loop_list_ *parent;      /**< parent loop_list (if nested) */
+    enum { LOOP_TYPE_WHILE, LOOP_TYPE_FOR } loop_type; /**< loop type */
 } Looplist;
 
 /**

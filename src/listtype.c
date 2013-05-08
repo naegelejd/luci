@@ -196,7 +196,7 @@ LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
  */
 LuciObject* LuciList_append(LuciObject *l, LuciObject *b)
 {
-    LuciListObj *list = (LuciListObj *)l;
+    LuciListObj *list = AS_LIST(l);
 
     if (list->count >= list->size) {
 	list->size = list->size << 1;
@@ -213,6 +213,44 @@ LuciObject* LuciList_append(LuciObject *l, LuciObject *b)
 
     return LuciNilObj;
 }
+
+/**
+ * Pops the tail item off the LuciListObj
+ *
+ * @param l list
+ * @returns former tail of list
+ */
+LuciObject* LuciList_pop(LuciObject *l)
+{
+    LuciListObj *list = AS_LIST(l);
+
+    list->count--;
+    if (list->count < (list->size / 2)) {
+        list->size = list->size >> 1;
+        list->items = realloc(list->items,
+                list->size * sizeof(*list->items));
+        if (!list->items) {
+            DIE("%s\n", "Failed to dynamically shrink list while popping");
+        }
+        LUCI_DEBUG("%s\n", "Shrunk list");
+    }
+
+    LuciObject *ret = list->items[list->count];
+    list->items[list->count] = NULL;
+    return ret;
+}
+
+/**
+ * Returns the tail item of the LuciListObj
+ *
+ * @param l list
+ * @returns tail of list
+ */
+LuciObject* LuciList_tail(LuciObject *l)
+{
+    return AS_LIST(l)->items[AS_LIST(l)->count - 1];
+}
+
 /**
  * Determines if two LuciListObjs are equal
  *

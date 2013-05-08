@@ -13,7 +13,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set(LUCI_SOURCE_FILES
     main.c
     gc.c
-    stack.c
     ast.c
     lucitypes.c
     inttype.c
@@ -35,7 +34,6 @@ set(LUCI_SOURCE_FILES
 set(LUCI_HEADER_FILES
     luci.h
     gc.h
-    stack.h
     ast.h
     lucitypes.h
     inttype.h

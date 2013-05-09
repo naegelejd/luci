@@ -29,6 +29,7 @@
 /** Generic Object which allows for dynamic typing */
 typedef struct LuciObject_ {
     struct LuciObjectType *type;    /**< pointer to type implementation */
+    uint64_t gcflags;
 } LuciObject;
 
 /** type flag bits */

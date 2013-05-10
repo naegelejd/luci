@@ -36,9 +36,7 @@ LuciObject* LuciString_cget(LuciObject *, LuciObject *);
 LuciObject* LuciString_cput(LuciObject *, LuciObject *, LuciObject *);
 LuciObject* LuciString_next(LuciObject *, LuciObject *);
 void LuciString_print(LuciObject *);
-
-unsigned int string_hash_0(LuciObject *s);
-unsigned int string_hash_1(LuciObject *s);
-unsigned int string_hash_2(LuciObject *s);
+void LuciString_mark(LuciObject *);
+void LuciString_finalize(LuciObject *);
 
 #endif

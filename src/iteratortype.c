@@ -47,7 +47,11 @@ LuciObjectType obj_iterator_t = {
 
     ternary_nil,
 
-    unary_void
+    LuciIterator_print,
+    LuciIterator_mark,
+    NULL,   /* finalize */
+    NULL,   /* hash0 */
+    NULL    /* hash1 */
 };
 
 
@@ -60,8 +64,7 @@ LuciObjectType obj_iterator_t = {
  */
 LuciObject *LuciIterator_new(LuciObject *container, int step)
 {
-    LuciIteratorObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_iterator_t);
+    LuciIteratorObj *o = (LuciIteratorObj*)gc_malloc(&obj_iterator_t);
     o->idx = LuciInt_new(0);
     o->step = step;
     o->container = container;
@@ -120,3 +123,18 @@ LuciObject *iterator_next_object(LuciObject *iterator)
     return next;
 }
 
+void LuciIterator_print(LuciObject *in)
+{
+    printf("<iterator>");
+}
+
+void LuciIterator_mark(LuciObject *in)
+{
+    LuciObject *idx = AS_ITERATOR(in)->idx;
+    LuciObject *container = AS_ITERATOR(in)->container;
+
+    idx->type->mark(idx);
+    container->type->mark(container);
+
+    GC_MARK(in);
+}

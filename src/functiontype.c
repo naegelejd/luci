@@ -47,7 +47,11 @@ LuciObjectType obj_func_t = {
 
     ternary_nil,
 
-    LuciFunction_print
+    LuciFunction_print,
+    LuciFunction_mark,
+    LuciFunction_finalize,
+    NULL,   /* hash0 */
+    NULL    /* hash1 */
 };
 
 /**
@@ -58,8 +62,7 @@ LuciObjectType obj_func_t = {
  */
 LuciObject *LuciFunction_new()
 {
-    LuciFunctionObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_func_t);
+    LuciFunctionObj *o = (LuciFunctionObj*)gc_malloc(&obj_func_t);
     return (LuciObject *)o;
 }
 
@@ -119,4 +122,30 @@ LuciObject* LuciFunction_asbool(LuciObject *o)
 void LuciFunction_print(LuciObject *in)
 {
     printf("<function>");
+}
+
+void LuciFunction_mark(LuciObject *in)
+{
+    int i;
+    for (i = 0; i < AS_FUNCTION(in)->nlocals; i++) {
+        LuciObject *obj = AS_FUNCTION(in)->locals[i];
+        /* functions can contain NULL locals if they haven't yet
+         * been populated by an expression from the stack */
+        if (obj) {
+            obj->type->mark(obj);
+        }
+    }
+
+    for (i = 0; i < AS_FUNCTION(in)->nconstants; i++) {
+        LuciObject *obj = AS_FUNCTION(in)->constants[i];
+        obj->type->mark(obj);
+    }
+
+    GC_MARK(in);
+}
+
+void LuciFunction_finalize(LuciObject *in)
+{
+    free(AS_FUNCTION(in)->locals);
+    free(AS_FUNCTION(in)->constants);
 }

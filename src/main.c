@@ -185,7 +185,6 @@ int luci_main(int argc, char *argv[])
 
 cleanup:
     CompileState_delete(cs);
-    LuciFunction_delete(gf);
 cleanup_tree:
     destroy_tree(root_node);
     gc_finalize();

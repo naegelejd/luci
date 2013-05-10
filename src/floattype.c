@@ -46,7 +46,11 @@ LuciObjectType obj_float_t = {
 
     ternary_nil,
 
-    LuciFloat_print
+    LuciFloat_print,
+    LuciFloat_mark,
+    NULL,       /* finalize */
+    NULL,       /* hash0 */
+    NULL,       /* hash1 */
 };
 
 /**
@@ -57,8 +61,7 @@ LuciObjectType obj_float_t = {
  */
 LuciObject *LuciFloat_new(double d)
 {
-    LuciFloatObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_float_t);
+    LuciFloatObj *o = (LuciFloatObj*)gc_malloc(&obj_float_t);
     o->f = d;
     return (LuciObject *)o;
 }
@@ -361,4 +364,9 @@ LuciObject *LuciFloat_neg(LuciObject *a)
 void LuciFloat_print(LuciObject *in)
 {
     printf("%f", AS_FLOAT(in)->f);
+}
+
+void LuciFloat_mark(LuciObject *in)
+{
+    GC_MARK(in);
 }

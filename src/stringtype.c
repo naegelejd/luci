@@ -8,6 +8,10 @@
 
 #include "stringtype.h"
 
+static unsigned int string_hash_0(LuciObject *s);
+static unsigned int string_hash_1(LuciObject *s);
+static unsigned int string_hash_2(LuciObject *s);
+
 
 /** Type member table for LuciStringObj */
 LuciObjectType obj_string_t = {
@@ -47,7 +51,13 @@ LuciObjectType obj_string_t = {
 
     LuciString_cput,
 
-    LuciString_print
+    LuciString_print,
+
+    LuciString_mark,     /* mark */
+    LuciString_finalize,     /* finalize */
+
+    string_hash_0,
+    string_hash_1
 };
 
 /**
@@ -58,8 +68,7 @@ LuciObjectType obj_string_t = {
  */
 LuciObject *LuciString_new(char *s)
 {
-    LuciStringObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_string_t);
+    LuciStringObj *o = (LuciStringObj*)gc_malloc(&obj_string_t);
     o->s = s;   /* not a copy! */
     o->len = strlen(o->s);
     return (LuciObject *)o;
@@ -310,7 +319,7 @@ void LuciString_print(LuciObject *in)
  * @param s LuciStringObj to hash
  * @returns unsigned integer hash
  */
-unsigned int string_hash_0(LuciObject *s)
+static unsigned int string_hash_0(LuciObject *s)
 {
     char *str = AS_STRING(s)->s;
 
@@ -330,7 +339,7 @@ unsigned int string_hash_0(LuciObject *s)
  * @param s LuciStringObj to hash
  * @returns unsigned integer hash
  */
-unsigned int string_hash_1(LuciObject *s)
+static unsigned int string_hash_1(LuciObject *s)
 {
     char *str = AS_STRING(s)->s;
 
@@ -349,7 +358,7 @@ unsigned int string_hash_1(LuciObject *s)
  * @param s LuciStringObj to hash
  * @returns unsigned integer hash
  */
-unsigned int string_hash_2(LuciObject *s)
+static unsigned int string_hash_2(LuciObject *s)
 {
     char *str = AS_STRING(s)->s;
 
@@ -366,3 +375,12 @@ unsigned int string_hash_2(LuciObject *s)
     return h;
 }
 
+void LuciString_mark(LuciObject *in)
+{
+    GC_MARK(in);
+}
+
+void LuciString_finalize(LuciObject *in)
+{
+    free(AS_STRING(in)->s);
+}

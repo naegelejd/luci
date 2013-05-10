@@ -27,6 +27,8 @@ typedef struct LuciIterator_ {
 LuciObject *LuciIterator_new(LuciObject *list, int step);
 LuciObject* LuciIterator_copy(LuciObject *);
 LuciObject* LuciIterator_asbool(LuciObject *);
+void LuciIterator_print(LuciObject *);
+void LuciIterator_mark(LuciObject *);
 
 LuciObject *iterator_next_object(LuciObject *iterator);
 

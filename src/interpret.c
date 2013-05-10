@@ -15,29 +15,24 @@
 /**
  * Main interpreter loop
  *
- * @param frame top-level function to being interpreting
- */
-void eval(LuciObject *frame)
-{
-
-/******** Computed Goto Definitions (Labels as Values) ********/
-
-/* Popular interpreters such as Python and Ruby utilize this
+ *------- Computed Goto Definitions (Labels as Values) -------
+ * Popular interpreters such as Python and Ruby utilize this
  * GCC extension for up to 20% performance improvement.
- *
  * The advantage of using of an explicit jump table and explicit
  * indirect jump instruction after each opcode's execution is
  * described in the Python 3.3 source (ceval.c).
- *
  * Eli Bendersky also has a good explanation and demo available
  * at http://eli.thegreenplace.net/2012/07/12/computed-goto-for-efficient-dispatch-tables
- *
  * NOTE (directly from Python 3.3):
  * "care must be taken that the compiler doesn't try to 'optimize' the
  * indirect jumps by sharing them between all opcodes. Such optimizations
  * can be disabled on gcc by using the -fno-gcse flag (or possibly
  * -fno-crossjumping)."
+ *
+ * @param frame top-level function to being interpreting
  */
+void eval(LuciObject *frame)
+{
 
 /* Using __GNUC__ for now, which is always defined by GCC */
 #ifdef __GNUC__
@@ -67,6 +62,9 @@ void eval(LuciObject *frame)
 #define GETARG          OPARG(READ)
 
     LuciObject *stack = LuciList_new();
+
+    gc_add_root(&stack);
+    gc_add_root(&frame);
 
     LuciObject* lfargs[MAX_LIBFUNC_ARGS];
     register LuciObject *x = LuciNilObj;
@@ -365,8 +363,8 @@ void eval(LuciObject *frame)
                 /* save instruction pointer */
                 AS_FUNCTION(frame)->ip = ip;
 
-                /* save the current frame to push it on the stack */
-                LuciObject *current_frame = frame;
+                /* save pointer to current frame */
+                LuciObject *parent_frame = frame;
 
                 /* activate a copy of the function frame */
                 frame = x->type->copy(x);
@@ -389,7 +387,7 @@ void eval(LuciObject *frame)
                 }
 
                 /* the stack is clean, now push the previous frame */
-                LuciList_push(stack, current_frame);
+                LuciList_push(stack, parent_frame);
 
                 /* reset instruction pointer and carry on our merry way */
                 /* NOTE: while ugly, we decrement ip by one instruction
@@ -417,9 +415,11 @@ void eval(LuciObject *frame)
                     }
                 }
 
+                gc_disable();
                 /* call func, passing args array and arg count */
                 z = ((LuciLibFuncObj *)x)->func(lfargs, a);
                 LuciList_push(stack, z);    /* always push return val */
+                gc_enable();
             }
             else {
                 DIE("%s", "Can't call something that isn't a function\n");

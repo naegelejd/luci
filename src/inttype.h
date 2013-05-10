@@ -49,5 +49,6 @@ LuciObject* LuciInt_neg(LuciObject *);
 LuciObject* LuciInt_lgnot(LuciObject *);
 LuciObject* LuciInt_bwnot(LuciObject *);
 void LuciInt_print(LuciObject *);
+void LuciInt_mark(LuciObject *);
 
 #endif

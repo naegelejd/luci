@@ -50,7 +50,11 @@ LuciObjectType obj_list_t = {
 
     LuciList_cput,
 
-    LuciList_print
+    LuciList_print,
+    LuciList_mark,
+    LuciList_finalize,
+    NULL,       /* hash1 */
+    NULL        /* hash0 */
 };
 
 /**
@@ -60,8 +64,7 @@ LuciObjectType obj_list_t = {
  */
 LuciObject *LuciList_new()
 {
-    LuciListObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_list_t);
+    LuciListObj *o = (LuciListObj*)gc_malloc(&obj_list_t);
     o->count = 0;
     o->size = INIT_LIST_SIZE;
     o->items = alloc(o->size * sizeof(*o->items));
@@ -226,7 +229,7 @@ LuciObject* LuciList_pop(LuciObject *l)
 
     list->count--;
     if (list->count < (list->size / 2)) {
-        list->size = list->size >> 1;
+        list->size /= 2;
         list->items = realloc(list->items,
                 list->size * sizeof(*list->items));
         if (!list->items) {
@@ -373,4 +376,19 @@ void LuciList_print(LuciObject *in)
         printf(", ");
     }
     printf("]");
+}
+
+void LuciList_mark(LuciObject *list)
+{
+    int i;
+    for (i = 0; i < AS_LIST(list)->count; i++) {
+        LuciObject *item = AS_LIST(list)->items[i];
+        item->type->mark(item);
+    }
+    GC_MARK(list);
+}
+
+void LuciList_finalize(LuciObject *list)
+{
+    free(AS_LIST(list)->items);
 }

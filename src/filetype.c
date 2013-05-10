@@ -59,8 +59,7 @@ LuciObjectType obj_file_t = {
  */
 LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode)
 {
-    LuciFileObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_file_t);
+    LuciFileObj *o = (LuciFileObj*)gc_malloc(&obj_file_t);
     o->ptr = fp;
     o->mode = mode;
     o->size = size;

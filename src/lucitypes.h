@@ -11,7 +11,6 @@
 #define LUCITYPES_H
 
 #include "luci.h"
-#include "gc.h"
 
 /**
  * Makes a negative container index positive based on the container's length.
@@ -29,7 +28,7 @@
 /** Generic Object which allows for dynamic typing */
 typedef struct LuciObject_ {
     struct LuciObjectType *type;    /**< pointer to type implementation */
-    uint64_t gcflags;
+    unsigned int reachable  : 1;        /**< GC flag for marking */
 } LuciObject;
 
 /** type flag bits */
@@ -80,6 +79,8 @@ typedef struct LuciObjectType
 
     LuciObject* (*cput)(LuciObject *, LuciObject *, LuciObject *); /**< put item */
     void (*print)(LuciObject *);        /**< print to stdout */
+    void (*mark)(LuciObject *);
+    void (*finalize)(LuciObject *);
     unsigned int (*hash0)(LuciObject *);    /**< object hash 1 */
     unsigned int (*hash1)(LuciObject *);    /**< object hash 2 */
 } LuciObjectType;
@@ -88,8 +89,6 @@ typedef struct LuciObjectType
 #define MEMBER(o,m) (((LuciObject *)(o))->type->(##m))
 /** returns 1 if the object's type is the given type, 0 otherwise */
 #define ISTYPE(o,t) (((LuciObject *)(o))->type == (&(t)))
-/** sets the type of the given object to the given type */
-#define SET_TYPE(o, t)  (((LuciObject *)(o))->type = (&(t)))
 /** returns 1 if two objects have the same type, 0 otherwise */
 #define TYPES_MATCH(left, right) ((left)->type == (right)->type)
 
@@ -101,6 +100,7 @@ LuciObject* unary_nil(LuciObject *);
 LuciObject* binary_nil(LuciObject *, LuciObject *);
 LuciObject* ternary_nil(LuciObject *, LuciObject *, LuciObject *);
 
+#include "gc.h"     /* for gc_malloc */
 #include "inttype.h"
 #include "floattype.h"
 #include "stringtype.h"

@@ -10,11 +10,16 @@
 #define LUCI_GC_H
 
 #include "luci.h"
+#include "lucitypes.h"
 
 #define POOL_LIST_COUNT  10     /**< number of pools available */
 #define INIT_POOL_LIST_SIZE 4
 #define POOL_SIZE  6144    /**< initial pool size in bytes */
 
+#define GC_MARK(obj)    (obj)->reachable = GC_REACHABLE;
+
+extern unsigned int GC_UNREACHABLE;
+extern unsigned int GC_REACHABLE;
 
 /** Contains pointers to a byte array for use by the memory pool,
  * as well as a large bit-flag (implemented using an array
@@ -32,8 +37,11 @@ typedef struct pool_list_ {
 } GCPoolList;
 
 int gc_init(void);
-void *gc_malloc(size_t);
+unsigned int gc_add_root(LuciObject **);
+void gc_enable(void);
+void gc_disable(void);
+LuciObject *gc_malloc(LuciObjectType *);
 int gc_collect(void);
 int gc_finalize(void);
 
-#endif /* LUCI_MALLOC_H */
+#endif /* LUCI_GC_H */

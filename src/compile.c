@@ -653,6 +653,7 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
 
     /* initialize the builtins array with the builtin symbol table's array */
     builtins = symtable_get_objects(builtin_symbols);
+    symtable_delete(builtin_symbols);
 
     return cs;
 }

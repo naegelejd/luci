@@ -87,8 +87,7 @@ LuciObjectType obj_map_t = {
  */
 LuciObject *LuciMap_new()
 {
-    LuciMapObj *map = alloc(sizeof(*map));
-    SET_TYPE(map, obj_map_t);
+    LuciMapObj *map = (LuciMapObj*)gc_malloc(&obj_map_t);
     map->size_idx = 0;
     map->size = table_sizes[map->size_idx];
 
@@ -364,8 +363,8 @@ LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
         map_grow(map);
     }
 
-    uint32_t hash0 = string_hash_0(key);
-    uint32_t hash1 = string_hash_1(key);
+    uint32_t hash0 = key->type->hash0(key);
+    uint32_t hash1 = key->type->hash1(key);
 
     /* otherwise, it's time to search for an empty slot */
     unsigned int i = 0, idx = 0;
@@ -416,8 +415,8 @@ LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
 
     LuciMapObj *map = AS_MAP(o);
 
-    uint32_t hash0 = string_hash_0(key);
-    uint32_t hash1 = string_hash_1(key);
+    uint32_t hash0 = key->type->hash0(key);
+    uint32_t hash1 = key->type->hash1(key);
 
     unsigned int i, idx;
     for (i = 0; i < map->size; i++) {
@@ -466,8 +465,8 @@ LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
         map_shrink(map);
     }
 
-    uint32_t hash0 = string_hash_0(key);
-    uint32_t hash1 = string_hash_1(key);
+    uint32_t hash0 = key->type->hash0(key);
+    uint32_t hash1 = key->type->hash1(key);
 
     /* First, find the object to remove */
     unsigned int i, idx;

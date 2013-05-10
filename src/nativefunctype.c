@@ -58,8 +58,7 @@ LuciObjectType obj_libfunc_t = {
  */
 LuciObject *LuciLibFunc_new(LuciCFunc fptr, char *help, int min_args)
 {
-    LuciLibFuncObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_libfunc_t);
+    LuciLibFuncObj *o = (LuciLibFuncObj*)gc_malloc(&obj_libfunc_t);
     o->func = fptr;
     o->help = help;
     o->min_args = min_args;

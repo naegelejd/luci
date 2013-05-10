@@ -47,7 +47,12 @@ LuciObjectType obj_int_t = {
 
     ternary_nil,
 
-    LuciInt_print
+    LuciInt_print,
+
+    LuciInt_mark,
+    NULL,           /* finalize */
+    NULL,           /* hash0 */
+    NULL            /* hash1 */
 };
 
 /**
@@ -58,8 +63,7 @@ LuciObjectType obj_int_t = {
  */
 LuciObject *LuciInt_new(long l)
 {
-    LuciIntObj *o = gc_malloc(sizeof(*o));
-    SET_TYPE(o, obj_int_t);
+    LuciIntObj *o = (LuciIntObj*)gc_malloc(&obj_int_t);
     o->i = l;
     return (LuciObject *)o;
 }
@@ -379,3 +383,7 @@ void LuciInt_print(LuciObject *in)
     printf("%ld", AS_INT(in)->i);
 }
 
+void LuciInt_mark(LuciObject *in)
+{
+    GC_MARK(in);
+}

@@ -46,6 +46,8 @@ LuciObject* LuciList_cget(LuciObject *, LuciObject *);
 LuciObject* LuciList_cput(LuciObject *, LuciObject *, LuciObject *);
 LuciObject* LuciList_next(LuciObject *, LuciObject *);
 void LuciList_print(LuciObject *);
+void LuciList_mark(LuciObject *);
+void LuciList_finalize(LuciObject *);
 
 
 #endif

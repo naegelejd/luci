@@ -33,7 +33,9 @@ typedef struct LuciFunction_ {
 LuciObject *LuciFunction_new();
 LuciObject* LuciFunction_copy(LuciObject *);
 LuciObject* LuciFunction_asbool(LuciObject *);
-void LuciFunction_print(LuciObject *in);
+void LuciFunction_print(LuciObject *);
+void LuciFunction_mark(LuciObject *);
+void LuciFunction_finalize(LuciObject *);
 
 
 #endif

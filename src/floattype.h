@@ -50,5 +50,6 @@ LuciObject* LuciFloat_lgnot(LuciObject *);
 LuciObject* LuciFloat_bwnot(LuciObject *);
 
 void LuciFloat_print(LuciObject *);
+void LuciFloat_mark(LuciObject *in);
 
 #endif

@@ -12,10 +12,9 @@ print("for-loop 3:");
 for j in range(7, -6, -1) {
     print (j);
 }
+
 l = range(3);
-
 print("type stuff and press enter");
-
 for i in l {
    l[i] = input();
 }

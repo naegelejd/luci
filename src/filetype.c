@@ -11,9 +11,9 @@
 /** Type member table for LuciFileObj */
 LuciObjectType obj_file_t = {
     "file",
-    FLAG_DEEP_COPY,
     sizeof(LuciFileObj),
 
+    unary_nil,
     unary_nil,
     unary_nil,
     LuciFile_asbool,

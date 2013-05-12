@@ -18,10 +18,9 @@ static GCPoolList POOL_LISTS[POOL_LIST_COUNT];
 static LuciObject** GCRoots[GC_MAX_ROOTS];
 static unsigned int gc_num_roots;
 
-unsigned int GC_UNREACHABLE;
-unsigned int GC_REACHABLE;
-
-static int GC_ENABLED;
+bool GC_NECESSARY;
+bool GC_UNREACHABLE;
+bool GC_REACHABLE;
 
 static GCPool *gc_pool_new(size_t);
 
@@ -32,9 +31,10 @@ static GCPool *gc_pool_new(size_t);
  */
 int gc_init(void)
 {
-    GC_ENABLED = 1;
-    GC_UNREACHABLE = 0;
-    GC_REACHABLE = 1;
+    GC_UNREACHABLE = false;
+    GC_REACHABLE = true;
+
+    GC_NECESSARY = false;
 
     /* initialize each arena identifying it as empty */
     int i;
@@ -55,16 +55,6 @@ unsigned int gc_add_root(LuciObject **addr)
     }
     GCRoots[gc_num_roots++] = addr;
     return gc_num_roots;
-}
-
-void gc_enable(void)
-{
-    GC_ENABLED = 1;
-}
-
-void gc_disable(void)
-{
-    GC_ENABLED = 0;
 }
 
 /**
@@ -95,12 +85,7 @@ LuciObject *gc_malloc(LuciObjectType *tp)
 
     /* time to allocate a new pool */
     if (plist->count >= plist->size) {
-        if (GC_ENABLED) {
-            gc_collect();
-        }
-        else {
-            printf("Need to GC but it's disabled\n");
-        }
+        GC_NECESSARY = true;
         plist->size *= 2;
         plist->pools = realloc(plist->pools, plist->size *
                 sizeof(*plist->pools));
@@ -128,14 +113,23 @@ return_object:;
  */
 int gc_collect(void)
 {
+    printf("Marking\n");
     /* mark */
     int i;
     for (i = 0; i < gc_num_roots; i++) {
         LuciObject *obj = *GCRoots[i];
+        if (!obj) { DIE("%s\n", "NULL GCRoot"); }
+        if (!obj->type) { DIE("%s\n", "NULL GCRoot type pointer"); }
+        if (!obj->type->mark) { DIE("%s\n", "NULL GCRoot mark method"); }
+
         obj->type->mark(obj);
     }
 
+    printf("Sweeping\n");
     /* sweep */
+    int swept = 0;
+    int unswept = 0;
+
     int plist_idx;
     for (plist_idx = 0; plist_idx < POOL_LIST_COUNT; plist_idx++) {
         GCPoolList *plist = &POOL_LISTS[plist_idx];
@@ -146,26 +140,37 @@ int gc_collect(void)
             char *limit = (pool->bytes + POOL_SIZE) - pool->each;
             for (ptr = pool->bytes; ptr <= limit; ptr += pool->each) {
                 LuciObject *obj = (LuciObject*)ptr;
-                if ((obj->type != 0) && (obj->reachable == GC_UNREACHABLE)) {
-                    if (obj->type->finalize) {
-                        obj->type->finalize(obj);
-                    }
+                if (obj->type != 0) {   /* check that object exists */
+                    if (obj->reachable == GC_UNREACHABLE) {
+                        if (obj->type->finalize) {
+                            obj->type->finalize(obj);
+                        }
 
-                    memset(ptr, 0, pool->each);
+                        memset(ptr, 0, pool->each);
 
-                    /* update the pool's 'next' pointer if necessary */
-                    if (ptr < pool->next) {
-                        pool->next = ptr;
+                        /* update the pool's 'next' pointer if necessary */
+                        if (ptr < pool->next) {
+                            pool->next = ptr;
+                        }
+                        swept++;
+                    } else {
+                        unswept++;
                     }
                 }
             }
         }
     }
 
-    GC_UNREACHABLE = !GC_UNREACHABLE;
-    GC_REACHABLE = !GC_REACHABLE;
+    /* swap the numeric value of the unreachable flag */
+    GC_UNREACHABLE ^= GC_REACHABLE;
+    GC_REACHABLE ^= GC_UNREACHABLE;
+    GC_UNREACHABLE ^= GC_REACHABLE;
 
-    return 0;
+    /* ALWAYS TELL THE WORLD THAT GC IS NO LONGER NECESSARY */
+    GC_NECESSARY = false;
+
+    printf("Swept: %d, Unswept: %d\n", swept, unswept);
+    return swept;
 }
 
 /**
@@ -176,6 +181,14 @@ int gc_collect(void)
  */
 int gc_finalize()
 {
+    /* MAYBE replace all this with something like:
+     *
+     *      GC_REACHABLE = GC_UNREACHABLE;
+     *      gc_collect();
+     *
+     * ??
+     */
+
     int list_idx, pool_idx;
     for (list_idx = 0; list_idx < POOL_LIST_COUNT; list_idx++) {
         GCPoolList *plist = &POOL_LISTS[list_idx];
@@ -195,6 +208,7 @@ int gc_finalize()
         }
         free(plist->pools);
     }
+
 
     return 1;
 }

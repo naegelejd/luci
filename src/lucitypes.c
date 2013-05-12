@@ -17,9 +17,9 @@ static void LuciNil_print(LuciObject *);
 /** Type member table for LuciNilObj */
 LuciObjectType obj_nil_t = {
     "nil",
-    FLAG_DEEP_COPY,
     sizeof(LuciNilObj),
 
+    LuciNil_copy,
     LuciNil_copy,
     unary_nil,
     LuciNil_asbool,

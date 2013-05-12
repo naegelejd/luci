@@ -12,9 +12,9 @@
 /** Type member table for LuciLibFuncObj */
 LuciObjectType obj_libfunc_t = {
     "libfunction",
-    FLAG_DEEP_COPY,
     sizeof(LuciLibFuncObj),
 
+    LuciLibFunc_copy,
     LuciLibFunc_copy,
     unary_nil,
     LuciLibFunc_asbool,
@@ -47,7 +47,11 @@ LuciObjectType obj_libfunc_t = {
 
     ternary_nil,
 
-    LuciLibFunc_print
+    LuciLibFunc_print,
+    LuciLibFunc_mark,
+    NULL,       /* finalize */
+    NULL,       /* hash 0 */
+    NULL        /* hash 1 */
 };
 
 /**
@@ -90,4 +94,9 @@ LuciObject* LuciLibFunc_asbool(LuciObject *o)
 void LuciLibFunc_print(LuciObject *in)
 {
     printf("<libfunction>");
+}
+
+void LuciLibFunc_mark(LuciObject *in)
+{
+    GC_MARK(in);
 }

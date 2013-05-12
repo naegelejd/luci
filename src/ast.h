@@ -102,9 +102,9 @@ typedef struct
 /** AST Node representing a LuciMapObj definition */
 typedef struct
 {
+    struct AstNode **pairs;     /**< array of map key-val pairs */
     int count;      /**< current # of map key-val pairs */
     int size;       /**< allocated # of map key-val pairs */
-    struct AstNode **pairs;     /**< array of map key-val pairs */
 } AstMapDef;
 
 /** AST Node representing a LuciMapObj's key-value pair */
@@ -117,9 +117,9 @@ typedef struct
 /** AST Node representing a LuciListObj definition */
 typedef struct
 {
+    struct AstNode **items;     /**< array of list items */
     int count;      /**< current # of list items */
     int size;       /**< allocated # of list items */
-    struct AstNode **items;     /**< array of list items */
 } AstListDef;
 
 /** AST Node representing a container access
@@ -182,9 +182,9 @@ typedef struct
 /** AST Node representing a block of statements */
 typedef struct
 {
+    struct AstNode ** statements;   /**< array of statements */
     int count;          /**< current # of statements */
     int size;           /**< allocated # of statements */
-    struct AstNode ** statements;   /**< array of statements */
 } AstStatements;
 
 /** AST Node representing the `return` keyword */
@@ -200,10 +200,6 @@ typedef struct
  */
 typedef struct AstNode
 {
-    AstType type;   /**< the type of the node */
-    int lineno;     /**< the line # this node was constructed from */
-    int column;     /**< the column # this node was constructed from */
-
     union {
         long i;     /**< integer constant */
         double f;   /**< floating-point constant */
@@ -225,6 +221,10 @@ typedef struct AstNode
         AstStatements statements;       /**< statements block node */
         AstReturn return_stmt;          /**< return statement node */
     } data;     /**< this node's payload */
+
+    AstType type;   /**< the type of the node */
+    int lineno;     /**< the line # this node was constructed from */
+    int column;     /**< the column # this node was constructed from */
 } AstNode;
 
 void destroy_tree(AstNode *);

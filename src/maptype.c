@@ -42,10 +42,10 @@ unsigned int table_sizes[] = {
 /** Type member table for LuciMapObj */
 LuciObjectType obj_map_t = {
     "map",
-    FLAG_SHALLOW_COPY,
     sizeof(LuciMapObj),
 
     LuciMap_copy,
+    LuciMap_deepcopy,
     unary_nil,
     LuciMap_asbool,
     LuciMap_len,
@@ -77,7 +77,12 @@ LuciObjectType obj_map_t = {
 
     LuciMap_cput,
 
-    LuciMap_print
+    LuciMap_print,
+
+    LuciMap_mark,
+    LuciMap_finalize,
+    NULL,
+    NULL,
 };
 
 
@@ -111,10 +116,23 @@ void map_delete(LuciObject *o)
 /**
  * Copies a LuciMapObj
  *
+ * returns itself
+ *
+ * @param orig LucMapObj
+ * @returns orig
+ */
+LuciObject *LuciMap_copy(LuciObject *orig)
+{
+    return orig;
+}
+
+/**
+ * Deep copies a LuciMapObj
+ *
  * @param orig LucMapObj to copy
  * @returns new copy of orig
  */
-LuciObject *LuciMap_copy(LuciObject *orig)
+LuciObject* LuciMap_deepcopy(LuciObject *orig)
 {
     LuciMapObj *mapobj = (LuciMapObj *)orig;
     int i;
@@ -542,3 +560,23 @@ void LuciMap_print(LuciObject *in)
     printf("}");
 }
 
+void LuciMap_mark(LuciObject *in)
+{
+    LuciMapObj *map = AS_MAP(in);
+    int i;
+    for (i = 0; i < map->size; i++) {
+        LuciObject *key = map->keys[i];
+        LuciObject *val = map->vals[i];
+        if (key) {
+            key->type->mark(key);
+            val->type->mark(val);
+        }
+    }
+    GC_MARK(in);
+}
+
+void LuciMap_finalize(LuciObject *in)
+{
+    free(AS_MAP(in)->keys);
+    free(AS_MAP(in)->vals);
+}

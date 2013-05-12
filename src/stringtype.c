@@ -16,9 +16,9 @@ static unsigned int string_hash_2(LuciObject *s);
 /** Type member table for LuciStringObj */
 LuciObjectType obj_string_t = {
     "string",
-    FLAG_DEEP_COPY,
     sizeof(LuciStringObj),
 
+    LuciString_copy,
     LuciString_copy,
     LuciString_repr,
     LuciString_asbool,

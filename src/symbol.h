@@ -17,9 +17,9 @@
  */
 typedef struct symbol
 {
-    const char *name;   /**< symbol name */
-    uint32_t index;     /**< index of object corresponding to symbol */
-    struct symbol *next;/**< next symbol in linked list */
+    struct symbol *next;    /**< next symbol in linked list */
+    const char *name;       /**< symbol name */
+    uint32_t index;         /**< index of object corresponding to symbol */
 } Symbol;
 
 /**
@@ -28,13 +28,13 @@ typedef struct symbol
  */
 typedef struct symtable
 {
-    uint8_t owns_objects;   /**< boolean. Affects deallocation of Table */
-    uint32_t count;         /**< Current # of allocated symbol/object pairs */
-    uint32_t bscale;        /**< Index into array of bucket size options (symbol.c) */
-    uint32_t collisions;    /**< Current # of collisions in hashtable */
-    uint32_t size;          /**< Total object array size */
     Symbol **symbols;       /**< Symbol array */
     LuciObject **objects;   /**< Object array */
+    uint32_t count;         /**< Current # of allocated symbol/object pairs */
+    uint32_t size;          /**< Total object array size */
+    uint32_t bscale;        /**< Index into array of bucket size options */
+    uint32_t collisions;    /**< Current # of collisions in hashtable */
+    uint8_t owns_objects;   /**< boolean. Affects deallocation of Table */
 } SymbolTable;
 
 /** flags identifying the symtable_id intent (create/lookup/...) */

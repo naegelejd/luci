@@ -12,9 +12,9 @@
 /** Type member table for LuciIteratorObj */
 LuciObjectType obj_iterator_t = {
     "iterator",
-    FLAG_DEEP_COPY,
     sizeof(LuciIteratorObj),
 
+    LuciIterator_copy,
     LuciIterator_copy,
     unary_nil,
     LuciIterator_asbool,

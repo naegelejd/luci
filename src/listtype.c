@@ -15,10 +15,10 @@ static LuciObject *list_set_object(LuciObject *list, LuciObject *item, long inde
 /** Type member table for LuciListObj */
 LuciObjectType obj_list_t = {
     "list",
-    FLAG_SHALLOW_COPY,
     sizeof(LuciListObj),
 
     LuciList_copy,
+    LuciList_deepcopy,
     unary_nil,
     LuciList_asbool,
     LuciList_len,
@@ -126,12 +126,25 @@ static LuciObject *list_set_object(LuciObject *list, LuciObject *item, long inde
 }
 
 /**
- * Copies a LuciListObj
+ * Shallow copy of a LuciListObj
+ *
+ * just returns itself
+ *
+ * @param orig LuciListObj
+ * @returns orig
+ */
+LuciObject* LuciList_copy(LuciObject *orig)
+{
+    return orig;
+}
+
+/**
+ * Deep copies a LuciListObj
  *
  * @param orig LucListObj to copy
  * @returns new copy of orig
  */
-LuciObject* LuciList_copy(LuciObject *orig)
+LuciObject* LuciList_deepcopy(LuciObject *orig)
 {
     LuciListObj *listobj = (LuciListObj *)orig;
     int i;
@@ -228,6 +241,7 @@ LuciObject* LuciList_pop(LuciObject *l)
     LuciListObj *list = AS_LIST(l);
 
     list->count--;
+    /*
     if (list->count < (list->size / 2)) {
         list->size /= 2;
         list->items = realloc(list->items,
@@ -237,6 +251,7 @@ LuciObject* LuciList_pop(LuciObject *l)
         }
         LUCI_DEBUG("%s\n", "Shrunk list");
     }
+    */
 
     LuciObject *ret = list->items[list->count];
     list->items[list->count] = NULL;

@@ -10,6 +10,7 @@
 #define BUILTIN_H
 
 #include "lucitypes.h"
+#include "gc.h"
 
 /** LuciObject and corresponding name available to users
  * as a builtin symbol definition */

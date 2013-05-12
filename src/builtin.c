@@ -8,198 +8,197 @@
 
 #include "luci.h"
 #include "builtin.h"
-#include "lucitypes.h"
 
 
 static LuciLibFuncObj builtin_print = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_print,
     "prints string representations of objects to stdout",
     0
 };
 
 static LuciLibFuncObj builtin_help = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_help,
     "prints a help string for a given object",
     0
 };
 
 static LuciLibFuncObj builtin_exit = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_exit,
     "abruptly exits Luci",
     0
 };
 
 static LuciLibFuncObj builtin_input = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_readline,
     "reads a line from stdin",
     0
 };
 
 static LuciLibFuncObj builtin_readline = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_readline,
     "reads a line from a file",
     1
 };
 
 static LuciLibFuncObj builtin_typeof = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_typeof,
     "returns the type of a given object",
     1
 };
 
 static LuciLibFuncObj builtin_assert = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_assert,
     "asserts that an expression is true",
     1
 };
 
 static LuciLibFuncObj builtin_copy = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_copy,
     "returns a deep copy of a given object",
     1
 };
 
 static LuciLibFuncObj builtin_cast_str = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_cast_str,
     "casts an object to a string",
     1
 };
 
 static LuciLibFuncObj builtin_cast_int = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_cast_int,
     "casts an object to an int",
     1
 };
 
 static LuciLibFuncObj builtin_cast_float = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_cast_float,
     "casts an object to a float",
     1
 };
 
 static LuciLibFuncObj builtin_hex = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_hex,
     "returns a string of the hex representation of an int",
     1
 };
 
 static LuciLibFuncObj builtin_fopen = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_fopen,
     "opens a file",
     1
 };
 
 static LuciLibFuncObj builtin_fclose = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_fclose,
     "closes a file",
     1
 };
 
 static LuciLibFuncObj builtin_fread = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_fread,
     "reads a file",
     1
 };
 
 static LuciLibFuncObj builtin_fwrite = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_fwrite,
     "writes a string to a file",
     2
 };
 
 static LuciLibFuncObj builtin_flines = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_flines,
     "reads the lines in a file as a list",
     1
 };
 
 static LuciLibFuncObj builtin_range = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_range,
     "generates a range of integers",
     1
 };
 
 static LuciLibFuncObj builtin_sum = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_sum,
     "computes the sum of a list of numbers",
     1
 };
 
 static LuciLibFuncObj builtin_len = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_len,
     "computes the length of a list",
     1
 };
 
 static LuciLibFuncObj builtin_max = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_max,
     "computes the sum of a list of numbers",
     1
 };
 
 static LuciLibFuncObj builtin_min = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_min,
     "computes the sum of a list of numbers",
     1
 };
 
 static LuciLibFuncObj builtin_contains = {
-    {&obj_libfunc_t},
+    {&obj_libfunc_t, GC_STATIC},
     luci_contains,
     "determines if the given container contains a given object",
     2
 };
 
 static LuciFileObj builtin_stdout = {
-    {&obj_file_t},
+    {&obj_file_t, GC_STATIC},
     NULL,
     0,
     f_append_m
 };
 
 static LuciFileObj builtin_stderr = {
-    {&obj_file_t},
+    {&obj_file_t, GC_STATIC},
     NULL,
     0,
     f_append_m
 };
 
 static LuciFileObj builtin_stdin = {
-    {&obj_file_t},
+    {&obj_file_t, GC_STATIC},
     NULL,
     0,
     f_read_m
 };
 
 static LuciFloatObj builtin_e = {
-    {&obj_float_t},
+    {&obj_float_t, GC_STATIC},
     M_E
 };
 
 static LuciFloatObj builtin_pi = {
-    {&obj_float_t},
+    {&obj_float_t, GC_STATIC},
     M_PI
 };
 
@@ -278,7 +277,7 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
         }
         printf("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n");
     } else {
-        int i;
+        unsigned int i;
         for (i = 0; i < c; i++) {
             LuciObject *o = args[i];
             if (!ISTYPE(o, obj_libfunc_t)) {
@@ -326,10 +325,11 @@ LuciObject *luci_exit(LuciObject **args, unsigned int c)
  */
 LuciObject *luci_print(LuciObject **args, unsigned int c)
 {
-    int i;
     if (c > 0) {
         args[0]->type->print(args[0]);
     }
+
+    unsigned int i;
     for (i = 1; i < c; i++) {
 	printf(" ");
         args[i]->type->print(args[i]);
@@ -378,7 +378,6 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 	if (len >= lenmax) {
 	    lenmax = lenmax << 1;
 	    if ((input = realloc(input, lenmax * sizeof(char))) == NULL) {
-		free (input);
 		DIE("%s", "Failed to allocate buffer for reading\n");
 	    }
 	}
@@ -386,7 +385,6 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
     } while (ch != EOF && ch != '\n');
 
     if (ch == EOF) {
-	free(input);
 	LUCI_DEBUG("%s\n", "readline at EOF, returning nil");
 	return LuciNilObj;
     }
@@ -394,9 +392,6 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
     /* overwrite the newline or EOF char with a NUL terminator */
     input[--len] = '\0';
     LuciObject *ret = LuciString_new(input);
-
-    /* destroy the input buffer */
-    free(input);
 
     LUCI_DEBUG("Read line %s\n", AS_STRING(ret)->s);
 
@@ -419,11 +414,11 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
     /* grab the first parameter from the param list */
     LuciObject *item = args[0];
     if (!item) {
-	return LuciString_new("None");
+	return LuciString_new(strdup("None"));
     }
 
     /* Create new LuciString from the object's type name */
-    return LuciString_new(item->type->type_name);
+    return LuciString_new(strdup(item->type->type_name));
 }
 
 /**
@@ -838,7 +833,7 @@ LuciObject *luci_flines(LuciObject **args, unsigned int c)
  */
 LuciObject * luci_range(LuciObject **args, unsigned int c)
 {
-    int start, end, incr;
+    long start, end, incr;
     LuciObject *first, *second, *third;
 
     if (c < 1) {
@@ -879,7 +874,7 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 
     /* Build a list of integers from start to end, incrementing by incr */
     LuciObject *item, *list = LuciList_new();
-    int i;
+    long i;
     if (incr < 0) {
         if (start <= end) {
             /* return empty list if idiotically requested */
@@ -927,7 +922,7 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
 
     LuciObject *item;
     double sum = 0;
-    int i, found_float = 0;
+    unsigned int i, found_float = 0;
     for (i = 0; i < AS_LIST(list)->count; i++) {
 	item = AS_LIST(list)->items[i];
 	if (!item) {
@@ -993,7 +988,7 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
 
     LuciObject *item;
     double max = 0;
-    int i, found_float = 0;
+    unsigned int i, found_float = 0;
     for (i = 0; i < AS_LIST(list)->count; i ++) {
 	item = AS_LIST(list)->items[i];
 	if (!item) {
@@ -1046,7 +1041,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
 
     LuciObject *item;
     double min = 0;
-    int i, found_float = 0;
+    unsigned int i, found_float = 0;
 
     for (i = 0; i < AS_LIST(list)->count; i ++) {
 	item = AS_LIST(list)->items[i];

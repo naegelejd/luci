@@ -151,9 +151,6 @@ CompileState * CompileState_refresh(CompileState *);
 void CompileState_delete(CompileState *);
 
 LuciObject * LuciFunction_from_CompileState(CompileState *, uint16_t);
-void LuciFunction_delete(LuciObject *);
-void LuciFunction_delete_copy(LuciObject *);
-void LuciFunction_delete_interactive(LuciObject *f);
 
 void print_instructions(LuciObject *);
 

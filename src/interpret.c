@@ -34,15 +34,15 @@
 void eval(LuciObject *frame)
 {
 
-/* Using __GNUC__ for now, which is always defined by GCC */
-#ifdef __GNUC__
+/* Using __GNUC__ for now, which is defined by GCC/Clang */
+#ifdef __GNUCxxx__
 
 #include "dispatch.h"  /* include static jump table */
 
 #define INTERP_INIT()   DISPATCH
 #define SWITCH
 #define DEFAULT
-#define HANDLE(op)      do_##op: { a = GETARG; }
+#define HANDLE(op)      do_##op: { GC_COLLECT(); a = GETARG; }
 #define DISPATCH        goto *dispatch_table[GETOPCODE]
 
 #else /* __GNUC__ */
@@ -50,7 +50,7 @@ void eval(LuciObject *frame)
 #define INTERP_INIT()
 #define SWITCH          switch(GETOPCODE)
 #define DEFAULT         default: goto done_eval;
-#define HANDLE(op)      case (op): { a = GETARG; }
+#define HANDLE(op)      case (op): { GC_COLLECT(); a = GETARG; }
 #define DISPATCH        break
 
 #endif /* __GNUC__ */
@@ -345,11 +345,7 @@ void eval(LuciObject *frame)
             /* pop object off of stack */
             x = LuciList_pop(stack);
             /* store the new object */
-            if (x->type->flags & FLAG_SHALLOW_COPY) {
-                AS_FUNCTION(frame)->locals[a] = x;
-            } else {
-                AS_FUNCTION(frame)->locals[a] = x->type->copy(x);
-            }
+            AS_FUNCTION(frame)->locals[a] = x->type->copy(x);
         FETCH(1);
         DISPATCH;
 
@@ -379,11 +375,7 @@ void eval(LuciObject *frame)
                 /* pop arguments and push COPIES into locals */
                 for (i = 0; i < a; i++) {
                     y = LuciList_pop(stack);
-                    if (y->type->flags & FLAG_SHALLOW_COPY) {
-                        AS_FUNCTION(frame)->locals[i] = y;
-                    } else {
-                        AS_FUNCTION(frame)->locals[i] = y->type->copy(y);
-                    }
+                    AS_FUNCTION(frame)->locals[i] = y->type->copy(y);
                 }
 
                 /* the stack is clean, now push the previous frame */
@@ -408,18 +400,12 @@ void eval(LuciObject *frame)
                 /* must happen in reverse */
                 for (i = a - 1; i >= 0; i--) {
                     y = LuciList_pop(stack);
-                    if (y->type->flags & FLAG_SHALLOW_COPY) {
-                        lfargs[i] = y;
-                    } else {
-                        lfargs[i] = y->type->copy(y);
-                    }
+                    lfargs[i] = y->type->copy(y);
                 }
 
-                gc_disable();
                 /* call func, passing args array and arg count */
                 z = ((LuciLibFuncObj *)x)->func(lfargs, a);
                 LuciList_push(stack, z);    /* always push return val */
-                gc_enable();
             }
             else {
                 DIE("%s", "Can't call something that isn't a function\n");
@@ -430,20 +416,23 @@ void eval(LuciObject *frame)
 
         HANDLE(RETURN)
             LUCI_DEBUG("%s\n", "RETURN");
-            /* delete previously active frame (and all its locals) */
-            LuciFunction_delete_copy(frame);
 
             /* pop the return value */
             LuciObject *return_value = LuciList_pop(stack);
 
             /* pop function stack frame and replace active frame */
             frame = LuciList_pop(stack);
+            assert(frame->type == &obj_func_t);
 
             /* push the return value back onto the stack */
             LuciList_push(stack, return_value);
 
             /* restore saved instruction pointer */
             ip = AS_FUNCTION(frame)->ip;
+            if (ip == 0) {
+                printf("Type: %s\n", frame->type->type_name);
+                DIE("%s\n", "broken instruction pointer");
+            }
         FETCH(1);
         DISPATCH;
 

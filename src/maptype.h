@@ -31,6 +31,7 @@ typedef struct LuciMap_ {
 
 LuciObject* LuciMap_new();
 LuciObject* LuciMap_copy(LuciObject *);
+LuciObject* LuciMap_deepcopy(LuciObject *);
 LuciObject* LuciMap_asbool(LuciObject *);
 LuciObject* LuciMap_len(LuciObject *);
 LuciObject* LuciMap_add(LuciObject *, LuciObject *);
@@ -42,6 +43,8 @@ LuciObject *LuciMap_cget(LuciObject *map, LuciObject *key);
 LuciObject *LuciMap_cdel(LuciObject *map, LuciObject *key);
 
 void LuciMap_print(LuciObject *);
+void LuciMap_mark(LuciObject *);
+void LuciMap_finalize(LuciObject *);
 
 
 #endif

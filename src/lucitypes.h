@@ -28,24 +28,18 @@
 /** Generic Object which allows for dynamic typing */
 typedef struct LuciObject_ {
     struct LuciObjectType *type;    /**< pointer to type implementation */
-    unsigned int reachable  : 1;        /**< GC flag for marking */
+    unsigned int reachable  : 2;        /**< GC flag for marking */
 } LuciObject;
-
-/** type flag bits */
-enum {
-    FLAG_DEEP_COPY = 0,
-    FLAG_SHALLOW_COPY = 1,
-};
 
 /** Object type virtual method table */
 typedef struct LuciObjectType
 {
     char *type_name;    /**< name of the type */
-    uint32_t flags;     /**< type flags */
     uint32_t size;      /**< size of an instance */
 
     /* unary methods */
-    LuciObject* (*copy)(LuciObject *);  /**< copy constructor */
+    LuciObject* (*copy)(LuciObject *);  /**< copy method */
+    LuciObject* (*deepcopy)(LuciObject *);  /**< deep copy constructor */
     LuciObject* (*repr)(LuciObject *);  /**< LuciStringObj representation */
     LuciObject* (*asbool)(LuciObject *);/**< 0 or 1 representation */
     LuciObject* (*len)(LuciObject *);   /**< length/size of container */

@@ -12,9 +12,9 @@
 /** Type member table for LuciIntObj */
 LuciObjectType obj_int_t = {
     "int",
-    FLAG_DEEP_COPY,
     sizeof(LuciIntObj),
 
+    LuciInt_copy,
     LuciInt_copy,
     LuciInt_repr,
     LuciInt_asbool,
@@ -299,7 +299,7 @@ LuciObject* LuciInt_gte(LuciObject *a, LuciObject *b)
 LuciObject* LuciInt_lgor(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
-    LuciObject *b0 = a->type->asbool(a);
+    LuciObject *b0 = a->type->asbool(b);
 
     return LuciInt_new(AS_INT(a0)->i || AS_INT(b0)->i);
 }
@@ -307,7 +307,7 @@ LuciObject* LuciInt_lgor(LuciObject *a, LuciObject *b)
 LuciObject* LuciInt_lgand(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
-    LuciObject *b0 = a->type->asbool(a);
+    LuciObject *b0 = a->type->asbool(b);
 
     return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
 }

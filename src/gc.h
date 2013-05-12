@@ -18,8 +18,12 @@
 
 #define GC_MARK(obj)    (obj)->reachable = GC_REACHABLE;
 
-extern unsigned int GC_UNREACHABLE;
-extern unsigned int GC_REACHABLE;
+extern bool GC_NECESSARY;
+extern bool GC_UNREACHABLE;
+extern bool GC_REACHABLE;
+#define GC_STATIC 2
+
+#define GC_COLLECT() do { if (GC_NECESSARY) gc_collect(); } while (0)
 
 /** Contains pointers to a byte array for use by the memory pool,
  * as well as a large bit-flag (implemented using an array
@@ -38,8 +42,6 @@ typedef struct pool_list_ {
 
 int gc_init(void);
 unsigned int gc_add_root(LuciObject **);
-void gc_enable(void);
-void gc_disable(void);
 LuciObject *gc_malloc(LuciObjectType *);
 int gc_collect(void);
 int gc_finalize(void);

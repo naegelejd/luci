@@ -239,8 +239,6 @@ void luci_interactive(void)
         /* print one more line of spacing */
         fprintf(stdout, "%s", "\n");
 
-        /* clean up frame's memory */
-        LuciFunction_delete_interactive(gf);
         /* clean up AST memory */
         destroy_tree(root_node);
         root_node = NULL;

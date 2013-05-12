@@ -28,6 +28,7 @@ typedef struct LuciList_ {
 
 LuciObject *LuciList_new();
 LuciObject* LuciList_copy(LuciObject *);
+LuciObject* LuciList_deepcopy(LuciObject *);
 LuciObject* LuciList_len(LuciObject *);
 LuciObject* LuciList_asbool(LuciObject *);
 LuciObject* LuciList_add(LuciObject *, LuciObject *);

@@ -31,5 +31,6 @@ LuciObject *LuciLibFunc_new(LuciCFunc fptr, char *help, int min_args);
 LuciObject* LuciLibFunc_copy(LuciObject *);
 LuciObject* LuciLibFunc_asbool(LuciObject *);
 void LuciLibFunc_print(LuciObject *in);
+void LuciLibFunc_mark(LuciObject *in);
 
 #endif

@@ -11,9 +11,9 @@
 /** Type member table for LuciFloatObj */
 LuciObjectType obj_float_t = {
     "float",
-    FLAG_DEEP_COPY,
     sizeof(LuciFloatObj),
 
+    LuciFloat_copy,
     LuciFloat_copy,
     LuciFloat_repr,
     LuciFloat_asbool,
@@ -282,7 +282,7 @@ LuciObject* LuciFloat_gte(LuciObject *a, LuciObject *b)
 LuciObject* LuciFloat_lgor(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
-    LuciObject *b0 = a->type->asbool(a);
+    LuciObject *b0 = a->type->asbool(b);
 
     return LuciInt_new(AS_INT(a0)->i || AS_INT(b0)->i);
 }
@@ -290,7 +290,7 @@ LuciObject* LuciFloat_lgor(LuciObject *a, LuciObject *b)
 LuciObject* LuciFloat_lgand(LuciObject *a, LuciObject *b)
 {
     LuciObject *a0 = a->type->asbool(a);
-    LuciObject *b0 = a->type->asbool(a);
+    LuciObject *b0 = a->type->asbool(b);
 
     return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
 }

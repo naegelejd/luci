@@ -12,9 +12,9 @@
 /** Type member table for LuciFunctionObj */
 LuciObjectType obj_func_t = {
     "function",
-    FLAG_DEEP_COPY,
     sizeof(LuciFunctionObj),
 
+    LuciFunction_copy,
     LuciFunction_copy,
     unary_nil,
     LuciFunction_asbool,
@@ -83,21 +83,28 @@ LuciObject *LuciFunction_copy(LuciObject *orig)
     LuciFunctionObj *newf = AS_FUNCTION(copy);
 
     newf->nparams = oldf->nparams;
-    newf->nlocals = oldf->nlocals;
-    newf->nconstants = oldf->nconstants;
-    newf->ip = oldf->ip;
-    newf->ninstrs = oldf->ninstrs;
-    newf->instructions = oldf->instructions;
     newf->globals = oldf->globals;
-    newf->constants = oldf->constants;
+    newf->ip = oldf->ip;
 
-    LUCI_DEBUG("Copying frame:\nnparams: %d\nnlocals: %d\nnconstants: %d\n",
-            newf->nparams, newf->nlocals, newf->nconstants);
+    newf->ninstrs = oldf->ninstrs;
+    size_t instrs_size = newf->ninstrs * sizeof(*newf->instructions);
+    newf->instructions = alloc(instrs_size);
+    memcpy(newf->instructions, oldf->instructions, instrs_size);
+
+    newf->nconstants = oldf->nconstants;
+    size_t consts_size = newf->nconstants * sizeof(*newf->constants);
+    newf->constants = alloc(consts_size);
+    memcpy(newf->constants, oldf->constants, consts_size);
 
     /* Copy the frame's local variable array */
+    newf->nlocals = oldf->nlocals;
     LuciObject **locals = alloc(newf->nlocals * sizeof(*locals));
     int i;
     for (i = 0; i < newf->nlocals; i++) {
+        /* the locals array will only ever contain objects created at
+         * compile time (e.g. nested functions, ...) since most objects
+         * are created at runtime, pushed onto the stack, then stored
+         * in a locals array */
         if (oldf->locals[i]) {
             /* copy the object */
             LuciObject *lcl = oldf->locals[i];
@@ -146,6 +153,8 @@ void LuciFunction_mark(LuciObject *in)
 
 void LuciFunction_finalize(LuciObject *in)
 {
+    //printf("Finalizing function\n");
+    free(AS_FUNCTION(in)->instructions);
     free(AS_FUNCTION(in)->locals);
     free(AS_FUNCTION(in)->constants);
 }

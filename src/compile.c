@@ -659,56 +659,6 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
 }
 
 /**
- * Delete a LuciFunctionObj that was copied from another LuciFunctionObj
- *
- * @param o LuciFunctionObj copy to delete
- */
-void LuciFunction_delete_copy(LuciObject *o)
-{
-    LuciFunctionObj *f = AS_FUNCTION(o);
-    if (f == NULL) {
-        DIE("%s", "Can't delete a NULL copied function\n");
-    }
-
-    free(f->locals);
-}
-
-/**
- * Free a LuciFunctionObj's members.
- *
- * @param o LuciFunctionObj to clean up
- */
-void LuciFunction_delete(LuciObject *o)
-{
-    LuciFunctionObj *f = AS_FUNCTION(o);
-
-    if (f->instructions) {
-        free(f->instructions);
-    }
-    if (f->locals) {
-        free(f->locals);
-    }
-
-    if (f->constants) {
-        free(f->constants);
-    }
-}
-
-/**
- * Delete a LuciFunctionObj in Luci's interactive mode.
- *
- * The LuciFunctionObj's local symbol table and constant table must
- * remain intact.
- *
- * @param o LuciFunctionObj to clean up
- */
-void LuciFunction_delete_interactive(LuciObject *o)
-{
-    LuciFunctionObj *f = AS_FUNCTION(o);
-    free(AS_FUNCTION(f)->instructions);
-}
-
-/**
  * Creates a new function derived from the given CompileState
  *
  * @param cs given CompileState

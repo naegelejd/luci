@@ -270,7 +270,8 @@ LuciObject *LuciMap_contains(LuciObject *m, LuciObject *o)
 LuciObject *LuciMap_next(LuciObject *m, LuciObject *idx)
 {
     if (!ISTYPE(idx, obj_int_t)) {
-        DIE("%s\n", "Argument to LuciMap_next must be LuciIntObj");
+        DIE("Argument to LuciMap_next must be LuciIntObj, not %s\n",
+                idx->type->type_name);
     }
 
     if (AS_INT(idx)->i >= AS_MAP(m)->count) {
@@ -372,7 +373,8 @@ LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
     } else if (!key) {
         DIE("%s\n", "Null key in map insertion");
     } else if (!ISTYPE(key, obj_string_t)) {
-        DIE("%s\n", "Map key must be of type string");
+        DIE("Map key must be of type string, not %s\n",
+                key->type->type_name);
     }
 
     LuciMapObj *map = AS_MAP(o);
@@ -428,7 +430,8 @@ LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
     } else if (!key) {
         DIE("%s\n", "Null key in map lookup");
     } else if (!ISTYPE(key, obj_string_t)) {
-        DIE("%s\n", "Map key must be of type string");
+        DIE("Map key must be of type string, not %s\n",
+                key->type->type_name);
     }
 
     LuciMapObj *map = AS_MAP(o);
@@ -473,7 +476,8 @@ LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
     } else if (!key) {
         DIE("%s\n", "Null key in map remove");
     } else if (!ISTYPE(key, obj_string_t)) {
-        DIE("%s\n", "Map key must be of type string");
+        DIE("Map key must be of type string, not %s\n",
+                key->type->type_name);
     }
 
     LuciMapObj *map = AS_MAP(o);

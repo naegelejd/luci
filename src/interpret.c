@@ -35,7 +35,7 @@ void eval(LuciObject *frame)
 {
 
 /* Using __GNUC__ for now, which is defined by GCC/Clang */
-#ifdef __GNUCxxx__
+#ifdef __GNUC__
 
 #include "dispatch.h"  /* include static jump table */
 
@@ -63,8 +63,8 @@ void eval(LuciObject *frame)
 
     LuciObject *stack = LuciList_new();
 
-    gc_add_root(&stack);
-    gc_add_root(&frame);
+    gc_track_root(&stack);
+    gc_track_root(&frame);
 
     LuciObject* lfargs[MAX_LIBFUNC_ARGS];
     register LuciObject *x = LuciNilObj;
@@ -422,17 +422,13 @@ void eval(LuciObject *frame)
 
             /* pop function stack frame and replace active frame */
             frame = LuciList_pop(stack);
-            assert(frame->type == &obj_func_t);
+            //assert(frame->type == &obj_func_t);
 
             /* push the return value back onto the stack */
             LuciList_push(stack, return_value);
 
             /* restore saved instruction pointer */
             ip = AS_FUNCTION(frame)->ip;
-            if (ip == 0) {
-                printf("Type: %s\n", frame->type->type_name);
-                DIE("%s\n", "broken instruction pointer");
-            }
         FETCH(1);
         DISPATCH;
 
@@ -540,11 +536,13 @@ void eval(LuciObject *frame)
 
         HANDLE(HALT)
             LUCI_DEBUG("%s\n", "HALT");
+            gc_untrack_root(&stack);
+            gc_untrack_root(&frame);
             goto done_eval;
         DISPATCH;
 
         DEFAULT
-                DIE("Invalid opcode: %d\n", GETOPCODE);
+            DIE("Invalid opcode: %d\n", GETOPCODE);
         }
     }
 

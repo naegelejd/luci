@@ -32,6 +32,7 @@ typedef struct pool_ {
     size_t each;        /**< size of each object in pool */
     char *next;         /**< pointer to next free object */
     char bytes[POOL_SIZE];
+    bool full;
 } GCPool;
 
 typedef struct pool_list_ {
@@ -40,10 +41,19 @@ typedef struct pool_list_ {
     unsigned int count;
 } GCPoolList;
 
+typedef struct roots_list_ {
+    LuciObject ***roots;
+    unsigned int size;
+    unsigned int count;
+} GCRootList;
+
 int gc_init(void);
-unsigned int gc_add_root(LuciObject **);
 LuciObject *gc_malloc(LuciObjectType *);
 int gc_collect(void);
 int gc_finalize(void);
+
+void gc_track_root(LuciObject **root);
+void gc_untrack_root(LuciObject **root);
+
 
 #endif /* LUCI_GC_H */

@@ -213,7 +213,6 @@ AstNode *make_map_def(AstNode *result, AstNode *to_append)
     }
     /* checking for a NULL 'to_append' allows for empty list creation */
     if (to_append) {
-        assert(result->type == ast_mapdef_t);
         if (++(result->data.mapdef.count) > result->data.mapdef.size) {
             result->data.mapdef.size = result->data.mapdef.size << 1;
             result->data.mapdef.pairs = realloc(result->data.mapdef.pairs,
@@ -257,7 +256,6 @@ AstNode *make_list_def(AstNode *result, AstNode *to_append)
     }
     /* checking for a NULL 'to_append' allows for empty list creation */
     if (to_append) {
-        assert(result->type == ast_listdef_t);
         if (++(result->data.listdef.count) > result->data.listdef.size) {
             result->data.listdef.size = result->data.listdef.size << 1;
             result->data.listdef.items = realloc(result->data.listdef.items,
@@ -534,7 +532,6 @@ int print_ast_graph(AstNode *root, int id)
             printf("%d -> %d\n", rID, ++id);
             id = print_ast_graph(root->data.call.funcname, id);
             args = root->data.call.arglist;
-            assert(args->type == ast_listdef_t);
             for (i = 0; i < args->data.listdef.count; i++)
             {
                 printf("%d -> %d\n", rID, ++id);

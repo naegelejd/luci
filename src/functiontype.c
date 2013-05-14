@@ -153,7 +153,6 @@ void LuciFunction_mark(LuciObject *in)
 
 void LuciFunction_finalize(LuciObject *in)
 {
-    //printf("Finalizing function\n");
     free(AS_FUNCTION(in)->instructions);
     free(AS_FUNCTION(in)->locals);
     free(AS_FUNCTION(in)->constants);

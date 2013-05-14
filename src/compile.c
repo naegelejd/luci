@@ -404,7 +404,7 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     compile(node->data.funcdef.statements, func_cs);
 
     /* add a RETURN to end of function if necessary */
-    if (func_cs->instructions[func_cs->instr_count - 1] != RETURN) {
+    if (OPCODE(func_cs->instructions[func_cs->instr_count - 1]) != RETURN) {
         push_instr(func_cs, PUSHNIL, 0);
         push_instr(func_cs, RETURN, 0);
     }

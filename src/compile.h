@@ -109,26 +109,6 @@ typedef struct loop_list_ {
 } Looplist;
 
 /**
- * Derived from a CompileState.
- *
- * Used in both compilation and mainly interpreting
- */
-/*
- *typedef struct frame_ {
- *    Instruction *instructions;  [>*< array of instructions <]
- *    Instruction *ip;            [>*< current instruction pointer <]
- *    LuciObject **locals;        [>*< array of local LuciObjects <]
- *    LuciObject **globals;       [>*< array of global LuciObjects <]
- *    LuciObject **constants;     [>*< array of constant LuciObjects <]
- *    uint32_t ninstrs;       [>*< total number of instructions <]
- *    uint16_t nparams;       [>*< number of parameters <]
- *    uint16_t nlocals;       [>*< number of local symbols <]
- *    uint16_t nconstants;    [>*< number of constants <]
- *} Frame;
- */
-
-
-/**
  * Essential state storage entity within compilation.
  *
  * Each CompileState represents either the global program's scope
@@ -145,6 +125,8 @@ typedef struct compile_state_ {
 } CompileState;
 
 
+void compiler_init(void);
+void compiler_finalize(void);
 CompileState * compile_ast(CompileState *, AstNode *);
 CompileState * CompileState_new(void);
 CompileState * CompileState_refresh(CompileState *);

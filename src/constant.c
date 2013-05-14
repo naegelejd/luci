@@ -23,7 +23,6 @@ ConstantTable *cotable_new(int size)
     cotable->count = 0;
     cotable->size = size;
     cotable->objects = alloc(cotable->size * sizeof(*cotable->objects));
-    cotable->owns_objects = 1;
     return cotable;
 }
 
@@ -34,14 +33,9 @@ ConstantTable *cotable_new(int size)
  */
 void cotable_delete(ConstantTable *cotable)
 {
-    /* only deallocate objects array if cotable still has ownership */
-    if (cotable->owns_objects > 0) {
-        free(cotable->objects);
-        cotable->objects = NULL;
-    }
+    free(cotable->objects);
+    cotable->objects = NULL;
     free(cotable);
-    cotable = NULL;
-
     return;
 }
 
@@ -70,24 +64,20 @@ uint32_t constant_id(ConstantTable *cotable, LuciObject *const_obj)
 }
 
 /**
- * Releases the constant table's objects array.
- *
- * Once this function is called, the ConstantTable is no longer
- * 'owns' its object array and will not be responsible for
- * freeing memory allocated for the object array. However,
- * this function may be called multiple times as long as the
- * ConstantTable exists.
+ * Returns a copy of the constant table's objects array.
  *
  * @param cotable the ConstantTable containing the desired object array
- * @returns an array of LuciObject constants
+ * @returns copy of the array of LuciObject constants
  */
-LuciObject **cotable_get_objects(ConstantTable *cotable)
+LuciObject **cotable_copy_objects(ConstantTable *cotable)
 {
     if (!cotable) {
         DIE("%s\n", "Cannot get object array from NULL ConstantTable\n");
     }
 
-    cotable->owns_objects = 0;
+    size_t bytes = cotable->count * sizeof(*cotable->objects);
+    LuciObject **copy = alloc(bytes);
+    memcpy(copy, cotable->objects, bytes);
 
-    return cotable->objects;
+    return copy;
 }

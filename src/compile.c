@@ -602,6 +602,32 @@ static void compile(AstNode *node, CompileState *cs)
     compilers[node->type](node, cs);
 }
 
+void compiler_init(void)
+{
+    /* allocate the global builtin symbol table */
+    builtin_symbols = symtable_new(BASE_SYMTABLE_SCALE);
+
+    /* initialize all of Luci's builtin static objects */
+    init_luci_builtins();
+
+    /* Add each builtin symbol to builtin symbol table */
+    int i;
+    for (i = 0; builtins_registry[i].name != NULL; i++) {
+        /* add the symbol and function object to the builtins symbol table */
+        int id = symtable_id(builtin_symbols,
+                builtins_registry[i].name, SYMCREATE);
+        symtable_set(builtin_symbols, builtins_registry[i].object, id);
+    }
+
+    /* initialize the global builtins array for the interpreter */
+    builtins = symtable_get_objects(builtin_symbols);
+}
+
+void compiler_finalize(void)
+{
+    symtable_delete(builtin_symbols);
+}
+
 /**
  * Public entry point for compilation.
  *
@@ -620,27 +646,12 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
 
     /* if we're compiling an AST from scratch, create a new
      * CompileState to pass around */
-    int i;
     if (cs == NULL) {
         cs = CompileState_new();
-
-        /* allocate the global builtin symbol table */
-        builtin_symbols = symtable_new(BASE_SYMTABLE_SCALE);
-
-        /* initialize all of Luci's builtins */
-        init_luci_builtins();
-
-        /* Add all builtin symbols to builtin symbol table */
-        for (i = 0; builtins_registry[i].name != NULL; i++) {
-            /* add the symbol and function object to the builtins symbol table */
-            int id = symtable_id(builtin_symbols,
-                    builtins_registry[i].name, SYMCREATE);
-            symtable_set(builtin_symbols, builtins_registry[i].object, id);
-        }
     }
-    /* otherwise, cleanup the old instructions but maintain the symbol table
-     * and so on
-     */
+
+    /* otherwise, cleanup the old instructions but maintain the
+     * symbol table and so on */
     else {
         cs = CompileState_refresh(cs);
     }
@@ -650,10 +661,6 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
 
     /* end the CompileState with an HALT instr */
     push_instr(cs, HALT, 0);
-
-    /* initialize the builtins array with the builtin symbol table's array */
-    builtins = symtable_get_objects(builtin_symbols);
-    symtable_delete(builtin_symbols);
 
     return cs;
 }
@@ -674,18 +681,22 @@ LuciObject *LuciFunction_from_CompileState(CompileState *cs, uint16_t nparams)
     f->ninstrs = cs->instr_count;
     f->instructions = cs->instructions;
     f->ip = f->instructions;
-    /* get locals object array and size of array */
+
+    /* get copy of locals object array and size of array */
     if (cs->ltable) {
         f->nlocals = cs->ltable->count;
-        f->locals = symtable_get_objects(cs->ltable);
+        f->locals = symtable_copy_objects(cs->ltable);
     }
-    /* get constants object array and size of array */
+
+    /* get copy of constants object array and size of array */
     if (cs->ctable) {
         f->nconstants = cs->ctable->count;
-        f->constants = cotable_get_objects(cs->ctable);
+        f->constants = cotable_copy_objects(cs->ctable);
     }
-    /* get globals array. array size doesn't matter because the global
-     * objects are never freed in a LuciFunction_delete() call. */
+
+    /* get globals array.
+     * the array is already owned by a parent function, so never needs
+     * freed by this function */
     if (cs->gtable) {
         f->globals = symtable_get_objects(cs->gtable);
     }

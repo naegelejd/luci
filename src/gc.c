@@ -80,14 +80,13 @@ void gc_track_root(LuciObject **root)
  *
  * @param root Address to pointer to LuciObject (e.g. main stack)
  */
-void gc_untrack_root(LuciObject **root)
+void gc_untrack_roots(void)
 {
     unsigned int i;
-    for (i = 0; i < gc_roots.count; i++) {
-        if (gc_roots.roots[i] == root) {
-            gc_roots.roots[i] = NULL;
-        }
+    for (i = 0; i < gc_roots.size; i++) {
+        gc_roots.roots[i] = NULL;
     }
+    gc_roots.count = 0;
 }
 
 /**

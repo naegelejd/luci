@@ -53,7 +53,7 @@ int gc_collect(void);
 int gc_finalize(void);
 
 void gc_track_root(LuciObject **root);
-void gc_untrack_root(LuciObject **root);
+void gc_untrack_roots(void);
 
 
 #endif /* LUCI_GC_H */

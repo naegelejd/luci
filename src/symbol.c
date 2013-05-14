@@ -145,7 +145,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
     uint32_t old_bscale = symtable->bscale;
 
     /* allocate new entry array and set bucket count */
-    symtable->symbols = calloc(NBUCKETS[bucketscale],
+    symtable->symbols = alloc(NBUCKETS[bucketscale] *
             sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
         DIE("%s", "Error allocating new, larger symtable entry array\n");
@@ -176,7 +176,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
  */
 SymbolTable *symtable_new(uint32_t bucketscale)
 {
-    SymbolTable *symtable = calloc(1, sizeof(*symtable));
+    SymbolTable *symtable = alloc(sizeof(*symtable));
     if (!symtable)
         DIE("%s", "Error allocating symbol table\n");
     LUCI_DEBUG("%s\n", "Allocated symbol table");
@@ -185,7 +185,7 @@ SymbolTable *symtable_new(uint32_t bucketscale)
         DIE("%s", "Symbol Table scale out of bounds\n");
     symtable->bscale = bucketscale;
 
-    symtable->symbols = calloc(NBUCKETS[bucketscale],
+    symtable->symbols = alloc(NBUCKETS[bucketscale] *
             sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
         DIE("%s", "Error allocating symtable symbols array\n");
@@ -193,12 +193,9 @@ SymbolTable *symtable_new(uint32_t bucketscale)
 
     /* make Symbol Table object array size = bucket count / 4 */
     symtable->size = NBUCKETS[bucketscale] >> 2;
-    symtable->objects = calloc(symtable->size, sizeof(*(symtable->objects)));
+    symtable->objects = alloc(symtable->size * sizeof(*(symtable->objects)));
     if (!symtable->objects)
         DIE("%s", "Error allocating symtable objects array\n");
-
-    /* Set bit which identifies that this table owns the objects array */
-    symtable->owns_objects = 1;
 
     LUCI_DEBUG("%s\n", "Allocated symbol table objects array");
 
@@ -219,7 +216,7 @@ void symtable_delete(SymbolTable *symtable)
     Symbol *cur = NULL, *prev = NULL;
     int i;
     /* deallocate all symbols in table */
-    for (i = 0; i < NBUCKETS[symtable->bscale]; i ++) {
+    for (i = 0; i < NBUCKETS[symtable->bscale]; i++) {
         cur = symtable->symbols[i];
         while (cur) {
             prev = cur;
@@ -228,16 +225,12 @@ void symtable_delete(SymbolTable *symtable)
         }
     }
 
-    /* only deallocate objects if the table still owns the array */
-    if (symtable->owns_objects > 0) {
-        free(symtable->objects);
-        symtable->objects = NULL;
-    }
+    free(symtable->objects);
+    symtable->objects = NULL;
 
     free(symtable->symbols);
     symtable->symbols = NULL;
     free(symtable);
-    symtable = NULL;
 
     return;
 }
@@ -340,13 +333,28 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
 }
 
 /**
+ * Returns a copy of the symbol table's array of objects
+ *
+ * @param symtable pointer to symbol table
+ * @return copy of array of LuciObjects
+ */
+LuciObject **symtable_copy_objects(SymbolTable *symtable)
+{
+    if (!symtable) {
+        DIE("%s\n", "Cannot copy object array from NULL SymbolTable\n");
+    }
+
+    size_t bytes = symtable->count * sizeof(*symtable->objects);
+    LuciObject **copy = alloc(bytes);
+    memcpy(copy, symtable->objects, bytes);
+
+    return copy;
+}
+
+/**
  * Returns the symbol table's array of objects
  *
- * Once this function is called, the SymbolTable is no longer
- * 'owns' its object array and will not be responsible for
- * freeing memory allocated for the object array. However,
- * this function may be called multiple times as long as the
- * SymbolTable exists.
+ * The array will be invalid when the symtable is deleted
  *
  * @param symtable pointer to symbol table
  * @return array of LuciObjects
@@ -354,11 +362,8 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
 LuciObject **symtable_get_objects(SymbolTable *symtable)
 {
     if (!symtable) {
-        DIE("%s\n", "Cannot get object array from NULL SymbolTable\n");
+        DIE("%s\n", "Cannot copy object array from NULL SymbolTable\n");
     }
-
-    symtable->owns_objects = 0;
 
     return symtable->objects;
 }
-

@@ -34,7 +34,6 @@ typedef struct symtable
     uint32_t size;          /**< Total object array size */
     uint32_t bscale;        /**< Index into array of bucket size options */
     uint32_t collisions;    /**< Current # of collisions in hashtable */
-    uint8_t owns_objects;   /**< boolean. Affects deallocation of Table */
 } SymbolTable;
 
 /** flags identifying the symtable_id intent (create/lookup/...) */
@@ -45,6 +44,7 @@ void symtable_delete(SymbolTable *);
 void symtable_set(SymbolTable *, LuciObject *, uint32_t id);
 int symtable_id(SymbolTable *, const char *, symtable_flags flags);
 
+LuciObject **symtable_copy_objects(SymbolTable *);
 LuciObject **symtable_get_objects(SymbolTable *);
 
 #endif

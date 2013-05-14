@@ -165,7 +165,10 @@ int luci_main(int argc, char *argv[])
     }
 
     /* Compile the AST */
+    compiler_init();
     cs = compile_ast(NULL, root_node);
+    destroy_tree(root_node);
+
     gf = LuciFunction_from_CompileState(cs, 0);
 
     if (options & SERIALIZE) {
@@ -185,8 +188,8 @@ int luci_main(int argc, char *argv[])
 
 cleanup:
     CompileState_delete(cs);
+    compiler_finalize();
 cleanup_tree:
-    destroy_tree(root_node);
     gc_finalize();
 
 finish:
@@ -213,6 +216,7 @@ void luci_interactive(void)
 
     /* initialize LuciObject garbage collector */
     gc_init();
+    compiler_init();
 
     while (1) {
         /* set up interactive prompt in the lexer */
@@ -228,6 +232,11 @@ void luci_interactive(void)
 
         /* Compile the AST */
         cs = compile_ast(cs, root_node);
+
+        /* clean up AST memory */
+        destroy_tree(root_node);
+        root_node = NULL;
+
         gf = LuciFunction_from_CompileState(cs, 0);
 
         /* print a spacing between input/output */
@@ -239,10 +248,6 @@ void luci_interactive(void)
         /* print one more line of spacing */
         fprintf(stdout, "%s", "\n");
 
-        /* clean up AST memory */
-        destroy_tree(root_node);
-        root_node = NULL;
-
         /* remove the EOF flag */
         clearerr(yyin);
         /* restart the token scanner */
@@ -253,6 +258,7 @@ end_interactive:
     if (cs != NULL) {
         CompileState_delete(cs);
     }
+    compiler_finalize();
     gc_finalize();
 }
 

@@ -536,8 +536,7 @@ void eval(LuciObject *frame)
 
         HANDLE(HALT)
             LUCI_DEBUG("%s\n", "HALT");
-            gc_untrack_root(&stack);
-            gc_untrack_root(&frame);
+            gc_untrack_roots();
             goto done_eval;
         DISPATCH;
 

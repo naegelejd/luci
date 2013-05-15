@@ -14,16 +14,20 @@ extern int get_line_num();
 /** defined in lexer.l */
 extern int get_last_col_num();
 
+static int print_ast_graph_helper(AstNode *root, int);
+
 /**
  * String representations of each abstract
  * syntax tree node.
  */
 const char *TYPE_NAMES[] = {
+    "nil",
     "int",
     "float",
     "string",
     "id",
-    "expr",
+    "unary expression",
+    "binary expression",
     "container access",
     "container assignment",
     "map definition",
@@ -39,7 +43,8 @@ const char *TYPE_NAMES[] = {
     "break",
     "continue",
     "return",
-    "pass"
+    "pass",
+    "last...?"
 };
 
 /**
@@ -456,11 +461,26 @@ AstNode *make_pass()
  * Prints a Graphviz "dot" graph representing the abstract syntax
  * tree to @code stdout @endcode.
  *
+ * @param root root-level node
+ */
+void print_ast_graph(AstNode *root)
+{
+    /* Print a DOT graph representation */
+    puts("digraph hierarchy {");
+    puts("node [color=Green,fontcolor=Blue]");
+    print_ast_graph_helper(root, 0);
+    puts("}");
+}
+
+/**
+ * Recursively traverses the AST, printing pieces of its Graphviz
+ * "dot" representation.
+ *
  * @param root root-level node (usually an AstStatements node)
  * @param id used recursively to track relationships between nodes.
  * @returns an id used recursively to track relationships between nodes.
  */
-int print_ast_graph(AstNode *root, int id)
+static int print_ast_graph_helper(AstNode *root, int id)
 {
     AstNode *args = NULL;
     int i = 0;
@@ -478,93 +498,93 @@ int print_ast_graph(AstNode *root, int id)
             for (i = 0; i < root->data.statements.count; i++)
             {
                 printf("%d -> %d\n", rID, ++id);
-                id = print_ast_graph(root->data.statements.statements[i], id);
+                id = print_ast_graph_helper(root->data.statements.statements[i], id);
             }
             break;
         case ast_func_t:
             printf("%d [label=\"func def: %s\"]\n", rID,
                     root->data.funcdef.funcname);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.funcdef.param_list, id);
+            id = print_ast_graph_helper(root->data.funcdef.param_list, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.funcdef.statements, id);
+            id = print_ast_graph_helper(root->data.funcdef.statements, id);
             break;
         case ast_listdef_t:
             printf("%d [label=\"list\"]\n", rID);
             for (i = 0; i < root->data.listdef.count; i++)
             {
                 printf("%d -> %d\n", rID, ++id);
-                id = print_ast_graph(root->data.listdef.items[i], id);
+                id = print_ast_graph_helper(root->data.listdef.items[i], id);
             }
             break;
         case ast_while_t:
             printf("%d [label=\"while\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.while_loop.cond, id);
+            id = print_ast_graph_helper(root->data.while_loop.cond, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.while_loop.statements, id);
+            id = print_ast_graph_helper(root->data.while_loop.statements, id);
             break;
         case ast_for_t:
             printf("%d [label=\"for\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.for_loop.container, id);
+            id = print_ast_graph_helper(root->data.for_loop.container, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.for_loop.statements, id);
+            id = print_ast_graph_helper(root->data.for_loop.statements, id);
             break;
         case ast_if_t:
             printf("%d [label=\"if\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.if_else.cond, id);
+            id = print_ast_graph_helper(root->data.if_else.cond, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.if_else.ifstatements, id);
+            id = print_ast_graph_helper(root->data.if_else.ifstatements, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.if_else.elstatements, id);
+            id = print_ast_graph_helper(root->data.if_else.elstatements, id);
             break;
         case ast_assign_t:
             printf("%d [label=\"assign\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
             printf("%d [label=\"ID: %s\"]\n", id, root->data.assignment.name);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.assignment.right, id);
+            id = print_ast_graph_helper(root->data.assignment.right, id);
             break;
         case ast_call_t:
             printf("%d [label=\"func call\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.call.funcname, id);
+            id = print_ast_graph_helper(root->data.call.funcname, id);
             args = root->data.call.arglist;
             for (i = 0; i < args->data.listdef.count; i++)
             {
                 printf("%d -> %d\n", rID, ++id);
-                id = print_ast_graph(args->data.listdef.items[i], id);
+                id = print_ast_graph_helper(args->data.listdef.items[i], id);
             }
             break;
         case ast_contaccess_t:
             printf("%d [label=\"contaccess\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.contaccess.container, id);
+            id = print_ast_graph_helper(root->data.contaccess.container, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.contaccess.index, id);
+            id = print_ast_graph_helper(root->data.contaccess.index, id);
             break;
         case ast_contassign_t:
             printf("%d [label=\"contassign\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.contassign.container, id);
+            id = print_ast_graph_helper(root->data.contassign.container, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.contassign.index, id);
+            id = print_ast_graph_helper(root->data.contassign.index, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.contassign.right, id);
+            id = print_ast_graph_helper(root->data.contassign.right, id);
             break;
         case ast_unexpr_t:
             printf("%d [label=\"unexpr\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.unexpr.right, id);
+            id = print_ast_graph_helper(root->data.unexpr.right, id);
             break;
         case ast_binexpr_t:
             printf("%d [label=\"binexpr\"]\n", rID);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.binexpr.left, id);
+            id = print_ast_graph_helper(root->data.binexpr.left, id);
             printf("%d -> %d\n", rID, ++id);
-            id = print_ast_graph(root->data.binexpr.right, id);
+            id = print_ast_graph_helper(root->data.binexpr.right, id);
             break;
         case ast_id_t:
             printf("%d [label=\"ID: %s\"]\n", rID, root->data.id.val);
@@ -593,7 +613,7 @@ int print_ast_graph(AstNode *root, int id)
  *
  * @param root root-level node (usually an AstStatements node)
  */
-void destroy_tree(AstNode *root)
+void ast_destroy(AstNode *root)
 {
     /* don't free a NULL statement */
     if (!root) return;
@@ -604,21 +624,21 @@ void destroy_tree(AstNode *root)
         case ast_stmnts_t:
             for (i = 0; i < root->data.statements.count; i++)
             {
-                destroy_tree(root->data.statements.statements[i]);
+                ast_destroy(root->data.statements.statements[i]);
             }
             free(root->data.statements.statements);
             break;
 
         case ast_func_t:
             free(root->data.funcdef.funcname);
-            destroy_tree(root->data.funcdef.param_list);
-            destroy_tree(root->data.funcdef.statements);
+            ast_destroy(root->data.funcdef.param_list);
+            ast_destroy(root->data.funcdef.statements);
             break;
 
         case ast_listdef_t:
             for (i = 0; i < root->data.listdef.count; i++)
             {
-                destroy_tree(root->data.listdef.items[i]);
+                ast_destroy(root->data.listdef.items[i]);
             }
             free(root->data.listdef.items);
             break;
@@ -626,61 +646,61 @@ void destroy_tree(AstNode *root)
         case ast_mapdef_t:
             for (i = 0; i < root->data.mapdef.count; i++)
             {
-                destroy_tree(root->data.mapdef.pairs[i]);
+                ast_destroy(root->data.mapdef.pairs[i]);
             }
             free(root->data.mapdef.pairs);
             break;
 
         case ast_mapkeyval_t:
-            destroy_tree(root->data.mapkeyval.key);
-            destroy_tree(root->data.mapkeyval.val);
+            ast_destroy(root->data.mapkeyval.key);
+            ast_destroy(root->data.mapkeyval.val);
             break;
 
         case ast_while_t:
-            destroy_tree(root->data.while_loop.cond);
-            destroy_tree(root->data.while_loop.statements);
+            ast_destroy(root->data.while_loop.cond);
+            ast_destroy(root->data.while_loop.statements);
             break;
 
         case ast_for_t:
-            destroy_tree(root->data.for_loop.container);
-            destroy_tree(root->data.for_loop.statements);
+            ast_destroy(root->data.for_loop.container);
+            ast_destroy(root->data.for_loop.statements);
             free(root->data.for_loop.iter);
             break;
 
         case ast_if_t:
-            destroy_tree(root->data.if_else.cond);
-            destroy_tree(root->data.if_else.ifstatements);
-            destroy_tree(root->data.if_else.elstatements);
+            ast_destroy(root->data.if_else.cond);
+            ast_destroy(root->data.if_else.ifstatements);
+            ast_destroy(root->data.if_else.elstatements);
             break;
 
         case ast_assign_t:
-            destroy_tree(root->data.assignment.right);
+            ast_destroy(root->data.assignment.right);
             free(root->data.assignment.name);
             break;
 
         case ast_call_t:
-            destroy_tree(root->data.call.arglist);
-            destroy_tree(root->data.call.funcname);
+            ast_destroy(root->data.call.arglist);
+            ast_destroy(root->data.call.funcname);
             break;
 
         case ast_contaccess_t:
-            destroy_tree(root->data.contaccess.container);
-            destroy_tree(root->data.contaccess.index);
+            ast_destroy(root->data.contaccess.container);
+            ast_destroy(root->data.contaccess.index);
             break;
 
         case ast_contassign_t:
-            destroy_tree(root->data.contassign.index);
-            destroy_tree(root->data.contassign.right);
-            destroy_tree(root->data.contassign.container);
+            ast_destroy(root->data.contassign.index);
+            ast_destroy(root->data.contassign.right);
+            ast_destroy(root->data.contassign.container);
             break;
 
         case ast_unexpr_t:
-            destroy_tree(root->data.unexpr.right);
+            ast_destroy(root->data.unexpr.right);
             break;
 
         case ast_binexpr_t:
-            destroy_tree(root->data.binexpr.left);
-            destroy_tree(root->data.binexpr.right);
+            ast_destroy(root->data.binexpr.left);
+            ast_destroy(root->data.binexpr.right);
             break;
 
         case ast_id_t:
@@ -692,7 +712,7 @@ void destroy_tree(AstNode *root)
             break;
 
         case ast_return_t:
-            destroy_tree(root->data.return_stmt.expr);
+            ast_destroy(root->data.return_stmt.expr);
             break;
 
         default:

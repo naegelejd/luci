@@ -18,7 +18,7 @@
 typedef struct symbol
 {
     struct symbol *next;    /**< next symbol in linked list */
-    const char *name;       /**< symbol name */
+    char *name;       /**< symbol name */
     uint32_t index;         /**< index of object corresponding to symbol */
 } Symbol;
 

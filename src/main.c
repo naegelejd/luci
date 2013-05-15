@@ -13,29 +13,35 @@
 #include "compile.h"
 #include "interpret.h"
 
-enum {
-    INTERACTIVE=1,
-    EXECUTE=2,
-    SHOW_INSTR=4,
-    GRAPH_AST=8,
-    SERIALIZE=16
-} main_modes; /**< Luci's run-time modes of operation */
-
 /** defined in generated scanner */
 extern void yyrestart();
 /** defined in generated parser */
 extern FILE *yyin;
 /** defined in generated parser */
 extern int yyparse();
+/** defined in lexer.l */
+extern void luci_start_interactive(void);
+
+
+#ifdef DEBUG
 /** defined in generated parser */
 extern int yydebug;
-
+#endif
 
 /** Current version of Luci (for printing to stdout) */
 static const char * const version_string = "Luci v0.2";
 
+/**< Luci's run-time modes of operation */
+enum {
+    MODE_EXE,
+    MODE_PRINT,
+    MODE_GRAPH,
+    MODE_SERIAL,
+    MODE_SYNTAX
+} main_modes;
+
 int luci_main(int argc, char *argv[]);
-void luci_interactive(void);
+int luci_interactive(void);
 
 
 /**
@@ -47,7 +53,7 @@ static void help()
     puts("Options:");
     puts("    -h\t\tShow help and exit");
     puts("    -v\t\tVerbose mode");
-    puts("    -n\t\tDo not execute source");
+    puts("    -n\t\tCheck syntax and don't execute");
     puts("    -g\t\tPrint a Graphviz dot spec for the parsed AST");
     puts("    -p\t\tShow the compiled bytecode source");
     puts("    -c\t\tCompile the source to a .lxc file");
@@ -77,127 +83,100 @@ int luci_main(int argc, char *argv[])
 #ifdef DEBUG
     yydebug = 1;
 #endif
-    /* initialize options */
-    unsigned short options = 0;
-    char *infilename = NULL;
-
-    AstNode *root_node = NULL;
-    CompileState *cs = NULL;
-    LuciObject *gf = NULL;
 
     if (argc < 2) {
         /* interactive mode */
 	yyin = stdin;
-        options = INTERACTIVE;
+        return luci_interactive();
     }
-    else {
-        options = EXECUTE;
-	int i;
-	char *arg;
-	for (i = 1; i < argc; i++) {
-	    arg = argv[i];
-            if (strcmp(arg, "-h") == 0) {
-                help();
-                goto finish;
-            }
-            else if (strcmp(arg, "-V") == 0) {
-		fprintf(stdout, "%s\n", version_string);
-                goto finish;
-	    }
-            else if (strcmp(arg, "-g") == 0) {
-                options |= GRAPH_AST;
-            }
-            else if (strcmp(arg, "-p") == 0) {
-                options |= SHOW_INSTR;
-            }
-            else if (strcmp(arg, "-c") == 0) {
-                options |= SERIALIZE;
-            }
-            else if (strcmp(arg, "-n") == 0) {
-                options &= ~EXECUTE;
-            }
-            else if (i == (argc - 1)) {
-                infilename = arg;
-            }
-            else {
-                DIE("Invalid option: %s\n", arg);
-            }
-	}
+
+    unsigned int mode = MODE_EXE;
+
+    char *arg;
+    char *infilename = NULL;
+    unsigned int i;
+    for (i = 1; i < argc; i++) {
+        arg = argv[i];
+        if (strcmp(arg, "-h") == 0) {
+            help();
+            return EXIT_SUCCESS;
+        } else if (strcmp(arg, "-V") == 0) {
+            fprintf(stdout, "%s\n", version_string);
+            return EXIT_SUCCESS;
+        } else if (strcmp(arg, "-g") == 0) {
+            mode = MODE_GRAPH;
+        } else if (strcmp(arg, "-p") == 0) {
+            mode = MODE_PRINT;
+        } else if (strcmp(arg, "-c") == 0) {
+            mode = MODE_SERIAL;
+        } else if (strcmp(arg, "-n") == 0) {
+            mode = MODE_SYNTAX;
+        } else if (i == (argc - 1)) {
+            infilename = arg;
+        } else {
+            DIE("Invalid option: %s\n", arg);
+        }
     }
 
     if (infilename == NULL) {
         /* interactive mode */
         yyin = stdin;
-        options = INTERACTIVE;
-    }
-    else if (!(yyin = fopen(infilename, "r"))) {
+        return luci_interactive();
+    } else if (!(yyin = fopen(infilename, "r"))) {
         DIE("Can't read from file %s\n", infilename);
     }
     LUCI_DEBUG("Reading from %s\n", infilename? infilename : "stdin");
 
-    if (options == INTERACTIVE) {
-        luci_interactive();
-        return EXIT_SUCCESS;
-    }
-
-    /* initialize LuciObject garbage collector */
-    gc_init();
-
     /* parse yyin and build and AST */
+    AstNode *root_node = NULL;
     yyparse(&root_node);
-
     if (!root_node) {
         /* empty program */
         return EXIT_SUCCESS;
     }
 
-    if (options & GRAPH_AST) {
-        /* Print a DOT graph representation */
-        puts("digraph hierarchy {");
-        puts("node [color=Green,fontcolor=Blue]");
-        print_ast_graph(root_node, 0);
-        puts("}");
-
-        /* break early if finished */
-        if (options == GRAPH_AST) {
-            goto cleanup_tree;
-        }
+    if (mode == MODE_GRAPH) {
+        print_ast_graph(root_node);
+        return EXIT_SUCCESS;
     }
+
+    /* initialize systems */
+    gc_init();
+    compiler_init();
 
     /* Compile the AST */
-    compiler_init();
-    cs = compile_ast(NULL, root_node);
-    destroy_tree(root_node);
+    CompileState *cs = compile_ast(root_node);
 
-    gf = LuciFunction_from_CompileState(cs, 0);
+    ast_destroy(root_node);
 
-    if (options & SERIALIZE) {
-        /* Serialize program */
-        serialize_program(gf);
-    }
+    LuciObject *gf = LuciFunction_new();
+    convert_to_function(cs, gf, 0);
 
-    if (options & SHOW_INSTR) {
-        /* Print the bytecode */
-        print_instructions(gf);
-    }
-
-    if (options & EXECUTE) {
-        /* Execute the bytecode */
-        eval(gf);
-    }
-
-cleanup:
     CompileState_delete(cs);
+
+    switch (mode) {
+        case MODE_EXE:
+            /* Execute the bytecode */
+            eval(gf);
+            break;
+        case MODE_PRINT:
+            /* Print the bytecode */
+            print_instructions(gf);
+            break;
+        case MODE_SERIAL:
+            /* Serialize program */
+            serialize_program(gf);
+            break;
+        default:
+            DIE("%s\n", "Invalid mode?!");
+    }
+
+    /* cleanup systems */
     compiler_finalize();
-cleanup_tree:
     gc_finalize();
 
-finish:
     return EXIT_SUCCESS;
 }
-
-/** defined in lexer.l */
-extern void luci_start_interactive(void);
 
 /**
  * Initiates Luci's interactive mode.
@@ -206,38 +185,39 @@ extern void luci_start_interactive(void);
  * The interpreter's state is maintained between successive
  * user inputs to stdin.
  */
-void luci_interactive(void)
+int luci_interactive(void)
 {
-    AstNode *root_node = NULL;
-    CompileState *cs = NULL;
-    LuciObject *gf = NULL;
-
     printf("\nWelcome to Interactive %s\n\n", version_string);
 
-    /* initialize LuciObject garbage collector */
+    /* initialize systems */
     gc_init();
     compiler_init();
 
-    while (1) {
+    CompileState *cs = NULL;
+    LuciObject *gf = NULL;
+
+    while (true) {
         /* set up interactive prompt in the lexer */
         luci_start_interactive();
 
+        AstNode *root_node = NULL;
         /* parse yyin and build and AST */
         yyparse(&root_node);
 
         if (!root_node) {
             printf("Goodbye\n");
-            goto end_interactive;
+            break;
         }
 
         /* Compile the AST */
-        cs = compile_ast(cs, root_node);
+        cs = compile_ast_incremental(cs, gf, root_node);
 
         /* clean up AST memory */
-        destroy_tree(root_node);
+        ast_destroy(root_node);
         root_node = NULL;
 
-        gf = LuciFunction_from_CompileState(cs, 0);
+        gf = LuciFunction_new();
+        convert_to_function(cs, gf, 0);
 
         /* print a spacing between input/output */
         fprintf(stdout, "%s", "  \n\n");
@@ -258,8 +238,12 @@ end_interactive:
     if (cs != NULL) {
         CompileState_delete(cs);
     }
+
+    /* cleanup systems */
     compiler_finalize();
     gc_finalize();
+
+    return EXIT_SUCCESS;
 }
 
 /**

@@ -227,7 +227,7 @@ typedef struct AstNode
     int column;     /**< the column # this node was constructed from */
 } AstNode;
 
-void destroy_tree(AstNode *);
+void ast_destroy(AstNode *);
 
 AstNode *make_nil_expression();
 AstNode *make_int_constant(long);
@@ -253,6 +253,6 @@ AstNode *make_continue();
 AstNode *make_return(AstNode *);
 AstNode *make_pass();
 
-int print_ast_graph(AstNode *root, int);
+void print_ast_graph(AstNode *root);
 
 #endif

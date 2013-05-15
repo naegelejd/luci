@@ -78,7 +78,7 @@ static void symbol_delete(Symbol *del)
 {
     if (del) {
         if (del->name) {
-            free((char *)del->name);
+            free(del->name);
             del->name = NULL;
         }
         free(del);
@@ -354,7 +354,7 @@ LuciObject **symtable_copy_objects(SymbolTable *symtable)
 /**
  * Returns the symbol table's array of objects
  *
- * The array will be invalid when the symtable is deleted
+ * The array will be invalid when the symbol table is destroyed
  *
  * @param symtable pointer to symbol table
  * @return array of LuciObjects

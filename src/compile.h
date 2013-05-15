@@ -127,12 +127,12 @@ typedef struct compile_state_ {
 
 void compiler_init(void);
 void compiler_finalize(void);
-CompileState * compile_ast(CompileState *, AstNode *);
+CompileState * compile_ast(AstNode *root);
+CompileState *compile_ast_incremental(CompileState *, LuciObject *, AstNode *);
 CompileState * CompileState_new(void);
-CompileState * CompileState_refresh(CompileState *);
 void CompileState_delete(CompileState *);
 
-LuciObject * LuciFunction_from_CompileState(CompileState *, uint16_t);
+void convert_to_function(CompileState *, LuciObject *, uint16_t);
 
 void print_instructions(LuciObject *);
 

@@ -381,9 +381,14 @@ static void compile_func_call(AstNode *node, CompileState *cs)
  */
 static void compile_func_def(AstNode *node, CompileState *cs)
 {
-    int i, a, nparams;
+    int a, nparams;
     AstNode *params = node->data.funcdef.param_list;
     AstNode *id_string = NULL;
+
+    /* store empty function object in symbol table */
+    LuciObject *obj = LuciFunction_new();
+    a = symtable_id(cs->ltable, node->data.funcdef.funcname, SYMCREATE);
+    symtable_set(cs->ltable, obj, a);
 
     /* Create new frame for function scope */
     CompileState *func_cs = CompileState_new();
@@ -396,28 +401,27 @@ static void compile_func_def(AstNode *node, CompileState *cs)
 
     nparams = params->data.listdef.count;
     /* add each parameter to symbol table */
+    int i;
     for (i = 0; i < nparams; i++) {
         id_string = params->data.listdef.items[i];
         /* add arg symbol to symbol table */
         a = symtable_id(func_cs->ltable, id_string->data.s, SYMCREATE);
     }
-    compile(node->data.funcdef.statements, func_cs);
 
-    /* add a RETURN to end of function if necessary */
-    if (OPCODE(func_cs->instructions[func_cs->instr_count - 1]) != RETURN) {
+    AstNode *statements = node->data.funcdef.statements;
+    compile(statements, func_cs);
+    AstNode *last = statements->data.statements.statements[
+            statements->data.statements.count - 1];
+    if (last->type != ast_return_t) {
         push_instr(func_cs, PUSHNIL, 0);
         push_instr(func_cs, RETURN, 0);
     }
 
     /* create function object */
-    LuciObject *obj = LuciFunction_from_CompileState(func_cs, nparams);
+    convert_to_function(func_cs, obj, nparams);
 
     /* Clean up CompileState created to compile this function */
     CompileState_delete(func_cs);
-
-    /* store function object in symbol table */
-    a = symtable_id(cs->ltable, node->data.funcdef.funcname, SYMCREATE);
-    symtable_set(cs->ltable, obj, a);
 }
 
 /**
@@ -620,7 +624,7 @@ void compiler_init(void)
     }
 
     /* initialize the global builtins array for the interpreter */
-    builtins = symtable_get_objects(builtin_symbols);
+    builtins = symtable_copy_objects(builtin_symbols);
 }
 
 void compiler_finalize(void)
@@ -638,28 +642,49 @@ void compiler_finalize(void)
  * @param root top-level AST Node
  * @returns complete CompileState
  */
-CompileState * compile_ast(CompileState *cs, AstNode *root)
+CompileState * compile_ast(AstNode *root)
 {
     if (!root) {
         DIE("%s", "Nothing to compile\n");
     }
 
+    CompileState *cs = CompileState_new();
+
+    /* compile the AST */
+    compile(root, cs);
+
+    /* end the CompileState with a HALT instr */
+    push_instr(cs, HALT, 0);
+
+    return cs;
+}
+
+CompileState *compile_ast_incremental(CompileState *cs, LuciObject *gf, AstNode *root)
+{
     /* if we're compiling an AST from scratch, create a new
      * CompileState to pass around */
     if (cs == NULL) {
         cs = CompileState_new();
+    } else {
+        /* otherwise, reset the CompileState, maintaining the symbol
+         * and constant tables */
+        cs->instr_count = 0;
+        cs->instr_alloc = BASE_INSTR_COUNT;
+        cs->instructions = alloc(cs->instr_alloc *
+                sizeof(*cs->instructions));
+
+        cs->current_loop = NULL;
     }
 
-    /* otherwise, cleanup the old instructions but maintain the
-     * symbol table and so on */
-    else {
-        cs = CompileState_refresh(cs);
+    if (gf) {
+        LuciFunctionObj *f = AS_FUNCTION(gf);
+        memcpy(cs->ltable->objects, f->locals, f->nlocals * sizeof(*f->locals));
     }
 
     /* compile the AST */
     compile(root, cs);
 
-    /* end the CompileState with an HALT instr */
+    /* end the CompileState with a HALT instr */
     push_instr(cs, HALT, 0);
 
     return cs;
@@ -672,36 +697,34 @@ CompileState * compile_ast(CompileState *cs, AstNode *root)
  * @param nparams number of function parameters for resulting function
  * @returns new LuciFunctionObj
  */
-LuciObject *LuciFunction_from_CompileState(CompileState *cs, uint16_t nparams)
+void convert_to_function(CompileState *cs, LuciObject *o, uint16_t nparams)
 {
-    LuciObject *o = LuciFunction_new();
     LuciFunctionObj *f = AS_FUNCTION(o);
 
     f->nparams = nparams;
+
+    /* copy instructions array */
     f->ninstrs = cs->instr_count;
-    f->instructions = cs->instructions;
+    size_t instr_bytes = f->ninstrs * sizeof(*cs->instructions);
+    f->instructions = alloc(instr_bytes);
+    memcpy(f->instructions, cs->instructions, instr_bytes);
+
     f->ip = f->instructions;
 
     /* get copy of locals object array and size of array */
-    if (cs->ltable) {
-        f->nlocals = cs->ltable->count;
-        f->locals = symtable_copy_objects(cs->ltable);
-    }
+    f->nlocals = cs->ltable->count;
+    f->locals = symtable_copy_objects(cs->ltable);
 
     /* get copy of constants object array and size of array */
-    if (cs->ctable) {
-        f->nconstants = cs->ctable->count;
-        f->constants = cotable_copy_objects(cs->ctable);
-    }
+    f->nconstants = cs->ctable->count;
+    f->constants = cotable_copy_objects(cs->ctable);
 
     /* get globals array.
      * the array is already owned by a parent function, so never needs
      * freed by this function */
     if (cs->gtable) {
-        f->globals = symtable_get_objects(cs->gtable);
+        f->globals = symtable_copy_objects(cs->gtable);
     }
-
-    return (LuciObject *)f;
 }
 
 /**
@@ -732,31 +755,10 @@ CompileState *CompileState_new(void)
  */
 void CompileState_delete(CompileState *cs)
 {
-    /* free(cs->instructions); */ /* LuciFunction owns instructions */
+    free(cs->instructions);
     symtable_delete(cs->ltable);
     cotable_delete(cs->ctable);
     free(cs);
-}
-
-/**
- * Allocates a new instructions array for the given CompileState
- *
- * All other members of the CompileState are untouched.
- *
- * @param cs given CompileState
- * @returns modifed CompileState
- */
-CompileState *CompileState_refresh(CompileState *cs)
-{
-    /* set up new instructions pointer */
-    cs->instr_count = 0;
-    cs->instr_alloc = BASE_INSTR_COUNT;
-    cs->instructions = alloc(cs->instr_alloc *
-            sizeof(*cs->instructions));
-
-    cs->current_loop = NULL;
-
-    return cs;
 }
 
 /**

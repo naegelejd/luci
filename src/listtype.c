@@ -215,7 +215,7 @@ LuciObject* LuciList_append(LuciObject *l, LuciObject *b)
     LuciListObj *list = AS_LIST(l);
 
     if (list->count >= list->size) {
-	list->size = list->size << 1;
+	list->size *= 2;
 	/* realloc the list array */
 	list->items = realloc(list->items,
 		list->size * sizeof(*list->items));

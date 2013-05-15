@@ -391,7 +391,7 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     symtable_set(cs->ltable, obj, a);
 
     /* Create new frame for function scope */
-    CompileState *func_cs = CompileState_new();
+    CompileState *func_cs = compile_state_new();
 
     /* create globals table for new frame */
     /* !NOTE: in order to support nested function definitions,
@@ -408,6 +408,7 @@ static void compile_func_def(AstNode *node, CompileState *cs)
         a = symtable_id(func_cs->ltable, id_string->data.s, SYMCREATE);
     }
 
+    /* ensure that the function ends with RETURN instruction */
     AstNode *statements = node->data.funcdef.statements;
     compile(statements, func_cs);
     AstNode *last = statements->data.statements.statements[
@@ -421,7 +422,7 @@ static void compile_func_def(AstNode *node, CompileState *cs)
     convert_to_function(func_cs, obj, nparams);
 
     /* Clean up CompileState created to compile this function */
-    CompileState_delete(func_cs);
+    compile_state_delete(func_cs);
 }
 
 /**
@@ -447,8 +448,7 @@ static void compile_statements(AstNode *node, CompileState *cs)
 
         if (tmp->type == ast_func_t) {
             /* stuff function definition names into symbol table */
-            int a = symtable_id(cs->ltable, tmp->data.funcdef.funcname, SYMCREATE);
-            LUCI_DEBUG("Stuff symbol %s (%d)\n", tmp->data.funcdef.funcname, a);
+            symtable_id(cs->ltable, tmp->data.funcdef.funcname, SYMCREATE);
         }
     }
 
@@ -648,7 +648,7 @@ CompileState * compile_ast(AstNode *root)
         DIE("%s", "Nothing to compile\n");
     }
 
-    CompileState *cs = CompileState_new();
+    CompileState *cs = compile_state_new();
 
     /* compile the AST */
     compile(root, cs);
@@ -664,7 +664,7 @@ CompileState *compile_ast_incremental(CompileState *cs, LuciObject *gf, AstNode 
     /* if we're compiling an AST from scratch, create a new
      * CompileState to pass around */
     if (cs == NULL) {
-        cs = CompileState_new();
+        cs = compile_state_new();
     } else {
         /* otherwise, reset the CompileState, maintaining the symbol
          * and constant tables */
@@ -723,7 +723,7 @@ void convert_to_function(CompileState *cs, LuciObject *o, uint16_t nparams)
      * the array is already owned by a parent function, so never needs
      * freed by this function */
     if (cs->gtable) {
-        f->globals = symtable_copy_objects(cs->gtable);
+        f->globals = symtable_give_objects(cs->gtable);
     }
 }
 
@@ -732,7 +732,7 @@ void convert_to_function(CompileState *cs, LuciObject *o, uint16_t nparams)
  *
  * @returns new, initialized CompileState
  */
-CompileState *CompileState_new(void)
+CompileState *compile_state_new(void)
 {
     CompileState *cs = alloc(sizeof(*cs));
     cs->instr_count = 0;
@@ -753,7 +753,7 @@ CompileState *CompileState_new(void)
  *
  * @param cs given CompileState
  */
-void CompileState_delete(CompileState *cs)
+void compile_state_delete(CompileState *cs)
 {
     free(cs->instructions);
     symtable_delete(cs->ltable);

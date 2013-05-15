@@ -27,9 +27,9 @@ typedef struct cotable
     uint32_t size;          /**< Total object array allocated size */
 } ConstantTable;
 
-ConstantTable *cotable_new(int size);
+ConstantTable *cotable_new(unsigned int size);
 void cotable_delete(ConstantTable *);
-uint32_t constant_id(ConstantTable *, LuciObject *);
+unsigned int constant_id(ConstantTable *, LuciObject *);
 
 LuciObject **cotable_copy_objects(ConstantTable *);
 

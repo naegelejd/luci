@@ -1,35 +1,45 @@
-Luci                                         
+Luci
 ====
 
 Luci is a procedural, dynamically-typed toy scripting language, implemented in C.
 
-### Syntax
-
-Luci's syntax resembles that of the languages C and Python, however
-the syntax is still a work in progress.
+Luci's syntax is similar to that of C, Python and Lua.
 
 ### Tools Needed to Build
 
 - [flex (lex)](http://flex.sourceforge.net/)
 - [bison (yacc)](http://www.gnu.org/software/bison/)
-- [doxygen 1.8.3](http://www.doxygen.org) to generate documentation
 - a C compiler (clang, gcc)
+
+Optional:
+
+- [doxygen 1.8.3](http://www.doxygen.org) to generate documentation
 
 ### Implementation
 
-Luci code is parsed to form an abstract syntax tree, which is then compiled
-to bytecode and executed by a virtual machine.
+Luci code is parsed to form an abstract syntax tree, which is then
+compiled to bytecode and executed by a virtual machine.
+
+Luci uses a crude, stop-the-world, mark-and-sweep garbage collector to
+allocate and manage memory. This allows for easy development of Luci,
+as well as the ability to _finalize_ objects.
 
 ### TODO
 
-- Finish developing garbage collection framework
-  (`free` out-of-scope Luci Objects throughout runtime)
-  This will theoretically eliminate the need to store
-  reference counts for each Luci type object!
-- Track symbol names throughout compilation (useful when printing bytecode)
-- Expand `map` type to allow for non-string keys
+- Make object virtual methods interchangeable between types.
+  The following two examples call two different internal functions,
+  one being a _string_ method, the other an _int_ method:
+
+      $ "hi" * 4
+
+      $ 4 * "hi"
+
+- Track symbol names throughout compilation/runtime.
+  This would be useful when printing bytecode, as well as for error messages
 - Update ConstantTable to actually de-duplicate constant Luci type objects
+- Expand `map` type to allow for non-string keys
 - Develop a module/import system. Put C-math functions in a math module.
+- Add exception framework (setjmp/longjmp)
 - Write standalone scanner/parser. This is counterintuitive considering the
   reliability and quality of *flex* and *bison*, however it will remove
   two build dependencies and provide a productive learning experience.
@@ -37,6 +47,15 @@ to bytecode and executed by a virtual machine.
 - Finalize syntax (i.e. make it awesome, maybe remove semicolons)
 - Possibly hash all C-strings created during runtime, allowing for a single
   instance of each allocated Luci string
+- Improve bytecode compiler
+  - Append instructions faster (currently function call for each)
+  - Implement short-circuit evaluation of conditional expressions
+  - Bytecode optimizations
+- Provide file manipulation functions (e.g. iteration through lines in a file)
+- Provide string manipulation functions
+- Implement Luci strings as unicode strings
+- Finalize API for creating libraries in C
+- Expand on interactive mode (don't require Ctrl+D(EOF))
 - Update all `delete`/`free` functions to take a double-pointer so that
   the value of the pointer can be set to NULL (defensive programming)
 
@@ -46,20 +65,16 @@ to bytecode and executed by a virtual machine.
           *xxx = NULL;
       }
 
-- Improve bytecode compiler
-  - Append instructions faster (currently function call for each)
-  - Implement short-circuit evaluation of conditional expressions
-  - Bytecode optimizations
-- Provide file manipulation functions (like iteration through lines in a file)
-- Provide string manipulation functions
-- Add support for both empty strings and escape characters
-- Implement Luci strings as unicode strings
-- Finalize API for creating libraries in C
-- Expand on interactive mode (don't require Ctrl+D(EOF))
+### Version 0.3
+
+The following features have been implemented for Luci v0.3:
+
+- Mark-and-Sweep garbage collection (with object finalization)
+- Support for both empty strings and escape characters
 
 ### Version 0.2
 
-The following features have been completed for Luci v0.2.
+The following features have been implemented for Luci v0.2:
 
 - Bytecode compiler
   - Instruction set is a work in progress
@@ -71,7 +86,7 @@ The following features have been completed for Luci v0.2.
   - Infinite function call stack
 - Crude interactive mode (similar to Python's `>>>`)
 - `map` type (similar to Python's `dict`)
-  - Uses quadratic and double hashing 
+  - Uses quadratic and double hashing
 - Virtual method tables for each built-in object type
   object types.
 

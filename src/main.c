@@ -152,7 +152,7 @@ int luci_main(int argc, char *argv[])
     LuciObject *gf = LuciFunction_new();
     convert_to_function(cs, gf, 0);
 
-    CompileState_delete(cs);
+    compile_state_delete(cs);
 
     switch (mode) {
         case MODE_EXE:
@@ -234,9 +234,8 @@ int luci_interactive(void)
         yyrestart(yyin);
     }
 
-end_interactive:
     if (cs != NULL) {
-        CompileState_delete(cs);
+        compile_state_delete(cs);
     }
 
     /* cleanup systems */

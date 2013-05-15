@@ -8,7 +8,6 @@
 
 #include "luci.h"
 #include "constant.h"
-#include "lucitypes.h"
 
 
 /**
@@ -17,7 +16,7 @@
  * @param size initial capacity of the table's object array.
  * @returns new ConstantTable\*
  */
-ConstantTable *cotable_new(int size)
+ConstantTable *cotable_new(unsigned int size)
 {
     ConstantTable *cotable = alloc(sizeof(*cotable));
     cotable->count = 0;
@@ -47,7 +46,7 @@ void cotable_delete(ConstantTable *cotable)
  * @param const_obj the object to insert
  * @returns the "ID" of the constant
  */
-uint32_t constant_id(ConstantTable *cotable, LuciObject *const_obj)
+unsigned int constant_id(ConstantTable *cotable, LuciObject *const_obj)
 {
     if (const_obj == NULL)
         DIE("%s", "Can't index a NULL constant\n");

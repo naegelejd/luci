@@ -10,14 +10,14 @@
 #include "symbol.h"
 #include "lucitypes.h"
 
-static Symbol *symbol_new(const char *, uint32_t);
+static Symbol *symbol_new(const char *, unsigned int);
 static void symbol_delete(Symbol *);
 
 static SymbolTable *symtable_insert(SymbolTable *, Symbol *);
-static SymbolTable *symtable_resize(SymbolTable *, uint32_t);
+static SymbolTable *symtable_resize(SymbolTable *, unsigned int);
 static Symbol *find_symbol_by_name(SymbolTable *, const char *);
 
-static uint32_t hash_symbol(SymbolTable *, const char *);
+static unsigned int hash_symbol(SymbolTable *, const char *);
 
 
 enum { N_BUCKET_OPTIONS = 26 };
@@ -42,9 +42,9 @@ static unsigned int NBUCKETS[N_BUCKET_OPTIONS] = {
  * @param name string to hash
  * @return hash of name
  */
-static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
+static unsigned int hash_symbol(SymbolTable *symtable, const char *name)
 {
-    uint32_t h = 5381;
+    unsigned int h = 5381;
     int c;
 
     while ((c = *name++)) {
@@ -60,7 +60,7 @@ static uint32_t hash_symbol(SymbolTable *symtable, const char *name)
  * @param index index of corresponding LuciObject in SymbolTable array
  * @return new Symbol
  */
-static Symbol *symbol_new(const char *name, uint32_t index)
+static Symbol *symbol_new(const char *name, unsigned int index)
 {
     Symbol *new = alloc(sizeof(*new));
     new->name = strdup(name);   /* copy the symbol string */
@@ -100,11 +100,12 @@ static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
     Symbol *cur = NULL, *prev = NULL;
 
     /* resize symbol table if if is over half full */
-    if (symtable->count > (NBUCKETS[symtable->bscale] >> 1))
+    if (symtable->count > (NBUCKETS[symtable->bscale] >> 1)) {
         symtable = symtable_resize(symtable, symtable->bscale++);
+    }
 
     /* calculate hash of the symbol's name */
-    uint32_t hash = hash_symbol(symtable, new_symbol->name);
+    unsigned int hash = hash_symbol(symtable, new_symbol->name);
 
     cur = symtable->symbols[hash];
 
@@ -131,7 +132,7 @@ static SymbolTable *symtable_insert(SymbolTable *symtable, Symbol *new_symbol)
  * @param bucketscale index into array of possible table sizes (primes)
  * @returns resized symtable
  */
-static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
+static SymbolTable *symtable_resize(SymbolTable *symtable, unsigned int bucketscale)
 {
     /* no shrink implementation defined */
     if (symtable->bscale >= bucketscale)
@@ -142,7 +143,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
 
     /* save the old attrs */
     Symbol **old_symbols = symtable->symbols;
-    uint32_t old_bscale = symtable->bscale;
+    unsigned int old_bscale = symtable->bscale;
 
     /* allocate new entry array and set bucket count */
     symtable->symbols = alloc(NBUCKETS[bucketscale] *
@@ -174,30 +175,26 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, uint32_t bucketscale)
  * @param bucketscale index into array of possible table sizes (primes)
  * @return pointer to new SymbolTable
  */
-SymbolTable *symtable_new(uint32_t bucketscale)
+SymbolTable *symtable_new(unsigned int bucketscale)
 {
     SymbolTable *symtable = alloc(sizeof(*symtable));
-    if (!symtable)
-        DIE("%s", "Error allocating symbol table\n");
     LUCI_DEBUG("%s\n", "Allocated symbol table");
 
-    if (bucketscale >= N_BUCKET_OPTIONS)
+    if (bucketscale >= N_BUCKET_OPTIONS) {
         DIE("%s", "Symbol Table scale out of bounds\n");
+    }
     symtable->bscale = bucketscale;
 
     symtable->symbols = alloc(NBUCKETS[bucketscale] *
             sizeof(*(symtable->symbols)));
-    if (!symtable->symbols)
-        DIE("%s", "Error allocating symtable symbols array\n");
     LUCI_DEBUG("%s\n", "Allocated symbol table symbols array");
 
     /* make Symbol Table object array size = bucket count / 4 */
     symtable->size = NBUCKETS[bucketscale] >> 2;
     symtable->objects = alloc(symtable->size * sizeof(*(symtable->objects)));
-    if (!symtable->objects)
-        DIE("%s", "Error allocating symtable objects array\n");
-
     LUCI_DEBUG("%s\n", "Allocated symbol table objects array");
+
+    symtable->owns_objects = true;
 
     return symtable;
 }
@@ -225,8 +222,10 @@ void symtable_delete(SymbolTable *symtable)
         }
     }
 
-    free(symtable->objects);
-    symtable->objects = NULL;
+    if (symtable->owns_objects) {
+        free(symtable->objects);
+        symtable->objects = NULL;
+    }
 
     free(symtable->symbols);
     symtable->symbols = NULL;
@@ -246,7 +245,7 @@ static Symbol *find_symbol_by_name(SymbolTable *symtable, const char *name)
 {
     Symbol *cur = NULL;
     /* Compute hash and bound it by the table's # of buckets */
-    uint32_t hash = hash_symbol(symtable, name);
+    unsigned int hash = hash_symbol(symtable, name);
 
     /* search for symbol in table */
     cur = symtable->symbols[hash];
@@ -279,6 +278,8 @@ int symtable_id(SymbolTable *symtable, const char *name, symtable_flags flags)
 
     if (!symtable) {
         DIE("%s", "Symbol Table not allocated\n");
+    } else if (symtable->bscale >= N_BUCKET_OPTIONS) {
+        DIE("Symtable full, cannot add symbol %s\n", name);
     }
 
     /* Try to find symbol in table */
@@ -324,7 +325,7 @@ int symtable_id(SymbolTable *symtable, const char *name, symtable_flags flags)
  * @param id index in the table at which to set a new object value
  * @return object that previously resided at index `id`
  */
-void symtable_set(SymbolTable *symtable, LuciObject *obj, uint32_t id)
+void symtable_set(SymbolTable *symtable, LuciObject *obj, unsigned int id)
 {
     if (id >= symtable->count)
         DIE("%s", "Symbol id out of bounds\n");
@@ -354,16 +355,19 @@ LuciObject **symtable_copy_objects(SymbolTable *symtable)
 /**
  * Returns the symbol table's array of objects
  *
- * The array will be invalid when the symbol table is destroyed
+ * Calling this causes the symtable to NOT delete its objects when
+ * itself freed.
  *
  * @param symtable pointer to symbol table
  * @return array of LuciObjects
  */
-LuciObject **symtable_get_objects(SymbolTable *symtable)
+LuciObject **symtable_give_objects(SymbolTable *symtable)
 {
     if (!symtable) {
         DIE("%s\n", "Cannot copy object array from NULL SymbolTable\n");
     }
+
+    symtable->owns_objects = false;
 
     return symtable->objects;
 }

@@ -240,7 +240,12 @@ LuciObject* LuciList_pop(LuciObject *l)
 {
     LuciListObj *list = AS_LIST(l);
 
+    if (list->count == 0) {
+        DIE("%s\n", "Can't pop empty list");
+    }
+
     list->count--;
+
     /*
     if (list->count < (list->size / 2)) {
         list->size /= 2;

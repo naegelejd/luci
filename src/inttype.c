@@ -144,6 +144,8 @@ LuciObject* LuciInt_mul(LuciObject *a, LuciObject *b)
         res = LuciInt_new(AS_INT(a)->i * AS_INT(b)->i);
     } else if (ISTYPE(b, obj_float_t)) {
         res = LuciFloat_new(AS_INT(a)->i * AS_FLOAT(b)->f);
+    } else if (ISTYPE(b, obj_string_t)) {
+        res = b->type->mul(b, a);
     } else {
         DIE("Cannot multiply an object of type %s and an int\n", b->type->type_name);
     }

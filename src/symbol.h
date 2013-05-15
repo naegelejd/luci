@@ -19,7 +19,7 @@ typedef struct symbol
 {
     struct symbol *next;    /**< next symbol in linked list */
     char *name;       /**< symbol name */
-    uint32_t index;         /**< index of object corresponding to symbol */
+    unsigned int index;         /**< index of object corresponding to symbol */
 } Symbol;
 
 /**
@@ -30,21 +30,22 @@ typedef struct symtable
 {
     Symbol **symbols;       /**< Symbol array */
     LuciObject **objects;   /**< Object array */
-    uint32_t count;         /**< Current # of allocated symbol/object pairs */
-    uint32_t size;          /**< Total object array size */
-    uint32_t bscale;        /**< Index into array of bucket size options */
-    uint32_t collisions;    /**< Current # of collisions in hashtable */
+    unsigned int count;     /**< Current # of allocated symbol/object pairs */
+    unsigned int size;      /**< Total object array size */
+    unsigned int collisions;/**< Current # of collisions in hashtable */
+    unsigned int bscale;    /**< Index into array of bucket size options */
+    bool owns_objects;      /**< Whether the symtable can free objects */
 } SymbolTable;
 
 /** flags identifying the symtable_id intent (create/lookup/...) */
 typedef enum { SYMFIND = 0x0, SYMCREATE = 0x1 } symtable_flags;
 
-SymbolTable *symtable_new(uint32_t);
+SymbolTable *symtable_new(unsigned int);
 void symtable_delete(SymbolTable *);
-void symtable_set(SymbolTable *, LuciObject *, uint32_t id);
+void symtable_set(SymbolTable *, LuciObject *, unsigned int id);
 int symtable_id(SymbolTable *, const char *, symtable_flags flags);
 
 LuciObject **symtable_copy_objects(SymbolTable *);
-LuciObject **symtable_get_objects(SymbolTable *);
+LuciObject **symtable_give_objects(SymbolTable *);
 
 #endif

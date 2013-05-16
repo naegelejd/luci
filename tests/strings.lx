@@ -1,0 +1,6 @@
+assert("hello world");
+assert("hello" + " world" == "hello world");
+assert("goodbye" * 2 == "goodbyegoodbye");
+
+assert("" + "hello" == "hello");
+assert("goodbye" + "\n" == "goodbye\n");

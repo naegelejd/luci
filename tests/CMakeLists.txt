@@ -1,0 +1,7 @@
+set(TEST_EXE ${CMAKE_BINARY_DIR}/luci/luci)
+add_test(assert ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/assert.lx)
+add_test(ints ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/ints.lx)
+add_test(floats ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/floats.lx)
+add_test(strings ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/strings.lx)
+add_test(lists ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/lists.lx)
+add_test(builtins ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/builtins.lx)

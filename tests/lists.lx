@@ -1,0 +1,27 @@
+assert(![]);
+assert([0]);
+assert([0, 1, 2, 3, 4, 5]);
+
+l = [0, 1, 2, 3, 4];
+ln = [-1, -2, -3, -4, -5];
+assert(l);
+assert(l + ln);
+
+l = l + ln;
+assert(l);
+assert(l[0] == 0);
+assert(l[4] == 4);
+assert(l[5] == -1);
+assert(l[9] == -5);
+
+l = ["hello", false, 42, "world", 3.14];
+assert(l[0] == "hello");
+assert(l[1] == false);
+assert(l[2] == 42);
+assert(l[3] == "world");
+assert(l[4] == 3.14);
+
+l[0] = 123;
+assert(l[0] == 123);
+l[3] = !l[1];
+assert(l[3] == true);

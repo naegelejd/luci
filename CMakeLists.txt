@@ -23,6 +23,10 @@ set(LUCI_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 # cmake Luci itself
 add_subdirectory(${LUCI_SOURCE_DIR} luci)
 
+# cmake some tests
+enable_testing()
+add_subdirectory(tests)
+
 # cmake some documentation
 find_package(Doxygen)
 if(DOXYGEN_FOUND)

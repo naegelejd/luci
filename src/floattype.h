@@ -39,14 +39,11 @@ LuciObject* LuciFloat_lt(LuciObject *, LuciObject *);
 LuciObject* LuciFloat_gt(LuciObject *, LuciObject *);
 LuciObject* LuciFloat_lte(LuciObject *, LuciObject *);
 LuciObject* LuciFloat_gte(LuciObject *, LuciObject *);
-LuciObject* LuciFloat_lgor(LuciObject *, LuciObject *);
-LuciObject* LuciFloat_lgand(LuciObject *, LuciObject *);
 LuciObject* LuciFloat_bwxor(LuciObject *, LuciObject *);
 LuciObject* LuciFloat_bwor(LuciObject *, LuciObject *);
 LuciObject* LuciFloat_bwand(LuciObject *, LuciObject *);
 
 LuciObject* LuciFloat_neg(LuciObject *);
-LuciObject* LuciFloat_lgnot(LuciObject *);
 LuciObject* LuciFloat_bwnot(LuciObject *);
 
 void LuciFloat_print(LuciObject *);

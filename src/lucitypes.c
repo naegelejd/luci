@@ -72,7 +72,12 @@ static LuciObject* LuciNil_copy(LuciObject *orig)
     return orig;
 }
 
-
+/**
+ * Returns false
+ *
+ * @param o LuciNilObj
+ * @returns false
+ */
 static LuciObject* LuciNil_asbool(LuciObject *o)
 {
     return LuciInt_new(false);
@@ -88,6 +93,45 @@ static void LuciNil_print(LuciObject *in)
     printf("%s", "nil");
 }
 
+/**
+ * Returns logical not of any LuciObject
+ *
+ * @param o LuciObject
+ * @returns logical-not of o
+ */
+LuciObject *LuciObject_lgnot(LuciObject *o)
+{
+    LuciObject *b = o->type->asbool(o);
+    return LuciInt_new(!(AS_INT(b)->i));
+}
+
+/**
+ * Returns logical and of any two LuciObjects
+ *
+ * @param a LuciObject
+ * @param b LuciObject
+ * @returns logical-and of a and b
+ */
+LuciObject *LuciObject_lgand(LuciObject *a, LuciObject *b)
+{
+    LuciObject *a0 = a->type->asbool(a);
+    LuciObject *b0 = b->type->asbool(b);
+    return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
+}
+
+/**
+ * Returns logical or of any two LuciObjects
+ *
+ * @param a LuciObject
+ * @param b LuciObject
+ * @returns logical-and of a and b
+ */
+LuciObject *LuciObject_lgor(LuciObject *a, LuciObject *b)
+{
+    LuciObject *a0 = a->type->asbool(a);
+    LuciObject *b0 = b->type->asbool(b);
+    return LuciInt_new(AS_INT(a0)->i || AS_INT(b0)->i);
+}
 
 /**
  * Unary placeholder no-op type member

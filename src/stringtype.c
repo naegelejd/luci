@@ -25,7 +25,7 @@ LuciObjectType obj_string_t = {
     LuciString_len,
     unary_nil,
     unary_nil,
-    unary_nil,
+    LuciObject_lgnot,
 
     LuciString_add,
     binary_nil,
@@ -39,8 +39,8 @@ LuciObjectType obj_string_t = {
     binary_nil,
     binary_nil,
     binary_nil,
-    binary_nil,
-    binary_nil,
+    LuciObject_lgor,
+    LuciObject_lgand,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -102,6 +102,12 @@ LuciObject* LuciString_repr(LuciObject *o)
     return LuciString_new(s);
 }
 
+/**
+ * Returns a boolean representation of a LuciStringObj
+ *
+ * @param o LuciStringObj
+ * @returns LuciIntObj
+ */
 LuciObject* LuciString_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_STRING(o)->len > 0);
@@ -134,7 +140,7 @@ LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
         strncat(s, AS_STRING(b)->s, AS_STRING(b)->len);
         return LuciString_new(s);
     } else {
-        DIE("Cannot append object of type %s to a string\n",
+        LUCI_DIE("Cannot append object of type %s to a string\n",
                 b->type->type_name);
     }
 
@@ -160,7 +166,7 @@ LuciObject* LuciString_mul(LuciObject *a, LuciObject *b)
         }
         return LuciString_new(s);
     } else {
-        DIE("Cannot multiply a string by an object of type %s\n",
+        LUCI_DIE("Cannot multiply a string by an object of type %s\n",
                 b->type->type_name);
     }
 
@@ -186,7 +192,7 @@ LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
             return LuciInt_new(false);
         }
     } else {
-        DIE("Cannot compare a string to an object of type %s\n",
+        LUCI_DIE("Cannot compare a string to an object of type %s\n",
                 b->type->type_name);
     }
     return LuciNilObj;
@@ -202,7 +208,7 @@ LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
 LuciObject *LuciString_contains(LuciObject *str, LuciObject *o)
 {
     if (!ISTYPE(o, obj_string_t)) {
-        DIE("A string can only contain a string, not a %s\n",
+        LUCI_DIE("A string can only contain a string, not a %s\n",
                 o->type->type_name);
     }
     if ((strstr(AS_STRING(str)->s, AS_STRING(o)->s)) != NULL) {
@@ -222,7 +228,7 @@ LuciObject *LuciString_contains(LuciObject *str, LuciObject *o)
 LuciObject *LuciString_next(LuciObject *str, LuciObject *idx)
 {
     if (!ISTYPE(idx, obj_int_t)) {
-        DIE("%s\n", "Argument to LuciString_next must be LuciIntObj");
+        LUCI_DIE("%s\n", "Argument to LuciString_next must be LuciIntObj");
     }
 
     if (AS_INT(idx)->i >= AS_STRING(str)->len) {
@@ -250,7 +256,7 @@ LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
         MAKE_INDEX_POS(idx, AS_STRING(a)->len);
 
         if (idx >= AS_STRING(a)->len) {
-            DIE("%s\n", "String subscript out of bounds");
+            LUCI_DIE("%s\n", "String subscript out of bounds");
         }
 
         char *s = alloc(2 * sizeof(char));
@@ -258,7 +264,7 @@ LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
         s[1] = '\0';
         return LuciString_new(s);
     } else {
-        DIE("Cannot subscript a string with an object of type %s\n",
+        LUCI_DIE("Cannot subscript a string with an object of type %s\n",
                 b->type->type_name);
     }
     return LuciNilObj;
@@ -269,6 +275,7 @@ LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
  *
  * @param a LuciStringObj
  * @param b index in a
+ * @param c substring to insert into a
  * @returns former character at index b
  */
 LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
@@ -278,7 +285,7 @@ LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
             long idx = AS_INT(b)->i;
             MAKE_INDEX_POS(idx, AS_STRING(a)->len);
             if (idx >= AS_STRING(a)->len) {
-                DIE("%s\n", "String subscript out of bounds");
+                LUCI_DIE("%s\n", "String subscript out of bounds");
             }
             char *s = alloc(2 * sizeof(char));
             s[0] = AS_STRING(a)->s[idx];
@@ -290,11 +297,11 @@ LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
             /* return the former char */
             return LuciString_new(s);
         } else {
-            DIE("Cannot put an object of type %s into a string\n",
+            LUCI_DIE("Cannot put an object of type %s into a string\n",
                     c->type->type_name);
         }
     } else {
-        DIE("Cannot subscript a string with an object of type %s\n",
+        LUCI_DIE("Cannot subscript a string with an object of type %s\n",
                 b->type->type_name);
     }
     return LuciNilObj;
@@ -375,11 +382,23 @@ static unsigned int string_hash_2(LuciObject *s)
     return h;
 }
 
+/**
+ * Marks a LuciStringObj as reachable
+ *
+ * @param in LuciStringObj
+ */
 void LuciString_mark(LuciObject *in)
 {
     GC_MARK(in);
 }
 
+/**
+ * Finalizes a LuciStringObj
+ *
+ * frees its char*
+ *
+ * @param in LuciStringObj
+ */
 void LuciString_finalize(LuciObject *in)
 {
     free(AS_STRING(in)->s);

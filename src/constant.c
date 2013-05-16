@@ -49,7 +49,7 @@ void cotable_delete(ConstantTable *cotable)
 unsigned int constant_id(ConstantTable *cotable, LuciObject *const_obj)
 {
     if (const_obj == NULL)
-        DIE("%s", "Can't index a NULL constant\n");
+        LUCI_DIE("%s", "Can't index a NULL constant\n");
 
     if (cotable->count > cotable->size) {
         cotable->size <<= 1;
@@ -71,7 +71,7 @@ unsigned int constant_id(ConstantTable *cotable, LuciObject *const_obj)
 LuciObject **cotable_copy_objects(ConstantTable *cotable)
 {
     if (!cotable) {
-        DIE("%s\n", "Cannot get object array from NULL ConstantTable\n");
+        LUCI_DIE("%s\n", "Cannot get object array from NULL ConstantTable\n");
     }
 
     size_t bytes = cotable->count * sizeof(*cotable->objects);

@@ -13,8 +13,10 @@
 /** global array of pools (one for each allocation size) */
 static GCPoolList POOL_LISTS[POOL_LIST_COUNT];
 
+/** static list for storing root LuciObjects */
 static GCRootList gc_roots = { NULL, 0, 0 };
 
+/** returns the last usable address in a pool */
 #define POOL_LIMIT(pool)    ((pool)->bytes + POOL_SIZE - (pool)->each)
 
 bool GC_NECESSARY;
@@ -66,7 +68,7 @@ void gc_track_root(LuciObject **root)
         gc_roots.roots = realloc(gc_roots.roots,
                 gc_roots.size * sizeof(*gc_roots.roots));
         if (!gc_roots.roots) {
-            DIE("%s\n", "Failed to realloc GC Roots list");
+            LUCI_DIE("%s\n", "Failed to realloc GC Roots list");
         }
     }
 
@@ -74,11 +76,7 @@ void gc_track_root(LuciObject **root)
 }
 
 /**
- * Removes the address of a pointer to a LuciObject from the GC Roots list
- *
- * Does not currently shrink the GC roots list as necessary
- *
- * @param root Address to pointer to LuciObject (e.g. main stack)
+ * Removes all roots from the GC's roots list
  */
 void gc_untrack_roots(void)
 {
@@ -93,7 +91,7 @@ void gc_untrack_roots(void)
  * Effectively equivalent to system `malloc`.
  * Manages pools of memory for different size-request ranges.
  *
- * @param size size in bytes to allocate
+ * @param tp pointer to type object
  * @returns void* pointer to allocated block
  */
 LuciObject *gc_malloc(LuciObjectType *tp)
@@ -141,7 +139,7 @@ LuciObject *gc_malloc(LuciObjectType *tp)
         plist->pools = realloc(plist->pools, plist->size *
                 sizeof(*plist->pools));
         if (!plist->pools) {
-            DIE("%s\n", "Failed to realloc pool list");
+            LUCI_DIE("%s\n", "Failed to realloc pool list");
         }
     }
 
@@ -236,7 +234,7 @@ skip_sweep:
  *
  * @returns number of objects finalized
  */
-int gc_finalize()
+int gc_finalize(void)
 {
     unsigned int finalized = 0;
     unsigned int list_idx, pool_idx;
@@ -291,7 +289,7 @@ void *alloc(size_t size)
 {
     void *result = calloc(size, 1);
     if (!result) {
-	DIE("%s", "alloc failed\n");
+	LUCI_DIE("%s", "alloc failed\n");
     }
     return result;
 }

@@ -118,7 +118,7 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
     }
 
     /* symbol not found */
-    DIE("%s undefined.\n", node->data.id.val);
+    LUCI_DIE("%s undefined.\n", node->data.id.val);
 }
 
 
@@ -492,7 +492,7 @@ static void compile_break(AstNode *node, CompileState *cs)
     Loopjump *ptr;
 
     if (!cs->current_loop) {
-        DIE("'break' @ line %d not inside a loop\n", node->lineno);
+        LUCI_DIE("'break' @ line %d not inside a loop\n", node->lineno);
     }
     ptr = cs->current_loop->breaks;
     /* push a bogus JUMP instr to be backpatched later */
@@ -521,7 +521,7 @@ static void compile_continue(AstNode *node, CompileState *cs)
     Loopjump *jmp = alloc(sizeof(*jmp));
     Loopjump *ptr;
     if (!cs->current_loop) {
-        DIE("'continue' @ line %d not inside a loop\n", node->lineno);
+        LUCI_DIE("'continue' @ line %d not inside a loop\n", node->lineno);
     }
     ptr = cs->current_loop->continues;
     /* push a bogus JUMP instr to be backpatched later */
@@ -606,6 +606,13 @@ static void compile(AstNode *node, CompileState *cs)
     compilers[node->type](node, cs);
 }
 
+/**
+ * Initializes the compiler
+ *
+ * Allocates the global builtins symbol table, populates it,
+ * then stores the resulting array of objects in the global
+ * builtins array
+ */
 void compiler_init(void)
 {
     /* allocate the global builtin symbol table */
@@ -627,6 +634,9 @@ void compiler_init(void)
     builtins = symtable_copy_objects(builtin_symbols);
 }
 
+/**
+ * Deletes the global builtins symbol table
+ */
 void compiler_finalize(void)
 {
     symtable_delete(builtin_symbols);
@@ -638,14 +648,13 @@ void compiler_finalize(void)
  * Allocates a CompileState struct and passes it to
  * the AST walker/compiler.
  *
- * @param cs existing CompileState for use in Luci's interactive mode
  * @param root top-level AST Node
  * @returns complete CompileState
  */
 CompileState * compile_ast(AstNode *root)
 {
     if (!root) {
-        DIE("%s", "Nothing to compile\n");
+        LUCI_DIE("%s", "Nothing to compile\n");
     }
 
     CompileState *cs = compile_state_new();
@@ -659,6 +668,17 @@ CompileState * compile_ast(AstNode *root)
     return cs;
 }
 
+/**
+ * Public entry point for incremental compilation.
+ *
+ * Either allocates a new CompileState struct or updates
+ * an existing one in the case of incremental compilation
+ *
+ * @param cs given CompileState
+ * @param gf LuciFunctionObj from which to reinstantiate the CompileState
+ * @param root top-level AST Node
+ * @returns complete CompileState
+ */
 CompileState *compile_ast_incremental(CompileState *cs, LuciObject *gf, AstNode *root)
 {
     /* if we're compiling an AST from scratch, create a new
@@ -694,6 +714,7 @@ CompileState *compile_ast_incremental(CompileState *cs, LuciObject *gf, AstNode 
  * Creates a new function derived from the given CompileState
  *
  * @param cs given CompileState
+ * @param o LuciFunctionObj to populate during conversion
  * @param nparams number of function parameters for resulting function
  * @returns new LuciFunctionObj
  */
@@ -772,10 +793,10 @@ void compile_state_delete(CompileState *cs)
 static uint32_t push_instr(CompileState *cs, Opcode op, int arg)
 {
     if (!cs) {
-        DIE("%s", "CompileState not allocated. Can't add instruction\n");
+        LUCI_DIE("%s", "CompileState not allocated. Can't add instruction\n");
     }
     if (!(cs->instructions)) {
-        DIE("%s", "Instruction list not allocated. Can't add instruction\n");
+        LUCI_DIE("%s", "Instruction list not allocated. Can't add instruction\n");
     }
 
     /* Reallocate the CompileState's instruction list if necessary */
@@ -805,7 +826,7 @@ static uint32_t put_instr(CompileState *cs, uint32_t addr,
         Opcode op, int arg)
 {
     if (addr > cs->instr_count) {
-        DIE("%s", "Address out of bounds\n");
+        LUCI_DIE("%s", "Address out of bounds\n");
     }
 
     /* JUMP operations must be made relative */
@@ -892,10 +913,10 @@ static void back_patch_loop(CompileState *cs, uint32_t start, uint32_t end)
  * @param globalframe global frame to serialize
  * @returns C-style string of bytes
  */
-char* serialize_program(LuciObject *globalscope)
+char* serialize_program(LuciObject *globalframe)
 {
     int i;
-    for (i = 0; i < AS_FUNCTION(globalscope)->nlocals; i++) {
+    for (i = 0; i < AS_FUNCTION(globalframe)->nlocals; i++) {
         /* print_object(globalframe->locals[i]); */
     }
     return NULL;

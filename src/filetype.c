@@ -19,7 +19,7 @@ LuciObjectType obj_file_t = {
     LuciFile_asbool,
     unary_nil,
     unary_nil,
-    unary_nil,
+    LuciObject_lgnot,
     unary_nil,
 
     binary_nil,
@@ -34,8 +34,8 @@ LuciObjectType obj_file_t = {
     binary_nil,
     binary_nil,
     binary_nil,
-    binary_nil,
-    binary_nil,
+    LuciObject_lgor,
+    LuciObject_lgand,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -66,6 +66,13 @@ LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode)
     return (LuciObject *)o;
 }
 
+/**
+ * Returns a boolean representation of a LuciFileObj
+ *
+ * true if the file pointer is not NULL
+ *
+ * @returns LuciIntObj
+ */
 LuciObject* LuciFile_asbool(LuciObject *o)
 {
     LuciObject *res = LuciNilObj;

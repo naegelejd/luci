@@ -149,7 +149,7 @@ static SymbolTable *symtable_resize(SymbolTable *symtable, unsigned int bucketsc
     symtable->symbols = alloc(NBUCKETS[bucketscale] *
             sizeof(*(symtable->symbols)));
     if (!symtable->symbols)
-        DIE("%s", "Error allocating new, larger symtable entry array\n");
+        LUCI_DIE("%s", "Error allocating new, larger symtable entry array\n");
     symtable->bscale = bucketscale;
 
     Symbol *cur = NULL;
@@ -181,7 +181,7 @@ SymbolTable *symtable_new(unsigned int bucketscale)
     LUCI_DEBUG("%s\n", "Allocated symbol table");
 
     if (bucketscale >= N_BUCKET_OPTIONS) {
-        DIE("%s", "Symbol Table scale out of bounds\n");
+        LUCI_DIE("%s", "Symbol Table scale out of bounds\n");
     }
     symtable->bscale = bucketscale;
 
@@ -277,9 +277,9 @@ int symtable_id(SymbolTable *symtable, const char *name, symtable_flags flags)
     Symbol *sym = NULL;
 
     if (!symtable) {
-        DIE("%s", "Symbol Table not allocated\n");
+        LUCI_DIE("%s", "Symbol Table not allocated\n");
     } else if (symtable->bscale >= N_BUCKET_OPTIONS) {
-        DIE("Symtable full, cannot add symbol %s\n", name);
+        LUCI_DIE("Symtable full, cannot add symbol %s\n", name);
     }
 
     /* Try to find symbol in table */
@@ -300,7 +300,7 @@ int symtable_id(SymbolTable *symtable, const char *name, symtable_flags flags)
         symtable->objects = realloc(symtable->objects,
                 symtable->size * sizeof(*(symtable->objects)));
         if (!symtable->objects) {
-            DIE("%s", "Could not increase symbol table object array size\n");
+            LUCI_DIE("%s", "Could not increase symbol table object array size\n");
         }
         int i;
         for (i = symtable->count; i < symtable->size; i++) {
@@ -328,7 +328,7 @@ int symtable_id(SymbolTable *symtable, const char *name, symtable_flags flags)
 void symtable_set(SymbolTable *symtable, LuciObject *obj, unsigned int id)
 {
     if (id >= symtable->count)
-        DIE("%s", "Symbol id out of bounds\n");
+        LUCI_DIE("%s", "Symbol id out of bounds\n");
 
     symtable->objects[id] = obj;
 }
@@ -342,7 +342,7 @@ void symtable_set(SymbolTable *symtable, LuciObject *obj, unsigned int id)
 LuciObject **symtable_copy_objects(SymbolTable *symtable)
 {
     if (!symtable) {
-        DIE("%s\n", "Cannot copy object array from NULL SymbolTable\n");
+        LUCI_DIE("%s\n", "Cannot copy object array from NULL SymbolTable\n");
     }
 
     size_t bytes = symtable->count * sizeof(*symtable->objects);
@@ -364,7 +364,7 @@ LuciObject **symtable_copy_objects(SymbolTable *symtable)
 LuciObject **symtable_give_objects(SymbolTable *symtable)
 {
     if (!symtable) {
-        DIE("%s\n", "Cannot copy object array from NULL SymbolTable\n");
+        LUCI_DIE("%s\n", "Cannot copy object array from NULL SymbolTable\n");
     }
 
     symtable->owns_objects = false;

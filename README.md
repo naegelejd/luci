@@ -30,9 +30,9 @@ as well as the ability to _finalize_ objects.
   The following two examples call two different internal functions,
   one being a _string_ method, the other an _int_ method:
 
-      $ "hi" * 4
+        $ "hi" * 4
 
-      $ 4 * "hi"
+        $ 4 * "hi"
 
 - Track symbol names throughout compilation/runtime.
   This would be useful when printing bytecode, as well as for error messages
@@ -59,11 +59,11 @@ as well as the ability to _finalize_ objects.
 - Update all `delete`/`free` functions to take a double-pointer so that
   the value of the pointer can be set to NULL (defensive programming)
 
-      static void XXX_delete(XXX **xxx)
-      {
-          free(*xxx);
-          *xxx = NULL;
-      }
+        static void XXX_delete(XXX **xxx)
+        {
+            free(*xxx);
+            *xxx = NULL;
+        }
 
 ### Version 0.3
 

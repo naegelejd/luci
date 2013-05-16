@@ -21,7 +21,7 @@ LuciObjectType obj_func_t = {
     unary_nil,
     unary_nil,
     unary_nil,
-    unary_nil,
+    LuciObject_lgnot,
 
     binary_nil,
     binary_nil,
@@ -35,8 +35,8 @@ LuciObjectType obj_func_t = {
     binary_nil,
     binary_nil,
     binary_nil,
-    binary_nil,
-    binary_nil,
+    LuciObject_lgor,
+    LuciObject_lgand,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -55,9 +55,8 @@ LuciObjectType obj_func_t = {
 };
 
 /**
- * Creates a new LuciFunctionObj
+ * Creates a new, empty LuciFunctionObj
  *
- * @param frame Frame struct defining function
  * @returns new LuciFunctionObj
  */
 LuciObject *LuciFunction_new()
@@ -75,7 +74,7 @@ LuciObject *LuciFunction_new()
 LuciObject *LuciFunction_copy(LuciObject *orig)
 {
     if (orig == NULL) {
-        DIE("%s", "Can't copy NULL function\n");
+        LUCI_DIE("%s", "Can't copy NULL function\n");
     }
 
     LuciObject *copy = LuciFunction_new();
@@ -116,6 +115,12 @@ LuciObject *LuciFunction_copy(LuciObject *orig)
     return copy;
 }
 
+/**
+ * Returns true
+ *
+ * @param o LuciLibFuncObj
+ * @returns LuciIntObj (true)
+ */
 LuciObject* LuciFunction_asbool(LuciObject *o)
 {
     return LuciInt_new(true);
@@ -131,6 +136,13 @@ void LuciFunction_print(LuciObject *in)
     printf("<function>");
 }
 
+/**
+ * Marks a LuciLibFuncObj as reachable
+ *
+ * marks all locals and constants
+ *
+ * @param in LuciLibFuncObj
+ */
 void LuciFunction_mark(LuciObject *in)
 {
     int i;
@@ -151,6 +163,13 @@ void LuciFunction_mark(LuciObject *in)
     GC_MARK(in);
 }
 
+/**
+ * Finalizes a LuciLibFuncObj
+ *
+ * frees instructions, locals and constants
+ *
+ * @param in LuciLibFuncObj
+ */
 void LuciFunction_finalize(LuciObject *in)
 {
     free(AS_FUNCTION(in)->instructions);

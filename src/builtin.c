@@ -364,13 +364,13 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 	    read_from = AS_FILE(item)->ptr;
 	}
 	else {
-	    DIE("%s", "Can't readline from non-file object\n");
+	    LUCI_DIE("%s", "Can't readline from non-file object\n");
 	}
     }
 
     input = alloc(lenmax * sizeof(char));
     if (input == NULL) {
-	DIE("%s", "Failed to allocate buffer for reading stdin\n");
+	LUCI_DIE("%s", "Failed to allocate buffer for reading stdin\n");
     }
     do {
 	ch = fgetc(read_from);
@@ -378,7 +378,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 	if (len >= lenmax) {
 	    lenmax = lenmax << 1;
 	    if ((input = realloc(input, lenmax * sizeof(char))) == NULL) {
-		DIE("%s", "Failed to allocate buffer for reading\n");
+		LUCI_DIE("%s", "Failed to allocate buffer for reading\n");
 	    }
 	}
 	input[len++] = (char)ch;
@@ -408,7 +408,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing parameter to type()\n");
+	LUCI_DIE("%s", "Missing parameter to type()\n");
     }
 
     /* grab the first parameter from the param list */
@@ -434,21 +434,25 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
 LuciObject *luci_assert(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing condition parameter to assert()\n");
+	LUCI_DIE("%s", "Missing condition parameter to assert()\n");
     }
 
     LuciObject *item = args[0];
 
-    if (ISTYPE(item, obj_int_t)) {
-        assert(AS_INT(item)->i);
-    } else if (ISTYPE(item, obj_float_t)) {
-        assert((int)AS_FLOAT(item)->f);
+    if (ISTYPE(item, obj_int_t) && !AS_INT(item)->i) {
+        LUCI_DIE("%s\n", "Assertion failed");
+    } else if (ISTYPE(item, obj_float_t) && !((long)AS_FLOAT(item)->f)) {
+        LUCI_DIE("%s\n", "Float assertion failed");
     } else if (ISTYPE(item, obj_string_t)) {
-        assert(strcmp("", AS_STRING(item)->s) != 0);
-    } else if (ISTYPE(item, obj_list_t)) {
-        assert(AS_LIST(item)->count); /* assert that it isn't empty? */
-    } else if (ISTYPE(item, obj_map_t)) {
-        assert(AS_MAP(item)->count);
+        if (strcmp("", AS_STRING(item)->s) == 0) {
+            LUCI_DIE("%s\n", "String assertion failed");
+        }
+    } else if (ISTYPE(item, obj_list_t) && (AS_LIST(item)->count == 0)) {
+        LUCI_DIE("%s\n", "List assertion failed");
+    } else if (ISTYPE(item, obj_map_t) && (AS_MAP(item)->count == 0)) {
+        LUCI_DIE("%s\n", "Map assertion failed");
+    } else if (ISTYPE(item, obj_file_t) && (AS_FILE(item)->ptr)) {
+        LUCI_DIE("%s\n", "File assertion failed");
     }
     return LuciNilObj;
 }
@@ -463,7 +467,7 @@ LuciObject *luci_assert(LuciObject **args, unsigned int c)
 LuciObject *luci_copy(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-        DIE("%s\n", "Missing argument to copy()");
+        LUCI_DIE("%s\n", "Missing argument to copy()");
     }
     LuciObject *o = args[0];
     return o->type->copy(o);
@@ -481,12 +485,12 @@ LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
 {
     LuciObject *ret = LuciNilObj;
     if (c < 1) {
-	DIE("%s", "Missing parameter to int()\n");
+	LUCI_DIE("%s", "Missing parameter to int()\n");
     }
     LuciObject *item = args[0];
 
     if (!item) {
-	DIE("%s", "Can't cast NULL to int\n");
+	LUCI_DIE("%s", "Can't cast NULL to int\n");
     }
 
     if (ISTYPE(item, obj_int_t)) {
@@ -497,11 +501,11 @@ LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
         long i;
         int scanned = sscanf(AS_STRING(item)->s, "%ld", &i);
         if (scanned <= 0 || scanned == EOF) {
-            DIE("%s", "Could not cast to int\n");
+            LUCI_DIE("%s", "Could not cast to int\n");
         }
         ret = LuciInt_new(i);
     } else {
-        DIE("Cannot cast type %s to type int\n", item->type->type_name);
+        LUCI_DIE("Cannot cast type %s to type int\n", item->type->type_name);
     }
     return ret;
 }
@@ -518,12 +522,12 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
 {
     LuciObject *ret = LuciNilObj;
     if (c < 1) {
-	DIE("%s", "Missing parameter to int()\n");
+	LUCI_DIE("%s", "Missing parameter to int()\n");
     }
     LuciObject *item = args[0];
 
     if (!item) {
-	DIE("%s", "Can't cast NULL to int\n");
+	LUCI_DIE("%s", "Can't cast NULL to int\n");
     }
 
     if (ISTYPE(item, obj_int_t)) {
@@ -534,11 +538,11 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
         double f;
         int scanned = sscanf(AS_STRING(item)->s, "%f", (float *)&f);
         if (scanned <= 0 || scanned == EOF) {
-            DIE("%s", "Could not cast to float\n");
+            LUCI_DIE("%s", "Could not cast to float\n");
         }
         ret = LuciFloat_new(f);
     } else {
-        DIE("Cannot cast type %s to type float\n", item->type->type_name);
+        LUCI_DIE("Cannot cast type %s to type float\n", item->type->type_name);
     }
 
     return ret;
@@ -554,12 +558,12 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
 LuciObject *luci_hex(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-        DIE("%s\n", "Missing param to hex()");
+        LUCI_DIE("%s\n", "Missing param to hex()");
     }
     LuciObject *hexint = args[0];
 
     if (!ISTYPE(hexint, obj_int_t)) {
-        DIE("Cannot get hex representation of an object of type %s\n",
+        LUCI_DIE("Cannot get hex representation of an object of type %s\n",
                 hexint->type->type_name);
     }
 
@@ -581,14 +585,14 @@ LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
     LuciObject *ret = LuciNilObj;
 
     if (c < 1) {
-	DIE("%s", "Missing parameter to str()\n");
+	LUCI_DIE("%s", "Missing parameter to str()\n");
     }
     /* grab the first parameter from the param list */
     LuciObject *item = args[0];
 
     ret = item->type->repr(item);
     if (ISTYPE(ret, obj_nil_t)) {
-        DIE("Cannot cast object of type %s to type string",
+        LUCI_DIE("Cannot cast object of type %s to type string",
                 item->type->type_name);
     }
     LUCI_DEBUG("str() returning %s\n", AS_STRING(ret)->s);
@@ -652,16 +656,16 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
     FILE *file = NULL;
 
     if (c < 2) {
-	DIE("%s", "Missing parameter to open()\n");
+	LUCI_DIE("%s", "Missing parameter to open()\n");
     }
 
     LuciObject *fname_obj = args[0];
     if (!ISTYPE(fname_obj, obj_string_t)) {
-	DIE("%s", "Parameter 1 to open must be a string\n");
+	LUCI_DIE("%s", "Parameter 1 to open must be a string\n");
     }
     LuciObject *mode_obj = args[1];
     if (!ISTYPE(mode_obj, obj_string_t)) {
-	DIE("%s", "Parameter 2 to open must be a string\n");
+	LUCI_DIE("%s", "Parameter 2 to open must be a string\n");
     }
 
     filename = AS_STRING(fname_obj)->s;
@@ -669,7 +673,7 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
 
     mode = get_file_mode(req_mode);
     if (mode < 0) {
-	DIE("%s\n", "Invalid mode to open()");
+	LUCI_DIE("%s\n", "Invalid mode to open()");
     }
 
     /*
@@ -691,7 +695,7 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
 
     if (!(file = fopen(filename, req_mode)))
     {
-	DIE("Could not open file %s\n", filename);
+	LUCI_DIE("Could not open file %s\n", filename);
     }
 
     LuciObject *ret = LuciFile_new(file, file_length, mode);
@@ -712,13 +716,13 @@ LuciObject *luci_fopen(LuciObject **args, unsigned int c)
 LuciObject *luci_fclose(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing parameter to close()\n");
+	LUCI_DIE("%s", "Missing parameter to close()\n");
     }
 
     LuciObject *fobj = args[0];
 
     if (!ISTYPE(fobj, obj_file_t)) {
-	DIE("%s", "Not a file object\n");
+	LUCI_DIE("%s", "Not a file object\n");
     }
 
     if (AS_FILE(fobj)->ptr) {
@@ -741,17 +745,17 @@ LuciObject *luci_fclose(LuciObject **args, unsigned int c)
 LuciObject *luci_fread(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing parameter to read()\n");
+	LUCI_DIE("%s", "Missing parameter to read()\n");
     }
 
     LuciObject *fobj = args[0];
 
     if (!ISTYPE(fobj, obj_file_t)) {
-	DIE("%s", "Not a file object\n");
+	LUCI_DIE("%s", "Not a file object\n");
     }
 
     if (AS_FILE(fobj)->mode != f_read_m) {
-	DIE("%s", "Can't open  It is opened for writing.\n");
+	LUCI_DIE("%s", "Can't open  It is opened for writing.\n");
     }
 
     /* seek to file start, we're gonna read the whole thing */
@@ -779,24 +783,24 @@ LuciObject *luci_fread(LuciObject **args, unsigned int c)
 LuciObject *luci_fwrite(LuciObject **args, unsigned int c)
 {
     if (c < 2) {
-	DIE("%s", "Missing parameter to write()\n");
+	LUCI_DIE("%s", "Missing parameter to write()\n");
     }
 
     /* grab the FILE parameter */
     LuciObject *fobj = args[0];
     if (!fobj || (!ISTYPE(fobj, obj_file_t))) {
-	DIE("%s", "Not a file object\n");
+	LUCI_DIE("%s", "Not a file object\n");
     }
 
     /* grab string parameter */
     LuciObject *text_obj = args[1];
     if (!text_obj || (!ISTYPE(text_obj, obj_string_t)) ) {
-	DIE("%s", "Not a string\n");
+	LUCI_DIE("%s", "Not a string\n");
     }
     char *text = AS_STRING(text_obj)->s;
 
     if (AS_FILE(fobj)->mode == f_read_m) {
-	DIE("%s", "Can't write to  It is opened for reading.\n");
+	LUCI_DIE("%s", "Can't write to  It is opened for reading.\n");
     }
 
     fwrite(text, sizeof(char), strlen(text), AS_FILE(fobj)->ptr);
@@ -837,18 +841,18 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
     LuciObject *first, *second, *third;
 
     if (c < 1) {
-	DIE("%s", "Missing parameter to range()\n");
+	LUCI_DIE("%s", "Missing parameter to range()\n");
     }
 
     first = args[0];
     if (!ISTYPE(first, obj_int_t)) {
-	DIE("%s", "First parameter to range must be integer\n");
+	LUCI_DIE("%s", "First parameter to range must be integer\n");
     }
 
     if (c > 1) {
 	second = args[1];
 	if (!ISTYPE(second, obj_int_t)) {
-	    DIE("%s", "Second parameter to range must be integer\n");
+	    LUCI_DIE("%s", "Second parameter to range must be integer\n");
 	}
 	start = AS_INT(first)->i;
 	end = AS_INT(second)->i;
@@ -857,7 +861,7 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
             /* Ternary range(X, Y, Z) call */
 	    third = args[2];
 	    if (!ISTYPE(third, obj_int_t)) {
-		DIE("%s", "Third parameter to range must be integer\n");
+		LUCI_DIE("%s", "Third parameter to range must be integer\n");
 	    }
 	    incr = AS_INT(third)->i;
 	}
@@ -911,13 +915,13 @@ LuciObject * luci_range(LuciObject **args, unsigned int c)
 LuciObject * luci_sum(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing parameter to sum()\n");
+	LUCI_DIE("%s", "Missing parameter to sum()\n");
     }
 
     LuciObject *list = args[0];
 
     if (!list || (!ISTYPE(list, obj_list_t))) {
-	DIE("%s", "Must specify a list to calculate sum\n");
+	LUCI_DIE("%s", "Must specify a list to calculate sum\n");
     }
 
     LuciObject *item;
@@ -926,7 +930,7 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
     for (i = 0; i < AS_LIST(list)->count; i++) {
 	item = AS_LIST(list)->items[i];
 	if (!item) {
-	    DIE("%s", "Can't calulate sum of list containing NULL value\n");
+	    LUCI_DIE("%s", "Can't calulate sum of list containing NULL value\n");
 	}
 
         if (ISTYPE(item, obj_int_t)) {
@@ -935,7 +939,7 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
             found_float = 1;
             sum += AS_FLOAT(item)->f;
         } else {
-            DIE("%s", "Can't calculate sum of list containing non-numeric value\n");
+            LUCI_DIE("%s", "Can't calculate sum of list containing non-numeric value\n");
 	}
     }
 
@@ -960,7 +964,7 @@ LuciObject * luci_sum(LuciObject **args, unsigned int c)
 LuciObject *luci_len(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing parameter to len()\n");
+	LUCI_DIE("%s", "Missing parameter to len()\n");
     }
 
     LuciObject *container = args[0];
@@ -977,13 +981,13 @@ LuciObject *luci_len(LuciObject **args, unsigned int c)
 LuciObject *luci_max(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing parameter to max()\n");
+	LUCI_DIE("%s", "Missing parameter to max()\n");
     }
 
     LuciObject *list = args[0];
 
     if (!list || (!ISTYPE(list, obj_list_t))) {
-	DIE("%s", "Must specify a list to calculate max\n");
+	LUCI_DIE("%s", "Must specify a list to calculate max\n");
     }
 
     LuciObject *item;
@@ -992,7 +996,7 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
     for (i = 0; i < AS_LIST(list)->count; i ++) {
 	item = AS_LIST(list)->items[i];
 	if (!item) {
-	    DIE("%s", "Can't calulate max of list containing NULL value\n");
+	    LUCI_DIE("%s", "Can't calulate max of list containing NULL value\n");
 	}
         if (ISTYPE(item, obj_int_t)) {
             if ( (double)AS_INT(item)->i > max) {
@@ -1004,7 +1008,7 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
                 max = AS_FLOAT(item)->f;
             }
         } else {
-            DIE("Can't find max of list containing an object of type %s\n",
+            LUCI_DIE("Can't find max of list containing an object of type %s\n",
                     item->type->type_name);
 	}
     }
@@ -1030,13 +1034,13 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
 LuciObject *luci_min(LuciObject **args, unsigned int c)
 {
     if (c < 1) {
-	DIE("%s", "Missing parameter to min()\n");
+	LUCI_DIE("%s", "Missing parameter to min()\n");
     }
 
     LuciObject *list = args[0];
 
     if (!list || (!ISTYPE(list, obj_list_t))) {
-	DIE("%s", "Must specify a list to calculate min\n");
+	LUCI_DIE("%s", "Must specify a list to calculate min\n");
     }
 
     LuciObject *item;
@@ -1046,7 +1050,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
     for (i = 0; i < AS_LIST(list)->count; i ++) {
 	item = AS_LIST(list)->items[i];
 	if (!item) {
-	    DIE("%s", "Can't calulate max of list containing NULL value\n");
+	    LUCI_DIE("%s", "Can't calulate max of list containing NULL value\n");
 	}
         if (ISTYPE(item, obj_int_t)) {
             if (i == 0) {
@@ -1064,7 +1068,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
                 min = AS_FLOAT(item)->f;
             }
         } else {
-            DIE("Can't find min of list containing an object of type %s\n",
+            LUCI_DIE("Can't find min of list containing an object of type %s\n",
                     item->type->type_name);
 	}
     }
@@ -1090,14 +1094,14 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
 LuciObject *luci_contains(LuciObject **args, unsigned int c)
 {
     if (c < 2) {
-	DIE("%s", "Missing parameter to contains()\n");
+	LUCI_DIE("%s", "Missing parameter to contains()\n");
     }
 
     LuciObject *cont = args[0];
     LuciObject *item = args[1];
 
     if (!cont) {
-	DIE("%s", "NULL container in contains()\n");
+	LUCI_DIE("%s", "NULL container in contains()\n");
     }
 
     return cont->type->contains(cont, item);

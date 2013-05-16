@@ -37,8 +37,11 @@
 #include <math.h>
 #include <assert.h>
 
+/** maximum allowed size of a raw string in a source file */
 #define MAX_STR_CONST       8192
+/** maximum # of digits needed to convert a long to a char* */
 #define MAX_INT_DIGITS      (CHAR_BIT * (sizeof(long) / 3) + 3)
+/** maximum # of digits needed to convert a double to a char* */
 #define MAX_FLOAT_DIGITS    (CHAR_BIT * (sizeof(double) / 3) + 3)
 
 
@@ -66,7 +69,7 @@ typedef uint32_t Instruction;
  * @param fmt C-style formatting
  * @param ... everything to print
  */
-#define DIE(fmt, ...) \
+#define LUCI_DIE(fmt, ...) \
     do { \
         fprintf(stderr, "FATAL: %s:%d:%s(): " fmt, \
                 __FILE__, __LINE__, __func__, __VA_ARGS__); \
@@ -89,7 +92,7 @@ typedef uint32_t Instruction;
  * @param fmt C-style formatting
  * @param ... everything to print
  */
-#define DIE(fmt, ...) \
+#define LUCI_DIE(fmt, ...) \
     do { \
         fprintf(stderr, "FATAL: " fmt, __VA_ARGS__); \
         exit(1); \
@@ -97,7 +100,7 @@ typedef uint32_t Instruction;
 
 #endif  /* DEBUG */
 
-/* Defined in gc.c !! */
+/* Defined in gc.c */
 void *alloc(size_t size);
 
 #endif /* LUCI_LUCI_H */

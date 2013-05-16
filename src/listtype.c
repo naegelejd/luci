@@ -23,7 +23,7 @@ LuciObjectType obj_list_t = {
     LuciList_asbool,
     LuciList_len,
     unary_nil,
-    unary_nil,
+    LuciObject_lgnot,
     unary_nil,
 
     LuciList_add,   /* add */
@@ -38,8 +38,8 @@ LuciObjectType obj_list_t = {
     binary_nil,     /* gt */
     binary_nil,     /* lte */
     binary_nil,     /* gte */
-    binary_nil,     /* lgor */
-    binary_nil,     /* lgand */
+    LuciObject_lgor,     /* lgor */
+    LuciObject_lgand,     /* lgand */
     binary_nil,     /* bwxor */
     binary_nil,     /* bwor */
     binary_nil,     /* bwand */
@@ -81,7 +81,7 @@ LuciObject *LuciList_new()
 static LuciObject *list_get_object(LuciObject *list, long index)
 {
     if (!list || (!ISTYPE(list, obj_list_t))) {
-	DIE("%s", "Can't iterate over non-list object\n");
+	LUCI_DIE("%s", "Can't iterate over non-list object\n");
     }
 
     LuciListObj *listobj = (LuciListObj *)list;
@@ -92,7 +92,7 @@ static LuciObject *list_get_object(LuciObject *list, long index)
     }
 
     if (index >= listobj->count) {
-	DIE("%s", "List index out of bounds\n");
+	LUCI_DIE("%s", "List index out of bounds\n");
     }
     LuciObject *item = listobj->items[index];
     return item->type->copy(item);
@@ -109,9 +109,9 @@ static LuciObject *list_get_object(LuciObject *list, long index)
 static LuciObject *list_set_object(LuciObject *list, LuciObject *item, long index)
 {
     if (!list || (!ISTYPE(list, obj_list_t))) {
-	DIE("%s", "Can't iterate over non-list object\n");
+	LUCI_DIE("%s", "Can't iterate over non-list object\n");
     } else if (!item) {
-	DIE("%s", "NULL item in list assignment\n");
+	LUCI_DIE("%s", "NULL item in list assignment\n");
     }
 
     LuciListObj *listobj = (LuciListObj *)list;
@@ -158,6 +158,12 @@ LuciObject* LuciList_deepcopy(LuciObject *orig)
     return copy;
 }
 
+/**
+ * Returns a boolean representation of a LuciListObj
+ *
+ * @param o LuciListObj
+ * @returns LuciIntObj (true if contains objects)
+ */
 LuciObject* LuciList_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_LIST(o)->count > 0);
@@ -196,7 +202,7 @@ LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
             LuciList_append(res, AS_LIST(b)->items[i]);
         }
     } else {
-        DIE("Cannot append object of type %s to a list\n",
+        LUCI_DIE("Cannot append object of type %s to a list\n",
                 b->type->type_name);
     }
 
@@ -220,7 +226,7 @@ LuciObject* LuciList_append(LuciObject *l, LuciObject *b)
 	list->items = realloc(list->items,
 		list->size * sizeof(*list->items));
         if (!list->items) {
-            DIE("%s", "Failed to dynamically expand list while appending\n");
+            LUCI_DIE("%s", "Failed to dynamically expand list while appending\n");
         }
 	LUCI_DEBUG("%s\n", "Reallocated space for list");
     }
@@ -241,7 +247,7 @@ LuciObject* LuciList_pop(LuciObject *l)
     LuciListObj *list = AS_LIST(l);
 
     if (list->count == 0) {
-        DIE("%s\n", "Can't pop empty list");
+        LUCI_DIE("%s\n", "Can't pop empty list");
     }
 
     list->count--;
@@ -252,7 +258,7 @@ LuciObject* LuciList_pop(LuciObject *l)
         list->items = realloc(list->items,
                 list->size * sizeof(*list->items));
         if (!list->items) {
-            DIE("%s\n", "Failed to dynamically shrink list while popping");
+            LUCI_DIE("%s\n", "Failed to dynamically shrink list while popping");
         }
         LUCI_DEBUG("%s\n", "Shrunk list");
     }
@@ -301,7 +307,7 @@ LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
         /* all objects match */
         return LuciInt_new(true);
     } else {
-        DIE("Cannot compare a list to an object of type %s\n",
+        LUCI_DIE("Cannot compare a list to an object of type %s\n",
                 b->type->type_name);
     }
     return LuciNilObj;
@@ -338,7 +344,7 @@ LuciObject *LuciList_contains(LuciObject *l, LuciObject *o)
 LuciObject *LuciList_next(LuciObject *l, LuciObject *idx)
 {
     if (!ISTYPE(idx, obj_int_t)) {
-        DIE("%s\n", "Argument to LuciList_next must be LuciIntObj");
+        LUCI_DIE("%s\n", "Argument to LuciList_next must be LuciIntObj");
     }
 
     if (AS_INT(idx)->i >= AS_LIST(l)->count) {
@@ -361,19 +367,27 @@ LuciObject* LuciList_cget(LuciObject *a, LuciObject *b)
     if (ISTYPE(b, obj_int_t)) {
         return list_get_object(a, AS_INT(b)->i);
     } else {
-        DIE("Cannot subscript a list with an object of type %s\n",
+        LUCI_DIE("Cannot subscript a list with an object of type %s\n",
                 b->type->type_name);
     }
 
     return LuciNilObj;
 }
 
+/**
+ * Puts the object c at index b in LuciListObj a
+ *
+ * @param a LuciListObj
+ * @param b index in a
+ * @param c object to insert
+ * @returns LuciNilObj
+ */
 LuciObject* LuciList_cput(LuciObject *a, LuciObject *b, LuciObject *c)
 {
     if (ISTYPE(b, obj_int_t)) {
         return list_set_object(a, c, AS_INT(b)->i);
     } else {
-        DIE("Cannot subscript a list with an object of type %s\n",
+        LUCI_DIE("Cannot subscript a list with an object of type %s\n",
                 b->type->type_name);
     }
 
@@ -398,6 +412,13 @@ void LuciList_print(LuciObject *in)
     printf("]");
 }
 
+/**
+ * Marks a LuciListObj as reachable
+ *
+ * marks each child object
+ *
+ * @param list LuciListObj
+ */
 void LuciList_mark(LuciObject *list)
 {
     int i;
@@ -408,6 +429,13 @@ void LuciList_mark(LuciObject *list)
     GC_MARK(list);
 }
 
+/**
+ * Finalizes a LuciListObj
+ *
+ * frees objects array
+ *
+ * @param list LuciListObj
+ */
 void LuciList_finalize(LuciObject *list)
 {
     free(AS_LIST(list)->items);

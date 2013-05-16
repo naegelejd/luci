@@ -12,17 +12,24 @@
 #include "luci.h"
 #include "lucitypes.h"
 
-#define POOL_LIST_COUNT  10     /**< number of pools available */
-#define INIT_POOL_LIST_SIZE 4
-#define POOL_SIZE  6144    /**< initial pool size in bytes */
+#define POOL_LIST_COUNT  10     /**< number of different pool lists available */
+#define INIT_POOL_LIST_SIZE 4   /**< initial size of pool list array */
+#define POOL_SIZE  6144         /**< initial pool size in bytes */
 
+/** marks an object as reachable via root objects */
 #define GC_MARK(obj)    (obj)->reachable = GC_REACHABLE;
 
+/** identifies whether garbage collection is necessary */
 extern bool GC_NECESSARY;
+/** defines an object as unreachable from GC roots */
 extern bool GC_UNREACHABLE;
+/** defines an object as reachable from GC roots */
 extern bool GC_REACHABLE;
+
+/** used only for initializing static LuciObjects */
 #define GC_STATIC 2
 
+/** Wraps gc_collect, calling it only if garbage collection is necessary */
 #define GC_COLLECT() do { if (GC_NECESSARY) gc_collect(); } while (0)
 
 /** Contains pointers to a byte array for use by the memory pool,
@@ -31,20 +38,22 @@ extern bool GC_REACHABLE;
 typedef struct pool_ {
     size_t each;        /**< size of each object in pool */
     char *next;         /**< pointer to next free object */
-    char bytes[POOL_SIZE];
-    bool full;
+    char bytes[POOL_SIZE];  /**< block of memory in which objects are stored */
+    bool full;          /**< whether the pool is full of objects */
 } GCPool;
 
+/** Dynamic list of memory pools for LuciObjects */
 typedef struct pool_list_ {
-    GCPool **pools;
-    unsigned int size;
-    unsigned int count;
+    GCPool **pools;     /**< array of pools */
+    unsigned int size;  /**< allocated size of pools array */
+    unsigned int count; /**< current # of pools */
 } GCPoolList;
 
+/** Dynamic list for root LuciObjects */
 typedef struct roots_list_ {
-    LuciObject ***roots;
-    unsigned int size;
-    unsigned int count;
+    LuciObject ***roots;    /**< array of root objects */
+    unsigned int size;      /**< allocated size of array */
+    unsigned int count;     /**< current # of roots */
 } GCRootList;
 
 int gc_init(void);

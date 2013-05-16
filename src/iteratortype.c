@@ -83,6 +83,12 @@ LuciObject *LuciIterator_copy(LuciObject *orig)
     return LuciIterator_new(iterobj->container, iterobj->step);
 }
 
+/**
+ * Returns a boolean representation of a LuciIteratorObj
+ *
+ * @param o LuciIteratorObj
+ * @returns true if the iterator can continue to iterate
+ */
 LuciObject* LuciIterator_asbool(LuciObject *o)
 {
     LuciObject *res = LuciNilObj;
@@ -112,7 +118,7 @@ LuciObject* LuciIterator_asbool(LuciObject *o)
 LuciObject *iterator_next_object(LuciObject *iterator)
 {
     if (!iterator || (!ISTYPE(iterator, obj_iterator_t))) {
-        DIE("%s", "Can't get next from non-iterator object\n");
+        LUCI_DIE("%s", "Can't get next from non-iterator object\n");
     }
 
     LuciIteratorObj *iter = (LuciIteratorObj *)iterator;
@@ -123,11 +129,23 @@ LuciObject *iterator_next_object(LuciObject *iterator)
     return next;
 }
 
+/**
+ * Prints a LuciIteratorObj to stdout
+ *
+ * @param in LuciIteratorObj
+ */
 void LuciIterator_print(LuciObject *in)
 {
     printf("<iterator>");
 }
 
+/**
+ * Marks a LuciIteratorObj as reachable
+ *
+ * marks the iterator's container
+ *
+ * @param in LuciIteratorObj
+ */
 void LuciIterator_mark(LuciObject *in)
 {
     LuciObject *idx = AS_ITERATOR(in)->idx;

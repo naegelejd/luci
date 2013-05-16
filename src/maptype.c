@@ -51,7 +51,7 @@ LuciObjectType obj_map_t = {
     LuciMap_len,
     unary_nil,
     unary_nil,
-    unary_nil,
+    LuciObject_lgnot,
 
     LuciMap_add,
     binary_nil,
@@ -65,8 +65,8 @@ LuciObjectType obj_map_t = {
     binary_nil,
     binary_nil,
     binary_nil,
-    binary_nil,
-    binary_nil,
+    LuciObject_lgor,
+    LuciObject_lgand,
     binary_nil,
     binary_nil,
     binary_nil,
@@ -149,6 +149,12 @@ LuciObject* LuciMap_deepcopy(LuciObject *orig)
     return copy;
 }
 
+/**
+ * Returns a boolean representation of a LuciMapObj
+ *
+ * @param o LuciMapObj
+ * @returns LuciIntObj (true if contains key/val pairs)
+ */
 LuciObject* LuciMap_asbool(LuciObject *o)
 {
     return LuciInt_new(AS_MAP(o)->count > 0);
@@ -182,7 +188,7 @@ LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
             }
         }
     } else {
-        DIE("Cannot append object of type %s to a map\n",
+        LUCI_DIE("Cannot append object of type %s to a map\n",
                 b->type->type_name);
     }
 
@@ -221,7 +227,7 @@ LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
         /* all key-value pairs are in both maps */
         return LuciInt_new(true);
     } else {
-        DIE("Cannot compare a map to an object of type %s\n",
+        LUCI_DIE("Cannot compare a map to an object of type %s\n",
                 b->type->type_name);
     }
     return LuciNilObj;
@@ -270,7 +276,7 @@ LuciObject *LuciMap_contains(LuciObject *m, LuciObject *o)
 LuciObject *LuciMap_next(LuciObject *m, LuciObject *idx)
 {
     if (!ISTYPE(idx, obj_int_t)) {
-        DIE("Argument to LuciMap_next must be LuciIntObj, not %s\n",
+        LUCI_DIE("Argument to LuciMap_next must be LuciIntObj, not %s\n",
                 idx->type->type_name);
     }
 
@@ -369,11 +375,11 @@ static LuciMapObj *map_resize(LuciMapObj *map, unsigned int new_size_idx)
 LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
 {
     if (!o) {
-        DIE("%s\n", "Map table not allocated");
+        LUCI_DIE("%s\n", "Map table not allocated");
     } else if (!key) {
-        DIE("%s\n", "Null key in map insertion");
+        LUCI_DIE("%s\n", "Null key in map insertion");
     } else if (!ISTYPE(key, obj_string_t)) {
-        DIE("Map key must be of type string, not %s\n",
+        LUCI_DIE("Map key must be of type string, not %s\n",
                 key->type->type_name);
     }
 
@@ -426,11 +432,11 @@ LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
 LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
 {
     if (!o) {
-        DIE("%s\n", "Map table not allocated");
+        LUCI_DIE("%s\n", "Map table not allocated");
     } else if (!key) {
-        DIE("%s\n", "Null key in map lookup");
+        LUCI_DIE("%s\n", "Null key in map lookup");
     } else if (!ISTYPE(key, obj_string_t)) {
-        DIE("Map key must be of type string, not %s\n",
+        LUCI_DIE("Map key must be of type string, not %s\n",
                 key->type->type_name);
     }
 
@@ -453,7 +459,7 @@ LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
             return map->vals[idx];
         }
     }
-    DIE("Missing key \"%s\" in map\n", AS_STRING(key)->s);
+    LUCI_DIE("Missing key \"%s\" in map\n", AS_STRING(key)->s);
     return NULL;
 }
 
@@ -472,11 +478,11 @@ LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
 LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
 {
     if (!o) {
-        DIE("%s\n", "Map table not allocated");
+        LUCI_DIE("%s\n", "Map table not allocated");
     } else if (!key) {
-        DIE("%s\n", "Null key in map remove");
+        LUCI_DIE("%s\n", "Null key in map remove");
     } else if (!ISTYPE(key, obj_string_t)) {
-        DIE("Map key must be of type string, not %s\n",
+        LUCI_DIE("Map key must be of type string, not %s\n",
                 key->type->type_name);
     }
 
@@ -564,6 +570,13 @@ void LuciMap_print(LuciObject *in)
     printf("}");
 }
 
+/**
+ * Marks a LuciMapObj as reachable
+ *
+ * marks all keys and values
+ *
+ * @param in LuciMapObj
+ */
 void LuciMap_mark(LuciObject *in)
 {
     LuciMapObj *map = AS_MAP(in);
@@ -579,6 +592,13 @@ void LuciMap_mark(LuciObject *in)
     GC_MARK(in);
 }
 
+/**
+ * Finalizes a LuciMapObj
+ *
+ * frees keys and values arrays
+ *
+ * @param in LuciMapObj
+ */
 void LuciMap_finalize(LuciObject *in)
 {
     free(AS_MAP(in)->keys);

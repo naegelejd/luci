@@ -31,14 +31,13 @@ extern int yydebug;
 /** Current version of Luci (for printing to stdout) */
 static const char * const version_string = "Luci v0.2";
 
-/**< Luci's run-time modes of operation */
 enum {
     MODE_EXE,
     MODE_PRINT,
     MODE_GRAPH,
     MODE_SERIAL,
     MODE_SYNTAX
-} main_modes;
+} main_modes;   /**< Luci's run-time modes of operation */
 
 int luci_main(int argc, char *argv[]);
 int luci_interactive(void);
@@ -114,7 +113,7 @@ int luci_main(int argc, char *argv[])
         } else if (i == (argc - 1)) {
             infilename = arg;
         } else {
-            DIE("Invalid option: %s\n", arg);
+            LUCI_DIE("Invalid option: %s\n", arg);
         }
     }
 
@@ -123,7 +122,7 @@ int luci_main(int argc, char *argv[])
         yyin = stdin;
         return luci_interactive();
     } else if (!(yyin = fopen(infilename, "r"))) {
-        DIE("Can't read from file %s\n", infilename);
+        LUCI_DIE("Can't read from file %s\n", infilename);
     }
     LUCI_DEBUG("Reading from %s\n", infilename? infilename : "stdin");
 
@@ -168,7 +167,7 @@ int luci_main(int argc, char *argv[])
             serialize_program(gf);
             break;
         default:
-            DIE("%s\n", "Invalid mode?!");
+            LUCI_DIE("%s\n", "Invalid mode?!");
     }
 
     /* cleanup systems */
@@ -184,6 +183,8 @@ int luci_main(int argc, char *argv[])
  * Input is read from stdin, parsed, compiled, then executed.
  * The interpreter's state is maintained between successive
  * user inputs to stdin.
+ *
+ * returns EXIT_SUCCESS or EXIT_FAILURE
  */
 int luci_interactive(void)
 {

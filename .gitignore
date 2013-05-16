@@ -37,6 +37,8 @@ tags
 *.png
 *.jpg
 
+*.pdf
+
 # Directories
 bin/
 build/*
@@ -44,4 +46,3 @@ obj/
 doc/
 trash/
 junk/
-

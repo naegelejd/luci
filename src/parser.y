@@ -56,10 +56,6 @@ extern int yylex();
 %token PASS
 %token NIL
 
-%right ASSIGN
-%right LGNOT BWNOT
-%right UPLUS UMINUS ULGNOT UBWNOT
-
 %left LGOR LGAND
 %left BWOR BWXOR BWAND
 %left EQUAL NOTEQ
@@ -67,9 +63,13 @@ extern int yylex();
 %left PLUS MINUS
 %left TIMES DIVIDE MOD
 %left POW
+%right ASSIGN
+%right LGNOT BWNOT
+%right UPLUS UMINUS ULGNOT UBWNOT
 %left LPAREN RPAREN
 %left LSQUARE RSQUARE
 %left LBRACK RBRACK
+
 
 %%
 
@@ -249,7 +249,7 @@ expr:
 
 void yyerror(const char *msg)
 {
-    DIE("(Syntax) %s @ line #%d, col #%d\n",
+    LUCI_DIE("(Syntax) %s @ line #%d, col #%d\n",
             msg, get_line_num(), get_last_col_num());
 }
 

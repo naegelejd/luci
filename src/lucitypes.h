@@ -73,8 +73,8 @@ typedef struct LuciObjectType
 
     LuciObject* (*cput)(LuciObject *, LuciObject *, LuciObject *); /**< put item */
     void (*print)(LuciObject *);        /**< print to stdout */
-    void (*mark)(LuciObject *);
-    void (*finalize)(LuciObject *);
+    void (*mark)(LuciObject *);         /**< mark as reachable */
+    void (*finalize)(LuciObject *);     /**< clean up dependencies */
     unsigned int (*hash0)(LuciObject *);    /**< object hash 1 */
     unsigned int (*hash1)(LuciObject *);    /**< object hash 2 */
 } LuciObjectType;
@@ -86,6 +86,10 @@ typedef struct LuciObjectType
 /** returns 1 if two objects have the same type, 0 otherwise */
 #define TYPES_MATCH(left, right) ((left)->type == (right)->type)
 
+
+LuciObject *LuciObject_lgand(LuciObject *, LuciObject *);
+LuciObject *LuciObject_lgor(LuciObject *, LuciObject *);
+LuciObject *LuciObject_lgnot(LuciObject *);
 
 void unary_void(LuciObject *);
 void binary_void(LuciObject *, LuciObject *);
@@ -107,6 +111,8 @@ LuciObject* ternary_nil(LuciObject *, LuciObject *, LuciObject *);
 
 extern LuciObjectType obj_nil_t;
 extern LuciObject LuciNilInstance;
+
+/** allows "LuciNilObj" to be used as a LuciObject* */
 #define LuciNilObj &LuciNilInstance
 
 #endif

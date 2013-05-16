@@ -38,7 +38,7 @@ void lmalloc_init()
 
     ARENA.ptr = calloc(LUCI_ARENA_INIT_SIZE, 1);
     if (!ARENA.ptr) {
-        DIE("%s\n", "Failed to initialize lnmalloc arena.");
+        LUCI_DIE("%s\n", "Failed to initialize lnmalloc arena.");
     }
     ARENA.bytes = LUCI_ARENA_INIT_SIZE;
 
@@ -130,13 +130,13 @@ void * lmalloc(size_t size)
     ARENA.bytes <<= 1;
     ARENA.ptr = realloc(ARENA.ptr, ARENA.bytes);
     if (!ARENA.ptr) {
-        DIE("%s\n", "Failed to reallocate memory for lmalloc arena");
+        LUCI_DIE("%s\n", "Failed to reallocate memory for lmalloc arena");
     }
     */
 
     /* no available blocks found */
     /* LUCI_DEBUG("%s\n", "Error! lmalloc returning NULL"); */
-    DIE("%s", "lmalloc out of memory\n");
+    LUCI_DIE("%s", "lmalloc out of memory\n");
     return NULL;
 }
 

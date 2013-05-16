@@ -34,31 +34,45 @@
 void eval(LuciObject *frame)
 {
 
-/* Using __GNUC__ for now, which is defined by GCC/Clang */
+/* If GNU extensions are available... defined by GCC/Clang */
 #ifdef __GNUC__
 
 #include "dispatch.h"  /* include static jump table */
 
+/** initial dispatch */
 #define INTERP_INIT()   DISPATCH
+/** no op */
 #define SWITCH
+/** no op */
 #define DEFAULT
+/** label (as value) */
 #define HANDLE(op)      do_##op: { GC_COLLECT(); a = GETARG; }
+/** computed goto */
 #define DISPATCH        goto *dispatch_table[GETOPCODE]
 
 #else /* __GNUC__ */
 
+/** no op */
 #define INTERP_INIT()
+/** switch statement */
 #define SWITCH          switch(GETOPCODE)
+/** default case */
 #define DEFAULT         default: goto done_eval;
+/** case statement for opcode */
 #define HANDLE(op)      case (op): { GC_COLLECT(); a = GETARG; }
+/** break statement */
 #define DISPATCH        break
 
 #endif /* __GNUC__ */
 /**************************************************************/
 
+/** increment instruction pointer */
 #define FETCH(c)        (ip += (c))
+/** dereference instruction pointer */
 #define READ            (*ip)
+/** get opcode from instruction */
 #define GETOPCODE       OPCODE(READ)
+/** get argument from instruction */
 #define GETARG          OPARG(READ)
 
     LuciObject *stack = LuciList_new();
@@ -367,9 +381,9 @@ void eval(LuciObject *frame)
 
                 /* check that the # of arguments equals the # of parameters */
                 if (a < AS_FUNCTION(frame)->nparams) {
-                    DIE("%s", "Missing arguments to function.\n");
+                    LUCI_DIE("%s", "Missing arguments to function.\n");
                 } else if (a > AS_FUNCTION(frame)->nparams) {
-                    DIE("%s", "Too many arguments to function.\n");
+                    LUCI_DIE("%s", "Too many arguments to function.\n");
                 }
 
                 /* pop arguments and push COPIES into locals */
@@ -391,9 +405,9 @@ void eval(LuciObject *frame)
             /* call library function */
             else if (ISTYPE(x, obj_libfunc_t)) {
                 if (a >= MAX_LIBFUNC_ARGS) {
-                    DIE("%s\n", "Too many arguments to function");
+                    LUCI_DIE("%s\n", "Too many arguments to function");
                 } else if (a < AS_LIBFUNC(x)->min_args) {
-                    DIE("%s\n", "Missing arguments to function");
+                    LUCI_DIE("%s\n", "Missing arguments to function");
                 }
 
                 /* pop args and push into args array */
@@ -408,7 +422,7 @@ void eval(LuciObject *frame)
                 LuciList_push(stack, z);    /* always push return val */
             }
             else {
-                DIE("%s", "Can't call something that isn't a function\n");
+                LUCI_DIE("%s", "Can't call something that isn't a function\n");
             }
         }
         FETCH(1);
@@ -541,7 +555,7 @@ void eval(LuciObject *frame)
         DISPATCH;
 
         DEFAULT
-            DIE("Invalid opcode: %d\n", GETOPCODE);
+            LUCI_DIE("Invalid opcode: %d\n", GETOPCODE);
         }
     }
 

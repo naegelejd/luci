@@ -20,8 +20,7 @@ extern FILE *yyin;
 /** defined in generated parser */
 extern int yyparse();
 /** defined in lexer.l */
-extern void luci_start_interactive(void);
-
+extern void yy_luci_init(bool);
 
 #ifdef DEBUG
 /** defined in generated parser */
@@ -126,6 +125,9 @@ int luci_main(int argc, char *argv[])
     }
     LUCI_DEBUG("Reading from %s\n", infilename? infilename : "stdin");
 
+    /* initialize the scanner in non-interactive mode */
+    yy_luci_init(false);
+
     /* parse yyin and build and AST */
     AstNode *root_node = NULL;
     yyparse(&root_node);
@@ -188,6 +190,8 @@ int luci_main(int argc, char *argv[])
  */
 int luci_interactive(void)
 {
+    yy_luci_init(true);
+
     printf("\nWelcome to Interactive %s\n\n", version_string);
 
     /* initialize systems */
@@ -199,15 +203,20 @@ int luci_interactive(void)
 
     while (true) {
         /* set up interactive prompt in the lexer */
-        luci_start_interactive();
+        putc('$', stdout);
+        putc(' ', stdout);
 
         AstNode *root_node = NULL;
         /* parse yyin and build and AST */
         yyparse(&root_node);
 
         if (!root_node) {
-            printf("Goodbye\n");
-            break;
+            /* didn't parse anything... is it any empty line or EOF? */
+            if (feof(yyin)) {
+                break;
+            } else {
+                continue;
+            }
         }
 
         /* Compile the AST */
@@ -220,13 +229,10 @@ int luci_interactive(void)
         gf = LuciFunction_new();
         convert_to_function(cs, gf, 0);
 
-        /* print a spacing between input/output */
-        fprintf(stdout, "%s", "  \n\n");
-
         /* Execute the bytecode */
         eval(gf);
 
-        /* print one more line of spacing */
+        /* print one line of spacing */
         fprintf(stdout, "%s", "\n");
 
         /* remove the EOF flag */
@@ -234,6 +240,8 @@ int luci_interactive(void)
         /* restart the token scanner */
         yyrestart(yyin);
     }
+
+    printf("Goodbye\n");
 
     if (cs != NULL) {
         compile_state_delete(cs);

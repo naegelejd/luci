@@ -135,17 +135,14 @@ params:
     ;
 
 call:
-        expr LPAREN list_items RPAREN
-                { $$ = make_func_call($1, $3); }
-    /*
         id LPAREN list_items RPAREN
                 { $$ = make_func_call($1, $3); }
     |   container_access LPAREN list_items RPAREN
                 { $$ = make_func_call($1, $3); }
-    */
     ;
 
 map:
+        /* LTHAN map_items GTHAN     { $$ = $2; } */
         LBRACK map_items RBRACK     { $$ = $2; }
     ;
 
@@ -249,7 +246,7 @@ expr:
 
 void yyerror(const char *msg)
 {
-    LUCI_DIE("(Syntax) %s @ line #%d, col #%d\n",
+    printf("%s @ line #%d, col #%d\n",
             msg, get_line_num(), get_last_col_num());
 }
 

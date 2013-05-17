@@ -14,11 +14,12 @@
 
 extern void yyerror(const char *msg);
 
-static int line = 1;
-static int col = 1;
-static int interactive = 0;
+static bool INTERACTIVE;
+static int line;
+static int col;
+static int level;
 
-void luci_start_interactive(void);
+void yy_luci_init(bool);
 void newline(void);
 void comment(void);
 int get_line_num(void);
@@ -110,18 +111,13 @@ WS          [ \t\f\r]+
                     return ID;
                 }
 
-^\n|{WS}+\n     { newline(); /* ignore empty lines */ }
-\n              { newline(); /* ignore empty lines */ }
-#.*\n           { newline(); /* ignore one-line comments */ }
-{WS}+           { col += yyleng; } /* ignore whitespace/semicolon */
-
-"{"     { col++; return LBRACK; }
-"}"     { col++; return RBRACK; }
+"{"     { col++; level++; return LBRACK; }
+"}"     { col++; level--; return RBRACK; }
 ";"     { col++; return SEMICOLON; }
 ":"     { col++; return COLON; }
 ","     { col++; return COMMA; }
-"["     { col++; return LSQUARE; }
-"]"     { col++; return RSQUARE; }
+"["     { col++; level++; return LSQUARE; }
+"]"     { col++; level--; return RSQUARE; }
 
 "-"     { col++; return MINUS; }
 "+"     { col++; return PLUS; }
@@ -141,8 +137,8 @@ WS          [ \t\f\r]+
 "||"    { col += 2; return LGOR; }
 "&&"    { col += 2; return LGAND; }
 
-"("     { col++; return LPAREN; }
-")"     { col++; return RPAREN; }
+"("     { col++; level++; return LPAREN; }
+")"     { col++; level--; return RPAREN; }
 "="     { col++; return ASSIGN; }
 
 "^"     { col++; return BWXOR; }
@@ -150,35 +146,47 @@ WS          [ \t\f\r]+
 "&"     { col++; return BWAND; }
 "~"     { col++; return BWNOT; }
 
-"$ "    { ECHO; /* interactive mode */ }
 
-.       { col += yyleng; /* ignore invalid chars */ }
+\n              {
+                    if (INTERACTIVE) {
+                        if (level > 0) {
+                            line++;
+                            putc(' ', stdout);
+                            putc(' ', stdout);
+                            col = 3;
+                        } else {
+                            return 0;
+                        }
+                    }
+                    else {
+                        line++;
+                        col = 1;
+                    }
+                }
 
-<<EOF>> {
-            yyterminate();
-        }
+#.*\n           { line++; col = 1; /* ignore one-line comments */ }
+
+{WS}+           { col += yyleng; } /* ignore whitespace/semicolon */
+
+^"$ "   { if (INTERACTIVE) ECHO; /* interactive prompt */ }
+
+.       { yyerror("Invalid character"); }
+
+<<EOF>> { yyterminate(); }
 
 
 %%
 
 
-void luci_start_interactive(void)
+void yy_luci_init(bool interactive)
 {
-    interactive = 1;
-    yy_set_interactive(1);
-    putc('$', stdout);
-    putc(' ', stdout);
     line = 1;
     col = 1;
-}
+    level = 0;
 
-void newline(void)
-{
-    line++;
-    col = 1;
     if (interactive) {
-        unput(' ');
-        unput('$');
+        INTERACTIVE = true;
+        yy_set_interactive(1);
     }
 }
 

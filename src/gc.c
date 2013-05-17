@@ -214,7 +214,7 @@ int gc_collect(void)
         }
     }
 
-skip_sweep:
+/* skip_sweep: */
 
     /* swap the numeric value of the unreachable flag */
     GC_UNREACHABLE ^= GC_REACHABLE;

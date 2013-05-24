@@ -21,7 +21,7 @@ set(LUCI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(LUCI_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 # cmake Luci itself
-add_subdirectory(${LUCI_SOURCE_DIR} luci)
+add_subdirectory(${LUCI_SOURCE_DIR} bin)
 
 # cmake some tests
 enable_testing()

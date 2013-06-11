@@ -36,6 +36,7 @@
 #include <limits.h>
 #include <math.h>
 #include <assert.h>
+#include <setjmp.h>
 
 /** maximum allowed size of a raw string in a source file */
 #define MAX_STR_CONST       8192
@@ -47,6 +48,9 @@
 
 /** an instruction is a 32-bit unsigned int */
 typedef uint32_t Instruction;
+
+
+extern jmp_buf LUCI_EXCEPTION_BUF;
 
 
 #ifdef DEBUG

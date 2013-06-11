@@ -379,6 +379,9 @@ LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
     } else if (!key) {
         LUCI_DIE("%s\n", "Null key in map insertion");
     } else if (!ISTYPE(key, obj_string_t)) {
+        printf("Map key must be of type string, not %s\n",
+                key->type->type_name);
+        longjmp(LUCI_EXCEPTION_BUF, 42);
         LUCI_DIE("Map key must be of type string, not %s\n",
                 key->type->type_name);
     }

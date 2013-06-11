@@ -99,14 +99,3 @@ statements, i.e. `break`, `continue`, `return`.
   function parameters.
 - Implement user-defined functions (barely)
 - Track line numbers in abstract syntax tree for more helpful Runtime Error messages.
-
-
-### References
-
-- [Immensely helpful](http://stackoverflow.com/a/2644949)
-- [Just as useful](http://gnuu.org/2009/09/18/writing-your-own-toy-compiler/)
-- [One of my questions](http://stackoverflow.com/q/13094001/1689220)
-- [Implementation of Lua (PDF)](http://www.lua.org/doc/jucs05.pdf)
-- [Interpreter implementation options](http://realityforge.org/code/virtual-machines/2011/05/19/interpreters.html)
-- [Python's Innards](http://tech.blog.aknin.name/2010/04/02/pythons-innards-introduction/)
-- [Bit Twiddling Hacks](http://graphics.stanford.edu/~seander/bithacks.html)

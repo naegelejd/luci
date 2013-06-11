@@ -27,6 +27,8 @@ extern void yy_luci_init(bool);
 extern int yydebug;
 #endif
 
+jmp_buf LUCI_EXCEPTION_BUF;
+
 /** Current version of Luci (for printing to stdout) */
 static const char * const version_string = "Luci v0.2";
 
@@ -155,21 +157,23 @@ int luci_main(int argc, char *argv[])
 
     compile_state_delete(cs);
 
-    switch (mode) {
-        case MODE_EXE:
-            /* Execute the bytecode */
-            eval(gf);
-            break;
-        case MODE_PRINT:
-            /* Print the bytecode */
-            print_instructions(gf);
-            break;
-        case MODE_SERIAL:
-            /* Serialize program */
-            serialize_program(gf);
-            break;
-        default:
-            LUCI_DIE("%s\n", "Invalid mode?!");
+    if (setjmp(LUCI_EXCEPTION_BUF) == 0) {
+        switch (mode) {
+            case MODE_EXE:
+                /* Execute the bytecode */
+                eval(gf);
+                break;
+            case MODE_PRINT:
+                /* Print the bytecode */
+                print_instructions(gf);
+                break;
+            case MODE_SERIAL:
+                /* Serialize program */
+                serialize_program(gf);
+                break;
+            default:
+                LUCI_DIE("%s\n", "Invalid mode?!");
+        }
     }
 
     /* cleanup systems */
@@ -229,8 +233,12 @@ int luci_interactive(void)
         gf = LuciFunction_new();
         convert_to_function(cs, gf, 0);
 
-        /* Execute the bytecode */
-        eval(gf);
+        if (setjmp(LUCI_EXCEPTION_BUF) == 0) {
+
+            /* Execute the bytecode */
+            eval(gf);
+
+        }
 
         /* print one line of spacing */
         fprintf(stdout, "%s", "\n");

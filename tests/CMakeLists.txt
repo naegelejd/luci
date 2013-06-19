@@ -1,4 +1,4 @@
-set(TEST_EXE ${CMAKE_BINARY_DIR}/luci/luci)
+set(TEST_EXE ${LUCI_EXECUTABLE})
 add_test(assert ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/assert.lx)
 add_test(ints ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/ints.lx)
 add_test(floats ${TEST_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/floats.lx)

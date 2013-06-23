@@ -13,8 +13,8 @@
 #include "compile.h"
 #include "interpret.h"
 
-/** defined in generated scanner */
-extern void yyrestart();
+/** defined in scanner */
+extern void yy_luci_reset();
 /** defined in generated parser */
 extern FILE *yyin;
 /** defined in generated parser */
@@ -245,8 +245,8 @@ int luci_interactive(void)
 
         /* remove the EOF flag */
         clearerr(yyin);
-        /* restart the token scanner */
-        yyrestart(yyin);
+        /* reset scanner */
+        yy_luci_reset();
     }
 
     printf("Goodbye\n");

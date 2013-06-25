@@ -13,8 +13,8 @@ LuciObjectType obj_file_t = {
     "file",
     sizeof(LuciFileObj),
 
-    unary_nil,
-    unary_nil,
+    LuciFile_copy,
+    LuciFile_copy,
     unary_nil,
     LuciFile_asbool,
     unary_nil,
@@ -46,7 +46,11 @@ LuciObjectType obj_file_t = {
 
     ternary_nil,
 
-    LuciFile_print
+    LuciFile_print,
+    LuciFile_mark,
+    LuciFile_finalize,
+    NULL,       /* hash0 */
+    NULL        /* hash1 */
 };
 
 /**
@@ -64,6 +68,19 @@ LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode)
     o->mode = mode;
     o->size = size;
     return (LuciObject *)o;
+}
+
+/**
+ * Copies a LuciFileObj
+ *
+ * @returns copy of LuciFileObj
+ */
+LuciObject* LuciFile_copy(LuciObject *o)
+{
+    LuciFileObj *f = AS_FILE(o);
+
+    LuciObject *res = LuciFile_new(f->ptr, f->size, f->mode);
+    return res;
 }
 
 /**
@@ -107,3 +124,26 @@ void LuciFile_print(LuciObject *in)
     }
 }
 
+/**
+ * Marks a LuciFileObj as reachable
+ *
+ * @param fobj LuciFileObj
+ */
+void LuciFile_mark(LuciObject *fobj)
+{
+    GC_MARK(fobj);
+}
+
+/**
+ * Finalizes a LuciFileObj
+ *
+ * SHOULD close the FILE pointer, but as it stands,
+ * a copied LuciFileObj points to the same FILE, so
+ * it can't be closed unless it's references are counted
+ *
+ * @param fobj LuciFileObj
+ */
+void LuciFile_finalize(LuciObject *fobj)
+{
+    /* fclose(AS_FILE(fobj)->ptr); */
+}

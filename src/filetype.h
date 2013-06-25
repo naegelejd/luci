@@ -27,9 +27,12 @@ typedef struct LuciFile_ {
 /** casts LuciObject o to a LuciFileObj */
 #define AS_FILE(o)      ((LuciFileObj *)(o))
 
-LuciObject *LuciFile_new(FILE *fp, long size, file_mode mode);
+LuciObject* LuciFile_new(FILE *fp, long size, file_mode mode);
+LuciObject* LuciFile_copy(LuciObject *);
 LuciObject* LuciFile_asbool(LuciObject *);
 void LuciFile_print(LuciObject *);
+void LuciFile_mark(LuciObject *);
+void LuciFile_finalize(LuciObject *);
 
 
 #endif

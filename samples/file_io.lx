@@ -1,19 +1,22 @@
-# simple code demonstrating variable-parameter functions
-#   as well as reading/writing files
+# simple code demonstrating reading/writing files
 
-print("hello", "world", "goodbye all");
-
-f = open("data/test1.txt", "r");
+f = open("nested.lx", "r");
 contents1 = read(f);
 contents2 = read(f);
 
-print(contents1);
-print(contents2);
+print(contents1, "\n", contents2);
 print(type(f));
 print(type(read(f)));
 
 close(f);
 
-f = open("data/test2.txt", "a");
+write(stdout, "*" * 8 + "\n");
+
+f = open("/tmp/abcde.txt", "a");
 write(f, contents1);
 close(f);
+
+f = open("file_io.lx", "r");
+lines = readlines(f);
+close(f);
+print(len(lines));

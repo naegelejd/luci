@@ -820,7 +820,9 @@ LuciObject *luci_flines(LuciObject **args, unsigned int c)
 {
     LuciObject *list = LuciList_new();
     LuciObject *line = luci_readline(args, c);
-    while (line) {
+
+    /* read lines until either NULL or LuciNilObj returned */
+    while (line && !ISTYPE(line, obj_nil_t)) {
 	LuciList_append(list, line);
 	line = luci_readline(args, c);
     }

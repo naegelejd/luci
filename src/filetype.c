@@ -47,10 +47,10 @@ LuciObjectType obj_file_t = {
     ternary_nil,
 
     LuciFile_print,
-    /* LuciFile_mark, */
-    /* LuciFile_finalize, */
-    NULL,
-    NULL
+    LuciFile_mark,
+    LuciFile_finalize,
+    NULL,       /* hash0 */
+    NULL        /* hash1 */
 };
 
 /**

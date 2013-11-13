@@ -34,8 +34,8 @@ LuciObject *LuciFile_repr(LuciObject *o);
 LuciObject* LuciFile_asbool(LuciObject *);
 LuciObject* LuciFile_len(LuciObject *o);
 void LuciFile_print(LuciObject *);
-void LuciFile_mark(LuciObject *in);
-void LuciFile_finalize(LuciObject *in);
+void LuciFile_mark(LuciObject *);
+void LuciFile_finalize(LuciObject *);
 
 
 #endif

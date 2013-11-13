@@ -19,6 +19,7 @@ static int line;
 static int col;
 static int level;
 
+void yy_luci_reset(void);
 void yy_luci_init(bool);
 void newline(void);
 void comment(void);
@@ -177,12 +178,18 @@ WS          [ \t\f\r]+
 
 %%
 
-
-void yy_luci_init(bool interactive)
+void yy_luci_reset(void)
 {
     line = 1;
     col = 1;
     level = 0;
+    yyrestart(yyin);
+    BEGIN(INITIAL);
+}
+
+void yy_luci_init(bool interactive)
+{
+    yy_luci_reset();
 
     if (interactive) {
         INTERACTIVE = true;

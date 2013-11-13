@@ -1,4 +1,6 @@
-set(LUCI_EXECUTABLE luci)
+set(LUCI_EXE_NAME luci)
+set(LUCI_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/${LUCI_EXE_NAME}"
+    CACHE FILEPATH "Path to Luci executable target")
 
 find_package(BISON)
 find_package(FLEX)
@@ -54,16 +56,16 @@ set(LUCI_HEADER_FILES
 )
 
 add_executable(
-    ${LUCI_EXECUTABLE}
+    ${LUCI_EXE_NAME}
     ${BISON_myparser_OUTPUTS}
     ${FLEX_myscanner_OUTPUTS}
     ${LUCI_SOURCE_FILES}
 )
 
 # link only against math library
-target_link_libraries(${LUCI_EXECUTABLE} m)
+target_link_libraries(${LUCI_EXE_NAME} m)
 
-install(TARGETS ${LUCI_EXECUTABLE} DESTINATION bin)
+install(TARGETS ${LUCI_EXE_NAME} DESTINATION bin)
 
 set_source_files_properties(tags PROPERTIES GENERATED true)
 add_custom_command(

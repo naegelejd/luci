@@ -100,6 +100,7 @@ statement:
     |   BREAK SEMICOLON             { $$ = make_break(); }
     |   CONTINUE SEMICOLON          { $$ = make_continue(); }
     |   PASS SEMICOLON              { $$ = make_pass(); }
+    |   SEMICOLON                   { $$ = NULL; }
     ;
 
 while_loop:
@@ -247,9 +248,14 @@ expr:
 
 %%
 
+extern void yy_luci_reset();
+extern void yyrestart();
+extern FILE *yyin;
+
 void yyerror(const char *msg)
 {
     printf("%s @ line #%d, col #%d\n",
             msg, get_line_num(), get_last_col_num());
+    yy_luci_reset();
 }
 

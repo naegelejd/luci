@@ -364,6 +364,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 	    read_from = AS_FILE(item)->ptr;
 	}
 	else {
+            LUCI_DIE("args[0]: %p, type: %s\n", args[0], item->type->type_name);
 	    LUCI_DIE("%s", "Can't readline from non-file object\n");
 	}
     }
@@ -376,7 +377,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
 	ch = fgetc(read_from);
 
 	if (len >= lenmax) {
-	    lenmax = lenmax << 1;
+	    lenmax *= 2;
 	    if ((input = realloc(input, lenmax * sizeof(char))) == NULL) {
 		LUCI_DIE("%s", "Failed to allocate buffer for reading\n");
 	    }
@@ -820,9 +821,9 @@ LuciObject *luci_flines(LuciObject **args, unsigned int c)
 {
     LuciObject *list = LuciList_new();
     LuciObject *line = luci_readline(args, c);
-    while (line) {
+    while (line != NULL && line != LuciNilObj) {
 	LuciList_append(list, line);
-	line = luci_readline(args, c);
+        line = luci_readline(args, c);
     }
 
     return list;

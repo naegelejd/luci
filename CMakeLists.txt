@@ -8,7 +8,7 @@ set(CMAKE_BUILD_TYPE Debug)
 add_definitions(-Wall)# -Weverything -pedantic)
 
 # Uncomment the next line to enable lots of debug output during runtime
-#add_definitions(-DNDEBUG -DDEBUG)
+# add_definitions(-DDEBUG)
 
 if(CMAKE_COMPILER_IS_GNUCC)
     # for address-of-label and indirect-goto GNU extensions

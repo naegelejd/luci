@@ -52,11 +52,10 @@ static void help()
     puts("Usage: luci [options] filename\n");
     puts("Options:");
     puts("    -h\t\tShow help and exit");
-    puts("    -v\t\tVerbose mode");
     puts("    -n\t\tCheck syntax and don't execute");
     puts("    -g\t\tPrint a Graphviz dot spec for the parsed AST");
     puts("    -p\t\tShow the compiled bytecode source");
-    puts("    -c\t\tCompile the source to a .lxc file");
+    puts("    -c\t\tCompile the source to a .lxc file (i.e. do nothing)");
     printf("\n%s\n", version_string);
 
     puts("\nSizes:");
@@ -109,6 +108,8 @@ int luci_main(int argc, char *argv[])
             mode = MODE_PRINT;
         } else if (strcmp(arg, "-c") == 0) {
             mode = MODE_SERIAL;
+            printf("%s\n", "This option is not yet supported");
+            return EXIT_SUCCESS;
         } else if (strcmp(arg, "-n") == 0) {
             mode = MODE_SYNTAX;
         } else if (i == (argc - 1)) {
@@ -136,9 +137,10 @@ int luci_main(int argc, char *argv[])
     if (!g_root_node) {
         /* empty program */
         return EXIT_SUCCESS;
-    }
-
-    if (mode == MODE_GRAPH) {
+    } else if (mode == MODE_SYNTAX) {
+        printf("%s\n", "Syntax valid");
+        return EXIT_SUCCESS;
+    } else if (mode == MODE_GRAPH) {
         print_ast_graph(g_root_node);
         return EXIT_SUCCESS;
     }

@@ -11,8 +11,6 @@
 #define YYDEBUG 1
 #endif
 
-#define YYPARSE_PARAM root
-
 void yyerror(const char *msg);
 
 /* defined in lexer.l */
@@ -21,6 +19,11 @@ extern int get_last_col_num(void);
 
 /* defined in generated lexer */
 extern int yylex();
+
+/* the YYPARSE_PARAM option was deprecated, and I read somewhere
+ * that the recommended action is to make the root node of an
+ * abstract syntaxt tree global... oh well. */
+AstNode *g_root_node = NULL;
 
 %}
 
@@ -75,7 +78,7 @@ extern int yylex();
 
 program:
         /* nothing */       { $$ = 0; }
-    |   statements          { (*(struct AstNode **)root) = $1; }
+    |   statements          { g_root_node = $1; }
     ;
 
 statements:

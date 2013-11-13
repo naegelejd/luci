@@ -131,15 +131,15 @@ int luci_main(int argc, char *argv[])
     yy_luci_init(false);
 
     /* parse yyin and build and AST */
-    AstNode *root_node = NULL;
-    yyparse(&root_node);
-    if (!root_node) {
+    yyparse();
+    extern AstNode* g_root_node;    /* parser.y */
+    if (!g_root_node) {
         /* empty program */
         return EXIT_SUCCESS;
     }
 
     if (mode == MODE_GRAPH) {
-        print_ast_graph(root_node);
+        print_ast_graph(g_root_node);
         return EXIT_SUCCESS;
     }
 
@@ -148,9 +148,9 @@ int luci_main(int argc, char *argv[])
     compiler_init();
 
     /* Compile the AST */
-    CompileState *cs = compile_ast(root_node);
+    CompileState *cs = compile_ast(g_root_node);
 
-    ast_destroy(root_node);
+    ast_destroy(g_root_node);
 
     LuciObject *gf = LuciFunction_new();
     convert_to_function(cs, gf, 0);
@@ -210,11 +210,10 @@ int luci_interactive(void)
         putc('$', stdout);
         putc(' ', stdout);
 
-        AstNode *root_node = NULL;
         /* parse yyin and build and AST */
-        yyparse(&root_node);
-
-        if (!root_node) {
+        yyparse();
+        extern AstNode *g_root_node;    /* parser.y */
+        if (!g_root_node) {
             /* didn't parse anything... is it any empty line or EOF? */
             if (feof(yyin)) {
                 break;
@@ -224,11 +223,11 @@ int luci_interactive(void)
         }
 
         /* Compile the AST */
-        cs = compile_ast_incremental(cs, gf, root_node);
+        cs = compile_ast_incremental(cs, gf, g_root_node);
 
         /* clean up AST memory */
-        ast_destroy(root_node);
-        root_node = NULL;
+        ast_destroy(g_root_node);
+        g_root_node = NULL;
 
         gf = LuciFunction_new();
         convert_to_function(cs, gf, 0);

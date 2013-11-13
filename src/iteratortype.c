@@ -124,7 +124,7 @@ LuciObject *iterator_next_object(LuciObject *iterator)
     LuciIteratorObj *iter = (LuciIteratorObj *)iterator;
     LuciObject *container = iter->container;
 
-    LuciObject *next = container->type->next(container, iter->idx);
+    LuciObject *next = NEXT(container, iter->idx);
     AS_INT(iter->idx)->i += iter->step;
     return next;
 }
@@ -151,8 +151,8 @@ void LuciIterator_mark(LuciObject *in)
     LuciObject *idx = AS_ITERATOR(in)->idx;
     LuciObject *container = AS_ITERATOR(in)->container;
 
-    idx->type->mark(idx);
-    container->type->mark(container);
+    MARK(idx);
+    MARK(container);
 
     GC_MARK(in);
 }

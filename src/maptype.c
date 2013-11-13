@@ -143,7 +143,7 @@ LuciObject* LuciMap_deepcopy(LuciObject *orig)
         if (mapobj->keys[i]) {
             LuciObject *key = mapobj->keys[i];
             LuciObject *val = mapobj->vals[i];
-            LuciMap_cput(copy, key->type->copy(key), val->type->copy(val));
+            LuciMap_cput(copy, COPY(key), COPY(val));
         }
     }
     return copy;
@@ -189,7 +189,7 @@ LuciObject* LuciMap_add(LuciObject *a, LuciObject *b)
         }
     } else {
         LUCI_DIE("Cannot append object of type %s to a map\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
 
     return res;
@@ -216,7 +216,7 @@ LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
                 /* TODO: if the key isn't in the second map,
                  * this will DIE and kill luci */
                 LuciObject *val2 = LuciMap_cget(b, key);
-                LuciObject *eq = val1->type->eq(val1, val2);
+                LuciObject *eq = EQ(val1, val2);
                 /* if the objects in the lists at index i aren't equal,
                  * return false */
                 if (!AS_INT(eq)->i) {
@@ -228,7 +228,7 @@ LuciObject* LuciMap_eq(LuciObject *a, LuciObject *b)
         return LuciInt_new(true);
     } else {
         LUCI_DIE("Cannot compare a map to an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
     return LuciNilObj;
 }
@@ -257,7 +257,7 @@ LuciObject *LuciMap_contains(LuciObject *m, LuciObject *o)
     for (i = 0; i < AS_MAP(m)->size; i++) {
         LuciObject *key = AS_MAP(m)->keys[i];
         if (key) {
-            LuciObject *eq = o->type->eq(o, key);
+            LuciObject *eq = EQ(o, key);
             if (AS_INT(eq)->i) {
                 return LuciInt_new(true);
             }
@@ -277,7 +277,7 @@ LuciObject *LuciMap_next(LuciObject *m, LuciObject *idx)
 {
     if (!ISTYPE(idx, obj_int_t)) {
         LUCI_DIE("Argument to LuciMap_next must be LuciIntObj, not %s\n",
-                idx->type->type_name);
+                TYPE_NAME(idx));
     }
 
     if (AS_INT(idx)->i >= AS_MAP(m)->count) {
@@ -380,10 +380,10 @@ LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
         LUCI_DIE("%s\n", "Null key in map insertion");
     } else if (!ISTYPE(key, obj_string_t)) {
         printf("Map key must be of type string, not %s\n",
-                key->type->type_name);
+                TYPE_NAME(key));
         longjmp(LUCI_EXCEPTION_BUF, 42);
         LUCI_DIE("Map key must be of type string, not %s\n",
-                key->type->type_name);
+                TYPE_NAME(key));
     }
 
     LuciMapObj *map = AS_MAP(o);
@@ -392,8 +392,8 @@ LuciObject *LuciMap_cput(LuciObject *o, LuciObject *key, LuciObject *val)
         map_grow(map);
     }
 
-    uint32_t hash0 = key->type->hash0(key);
-    uint32_t hash1 = key->type->hash1(key);
+    uint32_t hash0 = HASH0(key);
+    uint32_t hash1 = HASH1(key);
 
     /* otherwise, it's time to search for an empty slot */
     unsigned int i = 0, idx = 0;
@@ -440,13 +440,13 @@ LuciObject *LuciMap_cget(LuciObject *o, LuciObject *key)
         LUCI_DIE("%s\n", "Null key in map lookup");
     } else if (!ISTYPE(key, obj_string_t)) {
         LUCI_DIE("Map key must be of type string, not %s\n",
-                key->type->type_name);
+                TYPE_NAME(key));
     }
 
     LuciMapObj *map = AS_MAP(o);
 
-    uint32_t hash0 = key->type->hash0(key);
-    uint32_t hash1 = key->type->hash1(key);
+    uint32_t hash0 = HASH0(key);
+    uint32_t hash1 = HASH1(key);
 
     unsigned int i, idx;
     for (i = 0; i < map->size; i++) {
@@ -486,7 +486,7 @@ LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
         LUCI_DIE("%s\n", "Null key in map remove");
     } else if (!ISTYPE(key, obj_string_t)) {
         LUCI_DIE("Map key must be of type string, not %s\n",
-                key->type->type_name);
+                TYPE_NAME(key));
     }
 
     LuciMapObj *map = AS_MAP(o);
@@ -496,8 +496,8 @@ LuciObject *LuciMap_cdel(LuciObject *o, LuciObject *key)
         map_shrink(map);
     }
 
-    uint32_t hash0 = key->type->hash0(key);
-    uint32_t hash1 = key->type->hash1(key);
+    uint32_t hash0 = HASH0(key);
+    uint32_t hash1 = HASH1(key);
 
     /* First, find the object to remove */
     unsigned int i, idx;
@@ -564,9 +564,9 @@ void LuciMap_print(LuciObject *in)
             LuciObject *key = AS_MAP(in)->keys[i];
             LuciObject *val = AS_MAP(in)->vals[i];
             printf("\"");
-            key->type->print(key);
+            PRINT(key);
             printf("\":");
-            val->type->print(val);
+            PRINT(val);
             printf(", ");
         }
     }
@@ -588,8 +588,8 @@ void LuciMap_mark(LuciObject *in)
         LuciObject *key = map->keys[i];
         LuciObject *val = map->vals[i];
         if (key) {
-            key->type->mark(key);
-            val->type->mark(val);
+            MARK(key);
+            MARK(val);
         }
     }
     GC_MARK(in);

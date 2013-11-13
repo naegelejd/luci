@@ -107,7 +107,7 @@ LuciObject *LuciFunction_copy(LuciObject *orig)
         if (oldf->locals[i]) {
             /* copy the object */
             LuciObject *lcl = oldf->locals[i];
-            locals[i] = lcl->type->copy(lcl);
+            locals[i] = COPY(lcl);
         }
     }
     newf->locals = locals;
@@ -151,13 +151,13 @@ void LuciFunction_mark(LuciObject *in)
         /* functions can contain NULL locals if they haven't yet
          * been populated by an expression from the stack */
         if (obj) {
-            obj->type->mark(obj);
+            MARK(obj);
         }
     }
 
     for (i = 0; i < AS_FUNCTION(in)->nconstants; i++) {
         LuciObject *obj = AS_FUNCTION(in)->constants[i];
-        obj->type->mark(obj);
+        MARK(obj);
     }
 
     GC_MARK(in);

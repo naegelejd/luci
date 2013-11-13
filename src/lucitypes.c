@@ -58,7 +58,7 @@ LuciObjectType obj_nil_t = {
 
 /** Definition of LuciNilObj */
 LuciObject LuciNilInstance = {
-    &obj_nil_t
+    (uintptr_t)&obj_nil_t
 };
 
 /**
@@ -101,7 +101,7 @@ static void LuciNil_print(LuciObject *in)
  */
 LuciObject *LuciObject_lgnot(LuciObject *o)
 {
-    LuciObject *b = o->type->asbool(o);
+    LuciObject *b = ASBOOL(o);
     return LuciInt_new(!(AS_INT(b)->i));
 }
 
@@ -114,8 +114,8 @@ LuciObject *LuciObject_lgnot(LuciObject *o)
  */
 LuciObject *LuciObject_lgand(LuciObject *a, LuciObject *b)
 {
-    LuciObject *a0 = a->type->asbool(a);
-    LuciObject *b0 = b->type->asbool(b);
+    LuciObject *a0 = ASBOOL(a);
+    LuciObject *b0 = ASBOOL(b);
     return LuciInt_new(AS_INT(a0)->i && AS_INT(b0)->i);
 }
 
@@ -128,8 +128,8 @@ LuciObject *LuciObject_lgand(LuciObject *a, LuciObject *b)
  */
 LuciObject *LuciObject_lgor(LuciObject *a, LuciObject *b)
 {
-    LuciObject *a0 = a->type->asbool(a);
-    LuciObject *b0 = b->type->asbool(b);
+    LuciObject *a0 = ASBOOL(a);
+    LuciObject *b0 = ASBOOL(b);
     return LuciInt_new(AS_INT(a0)->i || AS_INT(b0)->i);
 }
 

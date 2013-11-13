@@ -17,7 +17,11 @@
 #define POOL_SIZE  6144         /**< initial pool size in bytes */
 
 /** marks an object as reachable via root objects */
-#define GC_MARK(obj)    (obj)->reachable = GC_REACHABLE;
+#define GC_MARK(o)    GC_SET_FLAG(o, GC_REACHABLE)
+/** set a GC flag on an object (reachable, not reachable, static) */
+#define GC_SET_FLAG(o, flag) ((o)->type = ((uintptr_t)TYPEOF(o) | (flag)))
+/** return 1 if obj is reachable, 0 otherwise */
+#define GC_GET_FLAG(o)     ((o)->type & 0x3)
 
 /** identifies whether garbage collection is necessary */
 extern bool GC_NECESSARY;

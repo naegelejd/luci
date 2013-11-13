@@ -58,16 +58,16 @@ static void help()
     puts("    -c\t\tCompile the source to a .lxc file (i.e. do nothing)");
     printf("\n%s\n", version_string);
 
-    puts("\nSizes:");
-    printf("%ld (%s)\n", sizeof(LuciIntObj), "int");
-    printf("%ld (%s)\n", sizeof(LuciFloatObj), "float");
-    printf("%ld (%s)\n", sizeof(LuciStringObj), "string");
-    printf("%ld (%s)\n", sizeof(LuciFileObj), "file");
-    printf("%ld (%s)\n", sizeof(LuciListObj), "list");
-    printf("%ld (%s)\n", sizeof(LuciMapObj), "map");
-    printf("%ld (%s)\n", sizeof(LuciIteratorObj), "iterator");
-    printf("%ld (%s)\n", sizeof(LuciFunctionObj), "func");
-    printf("%ld (%s)\n", sizeof(LuciLibFuncObj), "libfunc");
+    /* puts("\nSize (type) static address:"); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciIntObj), "int", &obj_int_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciFloatObj), "float", &obj_float_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciStringObj), "string", &obj_string_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciFileObj), "file", &obj_file_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciListObj), "list", &obj_list_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciMapObj), "map", &obj_map_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciIteratorObj), "iterator", &obj_iterator_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciFunctionObj), "func", &obj_func_t); */
+    /* printf("%ld (%s) %p\n", sizeof(LuciLibFuncObj), "libfunc", &obj_libfunc_t); */
 }
 
 /**
@@ -85,7 +85,7 @@ int luci_main(int argc, char *argv[])
 
     if (argc < 2) {
         /* interactive mode */
-	yyin = stdin;
+        yyin = stdin;
         return luci_interactive();
     }
 

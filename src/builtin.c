@@ -11,194 +11,194 @@
 
 
 static LuciLibFuncObj builtin_print = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_print,
     "prints string representations of objects to stdout",
     0
 };
 
 static LuciLibFuncObj builtin_help = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_help,
     "prints a help string for a given object",
     0
 };
 
 static LuciLibFuncObj builtin_exit = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_exit,
     "abruptly exits Luci",
     0
 };
 
 static LuciLibFuncObj builtin_input = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_readline,
     "reads a line from stdin",
     0
 };
 
 static LuciLibFuncObj builtin_readline = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_readline,
     "reads a line from a file",
     1
 };
 
 static LuciLibFuncObj builtin_typeof = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_typeof,
     "returns the type of a given object",
     1
 };
 
 static LuciLibFuncObj builtin_assert = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_assert,
     "asserts that an expression is true",
     1
 };
 
 static LuciLibFuncObj builtin_copy = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_copy,
     "returns a deep copy of a given object",
     1
 };
 
 static LuciLibFuncObj builtin_cast_str = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_cast_str,
     "casts an object to a string",
     1
 };
 
 static LuciLibFuncObj builtin_cast_int = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_cast_int,
     "casts an object to an int",
     1
 };
 
 static LuciLibFuncObj builtin_cast_float = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_cast_float,
     "casts an object to a float",
     1
 };
 
 static LuciLibFuncObj builtin_hex = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_hex,
     "returns a string of the hex representation of an int",
     1
 };
 
 static LuciLibFuncObj builtin_fopen = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_fopen,
     "opens a file",
     1
 };
 
 static LuciLibFuncObj builtin_fclose = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_fclose,
     "closes a file",
     1
 };
 
 static LuciLibFuncObj builtin_fread = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_fread,
     "reads a file",
     1
 };
 
 static LuciLibFuncObj builtin_fwrite = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_fwrite,
     "writes a string to a file",
     2
 };
 
 static LuciLibFuncObj builtin_flines = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_flines,
     "reads the lines in a file as a list",
     1
 };
 
 static LuciLibFuncObj builtin_range = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_range,
     "generates a range of integers",
     1
 };
 
 static LuciLibFuncObj builtin_sum = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_sum,
     "computes the sum of a list of numbers",
     1
 };
 
 static LuciLibFuncObj builtin_len = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_len,
     "computes the length of a list",
     1
 };
 
 static LuciLibFuncObj builtin_max = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_max,
     "computes the sum of a list of numbers",
     1
 };
 
 static LuciLibFuncObj builtin_min = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_min,
     "computes the sum of a list of numbers",
     1
 };
 
 static LuciLibFuncObj builtin_contains = {
-    {&obj_libfunc_t, GC_STATIC},
+    {(uintptr_t)&obj_libfunc_t},
     luci_contains,
     "determines if the given container contains a given object",
     2
 };
 
 static LuciFileObj builtin_stdout = {
-    {&obj_file_t, GC_STATIC},
+    {(uintptr_t)&obj_file_t},
     NULL,
     0,
     f_append_m
 };
 
 static LuciFileObj builtin_stderr = {
-    {&obj_file_t, GC_STATIC},
+    {(uintptr_t)&obj_file_t},
     NULL,
     0,
     f_append_m
 };
 
 static LuciFileObj builtin_stdin = {
-    {&obj_file_t, GC_STATIC},
+    {(uintptr_t)&obj_file_t},
     NULL,
     0,
     f_read_m
 };
 
 static LuciFloatObj builtin_e = {
-    {&obj_float_t, GC_STATIC},
+    {(uintptr_t)&obj_float_t},
     M_E
 };
 
 static LuciFloatObj builtin_pi = {
-    {&obj_float_t, GC_STATIC},
+    {(uintptr_t)&obj_float_t},
     M_PI
 };
 
@@ -242,6 +242,11 @@ void init_luci_builtins(void)
     builtin_stdout.ptr = stdout;
     builtin_stderr.ptr = stderr;
     builtin_stdin.ptr = stdin;
+
+    int i;
+    for (i = 0; builtins_registry[i].name != NULL; i++) {
+        GC_SET_FLAG(builtins_registry[i].object, GC_STATIC);
+    }
 }
 
 /** Prints a help message, which is essentially just a list of
@@ -282,7 +287,7 @@ LuciObject *luci_help(LuciObject **args, unsigned int c)
             LuciObject *o = args[i];
             if (!ISTYPE(o, obj_libfunc_t)) {
                 printf("No help available for object of type %s\n",
-                        o->type->type_name);
+                        TYPE_NAME(o));
             } else {
                 printf("%s\n", AS_LIBFUNC(o)->help);
             }
@@ -326,13 +331,13 @@ LuciObject *luci_exit(LuciObject **args, unsigned int c)
 LuciObject *luci_print(LuciObject **args, unsigned int c)
 {
     if (c > 0) {
-        args[0]->type->print(args[0]);
+        PRINT(args[0]);
     }
 
     unsigned int i;
     for (i = 1; i < c; i++) {
         printf(" ");
-        args[i]->type->print(args[i]);
+        PRINT(args[i]);
     }
     printf("\n");
 
@@ -364,7 +369,7 @@ LuciObject *luci_readline(LuciObject **args, unsigned int c)
             read_from = AS_FILE(item)->ptr;
         }
         else {
-            LUCI_DIE("args[0]: %p, type: %s\n", args[0], item->type->type_name);
+            LUCI_DIE("args[0]: %p, type: %s\n", args[0], TYPE_NAME(item));
             LUCI_DIE("%s", "Can't readline from non-file object\n");
         }
     }
@@ -419,7 +424,7 @@ LuciObject *luci_typeof(LuciObject **args, unsigned int c)
     }
 
     /* Create new LuciString from the object's type name */
-    return LuciString_new(strdup(item->type->type_name));
+    return LuciString_new(strdup(TYPE_NAME(item)));
 }
 
 /**
@@ -471,7 +476,7 @@ LuciObject *luci_copy(LuciObject **args, unsigned int c)
         LUCI_DIE("%s\n", "Missing argument to copy()");
     }
     LuciObject *o = args[0];
-    return o->type->copy(o);
+    return COPY(o);
 }
 
 /**
@@ -506,7 +511,7 @@ LuciObject *luci_cast_int(LuciObject **args, unsigned int c)
         }
         ret = LuciInt_new(i);
     } else {
-        LUCI_DIE("Cannot cast type %s to type int\n", item->type->type_name);
+        LUCI_DIE("Cannot cast type %s to type int\n", TYPE_NAME(item));
     }
     return ret;
 }
@@ -543,7 +548,7 @@ LuciObject *luci_cast_float(LuciObject **args, unsigned int c)
         }
         ret = LuciFloat_new(f);
     } else {
-        LUCI_DIE("Cannot cast type %s to type float\n", item->type->type_name);
+        LUCI_DIE("Cannot cast type %s to type float\n", TYPE_NAME(item));
     }
 
     return ret;
@@ -565,7 +570,7 @@ LuciObject *luci_hex(LuciObject **args, unsigned int c)
 
     if (!ISTYPE(hexint, obj_int_t)) {
         LUCI_DIE("Cannot get hex representation of an object of type %s\n",
-                hexint->type->type_name);
+                TYPE_NAME(hexint));
     }
 
     char *s = alloc(MAX_INT_DIGITS + 2);
@@ -591,10 +596,10 @@ LuciObject *luci_cast_str(LuciObject **args, unsigned int c)
     /* grab the first parameter from the param list */
     LuciObject *item = args[0];
 
-    ret = item->type->repr(item);
+    ret = REPR(item);
     if (ISTYPE(ret, obj_nil_t)) {
         LUCI_DIE("Cannot cast object of type %s to type string",
-                item->type->type_name);
+                TYPE_NAME(item));
     }
     LUCI_DEBUG("str() returning %s\n", AS_STRING(ret)->s);
 
@@ -972,7 +977,7 @@ LuciObject *luci_len(LuciObject **args, unsigned int c)
 
     LuciObject *container = args[0];
 
-    return container->type->len(container);
+    return LEN(container);
 }
 /**
  * Finds the maximum value in a LuciListObj.
@@ -1012,7 +1017,7 @@ LuciObject *luci_max(LuciObject **args, unsigned int c)
             }
         } else {
             LUCI_DIE("Can't find max of list containing an object of type %s\n",
-                    item->type->type_name);
+                    TYPE_NAME(item));
         }
     }
 
@@ -1072,7 +1077,7 @@ LuciObject *luci_min(LuciObject **args, unsigned int c)
             }
         } else {
             LUCI_DIE("Can't find min of list containing an object of type %s\n",
-                    item->type->type_name);
+                    TYPE_NAME(item));
         }
     }
 
@@ -1107,5 +1112,5 @@ LuciObject *luci_contains(LuciObject **args, unsigned int c)
         LUCI_DIE("%s", "NULL container in contains()\n");
     }
 
-    return cont->type->contains(cont, item);
+    return CONTAINS(cont, item);
 }

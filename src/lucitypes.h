@@ -27,8 +27,7 @@
 
 /** Generic Object which allows for dynamic typing */
 typedef struct LuciObject_ {
-    struct LuciObjectType *type;    /**< pointer to type implementation */
-    unsigned int reachable  : 2;        /**< GC flag for marking */
+    uintptr_t type;     /**< pointer to type implementation (lowest 2 bits are used by GC) */
 } LuciObject;
 
 /** Object type virtual method table */
@@ -79,12 +78,50 @@ typedef struct LuciObjectType
     unsigned int (*hash1)(LuciObject *);    /**< object hash 2 */
 } LuciObjectType;
 
-/** convenient method of accessing an object's type functions */
-#define MEMBER(o,m) (((LuciObject *)(o))->type->(##m))
+#define TYPE_NAME(a) TYPEOF(a)->type_name
+#define TYPE_SIZE(a) TYPEOF(a)->size
+#define COPY(a) TYPEOF(a)->copy(a)
+#define DEEPCOPY(a) TYPEOF(a)->deepcopy(a)
+#define REPR(a) TYPEOF(a)->repr(a)
+#define ASBOOL(a) TYPEOF(a)->asbool(a)
+#define LEN(a) TYPEOF(a)->len(a)
+#define NEG(a) TYPEOF(a)->neg(a)
+#define LGNOT(a) TYPEOF(a)->lgnot(a)
+#define BWNOT(a) TYPEOF(a)->bwnot(a)
+#define ADD(a, b) TYPEOF(a)->add(a, b)
+#define SUB(a, b) TYPEOF(a)->sub(a, b)
+#define MUL(a, b) TYPEOF(a)->mul(a, b)
+#define DIV(a, b) TYPEOF(a)->div(a, b)
+#define MOD(a, b) TYPEOF(a)->mod(a, b)
+#define POW(a, b) TYPEOF(a)->pow(a, b)
+#define EQ(a, b) TYPEOF(a)->eq(a, b)
+#define NEQ(a, b) TYPEOF(a)->neq(a, b)
+#define LT(a, b) TYPEOF(a)->lt(a, b)
+#define GT(a, b) TYPEOF(a)->gt(a, b)
+#define LTE(a, b) TYPEOF(a)->lte(a, b)
+#define GTE(a, b) TYPEOF(a)->gte(a, b)
+#define LGOR(a, b) TYPEOF(a)->lgor(a, b)
+#define LGAND(a, b) TYPEOF(a)->lgand(a, b)
+#define BWXOR(a, b) TYPEOF(a)->bwxor(a, b)
+#define BWOR(a, b) TYPEOF(a)->bwor(a, b)
+#define BWAND(a, b) TYPEOF(a)->bwand(a, b)
+#define CONTAINS(a, b) TYPEOF(a)->contains(a, b)
+#define NEXT(a, b) TYPEOF(a)->next(a, b)
+#define CGET(a, b) TYPEOF(a)->cget(a, b)
+#define CPUT(a, b, c) TYPEOF(a)->cput(a, b, c)
+#define PRINT(a) TYPEOF(a)->print(a)
+#define MARK(a) TYPEOF(a)->mark(a)
+#define FINALIZE(a) TYPEOF(a)->finalize(a)
+#define HASH0(a) TYPEOF(a)->hash0(a)
+#define HASH1(a) TYPEOF(a)->hash1(a)
+
 /** returns 1 if the object's type is the given type, 0 otherwise */
-#define ISTYPE(o,t) (((LuciObject *)(o))->type == (&(t)))
+#define ISTYPE(o, t) (TYPEOF(o) == &(t))
 /** returns 1 if two objects have the same type, 0 otherwise */
-#define TYPES_MATCH(left, right) ((left)->type == (right)->type)
+#define TYPES_MATCH(a, b) (TYPEOF(a) == TYPEOF(b))
+/** return pointer to type struct of object */
+/* #define TYPEOF(o)   (o->type & 0xFFFFFFFFFFFFFFFCl) */
+#define TYPEOF(o)   ((LuciObjectType*)((((LuciObject*)(o))->type) & -4))
 
 
 LuciObject *LuciObject_lgand(LuciObject *, LuciObject *);

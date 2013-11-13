@@ -109,8 +109,8 @@ LuciObject *gc_malloc(LuciObjectType *tp)
 
         if (pool->next) {
             LuciObject *ret = (LuciObject*)pool->next;
-            ret->type = tp;
-            ret->reachable = GC_UNREACHABLE;
+            ret->type = (uintptr_t)tp;
+            GC_SET_FLAG(ret, GC_UNREACHABLE);
 
             while (true) {
                 pool->next += pool->each;
@@ -123,7 +123,7 @@ LuciObject *gc_malloc(LuciObjectType *tp)
                 }
 
                 LuciObject *obj = (LuciObject *)pool->next;
-                if (obj->type == 0) {
+                if (TYPEOF(obj) == NULL) {
                     break;
                 }
             }
@@ -146,8 +146,8 @@ LuciObject *gc_malloc(LuciObjectType *tp)
     GCPool *pool = gc_pool_new(size);
     plist->pools[plist->count++] = pool;
     LuciObject *ret = (LuciObject *)pool->next;
-    ret->type = tp;
-    ret->reachable = GC_UNREACHABLE;
+    ret->type = (uintptr_t)tp;
+    GC_SET_FLAG(ret, GC_UNREACHABLE);
 
     pool->next += pool->each;
 
@@ -171,7 +171,7 @@ int gc_collect(void)
              * out of scope before `gc_collect` is called */
             LuciObject *root = *root_addr;
             if (root) {
-                root->type->mark(root);
+                MARK(root);
             }
         }
     }
@@ -192,10 +192,10 @@ int gc_collect(void)
             char *ptr;
             for (ptr = pool->bytes; ptr <= POOL_LIMIT(pool); ptr += pool->each) {
                 LuciObject *obj = (LuciObject*)ptr;
-                if (obj->type != 0) {   /* check that object exists */
-                    if (obj->reachable == GC_UNREACHABLE) {
-                        if (obj->type->finalize) {
-                            obj->type->finalize(obj);
+                if (TYPEOF(obj) != 0) {   /* check that object exists */
+                    if (GC_GET_FLAG(obj) == GC_UNREACHABLE) {
+                        if (TYPEOF(obj)->finalize) {
+                            FINALIZE(obj);
                         }
 
                         ptr = memset(ptr, 0, pool->each);
@@ -245,9 +245,9 @@ int gc_finalize(void)
             char *ptr;
             for (ptr = pool->bytes; ptr <= POOL_LIMIT(pool); ptr += pool->each) {
                 LuciObject *obj = (LuciObject*)ptr;
-                if (obj->type != 0) {
-                    if (obj->type->finalize) {
-                        obj->type->finalize(obj);
+                if (TYPEOF(obj) != 0) {
+                    if (TYPEOF(obj)->finalize) {
+                        FINALIZE(obj);
                         finalized++;
                     }
                 }

@@ -95,7 +95,7 @@ static LuciObject *list_get_object(LuciObject *list, long index)
 	LUCI_DIE("%s", "List index out of bounds\n");
     }
     LuciObject *item = listobj->items[index];
-    return item->type->copy(item);
+    return COPY(item);
 }
 
 /**
@@ -203,7 +203,7 @@ LuciObject* LuciList_add(LuciObject *a, LuciObject *b)
         }
     } else {
         LUCI_DIE("Cannot append object of type %s to a list\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
 
     return res;
@@ -297,7 +297,7 @@ LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
         for (i = 0; i < AS_LIST(a)->count; i++) {
             LuciObject *item1 = AS_LIST(a)->items[i];
             LuciObject *item2 = AS_LIST(b)->items[i];
-            LuciObject *eq = item1->type->eq(item1, item2);
+            LuciObject *eq = EQ(item1, item2);
             /* if the objects in the lists at index i aren't equal,
              * return false */
             if (!AS_INT(eq)->i) {
@@ -308,7 +308,7 @@ LuciObject* LuciList_eq(LuciObject *a, LuciObject *b)
         return LuciInt_new(true);
     } else {
         LUCI_DIE("Cannot compare a list to an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
     return LuciNilObj;
 }
@@ -326,7 +326,7 @@ LuciObject *LuciList_contains(LuciObject *l, LuciObject *o)
     int i;
     for (i = 0; i < AS_LIST(l)->count; i++) {
         LuciObject *x = AS_LIST(l)->items[i];
-        LuciObject *eq = o->type->eq(o, x);
+        LuciObject *eq = EQ(o, x);
         if (AS_INT(eq)->i) {
             return LuciInt_new(true);
         }
@@ -352,7 +352,7 @@ LuciObject *LuciList_next(LuciObject *l, LuciObject *idx)
     }
 
     LuciObject *item = AS_LIST(l)->items[AS_INT(idx)->i];
-    return item->type->copy(item);
+    return COPY(item);
 }
 
 /**
@@ -368,7 +368,7 @@ LuciObject* LuciList_cget(LuciObject *a, LuciObject *b)
         return list_get_object(a, AS_INT(b)->i);
     } else {
         LUCI_DIE("Cannot subscript a list with an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
 
     return LuciNilObj;
@@ -388,7 +388,7 @@ LuciObject* LuciList_cput(LuciObject *a, LuciObject *b, LuciObject *c)
         return list_set_object(a, c, AS_INT(b)->i);
     } else {
         LUCI_DIE("Cannot subscript a list with an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
 
     return LuciNilObj;
@@ -406,7 +406,7 @@ void LuciList_print(LuciObject *in)
     printf("[");
     for (i = 0; i < AS_LIST(in)->count; i++) {
         LuciObject *item = list_get_object(in, i);
-        item->type->print(item);
+        PRINT(item);
         printf(", ");
     }
     printf("]");
@@ -424,7 +424,7 @@ void LuciList_mark(LuciObject *list)
     int i;
     for (i = 0; i < AS_LIST(list)->count; i++) {
         LuciObject *item = AS_LIST(list)->items[i];
-        item->type->mark(item);
+        MARK(item);
     }
     GC_MARK(list);
 }

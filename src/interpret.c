@@ -110,7 +110,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "ADD");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->add(x, y);
+            z = ADD(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -120,7 +120,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "SUB");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->sub(x, y);
+            z = SUB(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -130,7 +130,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "MUL");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->mul(x, y);
+            z = MUL(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -140,7 +140,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "DIV");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->div(x, y);
+            z = DIV(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -150,7 +150,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "MOD");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->mod(x, y);
+            z = MOD(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -160,7 +160,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "POW");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->pow(x, y);
+            z = POW(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -170,7 +170,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "EQ");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->eq(x, y);
+            z = EQ(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -180,7 +180,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "NEQ");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->neq(x, y);
+            z = NEQ(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -190,7 +190,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "LT");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->lt(x, y);
+            z = LT(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -200,7 +200,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "GT");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->gt(x, y);
+            z = GT(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -210,7 +210,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "LTE");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->lte(x, y);
+            z = LTE(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -220,7 +220,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "GTE");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->gte(x, y);
+            z = GTE(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -230,7 +230,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "LGOR");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->lgor(x, y);
+            z = LGOR(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -240,7 +240,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "LGAND");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->lgand(x, y);
+            z = LGAND(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -250,7 +250,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "BWXOR");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->bwxor(x, y);
+            z = BWXOR(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -260,7 +260,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "BWOR");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->bwor(x, y);
+            z = BWOR(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -270,7 +270,7 @@ void eval(LuciObject *frame)
             LUCI_DEBUG("%s\n", "BWAND");
             y = LuciList_pop(stack);
             x = LuciList_pop(stack);
-            z = x->type->bwand(x, y);
+            z = BWAND(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -279,7 +279,7 @@ void eval(LuciObject *frame)
         HANDLE(NEG) {
             LUCI_DEBUG("%s\n", "NEG");
             x = LuciList_pop(stack);
-            y = x->type->neg(x);
+            y = NEG(x);
             LuciList_push(stack, y);
         }
         FETCH(1);
@@ -288,7 +288,7 @@ void eval(LuciObject *frame)
         HANDLE(LGNOT) {
             LUCI_DEBUG("%s\n", "LGNOT");
             x = LuciList_pop(stack);
-            y = x->type->lgnot(x);
+            y = LGNOT(x);
             LuciList_push(stack, y);
         }
         FETCH(1);
@@ -297,7 +297,7 @@ void eval(LuciObject *frame)
         HANDLE(BWNOT) {
             LUCI_DEBUG("%s\n", "BWNOT");
             x = LuciList_pop(stack);
-            y = x->type->bwnot(x);
+            y = BWNOT(x);
             LuciList_push(stack, y);
         }
         FETCH(1);
@@ -349,7 +349,7 @@ void eval(LuciObject *frame)
             /* duplicate object on top of stack
              * and push it back on */
             x = LuciList_peek(stack);
-            y = x->type->copy(x);
+            y = COPY(x);
             LuciList_push(stack, y);
         FETCH(1);
         DISPATCH;
@@ -359,7 +359,7 @@ void eval(LuciObject *frame)
             /* pop object off of stack */
             x = LuciList_pop(stack);
             /* store the new object */
-            AS_FUNCTION(frame)->locals[a] = x->type->copy(x);
+            AS_FUNCTION(frame)->locals[a] = COPY(x);
         FETCH(1);
         DISPATCH;
 
@@ -377,7 +377,7 @@ void eval(LuciObject *frame)
                 LuciObject *parent_frame = frame;
 
                 /* activate a copy of the function frame */
-                frame = x->type->copy(x);
+                frame = COPY(x);
 
                 /* check that the # of arguments equals the # of parameters */
                 if (a < AS_FUNCTION(frame)->nparams) {
@@ -389,7 +389,7 @@ void eval(LuciObject *frame)
                 /* pop arguments and push COPIES into locals */
                 for (i = 0; i < a; i++) {
                     y = LuciList_pop(stack);
-                    AS_FUNCTION(frame)->locals[i] = y->type->copy(y);
+                    AS_FUNCTION(frame)->locals[i] = COPY(y);
                 }
 
                 /* the stack is clean, now push the previous frame */
@@ -414,7 +414,7 @@ void eval(LuciObject *frame)
                 /* must happen in reverse */
                 for (i = a - 1; i >= 0; i--) {
                     y = LuciList_pop(stack);
-                    lfargs[i] = y->type->copy(y);
+                    lfargs[i] = COPY(y);
                 }
 
                 /* call func, passing args array and arg count */
@@ -436,7 +436,7 @@ void eval(LuciObject *frame)
 
             /* pop function stack frame and replace active frame */
             frame = LuciList_pop(stack);
-            //assert(frame->type == &obj_func_t);
+            //assert(ISTYPE(frame, obj_func_t));
 
             /* push the return value back onto the stack */
             LuciList_push(stack, return_value);
@@ -451,11 +451,11 @@ void eval(LuciObject *frame)
             x = LuciMap_new();
             for (i = 0; i < a; i ++) {
                 /* first item is the value */
-                y = LuciList_pop(stack);
-                /* then the key */
                 z = LuciList_pop(stack);
+                /* then the key */
+                y = LuciList_pop(stack);
                 /* add the key & value to the map */
-                x->type->cput(x, z, y);
+                CPUT(x, y, z);
             }
             LuciList_push(stack, x);
         FETCH(1);
@@ -480,7 +480,7 @@ void eval(LuciObject *frame)
             /* pop 'index' */
             y = LuciList_pop(stack);
             /* cget from the container */
-            z = x->type->cget(x, y);
+            z = CGET(x, y);
             LuciList_push(stack, z);
         }
         FETCH(1);
@@ -496,7 +496,7 @@ void eval(LuciObject *frame)
             /* pop right hand value */
             z = LuciList_pop(stack);
             /* put the right hand value into the container */
-            y = x->type->cput(x, y, z);
+            y = CPUT(x, y, z);
         }
         FETCH(1);
         DISPATCH;

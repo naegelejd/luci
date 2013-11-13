@@ -141,7 +141,7 @@ LuciObject* LuciString_add(LuciObject *a, LuciObject *b)
         return LuciString_new(s);
     } else {
         LUCI_DIE("Cannot append object of type %s to a string\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
 
     return LuciNilObj;
@@ -167,7 +167,7 @@ LuciObject* LuciString_mul(LuciObject *a, LuciObject *b)
         return LuciString_new(s);
     } else {
         LUCI_DIE("Cannot multiply a string by an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
 
     return LuciNilObj;
@@ -193,7 +193,7 @@ LuciObject* LuciString_eq(LuciObject *a, LuciObject *b)
         }
     } else {
         LUCI_DIE("Cannot compare a string to an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
     return LuciNilObj;
 }
@@ -209,7 +209,7 @@ LuciObject *LuciString_contains(LuciObject *str, LuciObject *o)
 {
     if (!ISTYPE(o, obj_string_t)) {
         LUCI_DIE("A string can only contain a string, not a %s\n",
-                o->type->type_name);
+                TYPE_NAME(o));
     }
     if ((strstr(AS_STRING(str)->s, AS_STRING(o)->s)) != NULL) {
         return LuciInt_new(true);
@@ -265,7 +265,7 @@ LuciObject* LuciString_cget(LuciObject *a, LuciObject *b)
         return LuciString_new(s);
     } else {
         LUCI_DIE("Cannot subscript a string with an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
     return LuciNilObj;
 }
@@ -298,11 +298,11 @@ LuciObject* LuciString_cput(LuciObject *a, LuciObject *b, LuciObject *c)
             return LuciString_new(s);
         } else {
             LUCI_DIE("Cannot put an object of type %s into a string\n",
-                    c->type->type_name);
+                    TYPE_NAME(c));
         }
     } else {
         LUCI_DIE("Cannot subscript a string with an object of type %s\n",
-                b->type->type_name);
+                TYPE_NAME(b));
     }
     return LuciNilObj;
 }

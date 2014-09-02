@@ -1,0 +1,8 @@
+wow = "hello";
+
+def wtf()
+{
+    print(wow);
+}
+
+wtf();

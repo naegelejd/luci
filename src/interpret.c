@@ -319,7 +319,9 @@ void eval(LuciObject *frame)
 
         HANDLE(LOADK)
             LUCI_DEBUG("LOADK %d\n", a);
-            LuciList_push(stack, AS_FUNCTION(frame)->constants[a]);
+            x = AS_FUNCTION(frame)->constants[a];
+            LuciList_push(stack, x);
+
         FETCH(1);
         DISPATCH;
 
@@ -359,7 +361,8 @@ void eval(LuciObject *frame)
             /* pop object off of stack */
             x = LuciList_pop(stack);
             /* store the new object */
-            AS_FUNCTION(frame)->locals[a] = x->type->copy(x);
+            y = x->type->copy(x);
+            AS_FUNCTION(frame)->locals[a] = y;
         FETCH(1);
         DISPATCH;
 

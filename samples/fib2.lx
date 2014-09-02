@@ -1,0 +1,28 @@
+# naive memoized fibonacci
+
+fibs = range(100);
+for i in range(100) {
+    fibs[i] = -1;
+}
+
+def fib(n)
+{
+    if (fibs[n] > 0) {
+        return fibs[n];
+    }
+
+    val = 0;
+    if (n < 2) {
+        val = n;
+    } else {
+        val = fib(n - 2) + fib(n - 1);
+    }
+
+    fibs[n] = val;
+    return val;
+}
+
+print(fib(9));
+print(fib(15));
+print(fib(23));
+print(fib(42));

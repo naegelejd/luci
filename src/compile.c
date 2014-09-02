@@ -104,6 +104,7 @@ static void compile_id_expr(AstNode *node, CompileState *cs)
         a = symtable_id(cs->gtable, node->data.id.val, SYMFIND);
         if (a >= 0) {
             /* found the symbol in the globals table */
+
             push_instr(cs, LOADG, a);
             return;
         }
@@ -734,7 +735,8 @@ void convert_to_function(CompileState *cs, LuciObject *o, uint16_t nparams)
 
     /* get copy of locals object array and size of array */
     f->nlocals = cs->ltable->count;
-    f->locals = symtable_copy_objects(cs->ltable);
+    /* f->locals = symtable_copy_objects(cs->ltable); */
+    f->locals = symtable_give_objects(cs->ltable);
 
     /* get copy of constants object array and size of array */
     f->nconstants = cs->ctable->count;
